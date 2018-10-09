@@ -13,6 +13,10 @@ def addon_id():
     return "service.upnext"
 
 
+def addon_path():
+    return xbmcaddon.Addon(addon_id()).getAddonInfo('path')
+
+
 def kodi_version():
     return xbmc.getInfoLabel('System.BuildVersion')[:2]
 
