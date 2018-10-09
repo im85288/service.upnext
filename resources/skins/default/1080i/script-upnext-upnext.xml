@@ -192,7 +192,7 @@
 					<width>350</width>
 					<height>50</height>
 					<onleft>3013</onleft>
-					<align>center</align
+					<align>center</align>
 					<font>font13</font>
 					<label>$ADDON[service.upnext 30026]</label>
 					<focusedcolor>FFededed</focusedcolor>
