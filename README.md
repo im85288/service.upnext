@@ -19,21 +19,21 @@ Skinners:
           - 4013 - Cancel Button
           
       - Various Window Propertys are available including
-                 - Window.Property(fanart) - tvshow fanart
-                 - Window.Property(clearlogo) - tvshow clearlogo
-                 - Window.Property(clearart) - tvshow banner
-                 - Window.Property(landscape) - tvshow landscape
-                 - Window.Property(poster) - tvshow poster
-                 - Window.Property(thumb) - thumb
-                 - Window.Property(plot) - episode plot
-                 - Window.Property(tvshowtitle) - episode tvshow title
-                 - Window.Property(title) - episode title
-                 - Window.Property(season) - episode season number
-                 - Window.Property(episode) - episode episode number
-                 - Window.Property(year) - episode preimiered year
-                 - Window.Property(rating) - episode rating
-                 - Window.Property(duration) - episode duration
-                 - Window.Property(seasonepisode) - season/episode
-                 - Window.Property(playcount) - playcount
-                 - Window.Property(label) - label
+          - Window.Property(fanart) - tvshow fanart
+          - Window.Property(clearlogo) - tvshow clearlogo
+          - Window.Property(clearart) - tvshow banner
+          - Window.Property(landscape) - tvshow landscape
+          - Window.Property(poster) - tvshow poster
+          - Window.Property(thumb) - thumb
+          - Window.Property(plot) - episode plot
+          - Window.Property(tvshowtitle) - episode tvshow title
+          - Window.Property(title) - episode title
+          - Window.Property(season) - episode season number
+          - Window.Property(episode) - episode episode number
+          - Window.Property(year) - episode preimiered year
+          - Window.Property(rating) - episode rating
+          - Window.Property(duration) - episode duration
+          - Window.Property(seasonepisode) - season/episode
+          - Window.Property(playcount) - playcount
+          - Window.Property(label) - label
                  
