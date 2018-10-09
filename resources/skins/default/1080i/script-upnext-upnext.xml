@@ -3,7 +3,7 @@
 	<defaultcontrol always="true">3012</defaultcontrol>
 	<zorder>0</zorder>
 	<controls>
-		<control type="group">
+		<control type="group" description="not the simple mode version">
 			<visible>String.IsEmpty(Window.Property(simplemode))</visible>
 			<control type="group">
 				<control type="image">
@@ -178,7 +178,7 @@
 				</control>
 			</control>
 		</control>
-		<control type="group">
+		<control type="group" description="simple mode version">
 			<visible>!String.IsEmpty(Window.Property(simplemode))</visible>
 			<right>10</right>
 			<bottom>60</bottom>
