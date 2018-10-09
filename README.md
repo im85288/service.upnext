@@ -36,4 +36,5 @@ Skinners:
           - Window.Property(seasonepisode) - season/episode
           - Window.Property(playcount) - playcount
           - Window.Property(label) - label
+          - Window.Property(simplemode) - when this is set, display simple mode versions of the windows
                  

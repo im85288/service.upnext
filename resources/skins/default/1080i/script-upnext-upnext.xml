@@ -4,41 +4,64 @@
 	<zorder>0</zorder>
 	<controls>
 		<control type="group">
-			<right>10</right>
-			<bottom>10</bottom>
-			<width>600</width>
-			<height>339</height>
+			<visible>String.IsEmpty(Window.Property(simplemode))</visible>
 			<control type="group">
 				<control type="image">
-					<animation effect="fade" start="100" end="97" time="200" condition="true">Conditional</animation>
-					<texture border="5" colordiffuse="ff000000">box.png</texture>
-				</control>
-				<control type="image" description="fanart">
-					<width>100%</width>
-					<height>100%</height>
-					<fadetime>350</fadetime>
-					<aspectratio scalediffuse="false">scale</aspectratio>
-					<texture background="true">$INFO[Window.Property(fanart)]</texture>
+					<aspectratio>scale</aspectratio>
+					<depth>-0.80</depth>
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>1920</width>
+					<height>150</height>
+					<texture colordiffuse="FF006699">primary.jpg</texture>
 				</control>
 				<control type="image">
-					<left>0</left>
-					<right>0</right>
+					<depth>-0.80</depth>
+					<posx>0</posx>
+					<posy>0</posy>
+					<width>1920</width>
+					<height>150</height>
+					<aspectratio>scale</aspectratio>
+					<texture colordiffuse="80A6111F">secondary1.png</texture>
+				</control>
+				<control type="image">
+					<posx>60</posx>
+					<posy>140</posy>
+					<width>1800</width>
+					<height>2</height>
+					<texture>nextupwhite.png</texture>
+					<colordiffuse>FF387ef5</colordiffuse>
+				</control>
+				<control type="image" description="poster">
+					<left>5</left>
 					<top>0</top>
-					<height>90</height>
-					<texture border="5" colordiffuse="af000000">nextupwhite.png</texture>
+					<width>100</width>
+					<height>150</height>
+					<fadetime>350</fadetime>
+					<texture background="true">$INFO[Window.Property(poster)]</texture>
+					<aspectratio scalediffuse="false">scale</aspectratio>
 				</control>
+			</control>
+			<control type="group">
+				<left>0</left>
+				<top>0</top>
+				<width>1920</width>
+				<height>150</height>
 				<control type="image">
 					<left>0</left>
-					<right>0</right>
-					<bottom>0</bottom>
-					<height>30</height>
-					<texture border="5" colordiffuse="cf000000">nextupwhite.png</texture>
+					<top>35</top>
+					<width>1920</width>
+					<height>65</height>
+					<texture>$INFO[Window.Property(clearlogo)]</texture>
+					<aspectratio aligny="top" align="center">keep</aspectratio>
 				</control>
+
+
 				<control type="image">
 					<visible>!Control.HasFocus(3012)</visible>
 					<visible>Integer.IsGreater(Player.TimeRemaining(ss),30)</visible>
-					<left>236</left>
-					<top>106</top>
+					<right>10</right>
+					<top>6</top>
 					<width>128</width>
 					<height>128</height>
 					<aspectratio>keep</aspectratio>
@@ -55,8 +78,8 @@
 				<control type="image">
 					<visible>Control.HasFocus(3012)</visible>
 					<visible>Integer.IsGreater(Player.TimeRemaining(ss),30)</visible>
-					<left>236</left>
-					<top>106</top>
+					<right>10</right>
+					<top>6</top>
 					<width>128</width>
 					<height>128</height>
 					<aspectratio>keep</aspectratio>
@@ -73,8 +96,8 @@
 				<control type="image">
 					<visible>!Control.HasFocus(3012)</visible>
 					<visible>!Integer.IsGreater(Player.TimeRemaining(ss),30)</visible>
-					<left>236</left>
-					<top>106</top>
+					<right>10</right>
+					<top>6</top>
 					<width>128</width>
 					<height>128</height>
 					<aspectratio>keep</aspectratio>
@@ -91,8 +114,8 @@
 				<control type="image">
 					<visible>Control.HasFocus(3012)</visible>
 					<visible>!Integer.IsGreater(Player.TimeRemaining(ss),30)</visible>
-					<left>236</left>
-					<top>106</top>
+					<right>10</right>
+					<top>6</top>
 					<width>128</width>
 					<height>128</height>
 					<aspectratio>keep</aspectratio>
@@ -108,22 +131,27 @@
 				</control>
 				<control type="button" id="3012">
 					<description>Watch Now</description>
-					<left>5</left>
-					<top>5</top>
-					<width>577</width>
-					<height>324</height>
+					<right>140</right>
+					<top>6</top>
+					<width>250</width>
+					<height>58</height>
 					<ondown>3013</ondown>
 					<onup>3013</onup>
-					<texturefocus>noop</texturefocus>
+					<align>center</align
+					<font>font13</font>
+					<label>$ADDON[service.upnext 30026]</label>
+					<focusedcolor>FFededed</focusedcolor>
+					<disabledcolor>B3dddddd</disabledcolor>
+					<selectedcolor>FF000000</selectedcolor>
 					<textcolor>ff333333</textcolor>
+					<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>
+					<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
 				</control>
 				<control type="group">
-					<left>5</left>
-					<right>5</right>
 					<control type="button" id="3013">
 						<description>Cancel</description>
-						<left>225</left>
-						<bottom>1</bottom>
+						<right>140</right>
+						<top>70</top>
 						<width>150</width>
 						<onup>3012</onup>
 						<ondown>3012</ondown>
@@ -133,7 +161,7 @@
 						<focusedcolor>FFededed</focusedcolor>
 						<disabledcolor>B3dddddd</disabledcolor>
 						<selectedcolor>FF000000</selectedcolor>
-						<height>25</height>
+						<height>58</height>
 						<textcolor>ff333333</textcolor>
 						<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>
 						<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
@@ -147,35 +175,62 @@
 						<textcolor>FFCCCCCC</textcolor>
 						<label>$INFO[Player.TimeRemaining(ss)]</label>
 					</control>
-					<control type="label">
-						<width>100%</width>
-						<top>0</top>
-						<height>40</height>
-						<font>font13</font>
-						<textcolor>B3dddddd</textcolor>
-						<label>$INFO[Window.Property(seasonepisode),$ADDON[service.upnext 30008]... ,][COLOR=FF00a2e0]$INFO[Window.Property(title), ,][/COLOR]</label>
-					</control>
-					<control type="label" description="rating">
-						<left>35</left>
-						<width>100%</width>
-						<top>50</top>
-						<height>40</height>
-						<font>font13</font>
-						<textcolor>B3dddddd</textcolor>
-                        <label>$INFO[Window.Property(rating)]</label>
-                        <visible>!String.IsEmpty(Window.Property(rating))</visible>
-					</control>
-					<control type="label" id="3004" description="year/runtime">
-						<left>90</left>
-						<width>100%</width>
-						<top>50</top>
-						<height>40</height>
-						<font>font13</font>
-						<textcolor>B3dddddd</textcolor>
-						<scroll>false</scroll>
-                        <label>$INFO[Window.Property(year)]</label>
-                        <visible>!String.IsEmpty(Window.Property(year))</visible>
-					</control>
+				</control>
+			</control>
+		</control>
+		<control type="group">
+			<visible>!String.IsEmpty(Window.Property(simplemode))</visible>
+			<right>10</right>
+			<bottom>60</bottom>
+			<width>600</width>
+			<height>50</height>
+			<control type="group">
+				<control type="button" id="3012">
+					<description>Watch Now</description>
+					<right>0</right>
+					<top>0</top>
+					<width>350</width>
+					<height>50</height>
+					<onleft>3013</onleft>
+					<align>center</align
+					<font>font13</font>
+					<label>$ADDON[service.upnext 30026]</label>
+					<focusedcolor>FFededed</focusedcolor>
+					<disabledcolor>B3dddddd</disabledcolor>
+					<selectedcolor>FF000000</selectedcolor>
+					<textcolor>ff333333</textcolor>
+					<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>
+					<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
+				</control>
+				<control type="label" description="Total Time">
+					<align>right</align>
+					<left>0</left>
+					<top>0</top>
+					<width>350</width>
+					<height>50</height>
+					<font>font13</font>
+					<textcolor>FFCCCCCC</textcolor>
+					<label>$INFO[Player.TimeRemaining(ss)]</label>
+				</control>
+			</control>
+
+			<control type="group">
+				<control type="button" id="3013">
+					<description>Cancel</description>
+					<left>0</left>
+					<top>0</top>
+					<width>230</width>
+					<onright>3012</onright>
+					<align>center</align>
+					<font>font13</font>
+					<label>222</label>
+					<focusedcolor>FFededed</focusedcolor>
+					<disabledcolor>B3dddddd</disabledcolor>
+					<selectedcolor>FF000000</selectedcolor>
+					<height>50</height>
+					<textcolor>ff333333</textcolor>
+					<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>
+					<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
 				</control>
 			</control>
 		</control>

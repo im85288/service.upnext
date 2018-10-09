@@ -1,5 +1,6 @@
 import xbmc
 import xbmcgui
+import resources.lib.utils as utils
 from platform import machine
 
 ACTION_PLAYER_STOP = 13
@@ -22,6 +23,10 @@ class UpNext(xbmcgui.WindowXMLDialog):
         self.setInfo()
 
     def setInfo(self):
+        if utils.settings("simpleMode") == "0":
+            self.setProperty('simplemode', "true")
+        else:
+            self.clearProperty('simplemode')
         episodeInfo = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
         if self.item['rating'] is not None:
             rating = str(round(float(self.item['rating']), 1))
