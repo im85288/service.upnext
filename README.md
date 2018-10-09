@@ -13,10 +13,12 @@ Skinners:
       - script-upnext-upnext.xml
           - 3012 - Watch Now Button
           - 3013 - Cancel Button
+          - 3014 - Simple mode radio button (toggle between simple and default fancy)
           
       - script-nextup-notification-StillWatchingInfo.xml
           - 4012 - Continue Watching Button
           - 4013 - Cancel Button
+          - 4014 - Simple mode radio button (toggle between simple and default fancy)
           
       - Various Window Propertys are available including
           - Window.Property(fanart) - tvshow fanart
