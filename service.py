@@ -54,7 +54,7 @@ class Service():
 
     def shouldShowUpNext(self, enable_playlist, playlist_size, up_next_disabled):
         return utils.window("PseudoTVRunning") != "True" and not up_next_disabled and (
-                    enable_playlist == playlist_size == 0 or enable_playlist)
+                    playlist_size == 0 or enable_playlist)
 
 
 # start the service
