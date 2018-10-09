@@ -4,6 +4,33 @@
     <zorder>0</zorder>
     <controls>
         <control type="group">
+
+            <control type="group" description="toggle simple mode">
+                <width>40</width>
+                <height>40</height>
+                <control type="radiobutton" id="4014">
+                    <animation effect="zoom" start="100" end="177" time="100" center="20,20" reversible="false">Focus</animation>
+                    <animation effect="zoom" start="177" end="100" time="100" center="20,20" reversible="false">UnFocus</animation>
+                    <width>40</width>
+                    <height>40</height>
+                    <onleft>201</onleft>
+                    <ondown>50</ondown>
+                    <font>font12</font>
+                    <focusedcolor>FF000000</focusedcolor>
+                    <texturefocus>-</texturefocus>
+                    <texturenofocus>-</texturenofocus>
+                    <label> </label>
+                    <radioposx>0</radioposx>
+                    <radioposy>0</radioposy>
+                    <radiowidth>40</radiowidth>
+                    <radioheight>40</radioheight>
+                    <textureradioonfocus colordiffuse="FF387ef5">show.png</textureradioonfocus>
+                    <textureradioonnofocus colordiffuse="99FFFFFF">show.png</textureradioonnofocus>
+                    <textureradioofffocus colordiffuse="FF387ef5">hide.png</textureradioofffocus>
+                    <textureradiooffnofocus colordiffuse="99FFFFFF">hide.png</textureradiooffnofocus>
+                </control>
+            </control>
+
             <right>200</right>
             <bottom>200</bottom>
             <width>890</width>
