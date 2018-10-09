@@ -63,8 +63,6 @@ class UpNext(xbmcgui.WindowXMLDialog):
             self.setProperty(
                 'rating', rating)
             self.setProperty(
-                'duration', str(self.item['runtime'] / 60))
-            self.setProperty(
                 'playcount', str(self.item['playcount']))
             self.setProperty(
                 'label', str(self.item['label']))

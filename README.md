@@ -32,7 +32,6 @@ Skinners:
           - Window.Property(episode) - episode episode number
           - Window.Property(year) - episode preimiered year
           - Window.Property(rating) - episode rating
-          - Window.Property(duration) - episode duration
           - Window.Property(seasonepisode) - season/episode
           - Window.Property(playcount) - playcount
           - Window.Property(label) - label

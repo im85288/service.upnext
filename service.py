@@ -35,11 +35,9 @@ class Service():
                     play_time = xbmc.Player().getTime()
                     total_time = xbmc.Player().getTotalTime()
                     current_file = xbmc.Player().getPlayingFile()
-                    playlist_size = xbmc.PlayList(xbmc.PLAYLIST_VIDEO).size()
                     notification_time = utils.settings("autoPlaySeasonTime")
                     up_next_disabled = utils.settings("disableNextUp") == "true"
-                    enable_playlist = utils.settings("enablePlaylist") == "true"
-                    if self.shouldShowUpNext(enable_playlist, playlist_size, up_next_disabled):
+                    if utils.window("PseudoTVRunning") != "True" and not up_next_disabled:
                         if (total_time - play_time <= int(notification_time) and (
                                         last_file is None or last_file != current_file)) and total_time != 0:
                             last_file = current_file
@@ -51,11 +49,6 @@ class Service():
                     self.logMsg("Exception in Playback Monitor Service: %s" % e)
 
         self.logMsg("======== STOP %s ========" % utils.addon_name(), 0)
-
-    def shouldShowUpNext(self, enable_playlist, playlist_size, up_next_disabled):
-        return utils.window("PseudoTVRunning") != "True" and not up_next_disabled and (
-                    playlist_size == 0 or enable_playlist)
-
 
 # start the service
 Service().ServiceEntryPoint()
