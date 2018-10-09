@@ -23,6 +23,10 @@ class UpNext(xbmcgui.WindowXMLDialog):
 
     def setInfo(self):
         episodeInfo = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
+        if self.item['rating'] is not None:
+            rating = str(round(float(self.item['rating']), 1))
+        else:
+            rating = None
 
         if self.item is not None:
             self.setProperty(
@@ -52,7 +56,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
             self.setProperty(
                 'year', str(self.item['firstaired']))
             self.setProperty(
-                'rating', str(round(float(self.item['rating']), 1)))
+                'rating', rating)
             self.setProperty(
                 'duration', str(self.item['runtime'] / 60))
             self.setProperty(

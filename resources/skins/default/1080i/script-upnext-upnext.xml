@@ -13,11 +13,12 @@
 					<animation effect="fade" start="100" end="97" time="200" condition="true">Conditional</animation>
 					<texture border="5" colordiffuse="ff000000">box.png</texture>
 				</control>
-				<control type="image" id="3005" description="fanart">
+				<control type="image" description="fanart">
 					<width>100%</width>
 					<height>100%</height>
 					<fadetime>350</fadetime>
 					<aspectratio scalediffuse="false">scale</aspectratio>
+					<texture background="true">$INFO[Window.Property(fanart)]</texture>
 				</control>
 				<control type="image">
 					<left>0</left>
