@@ -33,6 +33,8 @@ class StillWatching(xbmcgui.WindowXMLDialog):
             self.setProperty(
                 'clearart', self.item['art'].get('tvshow.clearart', ''))
             self.setProperty(
+                'clearlogo', self.item['art'].get('tvshow.clearlogo', ''))
+            self.setProperty(
                 'poster', self.item['art'].get('tvshow.poster', ''))
             self.setProperty(
                 'thumb', self.item['art'].get('thumb', ''))
