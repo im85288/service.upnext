@@ -66,8 +66,6 @@ class StillWatching(xbmcgui.WindowXMLDialog):
                 'rating', rating)
             self.setProperty(
                 'playcount', str(self.item['playcount']))
-            self.setProperty(
-                'label', str(self.item['label']))
 
     def setItem(self, item):
         self.item = item
