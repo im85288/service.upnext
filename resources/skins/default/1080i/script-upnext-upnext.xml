@@ -137,7 +137,7 @@
 					<height>58</height>
 					<ondown>3013</ondown>
 					<onup>3013</onup>
-					<align>center</align
+					<align>center</align>
 					<font>font13</font>
 					<label>$ADDON[service.upnext 30026]</label>
 					<focusedcolor>FFededed</focusedcolor>
