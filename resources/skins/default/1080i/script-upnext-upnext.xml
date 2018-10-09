@@ -167,9 +167,10 @@
 						<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
 					</control>
 					<control type="label" description="Total Time">
+						<right>140</right>
 						<align>right</align>
-						<width>100%</width>
-						<top>50</top>
+						<width>150</width>
+						<top>80</top>
 						<height>40</height>
 						<font>font13</font>
 						<textcolor>FFCCCCCC</textcolor>
