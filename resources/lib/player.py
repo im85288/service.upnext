@@ -32,6 +32,11 @@ class Player(xbmc.Player):
         self.className = self.__class__.__name__
         utils.logMsg("%s %s" % (utils.addon_name(), self.className), msg, int(lvl))
 
+    def onPlayBackStarted(self):
+        # Will be called when xbmc starts playing a file
+        if utils.settings("developerMode") == "true" and not self.emby_data:
+            self.developerPlayPlayback()
+
     def getNowPlaying(self):
         # Get the active player
         result = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Player.GetActivePlayers"}')
@@ -196,6 +201,8 @@ class Player(xbmc.Player):
     def emby_data_received(self, data):
         self.logMsg("emby_data_received called with data %s " % str(data), 2)
         self.emby_data = data
+        if utils.settings("developerMode") == "true":
+            self.developerPlayPlayback()
 
     def transform_emby_data_to_kodi_format(self, episode):
         self.logMsg("transform_emby_data_to_kodi_format called with data %s " % str(episode), 2)
@@ -369,3 +376,51 @@ class Player(xbmc.Player):
                     play_info = {'item_id': str(episodeid), 'auto_resume': False, 'force_transcode': False, 'media_source_id': '', 'use_default': True}
                     AddonSignals.sendSignal("embycon_play_action", play_info, source_id="embycon")
 
+
+    def developerPlayPlayback(self):
+        self.emby_mode = False
+        # Get the active player
+        result = self.getNowPlaying()
+        if not self.handle_now_playing_result(result):
+            self.logMsg("Error: no result returned from check on now playing...exiting", 1)
+            return
+
+        if not self.emby_mode:
+            # get the current episode from kodi
+            episode = self.handle_kodi_lookup_of_current_episode(self.tvshowid)
+        else:
+            episode = self.transform_emby_data_to_kodi_format(self.handle_emby_lookup_of_current_episode(self.embyid))
+
+        if episode is None:
+            # no episode get out of here
+            self.logMsg("Error: no episode could be found to play next...exiting", 1)
+            return
+        self.logMsg("episode details %s" % str(episode), 2)
+        if utils.settings("developerMode") == "true":
+            # we have a next up episode choose mode
+            if utils.settings("simpleMode") == "0":
+                nextUpPage = UpNext("script-upnext-upnext-simple.xml",
+                                    utils.addon_path(), "default", "1080i")
+                stillWatchingPage = StillWatching(
+                    "script-upnext-stillwatching-simple.xml",
+                    utils.addon_path(), "default", "1080i")
+            else:
+                nextUpPage = UpNext("script-upnext-upnext.xml",
+                                    utils.addon_path(), "default", "1080i")
+                stillWatchingPage = StillWatching(
+                    "script-upnext-stillwatching.xml",
+                    utils.addon_path(), "default", "1080i")
+            nextUpPage.setItem(episode)
+            stillWatchingPage.setItem(episode)
+            if utils.settings("windowMode") == "0":
+                nextUpPage.show()
+            elif utils.settings("windowMode") == "1":
+                stillWatchingPage.show()
+
+            while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
+                xbmc.sleep(100)
+
+            if utils.settings("windowMode") == "0":
+                nextUpPage.close()
+            elif utils.settings("windowMode") == "1":
+                stillWatchingPage.close()
