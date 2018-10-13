@@ -2,7 +2,6 @@ from platform import machine
 
 import xbmc
 import xbmcgui
-import resources.lib.utils as utils
 
 ACTION_PLAYER_STOP = 13
 OS_MACHINE = machine()
@@ -22,8 +21,6 @@ class StillWatching(xbmcgui.WindowXMLDialog):
 
     def onInit(self):
         self.setInfo()
-        self.simplemodecontrol = self.getControl(4014)
-        self.prepareSimpleModeRadioButton()
 
     def setInfo(self):
         episodeInfo = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
@@ -100,25 +97,7 @@ class StillWatching(xbmcgui.WindowXMLDialog):
             # cancel
             self.setCancel(True)
             self.close()
-        elif controlID == 4014:
-            if self.simplemodecontrol.isSelected() == 1:
-                simplemode = "0"
-            else:
-                simplemode = "1"
-            utils.settings("simpleMode", simplemode)
-            if simplemode == "0":
-                self.setProperty('simplemode', "true")
-            else:
-                self.clearProperty('simplemode')
         pass
-
-    def prepareSimpleModeRadioButton(self):
-        simplemode = utils.settings("simpleMode") == "0"
-        self.simplemodecontrol.setSelected(simplemode)
-        if simplemode:
-            self.setProperty('simplemode', "true")
-        else:
-            self.clearProperty('simplemode')
 
     def onAction(self, action):
         xbmc.log("still watching info action: " + str(action.getId()))

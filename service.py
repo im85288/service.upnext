@@ -37,13 +37,13 @@ class Service():
                     current_file = xbmc.Player().getPlayingFile()
                     notification_time = utils.settings("autoPlaySeasonTime")
                     up_next_disabled = utils.settings("disableNextUp") == "true"
-                    if utils.window("PseudoTVRunning") != "True" and not up_next_disabled:
+                    if utils.window("PseudoTVRunning") != "True" and not up_next_disabled and total_time > 300:
                         if (total_time - play_time <= int(notification_time) and (
                                         last_file is None or last_file != current_file)) and total_time != 0:
                             last_file = current_file
                             self.logMsg("Calling autoplayback totaltime - playtime is %s" % (total_time - play_time), 2)
                             player.autoPlayPlayback()
-                            self.logMsg("Netflix style autoplay succeeded.", 2)
+                            self.logMsg("Up Next style autoplay succeeded.", 2)
 
                 except Exception as e:
                     self.logMsg("Exception in Playback Monitor Service: %s" % e)
