@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<window>
+	<defaultcontrol always="true">3012</defaultcontrol>
+	<zorder>0</zorder>
+	<controls>
+		<control type="group" description="simple mode version">
+			<control type="group">
+				<control type="button" id="3012">
+					<description>Watch Now</description>
+					<height>80</height>
+					<right>10</right>
+					<bottom>40</bottom>
+					<width>400</width>
+					<textcolor>ddffffff</textcolor>
+					<focusedcolor>ff000000</focusedcolor>
+					<selectedcolor>ddffffff</selectedcolor>
+					<shadowcolor>66000000</shadowcolor>
+					<aligny>center</aligny>
+					<align>center</align>
+					<texturefocus border="10" colordiffuse="ddffffff">playbuttonfocus.png</texturefocus>
+					<texturenofocus border="10">playbuttonnofocus.png</texturenofocus>
+					<alttexturefocus border="10" colordiffuse="ddffffff">playbuttonfocus.png</alttexturefocus>
+					<alttexturenofocus border="10">playbuttonnofocus.png</alttexturenofocus>
+					<font>font13</font>
+					<label>$ADDON[service.upnext 30027] $INFO[Player.TimeRemaining(ss)]</label>
+					<onleft>3013</onleft>
+				</control>
+				<control type="button" id="3013">
+					<right>550</right>
+					<bottom>40</bottom>
+					<description>Cancel</description>
+					<height>80</height>
+					<textcolor>ddffffff</textcolor>
+					<focusedcolor>ff000000</focusedcolor>
+					<selectedcolor>ddffffff</selectedcolor>
+					<shadowcolor>66000000</shadowcolor>
+					<aligny>center</aligny>
+					<align>center</align>
+					<texturefocus border="10" colordiffuse="ddffffff">button.png</texturefocus>
+					<texturenofocus border="10" colordiffuse="ff464646">button.png</texturenofocus>
+					<alttexturefocus border="10" colordiffuse="ddffffff">button.png</alttexturefocus>
+					<alttexturenofocus border="10" colordiffuse="ff464646">button.png</alttexturenofocus>
+					<align>center</align>
+					<font>font13</font>
+					<label>222</label>
+					<onright>3012</onright>
+				</control>
+            </control>
+
+			<!--<control type="group">-->
+				<!--<control type="button" id="3012">-->
+					<!--<description>Watch Now</description>-->
+                    <!--<height>56</height>-->
+                    <!--<textcolor>ddffffff</textcolor>-->
+                    <!--<focusedcolor>ff000000</focusedcolor>-->
+                    <!--<selectedcolor>ddffffff</selectedcolor>-->
+                    <!--<shadowcolor>66000000</shadowcolor>-->
+                    <!--<aligny>center</aligny>-->
+                    <!--<align>center</align>-->
+                    <!--<texturefocus border="10" colordiffuse="ddffffff">button.png</texturefocus>-->
+                    <!--<texturenofocus border="10" colordiffuse="ff464646">button.png</texturenofocus>-->
+                    <!--<alttexturefocus border="10" colordiffuse="ddffffff">button.png</alttexturefocus>-->
+                    <!--<alttexturenofocus border="10" colordiffuse="ff464646">button.png</alttexturenofocus>-->
+					<!--<onleft>3013</onleft>-->
+					<!--<font>font13</font>-->
+					<!--<label>$ADDON[service.upnext 30027] $INFO[Player.TimeRemaining(ss)]</label>-->
+					<!--<focusedcolor>FFededed</focusedcolor>-->
+					<!--<disabledcolor>B3dddddd</disabledcolor>-->
+					<!--<selectedcolor>FF000000</selectedcolor>-->
+					<!--<textcolor>ff333333</textcolor>-->
+					<!--<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>-->
+					<!--<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>-->
+				<!--</control>-->
+			<!--</control>-->
+
+			<!--<control type="group">-->
+				<!--<control type="button" id="3013">-->
+					<!--<description>Cancel</description>-->
+					<!--<left>0</left>-->
+					<!--<top>0</top>-->
+					<!--<width>230</width>-->
+					<!--<onright>3012</onright>-->
+					<!--<align>center</align>-->
+					<!--<font>font13</font>-->
+					<!--<label>222</label>-->
+					<!--<focusedcolor>FFededed</focusedcolor>-->
+					<!--<disabledcolor>B3dddddd</disabledcolor>-->
+					<!--<selectedcolor>FF000000</selectedcolor>-->
+					<!--<height>50</height>-->
+					<!--<textcolor>ff333333</textcolor>-->
+					<!--<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>-->
+					<!--<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>-->
+				<!--</control>-->
+			<!--</control>-->
+		</control>
+	</controls>
+</window>

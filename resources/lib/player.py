@@ -288,13 +288,20 @@ class Player(xbmc.Player):
         episodeid = episode["episodeid"]
         includePlaycount = True if self.includeWatched else episode["playcount"] == 0
         if includePlaycount and self.currentepisodeid != episodeid:
-            # we have a next up episode
-            nextUpPage = UpNext("script-upnext-upnext.xml",
+            # we have a next up episode choose mode
+            if utils.settings("simpleMode") == "0":
+                nextUpPage = UpNext("script-upnext-upnext-simple.xml",
                                     utils.addon_path(), "default", "1080i")
+                stillWatchingPage = StillWatching(
+                    "script-upnext-stillwatching-simple.xml",
+                    utils.addon_path(), "default", "1080i")
+            else:
+                nextUpPage = UpNext("script-upnext-upnext.xml",
+                                    utils.addon_path(), "default", "1080i")
+                stillWatchingPage = StillWatching(
+                    "script-upnext-stillwatching.xml",
+                    utils.addon_path(), "default", "1080i")
             nextUpPage.setItem(episode)
-            stillWatchingPage = StillWatching(
-                "script-upnext-stillwatching.xml",
-                utils.addon_path(), "default", "1080i")
             stillWatchingPage.setItem(episode)
             playedinarownumber = utils.settings("playedInARow")
             playTime = xbmc.Player().getTime()
