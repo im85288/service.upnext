@@ -1,41 +1,14 @@
-This addon can be configured to show a popup next up notification automatically to prompt for playing the next unwatched episode.
+# Up Next
 
-Configuration:
+This addon shows a popup window notification automatically to prompt for playing the next unwatched episode. 
 
-  - The addon is found in the services section and allows the notification time to be adjusted (default 30 seconds before the end)
-  - The default action (ie Play/Do not Play) when nothing is pressed can also be configured
-  - The number of episodes played in a row with no intervention to bring up the still watching window can be adjusted.                                      
+The default settings should be enough for most, but changes can be made in the addon settings (*the addon is in the services section of kodi addons*)
 
-Skinners:
-  
-  - There is a script-upnext-upnext.xml and script-upnext-stillwatching.xml file located in default/1080i/ simply copy this to your skin folder and adjust it how you like it. 
-  
-      - script-upnext-upnext.xml
-          - 3012 - Watch Now Button
-          - 3013 - Cancel Button
-          - 3014 - Simple mode radio button (toggle between simple and default fancy)
-          
-      - script-upnext-stillwatching.xml
-          - 4012 - Continue Watching Button
-          - 4013 - Cancel Button
-          - 4014 - Simple mode radio button (toggle between simple and default fancy)
-          
-      - Various Window Propertys are available including
-          - Window.Property(fanart) - tvshow fanart
-          - Window.Property(clearlogo) - tvshow clearlogo
-          - Window.Property(clearart) - tvshow banner
-          - Window.Property(landscape) - tvshow landscape
-          - Window.Property(poster) - tvshow poster
-          - Window.Property(thumb) - thumb
-          - Window.Property(plot) - episode plot
-          - Window.Property(tvshowtitle) - episode tvshow title
-          - Window.Property(title) - episode title
-          - Window.Property(season) - episode season number
-          - Window.Property(episode) - episode episode number
-          - Window.Property(year) - episode preimiered year
-          - Window.Property(rating) - episode rating
-          - Window.Property(seasonepisode) - season/episode
-          - Window.Property(playcount) - playcount
-          - Window.Property(label) - label
-          - Window.Property(simplemode) - when this is set, display simple mode versions of the windows
-                 
+##### Addon Settings:
+
+  * simple/fancy mode - by default the windows are in fancy mode, but a simpler version can be selected to be shown in the settings.
+  * The notification time can be adjusted (default 30 seconds before the end)
+  * The default action (ie Play/Do not Play) when nothing is pressed can also be configured
+  * The number of episodes played in a row with no intervention to bring up the still watching window can be adjusted.                                      
+
+For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)     

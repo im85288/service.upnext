@@ -24,17 +24,17 @@ class Player(xbmc.Player):
     def __init__(self, *args):
         self.__dict__ = self._shared_state
         self.logMsg("Starting playback monitor service", 1)
-        self.emby_data = None
-        self.emby_mode = False
-        AddonSignals.registerSlot('embycon', 'embycon_next_episode', self.emby_data_received)
+        self.setupFromSettings()
+        AddonSignals.registerSlot('upnextprovider', 'upnext_data', self.addon_data_received)
 
     def logMsg(self, msg, lvl=1):
         self.className = self.__class__.__name__
         utils.logMsg("%s %s" % (utils.addon_name(), self.className), msg, int(lvl))
 
     def onPlayBackStarted(self):
-        # Will be called when xbmc starts playing a file
-        if utils.settings("developerMode") == "true" and not self.emby_data:
+        # Will be called when kodi starts playing a file
+        self.addon_data = {}
+        if utils.settings("developerMode") == "true":
             self.developerPlayPlayback()
 
     def getNowPlaying(self):
@@ -183,79 +183,40 @@ class Player(xbmc.Player):
 
         return episode
 
-    def handle_emby_lookup_of_episode(self, embyid):
-        self.logMsg("handle_emby_lookup_of_episode called with embyid %s " % str(embyid), 2)
-        if self.emby_data:
-            previousembyid = self.emby_data["current_item"]["id"]
-            if str(previousembyid) == str(embyid):
-                self.logMsg("handle_emby_lookup_of_episode returning data %s " % str(self.emby_data["next_item"]), 2)
-                return self.emby_data["next_item"]
+    def handle_addon_lookup_of_next_episode(self):
+        if self.addon_data:
+            self.logMsg("handle_addon_lookup_of_next_episode returning data %s " % str(self.addon_data["next_episode"]), 2)
+            return self.addon_data["next_episode"]
 
-    def handle_emby_lookup_of_current_episode(self, embyid):
-        self.logMsg("handle_emby_lookup_of_current_episode called with embyid %s " % str(embyid), 2)
-        if self.emby_data:
-            previousembyid = self.emby_data["current_item"]["id"]
-            if str(previousembyid) == embyid:
-                return self.emby_data["current_item"]
 
-    def emby_data_received(self, data):
-        self.logMsg("emby_data_received called with data %s " % str(data), 2)
-        self.emby_data = data
+    def handle_addon_lookup_of_current_episode(self):
+        if self.addon_data:
+            self.logMsg("handle_addon_lookup_of_current episode returning data %s " % str(self.addon_data["current_episode"]), 2)
+            return self.addon_data["current_episode"]
+
+    def addon_data_received(self, data):
+        self.logMsg("addon_data_received called with data %s " % str(data), 2)
+        self.addon_data = data
         if utils.settings("developerMode") == "true":
             self.developerPlayPlayback()
-
-    def transform_emby_data_to_kodi_format(self, episode):
-        self.logMsg("transform_emby_data_to_kodi_format called with data %s " % str(episode), 2)
-        data = {}
-        data["episodeid"] = episode["id"]
-        data["art"] = {}
-        data["art"]["tvshow.poster"] = episode["image"]
-        data["art"]["thumb"] = episode["thumb"]
-        data["art"]["tvshow.fanart"] = episode["fanartimage"]
-        data["plot"] = episode["overview"]
-        data["showtitle"] = episode["tvshowtitle"]
-        data["title"] = episode["title"]
-        data["playcount"] = episode["playcount"]
-        data["season"] = episode["season"]
-        data["episode"] = episode["episode"]
-        data["rating"] = episode["rating"]
-        data["firstaired"] = episode["year"]
-        self.logMsg("transform_emby_data_to_kodi_format completed with data %s " % str(data), 2)
-        return data
 
     def handle_now_playing_result(self, result):
         if 'result' in result:
             itemtype = result["result"]["item"]["type"]
-            self.playMode = utils.settings("autoPlayMode")
             self.currentepisodenumber = result["result"]["item"]["episode"]
             self.currentseasonid = result["result"]["item"]["season"]
             self.currentshowtitle = result["result"]["item"]["showtitle"].encode('utf-8')
             self.currentshowtitle = utils.unicodetoascii( self.currentshowtitle)
             self.tvshowid = result["result"]["item"]["tvshowid"]
-            self.embyid = result["result"]["item"]["plotoutline"]
-            self.shortplayMode = utils.settings("shortPlayMode")
-            self.shortplayNotification = utils.settings("shortPlayNotification")
-            self.shortplayLength = int(utils.settings("shortPlayLength")) * 60
-            self.includeWatched = utils.settings("includeWatched") == "true"
             if itemtype == "episode":
-                if self.embyid:
-                    embyid = str(self.embyid)
-                    if embyid.startswith("emby_id:"):
-                        self.embyid = embyid[8:]
-                        self.logMsg("EmbyID retrieved %s " % str(embyid), 2)
-                        self.emby_mode = True
-                        currentepisodeid = embyid
-                else:
-                    embyid = ""
+                # Try to get tvshowid by showtitle from kodidb if tvshowid is -1 like in strm streams which are added to kodi db
+                if int(self.tvshowid) == -1:
+                    self.tvshowid = self.showtitle_to_id(title=self.currentshowtitle)
+                    self.logMsg("Fetched missing tvshowid " + str( self.tvshowid), 2)
 
-                if not embyid:
-                    # Try to get tvshowid by showtitle from kodidb if tvshowid is -1 like in strm streams which are added to kodi db
-                    if int(self.tvshowid) == -1:
-                        self.tvshowid = self.showtitle_to_id(title=self.currentshowtitle)
-                        self.logMsg("Fetched missing tvshowid " + str( self.tvshowid), 2)
+                # Get current episodeid
+                currentepisodeid = self.get_episode_id(showid=str(self.tvshowid), showseason=self.currentseasonid, showepisode=self.currentepisodenumber)
 
-                    # Get current episodeid
-                    currentepisodeid = self.get_episode_id(showid=str(self.tvshowid), showseason=self.currentseasonid, showepisode=self.currentepisodenumber)
             else:
                 # wtf am i doing here error.. ####
                 self.logMsg("Error: cannot determine if episode", 1)
@@ -272,20 +233,30 @@ class Player(xbmc.Player):
 
         return True
 
-    def autoPlayPlayback(self):
-        self.emby_mode = False
-        currentFile = xbmc.Player().getPlayingFile()
-        # Get the active player
-        result = self.getNowPlaying()
-        if not self.handle_now_playing_result(result):
-            self.logMsg("Error: no result returned from check on now playing...exiting", 1)
-            return
+    def setupFromSettings(self):
+        self.playMode = utils.settings("autoPlayMode")
+        self.shortplayMode = utils.settings("shortPlayMode")
+        self.shortplayNotification = utils.settings("shortPlayNotification")
+        self.shortplayLength = int(utils.settings("shortPlayLength")) * 60
+        self.includeWatched = utils.settings("includeWatched") == "true"
 
-        if not self.emby_mode:
+    def autoPlayPlayback(self):
+        currentFile = xbmc.Player().getPlayingFile()
+        if not self.addon_data:
+            # Get the active player
+            result = self.getNowPlaying()
+            if not self.handle_now_playing_result(result):
+                self.logMsg("Error: no result returned from check on now playing...exiting", 1)
+                return
             # get the next episode from kodi
             episode = self.handle_kodi_lookup_of_episode(self.tvshowid, currentFile, self.includeWatched)
         else:
-            episode = self.transform_emby_data_to_kodi_format(self.handle_emby_lookup_of_episode(self.embyid))
+            episode = self.handle_addon_lookup_of_next_episode()
+            current_episode = self.handle_addon_lookup_of_current_episode()
+            self.currentepisodeid = current_episode["episodeid"]
+            if self.currenttvshowid != current_episode["tvshowid"]:
+                self.currenttvshowid = current_episode["tvshowid"]
+                self.playedinarow = 1
 
         if episode is None:
             # no episode get out of here
@@ -367,29 +338,26 @@ class Player(xbmc.Player):
                 AddonSignals.sendSignal("NEXTUPWATCHEDSIGNAL", {'episodeid': self.currentepisodeid})
 
                 # Play media
-                if not self.emby_mode:
+                if not self.addon_data:
                     xbmc.executeJSONRPC(
                         '{ "jsonrpc": "2.0", "id": 0, "method": "Player.Open", '
                         '"params": { "item": {"episodeid": ' + str(episode["episodeid"]) + '} } }')
                 else:
-                    self.logMsg("sending id %s to embyCon to play" % str(episodeid))
-                    play_info = {'item_id': str(episodeid), 'auto_resume': False, 'force_transcode': False, 'media_source_id': '', 'use_default': True}
-                    AddonSignals.sendSignal("embycon_play_action", play_info, source_id="embycon")
+                    self.logMsg("sending data to addon to play:  %s " % str(episode["playinfo"]), 2)
+                    AddonSignals.sendSignal("play_action", episode["playinfo"], source_id=episode["id"])
 
 
     def developerPlayPlayback(self):
-        self.emby_mode = False
-        # Get the active player
-        result = self.getNowPlaying()
-        if not self.handle_now_playing_result(result):
-            self.logMsg("Error: no result returned from check on now playing...exiting", 1)
-            return
-
-        if not self.emby_mode:
-            # get the current episode from kodi
+        if not self.addon_data:
+            # Get the active player
+            result = self.getNowPlaying()
+            if not self.handle_now_playing_result(result):
+                self.logMsg("Error: no result returned from check on now playing...exiting", 1)
+                return
+            # get the next episode from kodi
             episode = self.handle_kodi_lookup_of_current_episode(self.tvshowid)
         else:
-            episode = self.transform_emby_data_to_kodi_format(self.handle_emby_lookup_of_current_episode(self.embyid))
+            episode = self.handle_addon_lookup_of_current_episode()
 
         if episode is None:
             # no episode get out of here
