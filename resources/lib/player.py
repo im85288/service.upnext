@@ -1,6 +1,5 @@
 import xbmc
 import resources.lib.utils as utils
-import AddonSignals
 from resources.lib.upnext import UpNext
 from resources.lib.stillwatching import StillWatching
 import sys
@@ -25,7 +24,7 @@ class Player(xbmc.Player):
         self.__dict__ = self._shared_state
         self.logMsg("Starting playback monitor service", 1)
         self.setupFromSettings()
-        AddonSignals.registerSlot('upnextprovider', 'upnext_data', self.addon_data_received)
+        xbmc.Player.__init__(self)
 
     def logMsg(self, msg, lvl=1):
         self.className = self.__class__.__name__
@@ -335,7 +334,7 @@ class Player(xbmc.Player):
             if (shouldPlayDefault and self.playMode == "0") or (shouldPlayNonDefault and self.playMode == "1"):
                 self.logMsg("playing media episode id %s" % str(episodeid), 2)
                 # Signal to trakt previous episode watched
-                AddonSignals.sendSignal("NEXTUPWATCHEDSIGNAL", {'episodeid': self.currentepisodeid})
+                utils.event("NEXTUPWATCHEDSIGNAL", {'episodeid': self.currentepisodeid})
 
                 # Play media
                 if not self.addon_data:
@@ -343,8 +342,8 @@ class Player(xbmc.Player):
                         '{ "jsonrpc": "2.0", "id": 0, "method": "Player.Open", '
                         '"params": { "item": {"episodeid": ' + str(episode["episodeid"]) + '} } }')
                 else:
-                    self.logMsg("sending data to addon to play:  %s " % str(episode["playinfo"]), 2)
-                    AddonSignals.sendSignal("play_action", episode["playinfo"], source_id=episode["id"])
+                    self.logMsg("sending data to addon to play:  %s " % str(self.addon_data['play_info']), 2)
+                    utils.event(self.addon_data['id'], self.addon_data['play_info'], "upnextprovider")
 
 
     def developerPlayPlayback(self):
