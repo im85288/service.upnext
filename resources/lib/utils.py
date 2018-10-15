@@ -2,6 +2,7 @@ import xbmc
 import xbmcgui
 import xbmcaddon
 import inspect
+import binascii
 import sys
 if sys.version_info < (2, 7):
     import simplejson as json
@@ -76,6 +77,21 @@ def settings(setting, value=None):
             result = result in ("true", "1")
 
         return result
+
+def event(method, data=None, source_id=None):
+
+    ''' Data is a dictionary.
+    '''
+    data = data or {}
+    source_id = source_id or xbmcaddon.Addon().getAddonInfo('id')
+    xbmc.executebuiltin('NotifyAll(%s, %s, %s)' % (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
+
+def decode_data(data):
+
+    data = json.loads(data)
+
+    if data:
+        return json.loads(binascii.unhexlify(data[0]))
 
 
 def logMsg(title, msg, level=1):
