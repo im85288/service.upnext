@@ -165,22 +165,29 @@ class Player(xbmc.Player):
             % tvshowid)
         self.logMsg("Find current episode called", 1)
         position = 0
-        for episode in result["result"]["episodes"]:
-            # find position of current episode
-            if self.currentepisodeid == episode["episodeid"]:
-                # found a match so get out of here
-                break
-            position += 1
+        if result:
+            result = unicode(result, 'utf-8', errors='ignore')
+            result = json.loads(result)
+            xbmc.sleep(100)
 
-        # now return the episode
-        self.logMsg("Find current episode found episode in position: " + str(position), 1)
-        try:
-            episode = result["result"]["episodes"][position]
-        except:
-            # no next episode found
-            episode = None
+            # Find the next unwatched and the newest added episodes
+            if "result" in result and "episodes" in result["result"]:
+                for episode in result["result"]["episodes"]:
+                    # find position of current episode
+                    if self.currentepisodeid == episode["episodeid"]:
+                        # found a match so get out of here
+                        break
+                    position += 1
 
-        return episode
+                # now return the episode
+                self.logMsg("Find current episode found episode in position: " + str(position), 1)
+                try:
+                    episode = result["result"]["episodes"][position]
+                except:
+                    # no next episode found
+                    episode = None
+
+                return episode
 
     def handle_addon_lookup_of_next_episode(self):
         if self.addon_data:
