@@ -42,7 +42,7 @@ msgid "Number of episodes before still watching query"
 msgstr ""
 
 msgctxt "#30010"
-msgid "Continue Watching"
+msgid "Continue watching"
 msgstr ""
 
 msgctxt "#30012"
@@ -74,11 +74,11 @@ msgid "Previous"
 msgstr ""
 
 msgctxt "#30021"
-msgid "Playing Next"
+msgid "Playing next"
 msgstr ""
 
 msgctxt "#30024"
-msgid "Still There?"
+msgid "Still there?"
 msgstr ""
 
 msgctxt "#30025"
@@ -86,11 +86,11 @@ msgid "Set the display mode for the notifications"
 msgstr ""
 
 msgctxt "#30026"
-msgid "Watch Next Episode?"
+msgid "Watch next episode?"
 msgstr ""
 
 msgctxt "#30027"
-msgid "Next Episode in "
+msgid "Next episode in "
 msgstr ""
 
 msgctxt "#30028"
@@ -98,7 +98,7 @@ msgid "Developer"
 msgstr ""
 
 msgctxt "#30029"
-msgid "Enable Developer Mode"
+msgid "Enable developer mode"
 msgstr ""
 
 msgctxt "#30030"

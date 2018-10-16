@@ -7,19 +7,19 @@
         <control type="group">
             <animation type="WindowOpen" reversible="false">
                 <effect type="fade" start="0" end="100" time="400" />
-                <effect type="slide" start="0,-225" end="0,0" time="400" />
+                <effect type="slide" start="0,-181" end="0,0" time="400" />
             </animation>
             <animation type="WindowClose" reversible="false">
                 <effect type="fade" start="100" end="0" time="400" />
-                <effect type="slide" start="0,0" end="0,-225" time="400" />
+                <effect type="slide" start="0,0" end="0,-181" time="400" />
             </animation>
             <control type="group">
-                <height>225</height>
+                <height>181</height>
                 <!-- Background -->
                 <control type="image">
                     <top>0</top>
                     <width>100%</width>
-                    <height>225</height>
+                    <height>181</height>
                     <texture colordiffuse="ff000000">bg.png</texture>
                 </control>
                 <!-- Thumb -->
@@ -122,23 +122,21 @@
                             <visible>!String.IsEmpty(Window.Property(rating))</visible>
                         </control>
                     </control>
-                    <!-- Plot -->
-                    <control type="textbox">
-                        <top>80</top>
-                        <height>35</height>
-                        <font>font12</font>
-                        <textcolor>ffaaaaaa</textcolor>
-                        <shadowcolor>00000000</shadowcolor>
-                        <align>left</align>
-                        <aligny>top</aligny>
-                        <label>Are you still watching? If not, playback stops automatically after this episode.</label>
-                    </control>
                     <!-- Buttons -->
                     <control type="grouplist">
                         <orientation>horizontal</orientation>
                         <height>56</height>
                         <bottom>20</bottom>
                         <itemgap>10</itemgap>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>56</height>
+                            <aligny>center</aligny>
+                            <font>font20_title</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <label>$ADDON[service.upnext 30024]  </label>
+                        </control>
                         <control type="button" id="4012">
                             <label>$ADDON[service.upnext 30010]</label>
                             <height>56</height>
