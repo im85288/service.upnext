@@ -72,7 +72,7 @@
                         <font>font25_title</font>
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>Next up   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
+                        <label>$ADDON[service.upnext 30008]   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
                         <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <control type="label">
@@ -82,7 +82,7 @@
                         <font>font25_title</font>
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>Next up   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
+                        <label>$ADDON[service.upnext 30008]   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
                         <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <!-- Details -->
@@ -140,7 +140,7 @@
                         <bottom>20</bottom>
                         <itemgap>10</itemgap>
                         <control type="button" id="4012">
-                            <label>Continue watching</label>
+                            <label>$ADDON[service.upnext 30010]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
@@ -158,7 +158,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="4013">
-                            <label>Close</label>
+                            <label>$ADDON[service.upnext 30034]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>

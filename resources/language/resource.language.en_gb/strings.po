@@ -42,7 +42,7 @@ msgid "Number of episodes before still watching query"
 msgstr ""
 
 msgctxt "#30010"
-msgid "Continue Watching?"
+msgid "Continue Watching"
 msgstr ""
 
 msgctxt "#30012"
@@ -107,4 +107,12 @@ msgstr ""
 
 msgctxt "#30032"
 msgid "Enable on playlists"
+msgstr ""
+
+msgctxt "#30033"
+msgid "No episode information available"
+msgstr ""
+
+msgctxt "#30034"
+msgid "Close"
 msgstr ""

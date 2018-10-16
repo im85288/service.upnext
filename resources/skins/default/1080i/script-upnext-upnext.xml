@@ -72,7 +72,7 @@
 						<font>font25_title</font>
 						<textcolor>ffffffff</textcolor>
 						<shadowcolor>00000000</shadowcolor>
-						<label>Next up   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
+						<label>$ADDON[service.upnext 30008]   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
 						<visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
 					</control>
 					<control type="label">
@@ -82,7 +82,7 @@
 						<font>font25_title</font>
 						<textcolor>ffffffff</textcolor>
 						<shadowcolor>00000000</shadowcolor>
-						<label>Next up   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
+						<label>$ADDON[service.upnext 30008]   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
 						<visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
 					</control>
 					<!-- Details -->
@@ -142,7 +142,7 @@
 						<shadowcolor>00000000</shadowcolor>
 						<align>left</align>
 						<aligny>top</aligny>
-						<label>No episode information available</label>
+						<label>$ADDON[service.upnext 30033]</label>
 						<visible>String.IsEmpty(Window.Property(plot))</visible>
 					</control>
 					<!-- Buttons -->
@@ -152,7 +152,7 @@
 						<bottom>20</bottom>
 						<itemgap>10</itemgap>
 						<control type="button" id="3012">
-							<label>Watch now</label>
+							<label>$ADDON[service.upnext 30006]</label>
 							<height>56</height>
 							<width min="50">auto</width>
 							<font>font20_title</font>
@@ -170,7 +170,7 @@
 							<pulseonselect>no</pulseonselect>
 						</control>
 						<control type="button" id="3013">
-							<label>Close</label>
+							<label>$ADDON[service.upnext 30034]</label>
 							<height>56</height>
 							<width min="50">auto</width>
 							<font>font20_title</font>
