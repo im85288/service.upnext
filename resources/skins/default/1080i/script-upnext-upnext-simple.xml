@@ -1,97 +1,139 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-	<defaultcontrol always="true">3012</defaultcontrol>
-	<zorder>0</zorder>
-	<controls>
-		<control type="group" description="simple mode version">
-			<control type="group">
-				<control type="button" id="3012">
-					<description>Watch Now</description>
-					<height>80</height>
-					<right>10</right>
-					<bottom>40</bottom>
-					<width>400</width>
-					<textcolor>ddffffff</textcolor>
-					<focusedcolor>ff000000</focusedcolor>
-					<selectedcolor>ddffffff</selectedcolor>
-					<shadowcolor>66000000</shadowcolor>
-					<aligny>center</aligny>
-					<align>center</align>
-					<texturefocus border="10" colordiffuse="ddffffff">playbuttonfocus.png</texturefocus>
-					<texturenofocus border="10">playbuttonnofocus.png</texturenofocus>
-					<alttexturefocus border="10" colordiffuse="ddffffff">playbuttonfocus.png</alttexturefocus>
-					<alttexturenofocus border="10">playbuttonnofocus.png</alttexturenofocus>
-					<font>font13</font>
-					<label>$ADDON[service.upnext 30027] $INFO[Player.TimeRemaining(ss)]</label>
-					<onleft>3013</onleft>
-				</control>
-				<control type="button" id="3013">
-					<right>550</right>
-					<bottom>40</bottom>
-					<description>Cancel</description>
-					<height>80</height>
-					<textcolor>ddffffff</textcolor>
-					<focusedcolor>ff000000</focusedcolor>
-					<selectedcolor>ddffffff</selectedcolor>
-					<shadowcolor>66000000</shadowcolor>
-					<aligny>center</aligny>
-					<align>center</align>
-					<texturefocus border="10" colordiffuse="ddffffff">button.png</texturefocus>
-					<texturenofocus border="10" colordiffuse="ff464646">button.png</texturenofocus>
-					<alttexturefocus border="10" colordiffuse="ddffffff">button.png</alttexturefocus>
-					<alttexturenofocus border="10" colordiffuse="ff464646">button.png</alttexturenofocus>
-					<align>center</align>
-					<font>font13</font>
-					<label>222</label>
-					<onright>3012</onright>
-				</control>
+    <defaultcontrol always="true">3012</defaultcontrol>
+    <onload>Dialog.Close(fullscreeninfo,true)</onload>
+    <onload>Dialog.Close(videoosd,true)</onload>
+    <visible>Window.IsVisible(fullscreenvideo)</visible>
+    <controls>
+        <control type="group">
+            <animation type="WindowOpen" reversible="false">
+                <effect type="fade" start="0" end="100" time="400" />
+                <effect type="slide" start="0,-115" end="0,0" time="400" />
+            </animation>
+            <animation type="WindowClose" reversible="false">
+                <effect type="fade" start="100" end="0" time="400" />
+                <effect type="slide" start="0,0" end="0,-115" time="400" />
+            </animation>
+            <control type="group">
+                <height>115</height>
+                <!-- Background -->
+                <control type="image">
+                    <top>0</top>
+                    <width>100%</width>
+                    <height>115</height>
+                    <texture colordiffuse="ff000000">bg.png</texture>
+                </control>
+                <!-- Labels -->
+                <control type="group">
+                    <top>20</top>
+                    <left>20</left>
+                    <width>75%</width>
+                    <!-- Label section -->
+                    <control type="label">
+                        <width>auto</width>
+                        <height>35</height>
+                        <aligny>center</aligny>
+                        <font>font25_title</font>
+                        <textcolor>ffffffff</textcolor>
+                        <shadowcolor>00000000</shadowcolor>
+                        <label>Next up   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
+                        <visible>Integer.IsGreater(Player.TimeRemaining,60)</visible>
+                    </control>
+                    <control type="label">
+                        <width>auto</width>
+                        <height>35</height>
+                        <aligny>center</aligny>
+                        <font>font25_title</font>
+                        <textcolor>ffffffff</textcolor>
+                        <shadowcolor>00000000</shadowcolor>
+                        <label>Next up   [COLOR red]$INFO[Player.TimeRemaining(ss),-, $LOCALIZE[31077]][/COLOR]</label>
+                        <visible>!Integer.IsGreater(Player.TimeRemaining,60)</visible>
+                    </control>
+                    <!-- Details -->
+                    <control type="grouplist">
+                        <orientation>horizontal</orientation>
+                        <height>35</height>
+                        <top>40</top>
+                        <itemgap>0</itemgap>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>35</height>
+                            <aligny>center</aligny>
+                            <font>font12</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <label>$INFO[Window.Property(tvshowtitle),, - ]$INFO[Window.Property(season),S,:]$INFO[Window.Property(episode),E, - ]$INFO[Window.Property(title)]   </label>
+                            <visible>!String.IsEmpty(Window.Property(title))</visible>
+                        </control>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>35</height>
+                            <aligny>center</aligny>
+                            <font>font12</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <label>$INFO[Window.Property(year),,   ]</label>
+                            <visible>!String.IsEmpty(Window.Property(year))</visible>
+                        </control>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>35</height>
+                            <aligny>center</aligny>
+                            <label>$INFO[Window.Property(rating),,   ]</label>
+                            <font>font12</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <visible>!String.IsEmpty(Window.Property(rating))</visible>
+                        </control>
+                    </control>
+                </control>
+                <!-- Buttons -->
+                <control type="grouplist">
+                    <orientation>horizontal</orientation>
+                    <height>56</height>
+                    <top>30</top>
+                    <right>20</right>
+                    <width>25%</width>
+                    <itemgap>10</itemgap>
+                    <align>right</align>
+                    <control type="button" id="3012">
+                        <label>Watch now</label>
+                        <height>56</height>
+                        <width min="50">auto</width>
+                        <font>font20_title</font>
+                        <textoffsetx>15</textoffsetx>
+                        <textcolor>ffffffff</textcolor>
+                        <focusedcolor>ffffffff</focusedcolor>
+                        <selectedcolor>ffffffff</selectedcolor>
+                        <shadowcolor>22000000</shadowcolor>
+                        <aligny>center</aligny>
+                        <align>center</align>
+                        <texturefocus border="10" colordiffuse="FF12A0C7">button.png</texturefocus>
+                        <texturenofocus border="10" colordiffuse="FF171717">button.png</texturenofocus>
+                        <alttexturefocus border="10" colordiffuse="FF12A0C7">button.png</alttexturefocus>
+                        <alttexturenofocus border="10" colordiffuse="FF171717">button.png</alttexturenofocus>
+                        <pulseonselect>no</pulseonselect>
+                    </control>
+                    <control type="button" id="3013">
+                        <label>Close</label>
+                        <height>56</height>
+                        <width min="50">auto</width>
+                        <font>font20_title</font>
+                        <textoffsetx>15</textoffsetx>
+                        <textcolor>ffffffff</textcolor>
+                        <focusedcolor>ffffffff</focusedcolor>
+                        <selectedcolor>ffffffff</selectedcolor>
+                        <shadowcolor>22000000</shadowcolor>
+                        <aligny>center</aligny>
+                        <align>center</align>
+                        <texturefocus border="10" colordiffuse="FF12A0C7">button.png</texturefocus>
+                        <texturenofocus border="10" colordiffuse="FF171717">button.png</texturenofocus>
+                        <alttexturefocus border="10" colordiffuse="FF12A0C7">button.png</alttexturefocus>
+                        <alttexturenofocus border="10" colordiffuse="FF171717">button.png</alttexturenofocus>
+                        <pulseonselect>no</pulseonselect>
+                    </control>
+                </control>
             </control>
-
-			<!--<control type="group">-->
-				<!--<control type="button" id="3012">-->
-					<!--<description>Watch Now</description>-->
-                    <!--<height>56</height>-->
-                    <!--<textcolor>ddffffff</textcolor>-->
-                    <!--<focusedcolor>ff000000</focusedcolor>-->
-                    <!--<selectedcolor>ddffffff</selectedcolor>-->
-                    <!--<shadowcolor>66000000</shadowcolor>-->
-                    <!--<aligny>center</aligny>-->
-                    <!--<align>center</align>-->
-                    <!--<texturefocus border="10" colordiffuse="ddffffff">button.png</texturefocus>-->
-                    <!--<texturenofocus border="10" colordiffuse="ff464646">button.png</texturenofocus>-->
-                    <!--<alttexturefocus border="10" colordiffuse="ddffffff">button.png</alttexturefocus>-->
-                    <!--<alttexturenofocus border="10" colordiffuse="ff464646">button.png</alttexturenofocus>-->
-					<!--<onleft>3013</onleft>-->
-					<!--<font>font13</font>-->
-					<!--<label>$ADDON[service.upnext 30027] $INFO[Player.TimeRemaining(ss)]</label>-->
-					<!--<focusedcolor>FFededed</focusedcolor>-->
-					<!--<disabledcolor>B3dddddd</disabledcolor>-->
-					<!--<selectedcolor>FF000000</selectedcolor>-->
-					<!--<textcolor>ff333333</textcolor>-->
-					<!--<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>-->
-					<!--<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>-->
-				<!--</control>-->
-			<!--</control>-->
-
-			<!--<control type="group">-->
-				<!--<control type="button" id="3013">-->
-					<!--<description>Cancel</description>-->
-					<!--<left>0</left>-->
-					<!--<top>0</top>-->
-					<!--<width>230</width>-->
-					<!--<onright>3012</onright>-->
-					<!--<align>center</align>-->
-					<!--<font>font13</font>-->
-					<!--<label>222</label>-->
-					<!--<focusedcolor>FFededed</focusedcolor>-->
-					<!--<disabledcolor>B3dddddd</disabledcolor>-->
-					<!--<selectedcolor>FF000000</selectedcolor>-->
-					<!--<height>50</height>-->
-					<!--<textcolor>ff333333</textcolor>-->
-					<!--<texturefocus colordiffuse="FF00a2e0" border="5">box.png</texturefocus>-->
-					<!--<texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>-->
-				<!--</control>-->
-			<!--</control>-->
-		</control>
-	</controls>
+        </control>
+    </controls>
 </window>
