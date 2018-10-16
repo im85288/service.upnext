@@ -56,11 +56,14 @@ class Service(xbmc.Monitor):
 
     def onNotification(self, sender, method, data):
 
+        if sender[-7:] != '.SIGNAL':
+            return
+
         if method.split('.')[1].lower() != 'upnext_data': # method looks like Other.upnext_data
             return
 
         data = utils.decode_data(data)
-        data['id'] = "%s_play_action" % str(sender)
+        data['id'] = "%s_play_action" % str(sender[:-7])
 
         self.player.addon_data_received(data)
 

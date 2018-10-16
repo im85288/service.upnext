@@ -84,7 +84,7 @@ def event(method, data=None, source_id=None):
     '''
     data = data or {}
     source_id = source_id or xbmcaddon.Addon().getAddonInfo('id')
-    xbmc.executebuiltin('NotifyAll(%s, %s, %s)' % (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
+    xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' % (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
 
 def decode_data(data):
 
