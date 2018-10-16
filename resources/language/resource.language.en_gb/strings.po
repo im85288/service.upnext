@@ -1,0 +1,110 @@
+# Service Up Next language file
+# Addon Name: Up Next
+# Addon id: service.upnext
+# Addon Provider: im85288
+msgid ""
+msgstr ""
+
+msgctxt "#30001"
+msgid "The number of seconds before the end to show the notification"
+msgstr ""
+
+msgctxt "#30002"
+msgid "Log Level:"
+msgstr ""
+
+msgctxt "#30003"
+msgid "Settings"
+msgstr ""
+
+msgctxt "#30004"
+msgid "Advanced"
+msgstr ""
+
+msgctxt "#30005"
+msgid "Default action when nothing selected"
+msgstr ""
+
+msgctxt "#30006"
+msgid "Watch Now"
+msgstr ""
+
+msgctxt "#30007"
+msgid "Press cancel to stop automatic play of next episode..."
+msgstr ""
+
+msgctxt "#30008"
+msgid "Up Next"
+msgstr ""
+
+msgctxt "#30009"
+msgid "Number of episodes before still watching query"
+msgstr ""
+
+msgctxt "#30010"
+msgid "Continue Watching?"
+msgstr ""
+
+msgctxt "#30012"
+msgid "Still there? Press Continue Watching to watch the next episode"
+msgstr ""
+
+msgctxt "#30013"
+msgid "Include watched episodes"
+msgstr ""
+
+msgctxt "#30014"
+msgid "Disable Up Next (restart required)"
+msgstr ""
+
+msgctxt "#30017"
+msgid "Automatically play short videos"
+msgstr ""
+
+msgctxt "#30018"
+msgid "Maximum length for automatic short video play (in minutes)"
+msgstr ""
+
+msgctxt "#30019"
+msgid "Show on-screen notification during short video autoplay"
+msgstr ""
+
+msgctxt "#30020"
+msgid "Previous"
+msgstr ""
+
+msgctxt "#30021"
+msgid "Playing Next"
+msgstr ""
+
+msgctxt "#30024"
+msgid "Still There?"
+msgstr ""
+
+msgctxt "#30025"
+msgid "Set the display mode for the notifications"
+msgstr ""
+
+msgctxt "#30026"
+msgid "Watch Next Episode?"
+msgstr ""
+
+msgctxt "#30027"
+msgid "Next Episode in "
+msgstr ""
+
+msgctxt "#30028"
+msgid "Developer"
+msgstr ""
+
+msgctxt "#30029"
+msgid "Enable Developer Mode"
+msgstr ""
+
+msgctxt "#30030"
+msgid "Choose the window to be shown"
+msgstr ""
+
+msgctxt "#30032"
+msgid "Enable on playlists"
+msgstr ""
