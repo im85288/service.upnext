@@ -354,16 +354,7 @@ class Player(xbmc.Player):
 
 
     def developerPlayPlayback(self):
-        if not self.addon_data:
-            # Get the active player
-            result = self.getNowPlaying()
-            if not self.handle_now_playing_result(result):
-                self.logMsg("Error: no result returned from check on now playing...exiting", 1)
-                return
-            # get the next episode from kodi
-            episode = self.handle_kodi_lookup_of_current_episode(self.tvshowid)
-        else:
-            episode = self.handle_addon_lookup_of_current_episode()
+        episode = self.loadTestData()
 
         if episode is None:
             # no episode get out of here
@@ -398,3 +389,8 @@ class Player(xbmc.Player):
                 nextUpPage.close()
             elif utils.settings("windowMode") == "1":
                 stillWatchingPage.close()
+
+    def loadTestData(self):
+        with open('testepisode.json') as f:
+            data = json.load(f)
+        return data
