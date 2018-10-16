@@ -36,7 +36,7 @@
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
                         <label>Next up   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
-                        <visible>Integer.IsGreater(Player.TimeRemaining,60)</visible>
+                        <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <control type="label">
                         <width>auto</width>
@@ -46,7 +46,7 @@
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
                         <label>Next up   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
-                        <visible>!Integer.IsGreater(Player.TimeRemaining,60)</visible>
+                        <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <!-- Details -->
                     <control type="grouplist">
