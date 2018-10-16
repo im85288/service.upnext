@@ -203,8 +203,6 @@ class Player(xbmc.Player):
     def addon_data_received(self, data):
         self.logMsg("addon_data_received called with data %s " % str(data), 2)
         self.addon_data = data
-        if utils.settings("developerMode") == "true":
-            self.developerPlayPlayback()
 
     def handle_now_playing_result(self, result):
         if 'result' in result:
