@@ -116,3 +116,7 @@ msgstr ""
 msgctxt "#30034"
 msgid "Close"
 msgstr ""
+
+msgctxt "#30035"
+msgid "seconds"
+msgstr ""
