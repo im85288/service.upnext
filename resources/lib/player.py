@@ -353,25 +353,28 @@ class Player(xbmc.Player):
 
     def developerPlayPlayback(self):
         episode = self.loadTestData()
-        # we have a next up episode choose mode
-        if utils.settings("simpleMode") == "0":
-            nextUpPage = UpNext("script-upnext-upnext-simple.xml",
-                                utils.addon_path(), "default", "1080i")
-            stillWatchingPage = StillWatching(
-                "script-upnext-stillwatching-simple.xml",
-                utils.addon_path(), "default", "1080i")
-        else:
-            nextUpPage = UpNext("script-upnext-upnext.xml",
-                                utils.addon_path(), "default", "1080i")
-            stillWatchingPage = StillWatching(
-                "script-upnext-stillwatching.xml",
-                utils.addon_path(), "default", "1080i")
+        nextUpPageSimple = UpNext("script-upnext-upnext-simple.xml",
+                                  utils.addon_path(), "default", "1080i")
+        stillWatchingPageSimple = StillWatching(
+            "script-upnext-stillwatching-simple.xml",
+            utils.addon_path(), "default", "1080i")
+        nextUpPage = UpNext("script-upnext-upnext.xml",
+                            utils.addon_path(), "default", "1080i")
+        stillWatchingPage = StillWatching(
+            "script-upnext-stillwatching.xml",
+            utils.addon_path(), "default", "1080i")
         nextUpPage.setItem(episode)
+        nextUpPageSimple.setItem(episode)
         stillWatchingPage.setItem(episode)
+        stillWatchingPageSimple.setItem(episode)
         if utils.settings("windowMode") == "0":
             nextUpPage.show()
         elif utils.settings("windowMode") == "1":
+            nextUpPageSimple.show()
+        elif utils.settings("windowMode") == "2":
             stillWatchingPage.show()
+        elif utils.settings("windowMode") == "3":
+            stillWatchingPageSimple.show()
 
         while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
             xbmc.sleep(100)
@@ -379,7 +382,11 @@ class Player(xbmc.Player):
         if utils.settings("windowMode") == "0":
             nextUpPage.close()
         elif utils.settings("windowMode") == "1":
+            nextUpPageSimple.close()
+        elif utils.settings("windowMode") == "2":
             stillWatchingPage.close()
+        elif utils.settings("windowMode") == "3":
+            stillWatchingPageSimple.close()
 
 
     def loadTestData(self):

@@ -17,6 +17,6 @@
     </category>
     <category label="30028">
         <setting id="developerMode" type="bool" label="30029" default="false" visible="true" enable="true"/>
-        <setting id="windowMode" type="enum" label="30030" values="UpNext|StillWatching" visible="eq(-1,true)" default="0"/>
+        <setting id="windowMode" type="enum" label="30030" values="UpNext|UpNextSimple|StillWatching|StillWatchingSimple" visible="eq(-1,true)" default="0"/>
     </category>
 </settings>
