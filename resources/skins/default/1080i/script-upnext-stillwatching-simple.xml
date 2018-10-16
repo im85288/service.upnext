@@ -1,182 +1,136 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
     <defaultcontrol always="true">4012</defaultcontrol>
-    <zorder>0</zorder>
+    <onload>Dialog.Close(fullscreeninfo,true)</onload>
+    <onload>Dialog.Close(videoosd,true)</onload>
     <controls>
         <control type="group">
-
-            <control type="group" description="toggle simple mode">
-                <width>40</width>
-                <height>40</height>
-                <control type="radiobutton" id="4014">
-                    <animation effect="zoom" start="100" end="177" time="100" center="20,20" reversible="false">Focus</animation>
-                    <animation effect="zoom" start="177" end="100" time="100" center="20,20" reversible="false">UnFocus</animation>
-                    <width>40</width>
-                    <height>40</height>
-                    <onleft>201</onleft>
-                    <ondown>50</ondown>
-                    <font>font12</font>
-                    <focusedcolor>FF000000</focusedcolor>
-                    <texturefocus>-</texturefocus>
-                    <texturenofocus>-</texturenofocus>
-                    <label> </label>
-                    <radioposx>0</radioposx>
-                    <radioposy>0</radioposy>
-                    <radiowidth>40</radiowidth>
-                    <radioheight>40</radioheight>
-                    <textureradioonfocus colordiffuse="FF387ef5">show.png</textureradioonfocus>
-                    <textureradioonnofocus colordiffuse="99FFFFFF">show.png</textureradioonnofocus>
-                    <textureradioofffocus colordiffuse="FF387ef5">hide.png</textureradioofffocus>
-                    <textureradiooffnofocus colordiffuse="99FFFFFF">hide.png</textureradiooffnofocus>
-                </control>
-            </control>
-
-            <right>200</right>
-            <bottom>200</bottom>
-            <width>890</width>
-            <height>339</height>
+            <animation type="WindowOpen" reversible="false">
+                <effect type="fade" start="0" end="100" time="400" />
+                <effect type="slide" start="0,-115" end="0,0" time="400" />
+            </animation>
+            <animation type="WindowClose" reversible="false">
+                <effect type="fade" start="100" end="0" time="400" />
+                <effect type="slide" start="0,0" end="0,-115" time="400" />
+            </animation>
             <control type="group">
+                <height>115</height>
+                <!-- Background -->
                 <control type="image">
-                    <top>5</top>
-                    <left>5</left>
-                    <right>10</right>
-                    <height>324</height>
-                    <animation effect="fade" start="100" end="90" time="200" condition="true">Conditional</animation>
-                    <texture border="5" colordiffuse="ff010101">box.png</texture>
-                </control>
-                <!-- -->
-                <control type="image" description="poster">
-                    <left>5</left>
-                    <top>5</top>
-                    <width>216</width>
-                    <height>324</height>
-                    <fadetime>350</fadetime>
-                    <texture background="true">$INFO[Window.Property(poster)]</texture>
-                    <aspectratio scalediffuse="false">scale</aspectratio>
-                </control>
-                <control type="label" description="still watching question">
+                    <top>0</top>
                     <width>100%</width>
-                    <top>10</top>
-                    <left>230</left>
-                    <height>40</height>
-                    <font>font16</font>
-                    <textcolor>B3dddddd</textcolor>
-                    <label>$ADDON[service.upnext 30012]</label>
+                    <height>115</height>
+                    <texture colordiffuse="ff000000">bg.png</texture>
                 </control>
-                <control type="label" description="Title">
-                    <left>230</left>
-                    <width>100%</width>
-                    <top>60</top>
-                    <height>40</height>
-                    <font>font16</font>
-                    <textcolor>orange</textcolor>
-                    <label>$INFO[Window.Property(label)]</label>
+                <!-- Labels -->
+                <control type="group">
+                    <top>20</top>
+                    <left>20</left>
+                    <width>75%</width>
+                    <!-- Time -->
+                    <control type="label">
+                        <width>auto</width>
+                        <height>35</height>
+                        <aligny>center</aligny>
+                        <font>font25_title</font>
+                        <textcolor>ffffffff</textcolor>
+                        <shadowcolor>00000000</shadowcolor>
+                        <label>Still there?   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
+                        <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
+                    </control>
+                    <control type="label">
+                        <width>auto</width>
+                        <height>35</height>
+                        <aligny>center</aligny>
+                        <font>font25_title</font>
+                        <textcolor>ffffffff</textcolor>
+                        <shadowcolor>00000000</shadowcolor>
+                        <label>Still there?   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
+                        <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
+                    </control>
+                    <!-- Details -->
+                    <control type="grouplist">
+                        <orientation>horizontal</orientation>
+                        <height>35</height>
+                        <top>40</top>
+                        <itemgap>0</itemgap>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>35</height>
+                            <aligny>center</aligny>
+                            <font>font12</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <label>$INFO[Window.Property(tvshowtitle),, - ]$INFO[Window.Property(season),S,:]$INFO[Window.Property(episode),E, - ]$INFO[Window.Property(title)]   </label>
+                            <visible>!String.IsEmpty(Window.Property(title))</visible>
+                        </control>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>35</height>
+                            <aligny>center</aligny>
+                            <font>font12</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <label>$INFO[Window.Property(year),,   ]</label>
+                            <visible>!String.IsEmpty(Window.Property(year))</visible>
+                        </control>
+                        <control type="label">
+                            <width>auto</width>
+                            <height>35</height>
+                            <aligny>center</aligny>
+                            <label>$INFO[Window.Property(rating),,   ]</label>
+                            <font>font12</font>
+                            <textcolor>ffffffff</textcolor>
+                            <shadowcolor>00000000</shadowcolor>
+                            <visible>!String.IsEmpty(Window.Property(rating))</visible>
+                        </control>
+                    </control>
                 </control>
-                <control type="label" description="rating">
-                    <left>265</left>
-                    <width>100%</width>
-                    <top>250</top>
-                    <height>40</height>
-                    <font>font14</font>
-                    <textcolor>B3dddddd</textcolor>
-                    <label>$INFO[Window.Property(rating)]</label>
-                    <visible>!String.IsEmpty(Window.Property(rating))</visible>
-                </control>
-                <control type="label" description="year">
-                    <left>315</left>
-                    <width>100%</width>
-                    <top>250</top>
-                    <height>40</height>
-                    <font>font14</font>
-                    <textcolor>B3dddddd</textcolor>
-                    <scroll>false</scroll>
-                    <label>$INFO[Window.Property(year)]</label>
-                    <visible>!String.IsEmpty(Window.Property(year))</visible>
-                </control>
-                <control type="textbox" id="4006" description="plot">
-                    <left>230</left>
-                    <right>40</right>
-                    <top>110</top>
-                    <height>150</height>
-                    <font>Tiny</font>
-                    <align>justify</align>
-                    <autoscroll>false</autoscroll>
-                    <textcolor>B3bbbbbb</textcolor>
-                    <label>$INFO[Window.Property(plot)]</label>
-                    <visible>!String.IsEmpty(Window.Property(plot))</visible>
-                </control>
-                <control type="label" description="Total Time">
-                    <right>30</right>
+                <!-- Buttons -->
+                <control type="grouplist">
+                    <orientation>horizontal</orientation>
+                    <height>56</height>
+                    <top>30</top>
+                    <right>20</right>
+                    <width>25%</width>
+                    <itemgap>10</itemgap>
                     <align>right</align>
-                    <width>300</width>
-                    <top>10</top>
-                    <height>80</height>
-                    <font>font16</font>
-                    <textcolor>B3dddddd</textcolor>
-                    <label>$INFO[Player.TimeRemaining(ss),,sec(s)]</label>
-                </control>
-                <!-- buttons -->
-                <control type="button" id="4012">
-                    <description>Still watching</description>
-                    <right>30</right>
-                    <bottom>65</bottom>
-                    <width>230</width>
-                    <onup>4013</onup>
-                    <ondown>4013</ondown>
-                    <font>font14</font>
-                    <label>$ADDON[service.upnext 30010]</label>
-                    <focusedcolor>FFededed</focusedcolor>
-                    <disabledcolor>B3dddddd</disabledcolor>
-                    <selectedcolor>FF000000</selectedcolor>
-                    <height>40</height>
-                    <textcolor>ff333333</textcolor>
-                    <texturefocus colordiffuse="FF16571F" border="5">box.png</texturefocus>
-                    <texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
-                </control>
-                <control type="button" id="4013">
-                    <description>Cancel</description>
-                    <right>30</right>
-                    <bottom>20</bottom>
-                    <width>230</width>
-                    <onup>4012</onup>
-                    <ondown>4012</ondown>
-                    <font>font14</font>
-                    <label>222</label>
-                    <focusedcolor>FFededed</focusedcolor>
-                    <disabledcolor>B3dddddd</disabledcolor>
-                    <selectedcolor>FF000000</selectedcolor>
-                    <height>40</height>
-                    <textcolor>ff333333</textcolor>
-                    <texturefocus colordiffuse="FF16571F" border="5">box.png</texturefocus>
-                    <texturenofocus colordiffuse="FFFFFFFF" border="5">box.png</texturenofocus>
-                </control>
-                <control type="image">
-                    <left>230</left>
-                    <description>Progress Back</description>
-                    <width>630</width>
-                    <bottom>10</bottom>
-                    <height>8</height>
-                    <texture colordiffuse="1F000000">nextupwhite.png</texture>
-                </control>
-                <control type="progress" description="cache">
-                    <left>230</left>
-                    <description>Progress Bar</description>
-                    <width>630</width>
-                    <bottom>10</bottom>
-                    <height>8</height>
-                    <info>Player.ProgressCache</info>
-                    <texturebg colordiffuse="00ffffff">progress-bg.png</texturebg>
-                    <lefttexture colordiffuse="FFff4081">progress-end.png</lefttexture>
-                    <midtexture colordiffuse="FFff4081">progress-end.png</midtexture>
-                    <righttexture colordiffuse="FFff4081">progress-end.png</righttexture>
-                </control>
-                <control type="progress" id="23">
-                    <description>Progress Bar</description>
-                    <left>230</left>
-                    <width>630</width>
-                    <bottom>10</bottom>
-                    <height>8</height>
-                    <info>Player.Progress</info>
+                    <control type="button" id="4012">
+                        <label>Continue watching</label>
+                        <height>56</height>
+                        <width min="50">auto</width>
+                        <font>font20_title</font>
+                        <textoffsetx>15</textoffsetx>
+                        <textcolor>ffffffff</textcolor>
+                        <focusedcolor>ffffffff</focusedcolor>
+                        <selectedcolor>ffffffff</selectedcolor>
+                        <shadowcolor>22000000</shadowcolor>
+                        <aligny>center</aligny>
+                        <align>center</align>
+                        <texturefocus border="10" colordiffuse="FF12A0C7">button.png</texturefocus>
+                        <texturenofocus border="10" colordiffuse="FF171717">button.png</texturenofocus>
+                        <alttexturefocus border="10" colordiffuse="FF12A0C7">button.png</alttexturefocus>
+                        <alttexturenofocus border="10" colordiffuse="FF171717">button.png</alttexturenofocus>
+                        <pulseonselect>no</pulseonselect>
+                    </control>
+                    <control type="button" id="4013">
+                        <label>Close</label>
+                        <height>56</height>
+                        <width min="50">auto</width>
+                        <font>font20_title</font>
+                        <textoffsetx>15</textoffsetx>
+                        <textcolor>ffffffff</textcolor>
+                        <focusedcolor>ffffffff</focusedcolor>
+                        <selectedcolor>ffffffff</selectedcolor>
+                        <shadowcolor>22000000</shadowcolor>
+                        <aligny>center</aligny>
+                        <align>center</align>
+                        <texturefocus border="10" colordiffuse="FF12A0C7">button.png</texturefocus>
+                        <texturenofocus border="10" colordiffuse="FF171717">button.png</texturenofocus>
+                        <alttexturefocus border="10" colordiffuse="FF12A0C7">button.png</alttexturefocus>
+                        <alttexturenofocus border="10" colordiffuse="FF171717">button.png</alttexturenofocus>
+                        <pulseonselect>no</pulseonselect>
+                    </control>
                 </control>
             </control>
         </control>
