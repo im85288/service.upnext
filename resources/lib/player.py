@@ -389,6 +389,6 @@ class Player(xbmc.Player):
                 stillWatchingPage.close()
 
     def loadTestData(self):
-        with open('testepisode.json') as f:
+        with open('resources/testepisode.json') as f:
             data = json.load(f)
         return data
