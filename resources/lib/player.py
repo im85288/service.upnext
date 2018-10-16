@@ -298,7 +298,7 @@ class Player(xbmc.Player):
                     self.logMsg("hiding notification for short videos")
                 else:
                     nextUpPage.show()
-                    utils.window("service.upnext.dialog", 1)
+                    utils.window('service.upnext.dialog', 'true')
             else:
                 self.logMsg(
                     "showing still watching page as played in a row %s" % str(self.playedinarow), 2)
@@ -306,7 +306,7 @@ class Player(xbmc.Player):
                     self.logMsg("hiding notification for short videos")
                 else:
                     stillWatchingPage.show()
-                    utils.window("service.upnext.dialog", 1)
+                    utils.window('service.upnext.dialog', 'true')
 
             while xbmc.Player().isPlaying() and (
                     totalTime - playTime > 1) and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
@@ -326,12 +326,12 @@ class Player(xbmc.Player):
             else:
                 if int(self.playedinarow) <= int(playedinarownumber):
                     nextUpPage.close()
-                    utils.window("service.upnext.dialog", clear=True)
+                    utils.window('service.upnext.dialog', clear=True)
                     shouldPlayDefault = not nextUpPage.isCancel()
                     shouldPlayNonDefault = nextUpPage.isWatchNow()
                 else:
                     stillWatchingPage.close()
-                    utils.window("service.upnext.dialog", clear=True)
+                    utils.window('service.upnext.dialog', clear=True)
                     shouldPlayDefault = stillWatchingPage.isStillWatching()
                     shouldPlayNonDefault = stillWatchingPage.isStillWatching()
 
@@ -379,7 +379,7 @@ class Player(xbmc.Player):
             stillWatchingPage.show()
         elif utils.settings("windowMode") == "3":
             stillWatchingPageSimple.show()
-        utils.window("service.upnext.dialog", 1)
+        utils.window('service.upnext.dialog', 'true')
 
         while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
             xbmc.sleep(100)
@@ -392,4 +392,4 @@ class Player(xbmc.Player):
             stillWatchingPage.close()
         elif utils.settings("windowMode") == "3":
             stillWatchingPageSimple.close()
-        utils.window("service.upnext.dialog", clear=True)
+        utils.window('service.upnext.dialog', clear=True)
