@@ -29,10 +29,6 @@ msgctxt "#30006"
 msgid "Watch Now"
 msgstr ""
 
-msgctxt "#30007"
-msgid "Press cancel to stop automatic play of next episode..."
-msgstr ""
-
 msgctxt "#30008"
 msgid "Up Next"
 msgstr ""
@@ -43,10 +39,6 @@ msgstr ""
 
 msgctxt "#30010"
 msgid "Continue watching"
-msgstr ""
-
-msgctxt "#30012"
-msgid "Still there? Press Continue Watching to watch the next episode"
 msgstr ""
 
 msgctxt "#30013"
@@ -69,28 +61,12 @@ msgctxt "#30019"
 msgid "Show on-screen notification during short video autoplay"
 msgstr ""
 
-msgctxt "#30020"
-msgid "Previous"
-msgstr ""
-
-msgctxt "#30021"
-msgid "Playing next"
-msgstr ""
-
 msgctxt "#30024"
 msgid "Still there?"
 msgstr ""
 
 msgctxt "#30025"
 msgid "Set the display mode for the notifications"
-msgstr ""
-
-msgctxt "#30026"
-msgid "Watch next episode?"
-msgstr ""
-
-msgctxt "#30027"
-msgid "Next episode in "
 msgstr ""
 
 msgctxt "#30028"
@@ -107,10 +83,6 @@ msgstr ""
 
 msgctxt "#30032"
 msgid "Enable on playlists"
-msgstr ""
-
-msgctxt "#30033"
-msgid "No episode information available"
 msgstr ""
 
 msgctxt "#30034"
