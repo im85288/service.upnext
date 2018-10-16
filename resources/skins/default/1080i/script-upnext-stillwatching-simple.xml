@@ -3,7 +3,6 @@
     <defaultcontrol always="true">4012</defaultcontrol>
     <onload>Dialog.Close(fullscreeninfo,true)</onload>
     <onload>Dialog.Close(videoosd,true)</onload>
-    <visible>Window.IsVisible(fullscreenvideo)</visible>
     <controls>
         <control type="group">
             <animation type="WindowOpen" reversible="false">
@@ -28,7 +27,7 @@
                     <top>20</top>
                     <left>20</left>
                     <width>75%</width>
-                    <!-- Label section -->
+                    <!-- Time -->
                     <control type="label">
                         <width>auto</width>
                         <height>35</height>
@@ -46,7 +45,7 @@
                         <font>font25_title</font>
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>Still there?   [COLOR red]$INFO[Player.TimeRemaining(ss),-,s][/COLOR]</label>
+                        <label>Still there?   [COLOR red]$INFO[Player.TimeRemaining(ss),-, seconds][/COLOR]</label>
                         <visible>!Integer.IsGreater(Player.TimeRemaining,60)</visible>
                     </control>
                     <!-- Details -->
