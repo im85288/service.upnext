@@ -353,42 +353,52 @@ class Player(xbmc.Player):
 
     def developerPlayPlayback(self):
         episode = self.loadTestData()
+        # we have a next up episode choose mode
+        if utils.settings("simpleMode") == "0":
+            nextUpPage = UpNext("script-upnext-upnext-simple.xml",
+                                utils.addon_path(), "default", "1080i")
+            stillWatchingPage = StillWatching(
+                "script-upnext-stillwatching-simple.xml",
+                utils.addon_path(), "default", "1080i")
+        else:
+            nextUpPage = UpNext("script-upnext-upnext.xml",
+                                utils.addon_path(), "default", "1080i")
+            stillWatchingPage = StillWatching(
+                "script-upnext-stillwatching.xml",
+                utils.addon_path(), "default", "1080i")
+        nextUpPage.setItem(episode)
+        stillWatchingPage.setItem(episode)
+        if utils.settings("windowMode") == "0":
+            nextUpPage.show()
+        elif utils.settings("windowMode") == "1":
+            stillWatchingPage.show()
 
-        if episode is None:
-            # no episode get out of here
-            self.logMsg("Error: no episode could be found to play next...exiting", 1)
-            return
-        self.logMsg("episode details %s" % str(episode), 2)
-        if utils.settings("developerMode") == "true":
-            # we have a next up episode choose mode
-            if utils.settings("simpleMode") == "0":
-                nextUpPage = UpNext("script-upnext-upnext-simple.xml",
-                                    utils.addon_path(), "default", "1080i")
-                stillWatchingPage = StillWatching(
-                    "script-upnext-stillwatching-simple.xml",
-                    utils.addon_path(), "default", "1080i")
-            else:
-                nextUpPage = UpNext("script-upnext-upnext.xml",
-                                    utils.addon_path(), "default", "1080i")
-                stillWatchingPage = StillWatching(
-                    "script-upnext-stillwatching.xml",
-                    utils.addon_path(), "default", "1080i")
-            nextUpPage.setItem(episode)
-            stillWatchingPage.setItem(episode)
-            if utils.settings("windowMode") == "0":
-                nextUpPage.show()
-            elif utils.settings("windowMode") == "1":
-                stillWatchingPage.show()
+        while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
+            xbmc.sleep(100)
 
-            while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
-                xbmc.sleep(100)
+        if utils.settings("windowMode") == "0":
+            nextUpPage.close()
+        elif utils.settings("windowMode") == "1":
+            stillWatchingPage.close()
 
-            if utils.settings("windowMode") == "0":
-                nextUpPage.close()
-            elif utils.settings("windowMode") == "1":
-                stillWatchingPage.close()
 
     def loadTestData(self):
-        with open('resources/testepisode.json') as f:
-            data = json.load(f)
-        return data
+        test_episode = {}
+        test_episode["episodeid"] = 12345678
+        test_episode["tvshowid"] = 12345678
+        test_episode["title"] = "episode title"
+        test_episode["art"] = {}
+        test_episode["art"]["tvshow.poster"] = "https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg"
+        test_episode["art"]["thumb"] = "https://fanart.tv/fanart/tv/121361/tvthumb/game-of-thrones-4fd70d367aeab.jpg"
+        test_episode["art"]["tvshow.fanart"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg"
+        test_episode["art"]["tvshow.landscape"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg"
+        test_episode["art"]["tvshow.clearart"] = "https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png"
+        test_episode["art"]["tvshow.clearlogo"] = "https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png"
+        test_episode["plot"] = "the amazing plot for this episode goes in here, making this a long string so that layouts can be tested"
+        test_episode["showtitle"] = "tv show title"
+        test_episode["playcount"] = 1
+        test_episode["season"] = 2
+        test_episode["episode"] = 4
+        test_episode["rating"] = "8.6"
+        test_episode["firstaired"] = "16/10/2018"
+        return test_episode
