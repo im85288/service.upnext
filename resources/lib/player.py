@@ -298,6 +298,7 @@ class Player(xbmc.Player):
                     self.logMsg("hiding notification for short videos")
                 else:
                     nextUpPage.show()
+                    utils.window("service.upnext.dialog", 1)
             else:
                 self.logMsg(
                     "showing still watching page as played in a row %s" % str(self.playedinarow), 2)
@@ -305,6 +306,7 @@ class Player(xbmc.Player):
                     self.logMsg("hiding notification for short videos")
                 else:
                     stillWatchingPage.show()
+                    utils.window("service.upnext.dialog", 1)
 
             while xbmc.Player().isPlaying() and (
                     totalTime - playTime > 1) and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
@@ -324,10 +326,12 @@ class Player(xbmc.Player):
             else:
                 if int(self.playedinarow) <= int(playedinarownumber):
                     nextUpPage.close()
+                    utils.window("service.upnext.dialog", clear=True)
                     shouldPlayDefault = not nextUpPage.isCancel()
                     shouldPlayNonDefault = nextUpPage.isWatchNow()
                 else:
                     stillWatchingPage.close()
+                    utils.window("service.upnext.dialog", clear=True)
                     shouldPlayDefault = stillWatchingPage.isStillWatching()
                     shouldPlayNonDefault = stillWatchingPage.isStillWatching()
 
@@ -352,7 +356,7 @@ class Player(xbmc.Player):
 
 
     def developerPlayPlayback(self):
-        episode = self.loadTestData()
+        episode = utils.loadTestData()
         nextUpPageSimple = UpNext("script-upnext-upnext-simple.xml",
                                   utils.addon_path(), "default", "1080i")
         stillWatchingPageSimple = StillWatching(
@@ -375,6 +379,7 @@ class Player(xbmc.Player):
             stillWatchingPage.show()
         elif utils.settings("windowMode") == "3":
             stillWatchingPageSimple.show()
+        utils.window("service.upnext.dialog", 1)
 
         while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
             xbmc.sleep(100)
@@ -387,25 +392,4 @@ class Player(xbmc.Player):
             stillWatchingPage.close()
         elif utils.settings("windowMode") == "3":
             stillWatchingPageSimple.close()
-
-
-    def loadTestData(self):
-        test_episode = {}
-        test_episode["episodeid"] = 12345678
-        test_episode["tvshowid"] = 12345678
-        test_episode["title"] = "episode title"
-        test_episode["art"] = {}
-        test_episode["art"]["tvshow.poster"] = "https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg"
-        test_episode["art"]["thumb"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg"
-        test_episode["art"]["tvshow.fanart"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg"
-        test_episode["art"]["tvshow.landscape"] = "https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg"
-        test_episode["art"]["tvshow.clearart"] = "https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png"
-        test_episode["art"]["tvshow.clearlogo"] = "https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png"
-        test_episode["plot"] = "the amazing plot for this episode goes in here, making this a long string so that layouts can be tested"
-        test_episode["showtitle"] = "tv show title"
-        test_episode["playcount"] = 1
-        test_episode["season"] = 2
-        test_episode["episode"] = 4
-        test_episode["rating"] = "8.6"
-        test_episode["firstaired"] = "16/10/2018"
-        return test_episode
+        utils.window("service.upnext.dialog", clear=True)
