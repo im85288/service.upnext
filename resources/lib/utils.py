@@ -114,7 +114,7 @@ def loadTestData():
     test_episode = {}
     test_episode["episodeid"] = 12345678
     test_episode["tvshowid"] = 12345678
-    test_episode["title"] = "episode title"
+    test_episode["title"] = "Garden of Bones"
     test_episode["art"] = {}
     test_episode["art"]["tvshow.poster"] = "https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg"
     test_episode["art"]["thumb"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg"
@@ -122,13 +122,14 @@ def loadTestData():
     test_episode["art"]["tvshow.landscape"] = "https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg"
     test_episode["art"]["tvshow.clearart"] = "https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png"
     test_episode["art"]["tvshow.clearlogo"] = "https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png"
-    test_episode["plot"] = "the amazing plot for this episode goes in here, making this a long string so that layouts can be tested"
-    test_episode["showtitle"] = "tv show title"
+    test_episode["plot"] = "Lord Baelish arrives at Renly's camp just before he faces off against Stannis. Daenerys and her company are welcomed into the city of Qarth. Arya, Gendry, and Hot Pie find themselves imprisoned at Harrenhal."
+    test_episode["showtitle"] = "Game of Thrones"
     test_episode["playcount"] = 1
     test_episode["season"] = 2
     test_episode["episode"] = 4
-    test_episode["rating"] = "8.6"
-    test_episode["firstaired"] = "16/10/2018"
+    test_episode["seasonepisode"] = "2x4."
+    test_episode["rating"] = "8.9"
+    test_episode["firstaired"] = "23/04/2012"
     return test_episode
 
 
