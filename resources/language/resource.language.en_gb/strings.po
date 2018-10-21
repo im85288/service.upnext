@@ -108,3 +108,7 @@ msgstr ""
 msgctxt "#30036"
 msgid "in"
 msgstr ""
+
+msgctxt "#30037"
+msgid "Next Episode in"
+msgstr ""

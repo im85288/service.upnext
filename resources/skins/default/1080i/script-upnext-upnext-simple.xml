@@ -33,7 +33,7 @@
                         <itemgap>10</itemgap>
                         <align>left</align>
                         <control type="button" id="3012">
-                            <label>    $ADDON[service.upnext 30006] $ADDON[service.upnext 30036] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
+                            <label>    $ADDON[service.upnext 30037] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
