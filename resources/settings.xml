@@ -2,7 +2,7 @@
 <settings>
     <category label="30003">
         <setting id="simpleMode" type="enum" label="30025" values="Simple|Fancy" default="1"/>
-        <setting id="autoPlaySeasonTime" type="number" label="30001" default="30" visible="true" enable="true"/>
+        <setting label="30001" id="autoPlaySeasonTime" type="slider" default="30" range="10,5,60" option="int" />
         <setting id="autoPlayMode" type="enum" label="30005" values="Play|Don't Play" default="0"/>
         <setting id="playedInARow" type="number" label="30009" default="3" visible="true" enable="true"/>
         <setting id="includeWatched" type="bool" label="30013" default="false" visible="true" enable="true"/>
