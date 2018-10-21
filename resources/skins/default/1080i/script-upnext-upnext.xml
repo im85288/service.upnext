@@ -37,7 +37,7 @@
 						<width>250</width>
 						<height>141</height>
 						<texture colordiffuse="FF12A0C7">white.jpg</texture>
-						<visible>String.IsEmpty(Window.Property(thumb))</visible>
+						<visible>String.IsEmpty(Window.Property(thumb)) + String.IsEmpty(Window.Property(landscape)) + String.IsEmpty(Window.Property(fanart))</visible>
 					</control>
 					<control type="textbox">
 						<top>10</top>
@@ -50,13 +50,27 @@
 						<align>center</align>
 						<aligny>center</aligny>
 						<label>$INFO[Window.Property(tvshowtitle)]</label>
-						<visible>String.IsEmpty(Window.Property(thumb))</visible>
+						<visible>String.IsEmpty(Window.Property(thumb)) + String.IsEmpty(Window.Property(landscape)) + String.IsEmpty(Window.Property(fanart))</visible>
+					</control>
+					<control type="image">
+						<width>250</width>
+						<height>141</height>
+						<texture>$INFO[Window.Property(landscape)]</texture>
+						<aspectratio>scale</aspectratio>
+					</control>
+					<control type="image">
+						<width>250</width>
+						<height>141</height>
+						<texture>$INFO[Window.Property(fanart)]</texture>
+						<aspectratio>scale</aspectratio>
+						<visible>String.IsEmpty(Window.Property(landscape))</visible>
 					</control>
 					<control type="image">
 						<width>250</width>
 						<height>141</height>
 						<texture>$INFO[Window.Property(thumb)]</texture>
 						<aspectratio>scale</aspectratio>
+						<visible>String.IsEmpty(Window.Property(landscape)) + String.IsEmpty(Window.Property(fanart))</visible>
 					</control>
 				</control>
 				<!-- Labels -->
@@ -72,18 +86,7 @@
 						<font>font25_title</font>
 						<textcolor>ffffffff</textcolor>
 						<shadowcolor>00000000</shadowcolor>
-						<label>$ADDON[service.upnext 30008]   [COLOR red]$INFO[Player.TimeRemaining(mm:ss),-][/COLOR]</label>
-						<visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
-					</control>
-					<control type="label">
-						<width>auto</width>
-						<height>35</height>
-						<aligny>center</aligny>
-						<font>font25_title</font>
-						<textcolor>ffffffff</textcolor>
-						<shadowcolor>00000000</shadowcolor>
-						<label>$ADDON[service.upnext 30008]   [COLOR red]$INFO[Player.TimeRemaining(ss),-, $ADDON[service.upnext 30035]][/COLOR]</label>
-						<visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
+						<label>$ADDON[service.upnext 30008] $ADDON[service.upnext 30036] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
 					</control>
 					<!-- Details -->
 					<control type="grouplist">
@@ -140,9 +143,9 @@
 							<shadowcolor>22000000</shadowcolor>
 							<aligny>center</aligny>
 							<align>center</align>
-							<texturefocus border="10" colordiffuse="FF12A0C7">button.png</texturefocus>
+							<texturefocus border="10" colordiffuse="FF3F51B5">button.png</texturefocus>
 							<texturenofocus border="10" colordiffuse="FF171717">button.png</texturenofocus>
-							<alttexturefocus border="10" colordiffuse="FF12A0C7">button.png</alttexturefocus>
+							<alttexturefocus border="10" colordiffuse="FF3F51B5">button.png</alttexturefocus>
 							<alttexturenofocus border="10" colordiffuse="FF171717">button.png</alttexturenofocus>
 							<pulseonselect>no</pulseonselect>
 						</control>
@@ -158,9 +161,9 @@
 							<shadowcolor>22000000</shadowcolor>
 							<aligny>center</aligny>
 							<align>center</align>
-							<texturefocus border="10" colordiffuse="FF12A0C7">button.png</texturefocus>
+							<texturefocus border="10" colordiffuse="FF3F51B5">button.png</texturefocus>
 							<texturenofocus border="10" colordiffuse="FF171717">button.png</texturenofocus>
-							<alttexturefocus border="10" colordiffuse="FF12A0C7">button.png</alttexturefocus>
+							<alttexturefocus border="10" colordiffuse="FF3F51B5">button.png</alttexturefocus>
 							<alttexturenofocus border="10" colordiffuse="FF171717">button.png</alttexturenofocus>
 							<pulseonselect>no</pulseonselect>
 						</control>

@@ -104,3 +104,7 @@ msgstr ""
 msgctxt "#30035"
 msgid "seconds"
 msgstr ""
+
+msgctxt "#30036"
+msgid "in"
+msgstr ""
