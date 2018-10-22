@@ -72,6 +72,17 @@
 						<aspectratio>scale</aspectratio>
 						<visible>String.IsEmpty(Window.Property(landscape)) + String.IsEmpty(Window.Property(fanart))</visible>
 					</control>
+                    <control type="progress" id="3014">
+                        <width>250</width>
+                        <top>136</top>
+                        <height>5</height>
+                        <reveal>true</reveal>
+                        <righttexture></righttexture>
+                        <overlaytexture></overlaytexture>
+                        <lefttexture></lefttexture>
+                        <texturebg colordiffuse="00ffffff">white.jpg</texturebg>
+                        <midtexture colordiffuse="FFFF4081">white.jpg</midtexture>
+                    </control>
 				</control>
 				<!-- Labels -->
 				<control type="group">
@@ -181,18 +192,8 @@
 						<width>46</width>
 						<height>46</height>
 						<aspect>keep</aspect>
-						<texture colordiffuse="ddffffff">nextupicons/30.png</texture>
+						<texture colordiffuse="ddffffff">nextupicons/00.png</texture>
 						<animation effect="slide" end="13,-5" time="0" condition="true">Conditional</animation>
-						<visible>Integer.IsGreater(Player.TimeRemaining(ss),30)</visible>
-					</control>
-					<control type="image">
-						<bottom>20</bottom>
-						<width>46</width>
-						<height>46</height>
-						<aspect>keep</aspect>
-						<texture colordiffuse="ddffffff">$INFO[Player.TimeRemaining(ss),nextupicons/,.png]</texture>
-						<animation effect="slide" end="13,-5" time="0" condition="true">Conditional</animation>
-						<visible>!Integer.IsGreater(Player.TimeRemaining(ss),30)</visible>
 					</control>
 				</control>
 			</control>

@@ -67,13 +67,13 @@ class Player(xbmc.Player):
 
     def showtitle_to_id(self, title):
         query = {
-                "jsonrpc": "2.0",
-                "method": "VideoLibrary.GetTVShows",
-                "params": {
-                    "properties": ["title"]
-                },
-                "id": "libTvShows"
-                }
+            "jsonrpc": "2.0",
+            "method": "VideoLibrary.GetTVShows",
+            "params": {
+                "properties": ["title"]
+            },
+            "id": "libTvShows"
+        }
         try:
             json_result = json.loads(xbmc.executeJSONRPC(json.dumps(query, encoding='utf-8')))
             if 'result' in json_result and 'tvshows' in json_result['result']:
@@ -90,14 +90,14 @@ class Player(xbmc.Player):
         showepisode = int(showepisode)
         episodeid = 0
         query = {
-                "jsonrpc": "2.0",
-                "method": "VideoLibrary.GetEpisodes",
-                "params": {
-                    "properties": ["season", "episode"],
-                    "tvshowid": int(showid)
-                },
-                "id": "1"
-                }
+            "jsonrpc": "2.0",
+            "method": "VideoLibrary.GetEpisodes",
+            "params": {
+                "properties": ["season", "episode"],
+                "tvshowid": int(showid)
+            },
+            "id": "1"
+        }
         try:
             json_result = json.loads(xbmc.executeJSONRPC(json.dumps(query, encoding='utf-8')))
             if 'result' in json_result and 'episodes' in json_result['result']:
@@ -244,6 +244,15 @@ class Player(xbmc.Player):
         self.shortplayLength = int(utils.settings("shortPlayLength")) * 60
         self.includeWatched = utils.settings("includeWatched") == "true"
 
+    def calculateProgressSteps(self):
+        notification_time = utils.settings("autoPlaySeasonTime")
+        self.logMsg("calculateProgressSteps notification time %s" % notification_time, 2)
+        part1 = (100.0 / int(notification_time))
+        self.logMsg("calculateProgressSteps 100 / notification time %s" % part1, 2)
+        part2 = (100.0 / int(notification_time))/10
+        self.logMsg("calculateProgressSteps (100 / notification time) / 10 %s" % part2, 2)
+        return (100.0 / int(notification_time))/10
+
     def autoPlayPlayback(self):
         currentFile = xbmc.Player().getPlayingFile()
         if not self.addon_data:
@@ -283,11 +292,14 @@ class Player(xbmc.Player):
                 stillWatchingPage = StillWatching(
                     "script-upnext-stillwatching.xml",
                     utils.addon_path(), "default", "1080i")
+            progressStepSize = self.calculateProgressSteps()
             nextUpPage.setItem(episode)
+            nextUpPage.setProgressStepSize(progressStepSize)
             stillWatchingPage.setItem(episode)
+            nextUpPage.setProgressStepSize(progressStepSize)
             playedinarownumber = utils.settings("playedInARow")
             playTime = xbmc.Player().getTime()
-            totalTime =  xbmc.Player().getTotalTime()
+            totalTime = xbmc.Player().getTotalTime()
             self.logMsg("played in a row settings %s" % str(playedinarownumber), 2)
             self.logMsg("played in a row %s" % str(self.playedinarow), 2)
 
@@ -311,6 +323,8 @@ class Player(xbmc.Player):
             while xbmc.Player().isPlaying() and (
                     totalTime - playTime > 1) and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
                 xbmc.sleep(100)
+                nextUpPage.updateProgressControl()
+                stillWatchingPage.updateProgressControl()
                 try:
                     playTime = xbmc.Player().getTime()
                     totalTime = xbmc.Player().getTotalTime()
@@ -371,6 +385,12 @@ class Player(xbmc.Player):
         nextUpPageSimple.setItem(episode)
         stillWatchingPage.setItem(episode)
         stillWatchingPageSimple.setItem(episode)
+        progressStepSize = self.calculateProgressSteps()
+        self.logMsg("progressStepSize %s" % str(progressStepSize), 2)
+        nextUpPage.setProgressStepSize(progressStepSize)
+        nextUpPageSimple.setProgressStepSize(progressStepSize)
+        stillWatchingPage.setProgressStepSize(progressStepSize)
+        stillWatchingPageSimple.setProgressStepSize(progressStepSize)
         if utils.settings("windowMode") == "0":
             nextUpPage.show()
         elif utils.settings("windowMode") == "1":
@@ -383,6 +403,10 @@ class Player(xbmc.Player):
 
         while xbmc.Player().isPlaying() and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
             xbmc.sleep(100)
+            nextUpPage.updateProgressControl()
+            nextUpPageSimple.updateProgressControl()
+            stillWatchingPage.updateProgressControl()
+            stillWatchingPageSimple.updateProgressControl()
 
         if utils.settings("windowMode") == "0":
             nextUpPage.close()

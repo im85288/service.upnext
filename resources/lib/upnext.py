@@ -10,6 +10,8 @@ class UpNext(xbmcgui.WindowXMLDialog):
     item = None
     cancel = False
     watchnow = False
+    progressStepSize = 0
+    currentProgressPercent = 100
 
     def __init__(self, *args, **kwargs):
         if OS_MACHINE[0:5] == 'armv7':
@@ -20,6 +22,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
     def onInit(self):
         self.action_exitkeys_id = [10, 13]
         self.setInfo()
+        self.prepareProgressControl()
 
     def setInfo(self):
         episodeInfo = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
@@ -60,8 +63,28 @@ class UpNext(xbmcgui.WindowXMLDialog):
             self.setProperty(
                 'playcount', str(self.item['playcount']))
 
+    def prepareProgressControl(self):
+        try:
+            self.progressControl = self.getControl(3014)
+            if self.progressControl is not None:
+                self.progressControl.setPercent(self.currentProgressPercent)
+        except:
+            pass
+
     def setItem(self, item):
         self.item = item
+
+    def setProgressStepSize(self, progressStepSize):
+        self.progressStepSize = progressStepSize
+
+    def updateProgressControl(self):
+        try:
+            self.currentProgressPercent = self.currentProgressPercent - self.progressStepSize
+            self.progressControl = self.getControl(3014)
+            if self.progressControl is not None:
+                self.progressControl.setPercent(self.currentProgressPercent)
+        except:
+            pass
 
     def setCancel(self, cancel):
         self.cancel = cancel
