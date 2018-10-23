@@ -244,14 +244,13 @@ class Player(xbmc.Player):
         self.shortplayLength = int(utils.settings("shortPlayLength")) * 60
         self.includeWatched = utils.settings("includeWatched") == "true"
 
-    def calculateProgressSteps(self):
-        notification_time = utils.settings("autoPlaySeasonTime")
-        self.logMsg("calculateProgressSteps notification time %s" % notification_time, 2)
-        part1 = (100.0 / int(notification_time))
+    def calculateProgressSteps(self, period):
+        self.logMsg("calculateProgressSteps notification time %s" % period, 2)
+        part1 = (100.0 / int(period))
         self.logMsg("calculateProgressSteps 100 / notification time %s" % part1, 2)
-        part2 = (100.0 / int(notification_time))/10
+        part2 = (100.0 / int(period))/10
         self.logMsg("calculateProgressSteps (100 / notification time) / 10 %s" % part2, 2)
-        return (100.0 / int(notification_time))/10
+        return (100.0 / int(period))/10
 
     def autoPlayPlayback(self):
         currentFile = xbmc.Player().getPlayingFile()
@@ -292,14 +291,15 @@ class Player(xbmc.Player):
                 stillWatchingPage = StillWatching(
                     "script-upnext-stillwatching.xml",
                     utils.addon_path(), "default", "1080i")
-            progressStepSize = self.calculateProgressSteps()
+
+            playTime = xbmc.Player().getTime()
+            totalTime = xbmc.Player().getTotalTime()
+            progressStepSize = self.calculateProgressSteps(totalTime - playTime)
             nextUpPage.setItem(episode)
             nextUpPage.setProgressStepSize(progressStepSize)
             stillWatchingPage.setItem(episode)
             nextUpPage.setProgressStepSize(progressStepSize)
             playedinarownumber = utils.settings("playedInARow")
-            playTime = xbmc.Player().getTime()
-            totalTime = xbmc.Player().getTotalTime()
             self.logMsg("played in a row settings %s" % str(playedinarownumber), 2)
             self.logMsg("played in a row %s" % str(self.playedinarow), 2)
 
@@ -385,7 +385,8 @@ class Player(xbmc.Player):
         nextUpPageSimple.setItem(episode)
         stillWatchingPage.setItem(episode)
         stillWatchingPageSimple.setItem(episode)
-        progressStepSize = self.calculateProgressSteps()
+        notification_time = utils.settings("autoPlaySeasonTime")
+        progressStepSize = self.calculateProgressSteps(notification_time)
         self.logMsg("progressStepSize %s" % str(progressStepSize), 2)
         nextUpPage.setProgressStepSize(progressStepSize)
         nextUpPageSimple.setProgressStepSize(progressStepSize)
