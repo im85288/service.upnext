@@ -39,7 +39,7 @@ class Service(xbmc.Monitor):
                     play_time = self.player.getTime()
                     total_time = self.player.getTotalTime()
                     current_file = self.player.getPlayingFile()
-                    notification_time = utils.settings("autoPlaySeasonTime")
+                    notification_time = self.player.notification_time()
                     up_next_disabled = utils.settings("disableNextUp") == "true"
                     if utils.window("PseudoTVRunning") != "True" and not up_next_disabled and total_time > 300:
                         if (total_time - play_time <= int(notification_time) and (

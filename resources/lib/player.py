@@ -204,6 +204,9 @@ class Player(xbmc.Player):
         self.logMsg("addon_data_received called with data %s " % str(data), 2)
         self.addon_data = data
 
+    def notification_time(self):
+        return self.addon_data.get('notification_time') or utils.settings('autoPlaySeasonTime')
+
     def handle_now_playing_result(self, result):
         if 'result' in result:
             itemtype = result["result"]["item"]["type"]
