@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-    <defaultcontrol always="true">4012</defaultcontrol>
+    <defaultcontrol always="true">3012</defaultcontrol>
     <onload>Dialog.Close(fullscreeninfo,true)</onload>
     <onload>Dialog.Close(videoosd,true)</onload>
     <controls>
@@ -72,7 +72,7 @@
                         <aspectratio>scale</aspectratio>
                         <visible>String.IsEmpty(Window.Property(landscape)) + String.IsEmpty(Window.Property(fanart))</visible>
                     </control>
-                    <control type="progress" id="4014">
+                    <control type="progress" id="3014">
                         <width>250</width>
                         <top>136</top>
                         <height>5</height>
@@ -150,7 +150,7 @@
                         <height>56</height>
                         <bottom>20</bottom>
                         <itemgap>10</itemgap>
-                        <control type="button" id="4012">
+                        <control type="button" id="3012">
                             <label>    $ADDON[service.upnext 30010] $ADDON[service.upnext 30036] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
                             <height>56</height>
                             <width min="50">auto</width>
@@ -168,7 +168,7 @@
                             <alttexturenofocus border="10" colordiffuse="FF212121">button.png</alttexturenofocus>
                             <pulseonselect>no</pulseonselect>
                         </control>
-                        <control type="button" id="4013">
+                        <control type="button" id="3013">
                             <label>$ADDON[service.upnext 30034]</label>
                             <height>56</height>
                             <width min="50">auto</width>

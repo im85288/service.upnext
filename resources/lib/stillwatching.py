@@ -66,7 +66,7 @@ class StillWatching(xbmcgui.WindowXMLDialog):
 
     def prepareProgressControl(self):
         try:
-            self.progressControl = self.getControl(4014)
+            self.progressControl = self.getControl(3014)
             if self.progressControl is not None:
                 self.progressControl.setPercent(self.currentProgressPercent)
         except:
@@ -81,7 +81,7 @@ class StillWatching(xbmcgui.WindowXMLDialog):
     def updateProgressControl(self):
         try:
             self.currentProgressPercent = self.currentProgressPercent - self.progressStepSize
-            self.progressControl = self.getControl(4014)
+            self.progressControl = self.getControl(3014)
             if self.progressControl is not None:
                 self.progressControl.setPercent(self.currentProgressPercent)
         except:
@@ -112,11 +112,11 @@ class StillWatching(xbmcgui.WindowXMLDialog):
 
         xbmc.log("still watching info onclick: " + str(controlID))
 
-        if controlID == 4012:
+        if controlID == 3012:
             # still watching
             self.setStillWatching(True)
             self.close()
-        elif controlID == 4013:
+        elif controlID == 3013:
             # cancel
             self.setCancel(True)
             self.close()
