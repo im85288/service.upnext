@@ -301,36 +301,36 @@ class Player(xbmc.Player):
             nextUpPage.setItem(episode)
             nextUpPage.setProgressStepSize(progressStepSize)
             stillWatchingPage.setItem(episode)
-            nextUpPage.setProgressStepSize(progressStepSize)
+            stillWatchingPage.setProgressStepSize(progressStepSize)
             playedinarownumber = utils.settings("playedInARow")
             self.logMsg("played in a row settings %s" % str(playedinarownumber), 2)
             self.logMsg("played in a row %s" % str(self.playedinarow), 2)
-
-            if int(self.playedinarow) <= int(playedinarownumber):
+            showingnextuppage = False
+            showingstillwatchingpage = False
+            hideforshortvideos = (self.shortplayNotification == "false") and (self.shortplayLength >= totalTime) and (self.shortplayMode == "true")
+            if int(self.playedinarow) <= int(playedinarownumber) and not hideforshortvideos:
                 self.logMsg(
                     "showing next up page as played in a row is %s" % str(self.playedinarow), 2)
-                if (self.shortplayNotification == "false") and (self.shortplayLength >= totalTime) and (self.shortplayMode == "true"):
-                    self.logMsg("hiding notification for short videos")
-                else:
-                    nextUpPage.show()
-                    utils.window('service.upnext.dialog', 'true')
-            else:
+                nextUpPage.show()
+                utils.window('service.upnext.dialog', 'true')
+                showingnextuppage = True
+            elif not hideforshortvideos:
                 self.logMsg(
                     "showing still watching page as played in a row %s" % str(self.playedinarow), 2)
-                if (self.shortplayNotification == "false") and (self.shortplayLength >= totalTime) and (self.shortplayMode == "true"):
-                    self.logMsg("hiding notification for short videos")
-                else:
-                    stillWatchingPage.show()
-                    utils.window('service.upnext.dialog', 'true')
+                stillWatchingPage.show()
+                utils.window('service.upnext.dialog', 'true')
+                showingstillwatchingpage = True
 
             while xbmc.Player().isPlaying() and (
                     totalTime - playTime > 1) and not nextUpPage.isCancel() and not nextUpPage.isWatchNow() and not stillWatchingPage.isStillWatching() and not stillWatchingPage.isCancel():
                 xbmc.sleep(100)
-                nextUpPage.updateProgressControl()
-                stillWatchingPage.updateProgressControl()
                 try:
                     playTime = xbmc.Player().getTime()
                     totalTime = xbmc.Player().getTotalTime()
+                    if showingnextuppage:
+                        nextUpPage.updateProgressControl()
+                    elif showingstillwatchingpage:
+                        stillWatchingPage.updateProgressControl()
                 except:
                     pass
             if self.shortplayLength >= totalTime and self.shortplayMode == "true":
@@ -341,12 +341,12 @@ class Player(xbmc.Player):
                     self.playedinarow = 1
                 shouldPlayDefault = not nextUpPage.isCancel()
             else:
-                if int(self.playedinarow) <= int(playedinarownumber):
+                if showingnextuppage:
                     nextUpPage.close()
                     utils.window('service.upnext.dialog', clear=True)
                     shouldPlayDefault = not nextUpPage.isCancel()
                     shouldPlayNonDefault = nextUpPage.isWatchNow()
-                else:
+                elif showingstillwatchingpage:
                     stillWatchingPage.close()
                     utils.window('service.upnext.dialog', clear=True)
                     shouldPlayDefault = stillWatchingPage.isStillWatching()
