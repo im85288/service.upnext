@@ -279,7 +279,8 @@ class Player(xbmc.Player):
             return
         self.logMsg("episode details %s" % str(episode), 2)
         episodeid = episode["episodeid"]
-        includePlaycount = True if self.includeWatched else episode["playcount"] == 0
+        noplaycount = episode["playcount"] is None or episode["playcount"] == 0
+        includePlaycount = True if self.includeWatched else noplaycount
         if includePlaycount and self.currentepisodeid != episodeid:
             # we have a next up episode choose mode
             if utils.settings("simpleMode") == "0":
