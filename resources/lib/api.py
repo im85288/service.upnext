@@ -15,11 +15,9 @@ class Api:
         utils.log("%s %s" % (utils.addon_name(), class_name), msg, int(lvl))
 
     def has_addon_data(self):
-        self.log("has_addon_data called with data %s " % json.dumps(self.data), 2)
-        return self.data
+       return self.data
 
     def reset_addon_data(self):
-        self.log("reset_addon_data called with current data %s " % json.dumps(self.data), 2)
         self.data = {}
 
     def addon_data_received(self, data):
