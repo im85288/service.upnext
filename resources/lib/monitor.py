@@ -1,14 +1,15 @@
 import xbmc
 import resources.lib.utils as utils
+from resources.lib.playbackManager import PlaybackManager
+from resources.lib.api import Api
 from resources.lib.player import Player
-from resources.lib.api import api
 
 class Monitor(xbmc.Monitor):
 
-    def __init__(self, *args):
-        self.log("%s Version: %s" % (utils.addon_name(), utils.addon_version()), 0)
+    def __init__(self):
         self.player = Player()
-        self.api = api()
+        self.api = Api()
+        self.playback_manager = PlaybackManager()
         xbmc.Monitor.__init__(self)
 
     def log(self, msg, lvl=1):
@@ -17,14 +18,12 @@ class Monitor(xbmc.Monitor):
 
     def run(self):
         last_file = None
-
         while not self.abortRequested():
             # check every 1 sec
             if self.waitForAbort(1):
                 # Abort was requested while waiting. We should exit
                 break
             if self.player.isPlaying():
-
                 try:
                     play_time = self.player.getTime()
                     total_time = self.player.getTotalTime()
@@ -36,7 +35,7 @@ class Monitor(xbmc.Monitor):
                                 last_file is None or last_file != current_file)) and total_time != 0:
                             last_file = current_file
                             self.log("Calling autoplayback totaltime - playtime is %s" % (total_time - play_time), 2)
-                            self.player.autoPlayPlayback()
+                            self.playback_manager.launch_up_next()
                             self.log("Up Next style autoplay succeeded.", 2)
 
                 except Exception as e:
@@ -50,6 +49,6 @@ class Monitor(xbmc.Monitor):
             return
 
         data = utils.decode_data(data)
-        data['id'] = "%s_play_action" % str(sender.replace(".SIGNAL",""))
+        data['id'] = "%s_play_action" % str(sender.replace(".SIGNAL", ""))
 
         self.api.addon_data_received(data)

@@ -1,8 +1,9 @@
 import xbmc
-import resources.lib.utils as utils
 import json
+import resources.lib.utils as utils
 
-class api():
+
+class Api:
     _shared_state = {}
 
     def __init__(self):
@@ -20,7 +21,7 @@ class api():
         self.data = {}
 
     def addon_data_received(self, data):
-        self.log("addon_data_received called with data %s " % str(data), 2)
+        self.log("addon_data_received called with data %s " % json.dumps(data), 2)
         self.data = data
 
     def play_kodi_item(self, episode):
@@ -29,17 +30,17 @@ class api():
             '"params": { "item": {"episodeid": ' + str(episode["episodeid"]) + '} } }')
 
     def play_addon_item(self):
-        self.log("sending data to addon to play:  %s " % str(self.data['play_info']), 2)
+        self.log("sending data to addon to play:  %s " % json.dumps(self.data['play_info']), 2)
         utils.event(self.data['id'], self.data['play_info'], "upnextprovider")
 
     def handle_addon_lookup_of_next_episode(self):
         if self.data:
-            self.log("handle_addon_lookup_of_next_episode returning data %s " % str(self.data["next_episode"]), 2)
+            self.log("handle_addon_lookup_of_next_episode returning data %s " % json.dumps(self.data["next_episode"]), 2)
             return self.data["next_episode"]
 
     def handle_addon_lookup_of_current_episode(self):
         if self.data:
-            self.log("handle_addon_lookup_of_current episode returning data %s " % str(self.data["current_episode"]), 2)
+            self.log("handle_addon_lookup_of_current episode returning data %s " % json.dumps(self.data["current_episode"]), 2)
             return self.data["current_episode"]
 
     def notification_time(self):
@@ -49,26 +50,26 @@ class api():
         # Get the active player
         result = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Player.GetActivePlayers"}')
         result = unicode(result, 'utf-8', errors='ignore')
-        self.log("Got active player " + result, 2)
+        self.log("Got active player %s" % json.dumps(result), 2)
         result = json.loads(result)
 
         # Seems to work too fast loop whilst waiting for it to become active
         while not result["result"]:
             result = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Player.GetActivePlayers"}')
             result = unicode(result, 'utf-8', errors='ignore')
-            self.log("Got active player " + result, 2)
+            self.log("Got active player %s" % json.dumps(result), 2)
             result = json.loads(result)
 
         if 'result' in result and result["result"][0] is not None:
             playerid = result["result"][0]["playerid"]
 
             # Get details of the playing media
-            self.log("Getting details of now  playing media", 1)
+            self.log("Getting details of now playing media", 2)
             result = xbmc.executeJSONRPC(
                 '{"jsonrpc": "2.0", "id": 1, "method": "Player.GetItem", "params": {"playerid": ' + str(
                     playerid) + ', "properties": ["showtitle", "tvshowid", "episode", "season", "playcount","genre","plotoutline"] } }')
             result = unicode(result, 'utf-8', errors='ignore')
-            self.log("Got details of now playing media" + result, 2)
+            self.log("Got details of now playing media %s" + json.dumps(result), 2)
 
             result = json.loads(result)
             return result
@@ -84,7 +85,7 @@ class api():
         if result:
             result = unicode(result, 'utf-8', errors='ignore')
             result = json.loads(result)
-            self.log("Got details of next up episode %s" % str(result), 2)
+            self.log("Got details of next up episode %s" % json.dumps(result), 2)
             xbmc.sleep(100)
 
             # Find the next unwatched and the newest added episodes
@@ -99,7 +100,7 @@ class api():
             '"file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer", '
             '"dateadded", "lastplayed" , "streamdetails"], "sort": {"method": "episode"}}, "id": 1}'
             % tvshowid)
-        self.log("Find current episode called", 1)
+        self.log("Find current episode called", 2)
         position = 0
         if result:
             result = unicode(result, 'utf-8', errors='ignore')
@@ -116,7 +117,7 @@ class api():
                     position += 1
 
                 # now return the episode
-                self.log("Find current episode found episode in position: " + str(position), 1)
+                self.log("Find current episode found episode in position: " + str(position), 2)
                 try:
                     episode = result["result"]["episodes"][position]
                 except:
@@ -171,7 +172,6 @@ class api():
             return episodeid
 
     def findNextEpisode(self, result, currentFile, includeWatched, currentepisodeid):
-        self.log("Find next episode called", 1)
         position = 0
         for episode in result["result"]["episodes"]:
             # find position of current episode
@@ -187,8 +187,6 @@ class api():
         while not includeWatched and result["result"]["episodes"][position]["playcount"] > 1:
             position += 1
 
-        # now return the episode
-        self.log("Find next episode found next episode in position: " + str(position), 1)
         try:
             episode = result["result"]["episodes"][position]
         except:

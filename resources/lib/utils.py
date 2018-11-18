@@ -161,3 +161,8 @@ def unicodetoascii(text):
             replace('\xe2\x81\xbe', ")")
             )
     return TEXT
+
+
+def calculate_progress_steps(period):
+    return (100.0 / int(period)) / 10
+

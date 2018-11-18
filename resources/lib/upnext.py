@@ -1,4 +1,3 @@
-import xbmc
 import xbmcgui
 from platform import machine
 
@@ -109,8 +108,6 @@ class UpNext(xbmcgui.WindowXMLDialog):
 
     def onClick(self, controlID):
 
-        xbmc.log('nextup info onclick: ' + str(controlID))
-
         if controlID == 3012:
             # watch now
             self.setWatchNow(True)
@@ -124,6 +121,5 @@ class UpNext(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):
 
-        xbmc.log('nextup info action: ' + str(action.getId()))
         if action == ACTION_PLAYER_STOP:
             self.close()

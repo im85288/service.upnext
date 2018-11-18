@@ -1,6 +1,5 @@
 from platform import machine
 
-import xbmc
 import xbmcgui
 
 ACTION_PLAYER_STOP = 13
@@ -110,8 +109,6 @@ class StillWatching(xbmcgui.WindowXMLDialog):
 
     def onClick(self, controlID):
 
-        xbmc.log("still watching info onclick: " + str(controlID))
-
         if controlID == 3012:
             # still watching
             self.setStillWatching(True)
@@ -123,6 +120,5 @@ class StillWatching(xbmcgui.WindowXMLDialog):
         pass
 
     def onAction(self, action):
-        xbmc.log("still watching info action: " + str(action.getId()))
         if action == ACTION_PLAYER_STOP:
             self.close()
