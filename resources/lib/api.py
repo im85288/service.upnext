@@ -72,7 +72,7 @@ class Api:
                 '{"jsonrpc": "2.0", "id": 1, "method": "Player.GetItem", "params": {"playerid": %s, '
                 '"properties": ["showtitle", "tvshowid", "episode", "season", "playcount","genre","plotoutline"] } }'
                 % str(playerid))
-            self.log("Got details of now playing media %s" + json.dumps(result), 2)
+            self.log("Got details of now playing media %s" % json.dumps(result), 2)
 
             result = json.loads(result)
             return result
@@ -118,7 +118,7 @@ class Api:
                     position += 1
 
                 # now return the episode
-                self.log("Find current episode found episode in position: " + str(position), 2)
+                self.log("Find current episode found episode in position: %s" % str(position), 2)
                 try:
                     episode = result["result"]["episodes"][position]
                 except Exception as e:
