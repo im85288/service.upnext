@@ -4,6 +4,7 @@ from resources.lib.playbackManager import PlaybackManager
 from resources.lib.api import Api
 from resources.lib.player import Player
 
+
 class Monitor(xbmc.Monitor):
 
     def __init__(self):
@@ -39,13 +40,13 @@ class Monitor(xbmc.Monitor):
                             self.log("Up Next style autoplay succeeded.", 2)
 
                 except Exception as e:
-                    self.log("Exception in Playback Monitor Service: %s" % e)
+                    self.log("Exception in Playback Monitor Service: %s" % repr(e))
 
         self.log("======== STOP %s ========" % utils.addon_name(), 0)
 
     def onNotification(self, sender, method, data):
 
-        if method.split('.')[1].lower() != 'upnext_data': # method looks like Other.upnext_data
+        if method.split('.')[1].lower() != 'upnext_data':  # method looks like Other.upnext_data
             return
 
         data = utils.decode_data(data)

@@ -27,10 +27,10 @@ def addon_version():
 
 
 def window(key, value=None, clear=False, window_id=10000):
-    window = xbmcgui.Window(window_id)
+    the_window = xbmcgui.Window(window_id)
 
     if clear:
-        window.clearProperty(key)
+        the_window.clearProperty(key)
     elif value is not None:
         if key.endswith('.json'):
 
@@ -42,9 +42,9 @@ def window(key, value=None, clear=False, window_id=10000):
             key = key.replace('.bool', "")
             value = "true" if value else "false"
 
-        window.setProperty(key, value)
+        the_window.setProperty(key, value)
     else:
-        result = window.getProperty(key.replace('.json', "").replace('.bool', ""))
+        result = the_window.getProperty(key.replace('.json', "").replace('.bool', ""))
 
         if result:
             if key.endswith('.json'):
@@ -74,13 +74,16 @@ def settings(setting, value=None):
 
         return result
 
+
 def event(method, data=None, source_id=None):
 
-    ''' Data is a dictionary.
-    '''
+    """ Data is a dictionary.
+    """
     data = data or {}
     source_id = source_id or xbmcaddon.Addon().getAddonInfo('id')
-    xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' % (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
+    xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' %
+                        (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
+
 
 def decode_data(data):
 
@@ -91,27 +94,23 @@ def decode_data(data):
 
 
 def log(title, msg, level=1):
-    logLevel = int(settings("logLevel"))
-    window('logLevel', str(logLevel))
-    if logLevel >= level:
-        if logLevel == 2:  # inspect.stack() is expensive
+    log_level = int(settings("logLevel"))
+    window('logLevel', str(log_level))
+    if log_level >= level:
+        if log_level == 2:  # inspect.stack() is expensive
             try:
-                xbmc.log(title + " -> " + inspect.stack()[1][3] + " : " + str(msg),level=xbmc.LOGNOTICE)
+                xbmc.log(title + " -> " + inspect.stack()[1][3] + " : " + str(msg), level=xbmc.LOGNOTICE)
             except UnicodeEncodeError:
-                xbmc.log(title + " -> " + inspect.stack()[1][3] + " : " + str(msg.encode('utf-8')),level=xbmc.LOGNOTICE)
+                xbmc.log(title + " -> " + inspect.stack()[1][3] + " : " + str(msg.encode('utf-8')), level=xbmc.LOGNOTICE)
         else:
             try:
-                xbmc.log(title + " -> " + str(msg),level=xbmc.LOGNOTICE)
+                xbmc.log(title + " -> " + str(msg), level=xbmc.LOGNOTICE)
             except UnicodeEncodeError:
-                xbmc.log(title + " -> " + str(msg.encode('utf-8')),level=xbmc.LOGNOTICE)
+                xbmc.log(title + " -> " + str(msg.encode('utf-8')), level=xbmc.LOGNOTICE)
 
 
-def loadTestData():
-    test_episode = {}
-    test_episode["episodeid"] = 12345678
-    test_episode["tvshowid"] = 12345678
-    test_episode["title"] = "Garden of Bones"
-    test_episode["art"] = {}
+def load_test_data():
+    test_episode = {"episodeid": 12345678, "tvshowid": 12345678, "title": "Garden of Bones", "art": {}}
     test_episode["art"]["tvshow.poster"] = "https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg"
     test_episode["art"]["thumb"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg"
     test_episode["art"]["tvshow.fanart"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg"
@@ -129,9 +128,8 @@ def loadTestData():
     return test_episode
 
 
-def unicodetoascii(text):
-
-    TEXT = (text.
+def unicode_to_ascii(text):
+    ascii_text = (text.
             replace('\xe2\x80\x99', "'").
             replace('\xc3\xa9', 'e').
             replace('\xe2\x80\x90', '-').
@@ -160,7 +158,7 @@ def unicodetoascii(text):
             replace('\xe2\x81\xbd', "(").
             replace('\xe2\x81\xbe', ")")
             )
-    return TEXT
+    return ascii_text
 
 
 def calculate_progress_steps(period):

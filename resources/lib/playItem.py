@@ -22,11 +22,12 @@ class PlayItem:
         current_file = self.player.getPlayingFile()
         if not self.api.has_addon_data():
             # Get the active player
-            result = self.api.getNowPlaying()
+            result = self.api.get_now_playing()
             self.handle_now_playing_result(result)
             # get the next episode from kodi
-            episode = self.api.handle_kodi_lookup_of_episode(self.state.tv_show_id, current_file, self.state.include_watched,
-                                                             self.state.current_episode_id)
+            episode = (
+                self.api.handle_kodi_lookup_of_episode(
+                    self.state.tv_show_id, current_file, self.state.include_watched, self.state.current_episode_id))
         else:
             episode = self.api.handle_addon_lookup_of_next_episode()
             current_episode = self.api.handle_addon_lookup_of_current_episode()
@@ -42,17 +43,17 @@ class PlayItem:
             current_episode_number = result["result"]["item"]["episode"]
             current_season_id = result["result"]["item"]["season"]
             current_show_title = result["result"]["item"]["showtitle"].encode('utf-8')
-            current_show_title = utils.unicodetoascii(current_show_title)
+            current_show_title = utils.unicode_to_ascii(current_show_title)
             self.state.tv_show_id = result["result"]["item"]["tvshowid"]
             if item_type == "episode":
-                # Try to get tvshowid by showtitle from kodidb if tvshowid is -1 like in strm streams which are added to kodi db
                 if int(self.state.tv_show_id) == -1:
                     self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
                     self.log("Fetched missing tvshowid " + json.dumps(self.state.tv_show_id), 2)
 
                 # Get current episodeid
-                current_episode_id = self.api.get_episode_id(showid=str(self.state.tv_show_id), showseason=current_season_id,
-                                                             showepisode=current_episode_number)
+                current_episode_id = self.api.get_episode_id(
+                    showid=str(self.state.tv_show_id), show_season=current_season_id,
+                    show_episode=current_episode_number)
                 self.state.current_episode_id = current_episode_id
                 if self.state.current_tv_show_id != self.state.tv_show_id:
                     self.state.current_tv_show_id = self.state.tv_show_id

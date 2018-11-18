@@ -38,17 +38,16 @@ class PlaybackManager:
         if include_play_count and self.state.current_episode_id != episode_id:
             # we have a next up episode choose mode
             next_up_page, still_watching_page = pages.set_up_pages()
-            showing_next_up_page, showing_still_watching_page, total_time = self.show_popup_and_wait(episode,
-                                                                                                     next_up_page,
-                                                                                                     still_watching_page)
-            should_play_default, should_play_non_default = self.extract_play_info(next_up_page, showing_next_up_page,
-                                                                                  showing_still_watching_page,
-                                                                                  still_watching_page, total_time)
+            showing_next_up_page, showing_still_watching_page, total_time = (
+                self.show_popup_and_wait(episode, next_up_page, still_watching_page))
+            should_play_default, should_play_non_default = (
+                self.extract_play_info(next_up_page, showing_next_up_page, showing_still_watching_page,
+                                       still_watching_page, total_time))
 
             play_item_option_1 = (should_play_default and self.state.playMode == "0")
             play_item_option_2 = (should_play_non_default and self.state.playMode == "1")
             if play_item_option_1 or play_item_option_2:
-                self.log("playing media episode id %s" % json.dumps(episode_id), 2)
+                self.log("playing media episode", 2)
                 # Signal to trakt previous episode watched
                 utils.event("NEXTUPWATCHEDSIGNAL", {'episodeid': self.state.current_episode_id})
                 # Play media
@@ -85,8 +84,9 @@ class PlaybackManager:
             still_watching_page.show()
             utils.window('service.upnext.dialog', 'true')
             showing_still_watching_page = True
-        while self.player.isPlaying() and (
-                total_time - play_time > 1) and not next_up_page.isCancel() and not next_up_page.isWatchNow() and not still_watching_page.isStillWatching() and not still_watching_page.isCancel():
+        while (self.player.isPlaying() and (
+                total_time - play_time > 1) and not next_up_page.isCancel() and not next_up_page.isWatchNow() and
+                not still_watching_page.isStillWatching() and not still_watching_page.isCancel()):
             xbmc.sleep(100)
             try:
                 play_time = self.player.getTime()
@@ -95,7 +95,8 @@ class PlaybackManager:
                     next_up_page.updateProgressControl()
                 elif showing_still_watching_page:
                     still_watching_page.updateProgressControl()
-            except:
+            except Exception as e:
+                self.log("error show_popup_and_wait  %s" % repr(e), 1)
                 pass
         return showing_next_up_page, showing_still_watching_page, total_time
 

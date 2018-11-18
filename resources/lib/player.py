@@ -11,7 +11,7 @@ class Player(xbmc.Player):
         self.developer = Developer()
         xbmc.Player.__init__(self)
 
-    def onAVStarted(self):
+    def onPlayBackStarted(self):
         # Will be called when kodi starts playing a file
         self.api.reset_addon_data()
         if utils.settings("developerMode") == "true":

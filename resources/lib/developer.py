@@ -9,10 +9,11 @@ class Developer:
     def __init__(self):
         self.__dict__ = self._shared_state
 
-    def developer_play_back(self):
-        episode = utils.loadTestData()
-        next_up_page, next_up_page_simple, still_watching_page, still_watching_page_simple = pages.set_up_developer_pages(
-            episode)
+    @staticmethod
+    def developer_play_back():
+        episode = utils.load_test_data()
+        next_up_page, next_up_page_simple, still_watching_page, still_watching_page_simple = (
+            pages.set_up_developer_pages(episode))
         if utils.settings("windowMode") == "0":
             next_up_page.show()
         elif utils.settings("windowMode") == "1":
@@ -23,7 +24,9 @@ class Developer:
             still_watching_page_simple.show()
         utils.window('service.upnext.dialog', 'true')
 
-        while xbmc.Player().isPlaying() and not next_up_page.isCancel() and not next_up_page.isWatchNow() and not still_watching_page.isStillWatching() and not still_watching_page.isCancel():
+        while (xbmc.Player().isPlaying() and not next_up_page.isCancel() and
+                not next_up_page.isWatchNow() and not still_watching_page.isStillWatching() and
+                not still_watching_page.isCancel()):
             xbmc.sleep(100)
             next_up_page.updateProgressControl()
             next_up_page_simple.updateProgressControl()
