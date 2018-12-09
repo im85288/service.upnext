@@ -24,7 +24,8 @@ class Developer:
             still_watching_page_simple.show()
         utils.window('service.upnext.dialog', 'true')
 
-        while (xbmc.Player().isPlaying() and not next_up_page.isCancel() and
+        player = xbmc.Player()
+        while (player.isPlaying() and not next_up_page.isCancel() and
                 not next_up_page.isWatchNow() and not still_watching_page.isStillWatching() and
                 not still_watching_page.isCancel()):
             xbmc.sleep(100)

@@ -6,12 +6,8 @@ import binascii
 import json
 
 
-def addon_id():
-    return "service.upnext"
-
-
 def addon_path():
-    return xbmcaddon.Addon(addon_id()).getAddonInfo('path')
+    return xbmcaddon.Addon().getAddonInfo('path')
 
 
 def kodi_version():
@@ -19,11 +15,11 @@ def kodi_version():
 
 
 def addon_name():
-    return xbmcaddon.Addon(addon_id()).getAddonInfo('name').upper()
+    return xbmcaddon.Addon().getAddonInfo('name').upper()
 
 
 def addon_version():
-    return xbmcaddon.Addon(addon_id()).getAddonInfo('version')
+    return xbmcaddon.Addon().getAddonInfo('version')
 
 
 def window(key, value=None, clear=False, window_id=10000):
@@ -57,7 +53,7 @@ def window(key, value=None, clear=False, window_id=10000):
 
 def settings(setting, value=None):
 
-    addon = xbmcaddon.Addon(addon_id())
+    addon = xbmcaddon.Addon()
 
     if value is not None:
         if setting.endswith('.bool'):
