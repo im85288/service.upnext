@@ -12,3 +12,5 @@ The default settings should be enough for most, but changes can be made in the a
   * The number of episodes played in a row with no intervention to bring up the still watching window can be adjusted.                                      
 
 For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)     
+
+Zawiera drobne poprawki na własny użytek + PL
