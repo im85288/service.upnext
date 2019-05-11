@@ -7,7 +7,7 @@ from resources.lib.state import State
 
 # service class for playback monitoring
 class Player(xbmc.Player):
-	last_file = None
+        last_file = None
 
     def __init__(self):
         self.api = Api()
