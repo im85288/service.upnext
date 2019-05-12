@@ -7,7 +7,7 @@ from resources.lib.state import State
 
 # service class for playback monitoring
 class Player(xbmc.Player):
-        last_file = None
+    last_file = None
 
     def __init__(self):
         self.api = Api()
@@ -22,7 +22,6 @@ class Player(xbmc.Player):
 
     def onPlayBackStarted(self):
         # Will be called when kodi starts playing a file
-        self.api.reset_addon_data()
         if utils.settings("developerMode") == "true":
             self.developer.developer_play_back()
 

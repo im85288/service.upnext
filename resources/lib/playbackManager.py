@@ -30,6 +30,7 @@ class PlaybackManager:
             return
         self.log("episode details %s" % json.dumps(episode), 2)
         self.launch_popup(episode)
+        self.api.reset_addon_data()
 
     def launch_popup(self, episode):
         episode_id = episode["episodeid"]
