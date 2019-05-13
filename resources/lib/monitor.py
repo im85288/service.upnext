@@ -24,7 +24,7 @@ class Monitor(xbmc.Monitor):
             if self.waitForAbort(1):
                 # Abort was requested while waiting. We should exit
                 break
-            if self.player.isPlaying():
+            if self.player.is_tracking():
                 try:
                     play_time = self.player.getTime()
                     total_time = self.player.getTotalTime()
@@ -39,6 +39,7 @@ class Monitor(xbmc.Monitor):
                             self.log("Calling autoplayback totaltime - playtime is %s" % (total_time - play_time), 2)
                             self.playback_manager.launch_up_next()
                             self.log("Up Next style autoplay succeeded.", 2)
+                            self.player.disable_tracking()
 
                 except Exception as e:
                     self.log("Exception in Playback Monitor Service: %s" % repr(e))
