@@ -44,6 +44,10 @@ class Monitor(xbmc.Monitor):
                 except Exception as e:
                     self.log("Exception in Playback Monitor Service: %s" % repr(e))
 
+                    if 'not playing any media file' in str(e):
+                        self.log("No file is playing - stop up next tracking.", 2)
+                        self.player.disable_tracking()
+
         self.log("======== STOP %s ========" % utils.addon_name(), 0)
 
     def onNotification(self, sender, method, data):
