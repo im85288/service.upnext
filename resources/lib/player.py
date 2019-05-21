@@ -29,6 +29,7 @@ class Player(xbmc.Player):
 
     def onPlayBackStarted(self):
         # Will be called when kodi starts playing a file
+        xbmc.sleep(5000) # Delay for slower devices, should really use onAVStarted for Leia
         self.track = True
         if utils.settings("developerMode") == "true":
             self.developer.developer_play_back()
