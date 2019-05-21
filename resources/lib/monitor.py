@@ -32,7 +32,7 @@ class Monitor(xbmc.Monitor):
                     current_file = self.player.getPlayingFile()
                     notification_time = self.api.notification_time()
                     up_next_disabled = utils.settings("disableNextUp") == "true"
-                    if utils.window("PseudoTVRunning") != "True" and not up_next_disabled and total_time > 300:
+                    if utils.window("PseudoTVRunning") != "True" and not up_next_disabled:
                         if (total_time - play_time <= int(notification_time) and (
                                 last_file is None or last_file != current_file)) and total_time != 0:
                             self.player.set_last_file(current_file)
