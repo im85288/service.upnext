@@ -48,7 +48,7 @@ class Monitor(xbmc.Monitor):
                         self.log("No file is playing - stop up next tracking.", 2)
                         self.player.disable_tracking()
 
-        self.log("======== STOP %s ========" % utils.addon_name(), 0)
+        self.log("======== STOP service.upnext ========", 0)
 
     def onNotification(self, sender, method, data):
 
