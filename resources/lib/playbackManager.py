@@ -115,12 +115,10 @@ class PlaybackManager:
         else:
             if showing_next_up_page:
                 next_up_page.close()
-                utils.window('service.upnext.dialog', clear=True)
                 should_play_default = not next_up_page.isCancel()
                 should_play_non_default = next_up_page.isWatchNow()
             elif showing_still_watching_page:
                 still_watching_page.close()
-                utils.window('service.upnext.dialog', clear=True)
                 should_play_default = still_watching_page.isStillWatching()
                 should_play_non_default = still_watching_page.isStillWatching()
 
@@ -128,4 +126,5 @@ class PlaybackManager:
                 self.state.played_in_a_row = 1
             else:
                 self.state.played_in_a_row += 1
+        utils.window('service.upnext.dialog', clear=True)
         return should_play_default, should_play_non_default
