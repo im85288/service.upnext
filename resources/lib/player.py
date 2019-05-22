@@ -12,31 +12,30 @@ class Player(xbmc.Player):
 
     def __init__(self):
         self.api = Api()
+        self.state = State()
         self.developer = Developer()
         xbmc.Player.__init__(self)
 
     def set_last_file(self, file):
-        self.last_file = file
+        self.state.last_file = file
 
     def get_last_file(self):
-        return self.last_file
+        return self.state.last_file
 
     def is_tracking(self):
-        return self.track
+        return self.state.track
 
     def disable_tracking(self):
-        self.track = False
+        self.state.track = False
 
     def onPlayBackStarted(self):
         # Will be called when kodi starts playing a file
         xbmc.sleep(5000) # Delay for slower devices, should really use onAVStarted for Leia
-        self.track = True
+        self.state.track = True
         if utils.settings("developerMode") == "true":
             self.developer.developer_play_back()
 
     def onPlayBackStopped(self):
         # Will be called when user stops playing a file.
-        self.last_file = None
-        self.disable_tracking()
         self.api.reset_addon_data()
-        State() # reset state
+        self.state =State() # reset state

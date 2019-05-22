@@ -44,7 +44,9 @@ class PlaybackManager:
             should_play_default, should_play_non_default = (
                 self.extract_play_info(next_up_page, showing_next_up_page, showing_still_watching_page,
                                        still_watching_page, total_time))
-
+            if not self.state.track:
+                self.log("exit launch_popup early due to disabled tracking", 2)
+                return
             play_item_option_1 = (should_play_default and self.state.playMode == "0")
             play_item_option_2 = (should_play_non_default and self.state.playMode == "1")
             if play_item_option_1 or play_item_option_2:
