@@ -109,6 +109,7 @@ class PlaybackManager:
             if next_up_page.isWatchNow() or still_watching_page.isStillWatching():
                 self.state.played_in_a_row = 1
             should_play_default = not next_up_page.isCancel()
+            should_play_non_default = next_up_page.isWatchNow()
         else:
             if showing_next_up_page:
                 next_up_page.close()
