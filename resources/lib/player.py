@@ -35,6 +35,12 @@ class Player(xbmc.Player):
         if utils.settings("developerMode") == "true":
             self.developer.developer_play_back()
 
+    def onPlayBackPaused(self):
+        self.state.pause = True
+
+    def onPlayBackResumed(self):
+        self.state.pause = False
+
     def onPlayBackStopped(self):
         # Will be called when user stops playing a file.
         self.api.reset_addon_data()
