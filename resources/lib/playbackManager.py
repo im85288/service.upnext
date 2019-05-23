@@ -94,13 +94,13 @@ class PlaybackManager:
             try:
                 play_time = self.player.getTime()
                 total_time = self.player.getTotalTime()
-                if showing_next_up_page:
-                    next_up_page.updateProgressControl()
-                elif showing_still_watching_page:
-                    still_watching_page.updateProgressControl()
+                if not self.state.pause:
+                    if showing_next_up_page:
+                        next_up_page.updateProgressControl()
+                    elif showing_still_watching_page:
+                        still_watching_page.updateProgressControl()
             except Exception as e:
                 self.log("error show_popup_and_wait  %s" % repr(e), 1)
-                pass
         return showing_next_up_page, showing_still_watching_page, total_time
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page,

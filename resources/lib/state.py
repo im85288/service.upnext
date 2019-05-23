@@ -18,3 +18,4 @@ class State:
         self.played_in_a_row = 1
         self.last_file = None
         self.track = False
+        self.pause = False

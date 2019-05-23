@@ -156,3 +156,7 @@ msgstr ""
 msgctxt "#30048"
 msgid "StillWatchingSimple"
 msgstr ""
+
+msgctxt "#30049"
+msgid "Next Episode"
+msgstr ""
