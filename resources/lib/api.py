@@ -28,6 +28,22 @@ class Api:
     def play_kodi_item(episode):
         utils.JSONRPC("Player.Open", id=0).execute({"item": {"episodeid": episode["episodeid"]}})
 
+    def get_next_in_playlist(self, position):
+        result = utils.JSONRPC("Playlist.GetItems").execute({
+            "playlistid": 1,
+            "limits": {"start": position+1, "end": position+2},
+            "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
+                           "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
+                           "dateadded", "lastplayed" , "streamdetails"]})
+        if result:
+            self.log("Got details of next playlist item %s" % json.dumps(result), 2)
+            if "result" in result and result["result"].get("items"):
+                item = result["result"]["items"][0]
+                if item["type"] == "episode":
+                    item["episodeid"] = item["id"]
+                    item["tvshowid"] = item.get("tvshowid", item["id"])
+                    return item
+
     def play_addon_item(self):
         self.log("sending data to addon to play:  %s " % json.dumps(self.data['play_info']), 2)
         utils.event(self.data['id'], self.data['play_info'], "upnextprovider")

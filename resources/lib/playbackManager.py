@@ -23,16 +23,21 @@ class PlaybackManager:
         utils.log("%s %s" % (utils.addon_name(), class_name), msg, int(lvl))
 
     def launch_up_next(self):
-        episode = self.play_item.get_episode()
-        if episode is None:
-            # no episode get out of here
-            self.log("Error: no episode could be found to play next...exiting", 1)
-            return
+        playlist_item = True
+        episode = self.play_item.get_next()
+        if not episode:
+            playlist_item = False
+            episode = self.play_item.get_episode()
+            if episode is None:
+                # no episode get out of here
+                self.log("Error: no episode could be found to play next...exiting", 1)
+                return
         self.log("episode details %s" % json.dumps(episode), 2)
         self.launch_popup(episode)
+        self.launch_popup(episode, playlist_item)
         self.api.reset_addon_data()
 
-    def launch_popup(self, episode):
+    def launch_popup(self, episode, playlist_item):
         episode_id = episode["episodeid"]
         no_play_count = episode["playcount"] is None or episode["playcount"] == 0
         include_play_count = True if self.state.include_watched else no_play_count
@@ -54,7 +59,9 @@ class PlaybackManager:
                 # Signal to trakt previous episode watched
                 utils.event("NEXTUPWATCHEDSIGNAL", {'episodeid': self.state.current_episode_id})
                 # Play media
-                if not self.api.has_addon_data():
+                if playlist_item:
+                    self.player.seekTime(self.player.getTotalTime())
+                elif not self.api.has_addon_data():
                     self.api.play_kodi_item(episode)
                 else:
                     self.api.play_addon_item()
