@@ -160,3 +160,26 @@ def unicode_to_ascii(text):
 def calculate_progress_steps(period):
     return (100.0 / int(period)) / 10
 
+class JSONRPC(object):
+    id = 1
+    jsonrpc = "2.0"
+
+    def __init__(self, method, **kwargs):
+        self.method = method
+        for arg in kwargs:
+            self.arg = kwargs[arg]
+
+    def _query(self):
+        query = {
+            'jsonrpc': self.jsonrpc,
+            'id': self.id,
+            'method': self.method,
+        }
+        if self.params is not None:
+            query['params'] = self.params
+        return json.dumps(query)
+
+    def execute(self, params=None):
+        self.params = params
+        return json.loads(xbmc.executeJSONRPC(self._query()))
+
