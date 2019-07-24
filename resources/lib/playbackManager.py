@@ -6,6 +6,7 @@ from resources.lib.api import Api
 from resources.lib.playItem import PlayItem
 from resources.lib.state import State
 from resources.lib.player import Player
+from datetime import datetime, timedelta
 
 
 class PlaybackManager:
@@ -33,7 +34,7 @@ class PlaybackManager:
                 self.log("Error: no episode could be found to play next...exiting", 1)
                 return
         self.log("episode details %s" % json.dumps(episode), 2)
-        self.launch_popup(episode)
+        self.clock_twelve = "m" in xbmc.getInfoLabel('System.Time').lower()
         self.launch_popup(episode, playlist_item)
         self.api.reset_addon_data()
 
@@ -70,6 +71,7 @@ class PlaybackManager:
         play_time = self.player.getTime()
         total_time = self.player.getTotalTime()
         progress_step_size = utils.calculate_progress_steps(total_time - play_time)
+        episode_runtime = episode.get("runtime") is not None
         next_up_page.setItem(episode)
         next_up_page.setProgressStepSize(progress_step_size)
         still_watching_page.setItem(episode)
@@ -101,11 +103,17 @@ class PlaybackManager:
             try:
                 play_time = self.player.getTime()
                 total_time = self.player.getTotalTime()
+                if episode_runtime:
+                    end_time = total_time - play_time + episode["runtime"]
+                    end_time = datetime.now() + timedelta(seconds=end_time)
+                    end_time = end_time.strftime("%I:%M %p" if self.clock_twelve else "%H:%M").lstrip("0") # remove leading zero on all platforms
+                else:
+                    end_time = None
                 if not self.state.pause:
                     if showing_next_up_page:
-                        next_up_page.updateProgressControl()
+                        next_up_page.updateProgressControl(end_time)
                     elif showing_still_watching_page:
-                        still_watching_page.updateProgressControl()
+                        still_watching_page.updateProgressControl(end_time)
             except Exception as e:
                 self.log("error show_popup_and_wait  %s" % repr(e), 1)
         return showing_next_up_page, showing_still_watching_page, total_time
