@@ -79,13 +79,16 @@ class StillWatching(xbmcgui.WindowXMLDialog):
     def setProgressStepSize(self, progressStepSize):
         self.progressStepSize = progressStepSize
 
-    def updateProgressControl(self):
+    def updateProgressControl(self, endtime):
         # noinspection PyBroadException
         try:
             self.currentProgressPercent = self.currentProgressPercent - self.progressStepSize
             self.progressControl = self.getControl(3014)
             if self.progressControl is not None:
                 self.progressControl.setPercent(self.currentProgressPercent)
+            if endtime:
+                self.setProperty(
+                    'endtime', str(endtime))
         except Exception:
             pass
 

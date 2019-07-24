@@ -26,9 +26,23 @@ class Api:
 
     @staticmethod
     def play_kodi_item(episode):
-        xbmc.executeJSONRPC(
-            '{ "jsonrpc": "2.0", "id": 0, "method": "Player.Open", '
-            '"params": { "item": {"episodeid": ' + str(episode["episodeid"]) + '} } }')
+        utils.JSONRPC("Player.Open", id=0).execute({"item": {"episodeid": episode["episodeid"]}})
+
+    def get_next_in_playlist(self, position):
+        result = utils.JSONRPC("Playlist.GetItems").execute({
+            "playlistid": 1,
+            "limits": {"start": position+1, "end": position+2},
+            "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
+                           "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
+                           "dateadded", "lastplayed" , "streamdetails"]})
+        if result:
+            self.log("Got details of next playlist item %s" % json.dumps(result), 2)
+            if "result" in result and result["result"].get("items"):
+                item = result["result"]["items"][0]
+                if item["type"] == "episode":
+                    item["episodeid"] = item["id"]
+                    item["tvshowid"] = item.get("tvshowid", item["id"])
+                    return item
 
     def play_addon_item(self):
         self.log("sending data to addon to play:  %s " % json.dumps(self.data['play_info']), 2)
@@ -53,40 +67,34 @@ class Api:
 
     def get_now_playing(self):
         # Get the active player
-        result = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Player.GetActivePlayers"}')
+        result = utils.JSONRPC("Player.GetActivePlayers").execute()
         self.log("Got active player %s" % json.dumps(result), 2)
-        result = json.loads(result)
 
         # Seems to work too fast loop whilst waiting for it to become active
         while not result["result"]:
-            result = xbmc.executeJSONRPC('{"jsonrpc": "2.0", "id": 1, "method": "Player.GetActivePlayers"}')
+            result = utils.JSONRPC("Player.GetActivePlayers").execute()
             self.log("Got active player %s" % json.dumps(result), 2)
-            result = json.loads(result)
 
         if 'result' in result and result["result"][0] is not None:
             playerid = result["result"][0]["playerid"]
 
             # Get details of the playing media
             self.log("Getting details of now playing media", 2)
-            result = xbmc.executeJSONRPC(
-                '{"jsonrpc": "2.0", "id": 1, "method": "Player.GetItem", "params": {"playerid": %s, '
-                '"properties": ["showtitle", "tvshowid", "episode", "season", "playcount","genre","plotoutline"] } }'
-                % str(playerid))
+            result = utils.JSONRPC("Player.GetItem").execute({
+                "playerid": playerid, 
+                "properties": ["showtitle","tvshowid","episode","season","playcount","genre","plotoutline"]})
             self.log("Got details of now playing media %s" % json.dumps(result), 2)
-
-            result = json.loads(result)
             return result
 
     def handle_kodi_lookup_of_episode(self, tvshowid, current_file, include_watched, current_episode_id):
-        result = xbmc.executeJSONRPC(
-            '{"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {"tvshowid": %d, '
-            '"properties": [ "title", "playcount", "season", "episode", "showtitle", "plot", '
-            '"file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer", '
-            '"dateadded", "lastplayed" , "streamdetails"], "sort": {"method": "episode"}}, "id": 1}'
-            % tvshowid)
+        result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute({
+            "tvshowid": tvshowid, 
+            "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
+                           "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
+                           "dateadded", "lastplayed" , "streamdetails"],
+            "sort": {"method": "episode"}})
 
         if result:
-            result = json.loads(result)
             self.log("Got details of next up episode %s" % json.dumps(result), 2)
             xbmc.sleep(100)
 
@@ -96,16 +104,15 @@ class Api:
                 return episode
 
     def handle_kodi_lookup_of_current_episode(self, tvshowid, current_episode_id):
-        result = xbmc.executeJSONRPC(
-            '{"jsonrpc": "2.0", "method": "VideoLibrary.GetEpisodes", "params": {"tvshowid": %d, '
-            '"properties": [ "title", "playcount", "season", "episode", "showtitle", "plot", '
-            '"file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer", '
-            '"dateadded", "lastplayed" , "streamdetails"], "sort": {"method": "episode"}}, "id": 1}'
-            % tvshowid)
+        result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute({
+            "tvshowid": tvshowid,
+            "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
+                           "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
+                           "dateadded", "lastplayed" , "streamdetails"],
+            "sort": {"method": "episode"}})
         self.log("Find current episode called", 2)
         position = 0
         if result:
-            result = json.loads(result)
             xbmc.sleep(100)
 
             # Find the next unwatched and the newest added episodes
@@ -129,16 +136,8 @@ class Api:
                 return episode
 
     def showtitle_to_id(self, title):
-        query = {
-            "jsonrpc": "2.0",
-            "method": "VideoLibrary.GetTVShows",
-            "params": {
-                "properties": ["title"]
-            },
-            "id": "libTvShows"
-        }
         try:
-            json_result = json.loads(xbmc.executeJSONRPC(json.dumps(query, encoding='utf-8')))
+            json_result = utils.JSONRPC("VideoLibrary.GetTVShows", id="libTvShows").execute({"properties": ["title"]})
             if 'result' in json_result and 'tvshows' in json_result['result']:
                 json_result = json_result['result']['tvshows']
                 for tvshow in json_result:
@@ -154,16 +153,11 @@ class Api:
         show_episode = int(show_episode)
         episodeid = 0
         query = {
-            "jsonrpc": "2.0",
-            "method": "VideoLibrary.GetEpisodes",
-            "params": {
-                "properties": ["season", "episode"],
-                "tvshowid": int(showid)
-            },
-            "id": "1"
+            "properties": ["season", "episode"],
+            "tvshowid": int(showid)
         }
         try:
-            json_result = json.loads(xbmc.executeJSONRPC(json.dumps(query, encoding='utf-8')))
+            json_result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute(query)
             if 'result' in json_result and 'episodes' in json_result['result']:
                 json_result = json_result['result']['episodes']
                 for episode in json_result:

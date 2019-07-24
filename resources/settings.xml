@@ -6,7 +6,7 @@
         <setting id="autoPlayMode" type="enum" label="30005" lvalues="30040|30041" default="0"/>
         <setting id="playedInARow" type="number" label="30009" default="3" visible="true" enable="true"/>
         <setting id="includeWatched" type="bool" label="30013" default="false" visible="true" enable="true"/>
-        <setting id="enablePlaylist" type="bool" label="30032" default="false" visible="true" enable="true"/>
+        <setting id="enablePlaylist" type="bool" visible="false" enable="false"/><!--to avoid log spam just disable setting-->
     </category>
     <category label="30004">
         <setting id="disableNextUp" type="bool" label="30014" default="false" visible="true" enable="true"/>

@@ -1,3 +1,4 @@
+import xbmc
 import json
 import resources.lib.utils as utils
 from resources.lib.api import Api
@@ -36,6 +37,13 @@ class PlayItem:
                 self.state.current_tv_show_id = current_episode["tvshowid"]
                 self.state.played_in_a_row = 1
         return episode
+
+    def get_next(self):
+        playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+        position = playlist.getposition()
+        if position < playlist.size():
+            return self.api.get_next_in_playlist(position)
+        return False
 
     def handle_now_playing_result(self, result):
         if 'result' in result:
