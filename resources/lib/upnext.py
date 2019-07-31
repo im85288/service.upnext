@@ -1,5 +1,6 @@
-import xbmcgui
+import xbmcgui, xbmc
 from platform import machine
+import resources.lib.utils as utils
 
 ACTION_PLAYER_STOP = 13
 OS_MACHINE = machine()
@@ -121,6 +122,8 @@ class UpNext(xbmcgui.WindowXMLDialog):
         elif control_id == 3013:
             # cancel
             self.setCancel(True)
+            if utils.settings("stopAfterClose") == "true":
+                xbmc.Player().stop()
             self.close()
 
         pass

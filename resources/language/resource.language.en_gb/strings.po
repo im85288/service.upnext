@@ -160,3 +160,7 @@ msgstr ""
 msgctxt "#30049"
 msgid "Next Episode"
 msgstr ""
+
+msgctxt "#30050"
+msgid "Stop after dialog close"
+msgstr ""

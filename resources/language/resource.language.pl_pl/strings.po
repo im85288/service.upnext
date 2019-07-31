@@ -186,3 +186,13 @@ msgctxt "#30048"
 msgid "StillWatchingSimple"
 msgstr "StillWatchingSimple"
 
+#:
+msgctxt "#30049"
+msgid "Next Episode"
+msgstr "Następny odcinek"
+
+#: 
+msgctxt "#30050"
+msgid "Stop after dialog close"
+msgstr "Zatrzymaj po zamknięciu okna dialogowego"
+
