@@ -13,7 +13,7 @@ msgstr ""
 
 msgctxt "#30001"
 msgid "The number of seconds before the end to show the notification"
-msgstr "Vége előtt másodpercben amikor megjelenik az értesítés"
+msgstr "Végén mikor jelenik meg az értesítés (mp)"
 
 msgctxt "#30002"
 msgid "Log Level:"
