@@ -1,0 +1,10 @@
+[MESSAGES CONTROL]
+disable=
+    duplicate-code,
+    import-outside-toplevel,
+    line-too-long,
+    missing-docstring,
+    old-style-class,
+    too-few-public-methods,
+    too-many-arguments,
+    too-many-instance-attributes,
