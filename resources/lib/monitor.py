@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import resources.lib.utils as utils
-from resources.lib.playbackManager import PlaybackManager
+from resources.lib.playbackmanager import PlaybackManager
 from resources.lib.api import Api
 from resources.lib.player import Player
 
@@ -45,10 +45,10 @@ class Monitor(xbmc.Monitor):
                             self.log("Up Next style autoplay succeeded.", 2)
                             self.player.disable_tracking()
 
-                except Exception as e:
-                    self.log("Exception in Playback Monitor Service: %s" % repr(e))
+                except Exception as exc:  # pylint: disable=broad-except
+                    self.log("Exception in Playback Monitor Service: %s" % repr(exc))
 
-                    if 'not playing any media file' in str(e):
+                    if 'not playing any media file' in str(exc):
                         self.log("No file is playing - stop up next tracking.", 2)
                         self.player.disable_tracking()
 

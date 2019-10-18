@@ -34,14 +34,14 @@ def set_up_developer_pages(episode):
     still_watching_page = StillWatching(
         "script-upnext-stillwatching.xml",
         utils.addon_path(), "default", "1080i")
-    next_up_page.setItem(episode)
-    next_up_page_simple.setItem(episode)
-    still_watching_page.setItem(episode)
-    still_watching_page_simple.setItem(episode)
+    next_up_page.set_item(episode)
+    next_up_page_simple.set_item(episode)
+    still_watching_page.set_item(episode)
+    still_watching_page_simple.set_item(episode)
     notification_time = utils.settings("autoPlaySeasonTime")
     progress_step_size = utils.calculate_progress_steps(notification_time)
-    next_up_page.setProgressStepSize(progress_step_size)
-    next_up_page_simple.setProgressStepSize(progress_step_size)
-    still_watching_page.setProgressStepSize(progress_step_size)
-    still_watching_page_simple.setProgressStepSize(progress_step_size)
+    next_up_page.set_progress_step_size(progress_step_size)
+    next_up_page_simple.set_progress_step_size(progress_step_size)
+    still_watching_page.set_progress_step_size(progress_step_size)
+    still_watching_page_simple.set_progress_step_size(progress_step_size)
     return next_up_page, next_up_page_simple, still_watching_page, still_watching_page_simple

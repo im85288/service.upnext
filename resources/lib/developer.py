@@ -29,14 +29,14 @@ class Developer:
         utils.window('service.upnext.dialog', 'true')
 
         player = xbmc.Player()
-        while (player.isPlaying() and not next_up_page.isCancel()
-               and not next_up_page.isWatchNow() and not still_watching_page.isStillWatching()
-               and not still_watching_page.isCancel()):
+        while (player.isPlaying() and not next_up_page.is_cancel()
+               and not next_up_page.is_watch_now() and not still_watching_page.is_still_watching()
+               and not still_watching_page.is_cancel()):
             xbmc.sleep(100)
-            next_up_page.updateProgressControl()
-            next_up_page_simple.updateProgressControl()
-            still_watching_page.updateProgressControl()
-            still_watching_page_simple.updateProgressControl()
+            next_up_page.update_progress_control()
+            next_up_page_simple.update_progress_control()
+            still_watching_page.update_progress_control()
+            still_watching_page_simple.update_progress_control()
 
         if utils.settings("windowMode") == "0":
             next_up_page.close()

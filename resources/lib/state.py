@@ -11,7 +11,7 @@ class State:
 
     def __init__(self):
         self.__dict__ = self._shared_state
-        self.playMode = utils.settings("autoPlayMode")
+        self.play_mode = utils.settings("autoPlayMode")
         self.short_play_mode = utils.settings("shortPlayMode")
         self.short_play_notification = utils.settings("shortPlayNotification")
         self.short_play_length = int(utils.settings("shortPlayLength")) * 60
