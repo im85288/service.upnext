@@ -20,8 +20,8 @@ class Player(xbmc.Player):
         self.developer = Developer()
         xbmc.Player.__init__(self)
 
-    def set_last_file(self, file):
-        self.state.last_file = file
+    def set_last_file(self, filename):
+        self.state.last_file = filename
 
     def get_last_file(self):
         return self.state.last_file

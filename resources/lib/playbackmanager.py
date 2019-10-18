@@ -2,18 +2,18 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
+from datetime import datetime, timedelta
 import json
+import xbmc
 import resources.lib.utils as utils
 import resources.lib.pages as pages
 from resources.lib.api import Api
-from resources.lib.playItem import PlayItem
+from resources.lib.playitem import PlayItem
 from resources.lib.state import State
 from resources.lib.player import Player
-from datetime import datetime, timedelta
 
 
-class PlaybackManager:
+class PlaybackManager:  # pylint: disable=invalid-name
     _shared_state = {}
 
     def __init__(self):
@@ -22,6 +22,7 @@ class PlaybackManager:
         self.play_item = PlayItem()
         self.state = State()
         self.player = Player()
+        self.clock_twelve = None
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
@@ -57,8 +58,8 @@ class PlaybackManager:
             if not self.state.track:
                 self.log("exit launch_popup early due to disabled tracking", 2)
                 return
-            play_item_option_1 = (should_play_default and self.state.playMode == "0")
-            play_item_option_2 = (should_play_non_default and self.state.playMode == "1")
+            play_item_option_1 = (should_play_default and self.state.play_mode == "0")
+            play_item_option_2 = (should_play_non_default and self.state.play_mode == "1")
             if play_item_option_1 or play_item_option_2:
                 self.log("playing media episode", 2)
                 # Signal to trakt previous episode watched
@@ -76,10 +77,10 @@ class PlaybackManager:
         total_time = self.player.getTotalTime()
         progress_step_size = utils.calculate_progress_steps(total_time - play_time)
         episode_runtime = episode.get("runtime") is not None
-        next_up_page.setItem(episode)
-        next_up_page.setProgressStepSize(progress_step_size)
-        still_watching_page.setItem(episode)
-        still_watching_page.setProgressStepSize(progress_step_size)
+        next_up_page.set_item(episode)
+        next_up_page.set_progress_step_size(progress_step_size)
+        still_watching_page.set_item(episode)
+        still_watching_page.set_progress_step_size(progress_step_size)
         played_in_a_row_number = utils.settings("playedInARow")
         self.log("played in a row settings %s" % json.dumps(played_in_a_row_number), 2)
         self.log("played in a row %s" % json.dumps(self.state.played_in_a_row), 2)
@@ -115,11 +116,11 @@ class PlaybackManager:
                     end_time = None
                 if not self.state.pause:
                     if showing_next_up_page:
-                        next_up_page.updateProgressControl(end_time)
+                        next_up_page.update_progress_control(end_time)
                     elif showing_still_watching_page:
-                        still_watching_page.updateProgressControl(end_time)
-            except Exception as e:
-                self.log("error show_popup_and_wait  %s" % repr(e), 1)
+                        still_watching_page.update_progress_control(end_time)
+            except Exception as exc:  # pylint: disable=broad-except
+                self.log("error show_popup_and_wait  %s" % repr(exc), 1)
         return showing_next_up_page, showing_still_watching_page, total_time
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page,
@@ -127,21 +128,21 @@ class PlaybackManager:
         if self.state.short_play_length >= total_time and self.state.short_play_mode == "true":
             # play short video and don't add to playcount
             self.state.played_in_a_row += 0
-            if next_up_page.isWatchNow() or still_watching_page.isStillWatching():
+            if next_up_page.is_watch_now() or still_watching_page.is_still_watching():
                 self.state.played_in_a_row = 1
-            should_play_default = not next_up_page.isCancel()
-            should_play_non_default = next_up_page.isWatchNow()
+            should_play_default = not next_up_page.is_cancel()
+            should_play_non_default = next_up_page.is_watch_now()
         else:
             if showing_next_up_page:
                 next_up_page.close()
-                should_play_default = not next_up_page.isCancel()
-                should_play_non_default = next_up_page.isWatchNow()
+                should_play_default = not next_up_page.is_cancel()
+                should_play_non_default = next_up_page.is_watch_now()
             elif showing_still_watching_page:
                 still_watching_page.close()
-                should_play_default = still_watching_page.isStillWatching()
-                should_play_non_default = still_watching_page.isStillWatching()
+                should_play_default = still_watching_page.is_still_watching()
+                should_play_non_default = still_watching_page.is_still_watching()
 
-            if next_up_page.isWatchNow() or still_watching_page.isStillWatching():
+            if next_up_page.is_watch_now() or still_watching_page.is_still_watching():
                 self.state.played_in_a_row = 1
             else:
                 self.state.played_in_a_row += 1

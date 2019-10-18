@@ -2,8 +2,8 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
 import json
+import xbmc
 import resources.lib.utils as utils
 
 
@@ -47,24 +47,27 @@ class Api:
                     item["episodeid"] = item["id"]
                     item["tvshowid"] = item.get("tvshowid", item["id"])
                     return item
+        return None
 
     def play_addon_item(self):
         self.log("sending data to addon to play:  %s " % json.dumps(self.data['play_info']), 2)
         utils.event(self.data['id'], self.data['play_info'], "upnextprovider")
 
     def handle_addon_lookup_of_next_episode(self):
-        if self.data:
-            text = ("handle_addon_lookup_of_next_episode episode returning data %s "
-                    % json.dumps(self.data["next_episode"]))
-            self.log(text, 2)
-            return self.data["next_episode"]
+        if not self.data:
+            return None
+        text = ("handle_addon_lookup_of_next_episode episode returning data %s "
+                % json.dumps(self.data["next_episode"]))
+        self.log(text, 2)
+        return self.data["next_episode"]
 
     def handle_addon_lookup_of_current_episode(self):
-        if self.data:
-            text = ("handle_addon_lookup_of_current episode returning data %s "
-                    % json.dumps(self.data["current_episode"]))
-            self.log(text, 2)
-            return self.data["current_episode"]
+        if not self.data:
+            return None
+        text = ("handle_addon_lookup_of_current episode returning data %s "
+                % json.dumps(self.data["current_episode"]))
+        self.log(text, 2)
+        return self.data["current_episode"]
 
     def notification_time(self):
         return self.data.get('notification_time') or utils.settings('autoPlaySeasonTime')
@@ -106,6 +109,7 @@ class Api:
             if "result" in result and "episodes" in result["result"]:
                 episode = self.find_next_episode(result, current_file, include_watched, current_episode_id)
                 return episode
+        return None
 
     def handle_kodi_lookup_of_current_episode(self, tvshowid, current_episode_id):
         result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute({
@@ -132,12 +136,13 @@ class Api:
                 self.log("Find current episode found episode in position: %s" % str(position), 2)
                 try:
                     episode = result["result"]["episodes"][position]
-                except Exception as e:
+                except Exception as exc:  # pylint: disable=broad-except
                     # no next episode found
                     episode = None
-                    self.log("error handle_kodi_lookup_of_current_episode  %s" % repr(e), 1)
+                    self.log("error handle_kodi_lookup_of_current_episode  %s" % repr(exc), 1)
 
                 return episode
+        return None
 
     def showtitle_to_id(self, title):
         try:
@@ -148,8 +153,8 @@ class Api:
                     if tvshow['label'] == title:
                         return tvshow['tvshowid']
             return '-1'
-        except Exception as e:
-            self.log("error showtitle_to_id  %s" % repr(e), 1)
+        except Exception as exc:  # pylint: disable=broad-except
+            self.log("error showtitle_to_id  %s" % repr(exc), 1)
             return '-1'
 
     def get_episode_id(self, showid, show_season, show_episode):
@@ -169,8 +174,8 @@ class Api:
                         if 'episodeid' in episode:
                             episodeid = episode['episodeid']
             return episodeid
-        except Exception as e:
-            self.log("error get_episode_id  %s" % repr(e), 1)
+        except Exception as exc:  # pylint: disable=broad-except
+            self.log("error get_episode_id  %s" % repr(exc), 1)
             return episodeid
 
     def find_next_episode(self, result, current_file, include_watched, current_episode_id):
@@ -191,8 +196,8 @@ class Api:
 
         try:
             episode = result["result"]["episodes"][position]
-        except Exception as e:
-            self.log("error get_episode_id  %s" % repr(e), 1)
+        except Exception as exc:  # pylint: disable=broad-except
+            self.log("error get_episode_id  %s" % repr(exc), 1)
             # no next episode found
             episode = None
 

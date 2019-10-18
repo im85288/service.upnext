@@ -3,6 +3,8 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from platform import machine
+import xbmc
+import xbmcgui
 import resources.lib.utils as utils
 import xbmc
 import xbmcgui
@@ -15,23 +17,23 @@ class UpNext(xbmcgui.WindowXMLDialog):
     item = None
     cancel = False
     watchnow = False
-    progressStepSize = 0
-    currentProgressPercent = 100
+    progress_step_size = 0
+    current_progress_percent = 100
 
     def __init__(self, *args, **kwargs):
         self.action_exitkeys_id = [10, 13]
-        self.progressControl = None
+        self.progress_control = None
         if OS_MACHINE[0:5] == 'armv7':
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
 
     def onInit(self):
-        self.setInfo()
-        self.prepareProgressControl()
+        self.set_info()
+        self.prepare_progress_control()
 
-    def setInfo(self):
-        episodeInfo = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
+    def set_info(self):
+        episode_info = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
         if self.item['rating'] is not None:
             rating = str(round(float(self.item['rating']), 1))
         else:
@@ -61,7 +63,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
             self.setProperty(
                 'episode', str(self.item['episode']))
             self.setProperty(
-                'seasonepisode', episodeInfo)
+                'seasonepisode', episode_info)
             self.setProperty(
                 'year', str(self.item['firstaired']))
             self.setProperty(
@@ -69,71 +71,66 @@ class UpNext(xbmcgui.WindowXMLDialog):
             self.setProperty(
                 'playcount', str(self.item['playcount']))
 
-    def prepareProgressControl(self):
+    def prepare_progress_control(self):
         # noinspection PyBroadException
         try:
-            self.progressControl = self.getControl(3014)
-            if self.progressControl is not None:
-                self.progressControl.setPercent(self.currentProgressPercent)
-        except Exception:
+            self.progress_control = self.getControl(3014)
+            if self.progress_control is not None:
+                self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+        except Exception:  # pylint: disable=broad-except
             pass
 
-    def setItem(self, item):
+    def set_item(self, item):
         self.item = item
 
-    def setProgressStepSize(self, progressStepSize):
-        self.progressStepSize = progressStepSize
+    def set_progress_step_size(self, progress_step_size):
+        self.progress_step_size = progress_step_size
 
-    def updateProgressControl(self, endtime):
+    def update_progress_control(self, endtime=None):
         # noinspection PyBroadException
         try:
-            self.currentProgressPercent = self.currentProgressPercent - self.progressStepSize
-            self.progressControl = self.getControl(3014)
-            if self.progressControl is not None:
-                self.progressControl.setPercent(self.currentProgressPercent)
+            self.current_progress_percent = self.current_progress_percent - self.progress_step_size
+            self.progress_control = self.getControl(3014)
+            if self.progress_control is not None:
+                self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
             if endtime:
-                self.setProperty(
-                    'endtime', str(endtime))
-        except Exception:
+                self.setProperty('endtime', str(endtime))
+        except Exception:  # pylint: disable=broad-except
             pass
 
-    def setCancel(self, cancel):
+    def set_cancel(self, cancel):
         self.cancel = cancel
 
-    def isCancel(self):
+    def is_cancel(self):
         return self.cancel
 
-    def setWatchNow(self, watchnow):
+    def set_watch_now(self, watchnow):
         self.watchnow = watchnow
 
-    def isWatchNow(self):
+    def is_watch_now(self):
         return self.watchnow
 
-    def onFocus(self, controlId):
+    def onFocus(self, controlId):  # pylint: disable=invalid-name
         pass
 
-    def doAction(self):
+    def doAction(self):  # pylint: disable=invalid-name
         pass
 
-    def closeDialog(self):
+    def closeDialog(self):  # pylint: disable=invalid-name
         self.close()
 
-    def onClick(self, control_id):
-
-        if control_id == 3012:
+    def onClick(self, controlId):
+        if controlId == 3012:
             # watch now
-            self.setWatchNow(True)
+            self.set_watch_now(True)
             self.close()
-        elif control_id == 3013:
+        elif controlId == 3013:
             # cancel
-            self.setCancel(True)
+            self.set_cancel(True)
             if utils.settings("stopAfterClose") == "true":
                 xbmc.Player().stop()
             self.close()
 
-        pass
-
-    def onAction(self, action):
-
+    def onAction(self, action):  # pylint: disable=invalid-name
         if action == ACTION_PLAYER_STOP:
             self.close()

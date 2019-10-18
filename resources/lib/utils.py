@@ -2,12 +2,12 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
-import xbmcgui
-import xbmcaddon
-import inspect
 import binascii
+import inspect
 import json
+import xbmc
+import xbmcaddon
+import xbmcgui
 
 
 def addon_path():
@@ -53,26 +53,28 @@ def window(key, value=None, clear=False, window_id=10000):
                 result = result in ("true", "1")
 
         return result
+    return None
 
 
 def settings(setting, value=None):
 
     addon = xbmcaddon.Addon()
 
-    if value is not None:
-        if setting.endswith('.bool'):
-
-            setting = setting.replace('.bool', "")
-            value = "true" if value else "false"
-
-        addon.setSetting(setting, value)
-    else:
+    if value is None:
         result = addon.getSetting(setting.replace('.bool', ""))
 
         if result and setting.endswith('.bool'):
             result = result in ("true", "1")
 
         return result
+
+    if setting.endswith('.bool'):
+
+        setting = setting.replace('.bool', '')
+        value = "true" if value else "false"
+
+    addon.setSetting(setting, value)
+    return None
 
 
 def event(method, data=None, source_id=None):
@@ -86,11 +88,10 @@ def event(method, data=None, source_id=None):
 
 
 def decode_data(data):
-
     data = json.loads(data)
-
     if data:
         return json.loads(binascii.unhexlify(data[0]))
+    return None
 
 
 def log(title, msg, level=1):
@@ -130,36 +131,7 @@ def load_test_data():
 
 
 def unicode_to_ascii(text):
-    return text.encode('utf8', 'replace')
-#   return (
-#        text.replace('\xe2\x80\x99', "'").
-#            replace('\xc3\xa9', 'e').
-#            replace('\xe2\x80\x90', '-').
-#            replace('\xe2\x80\x91', '-').
-#            replace('\xe2\x80\x92', '-').
-#            replace('\xe2\x80\x93', '-').
-#            replace('\xe2\x80\x94', '-').
-#            replace('\xe2\x80\x94', '-').
-#            replace('\xe2\x80\x98', "'").
-#            replace('\xe2\x80\x9b', "'").
-#            replace('\xe2\x80\x9c', '"').
-#            replace('\xe2\x80\x9c', '"').
-#            replace('\xe2\x80\x9d', '"').
-#            replace('\xe2\x80\x9e', '"').
-#            replace('\xe2\x80\x9f', '"').
-#            replace('\xe2\x80\xa6', '...').
-#            replace('\xe2\x80\xb2', "'").
-#            replace('\xe2\x80\xb3', "'").
-#            replace('\xe2\x80\xb4', "'").
-#            replace('\xe2\x80\xb5', "'").
-#            replace('\xe2\x80\xb6', "'").
-#            replace('\xe2\x80\xb7', "'").
-#            replace('\xe2\x81\xba', "+").
-#            replace('\xe2\x81\xbb', "-").
-#            replace('\xe2\x81\xbc', "=").
-#            replace('\xe2\x81\xbd', "(").
-#            replace('\xe2\x81\xbe', ")")
-#    )
+    return text.encode('ascii', 'replace')
 
 
 def calculate_progress_steps(period):
@@ -169,6 +141,7 @@ def calculate_progress_steps(period):
 class JSONRPC(object):
     id = 1
     jsonrpc = "2.0"
+    params = None
 
     def __init__(self, method, **kwargs):
         self.method = method
