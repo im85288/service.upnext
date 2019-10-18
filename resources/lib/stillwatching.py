@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from platform import machine
-from platform import machine
 import xbmcgui
 
 ACTION_PLAYER_STOP = 13

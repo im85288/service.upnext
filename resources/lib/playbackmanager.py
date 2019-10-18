@@ -5,12 +5,12 @@ from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 import json
 import xbmc
-import resources.lib.utils as utils
-import resources.lib.pages as pages
-from resources.lib.api import Api
-from resources.lib.playitem import PlayItem
-from resources.lib.state import State
-from resources.lib.player import Player
+from . import pages
+from . import utils
+from .api import Api
+from .player import Player
+from .playitem import PlayItem
+from .state import State
 
 
 class PlaybackManager:  # pylint: disable=invalid-name
@@ -26,7 +26,7 @@ class PlaybackManager:  # pylint: disable=invalid-name
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
-        utils.log("%s %s" % (utils.addon_name(), class_name), msg, int(lvl))
+        utils.log("[%s] %s" % (utils.addon_id(), class_name), msg, int(lvl))
 
     def launch_up_next(self):
         playlist_item = True
@@ -102,8 +102,8 @@ class PlaybackManager:  # pylint: disable=invalid-name
             utils.window('service.upnext.dialog', 'true')
             showing_still_watching_page = True
         while (self.player.isPlaying() and (total_time - play_time > 1)
-               and not next_up_page.isCancel() and not next_up_page.isWatchNow()
-               and not still_watching_page.isStillWatching() and not still_watching_page.isCancel()):
+               and not next_up_page.is_cancel() and not next_up_page.is_watch_now()
+               and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
             xbmc.sleep(100)
             try:
                 play_time = self.player.getTime()

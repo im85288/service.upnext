@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import json
 import xbmc
-import resources.lib.utils as utils
+from . import utils
 
 
 class Api:
@@ -16,7 +16,7 @@ class Api:
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
-        utils.log("%s %s" % (utils.addon_name(), class_name), msg, int(lvl))
+        utils.log("[%s] %s" % (utils.addon_id(), class_name), msg, int(lvl))
 
     def has_addon_data(self):
         return self.data

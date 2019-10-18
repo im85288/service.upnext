@@ -3,10 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
-import resources.lib.utils as utils
-from resources.lib.playbackmanager import PlaybackManager
-from resources.lib.api import Api
-from resources.lib.player import Player
+from . import utils
+from .api import Api
+from .playbackmanager import PlaybackManager
+from .player import Player
 
 
 class Monitor(xbmc.Monitor):
@@ -19,7 +19,7 @@ class Monitor(xbmc.Monitor):
 
     def log(self, msg, lvl=1):
         class_name = self.__class__.__name__
-        utils.log("%s %s" % (utils.addon_name(), class_name), str(msg), int(lvl))
+        utils.log("[%s] %s" % (utils.addon_id(), class_name), str(msg), int(lvl))
 
     def run(self):
 
@@ -54,7 +54,7 @@ class Monitor(xbmc.Monitor):
 
         self.log("======== STOP service.upnext ========", 0)
 
-    def onNotification(self, sender, method, data):
+    def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
 
         if method.split('.')[1].lower() != 'upnext_data':  # method looks like Other.upnext_data
             return

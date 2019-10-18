@@ -1,5 +1,5 @@
 ENVS := flake8,py27,py36
-export PYTHONPATH := $(CURDIR)/resources/lib
+export PYTHONPATH := $(CURDIR):test/
 addon_xml := addon.xml
 
 # Collect information to build as sensible package name
@@ -9,7 +9,7 @@ git_branch = $(shell git rev-parse --abbrev-ref HEAD)
 git_hash = $(shell git rev-parse --short HEAD)
 
 zip_name = $(name)-$(version)-$(git_branch)-$(git_hash).zip
-include_files = addon.xml LICENSE README.md resources/
+include_files = addon.xml fanart.jpg icon.png LICENSE README.md resources/ service.py
 include_paths = $(patsubst %,$(name)/%,$(include_files))
 exclude_files = \*.new \*.orig \*.pyc \*.pyo
 zip_dir = $(name)/
@@ -24,7 +24,7 @@ all: test zip
 
 package: zip
 
-test: sanity
+test: sanity unit run
 
 sanity: tox pylint language
 
@@ -34,16 +34,30 @@ tox:
 
 pylint:
 	@echo -e "$(white)=$(blue) Starting sanity pylint test$(reset)"
-	pylint resources/lib/ test/
+	pylint service.py resources/lib/ test/
 
 language:
-	@echo -e "$(white)=$(blue) Checking translations$(reset)"
-	msgcmp resources/language/resource.language.nl_nl/strings.po resources/language/resource.language.en_gb/strings.po
+	@echo -e "$(white)=$(blue) Starting language test$(reset)"
+	@-$(foreach lang,$(languages), \
+		msgcmp resources/language/resource.language.$(lang)/strings.po resources/language/resource.language.en_gb/strings.po; \
+	)
 
 addon: clean
 	@echo -e "$(white)=$(blue) Starting sanity addon tests$(reset)"
-	kodi-addon-checker . --branch=krypton
 	kodi-addon-checker . --branch=leia
+
+unit: clean
+	@echo -e "$(white)=$(blue) Starting unit tests$(reset)"
+	python -m unittest discover
+
+run:
+	@echo -e "$(white)=$(blue) Run CLI$(reset)"
+	@-pkill -ef service.py
+	python service.py &
+	@sleep 10
+#	python test/run.py
+	@sleep 5
+	@-pkill -ef service.py
 
 zip: clean
 	@echo -e "$(white)=$(blue) Building new package$(reset)"

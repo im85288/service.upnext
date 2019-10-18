@@ -3,8 +3,8 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
-import resources.lib.utils as utils
-import resources.lib.pages as pages
+from . import pages
+from . import utils
 
 
 class Developer:

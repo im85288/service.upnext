@@ -8,18 +8,23 @@ import json
 import xbmc
 import xbmcaddon
 import xbmcgui
+from .statichelper import to_unicode
 
 
 def addon_path():
-    return xbmcaddon.Addon().getAddonInfo('path')
+    return to_unicode(xbmcaddon.Addon().getAddonInfo('path'))
 
 
 def kodi_version():
     return xbmc.getInfoLabel('System.BuildVersion')[:2]
 
 
+def addon_id():
+    return to_unicode(xbmcaddon.Addon().getAddonInfo('id'))
+
+
 def addon_name():
-    return xbmcaddon.Addon().getAddonInfo('name').upper()
+    return to_unicode(xbmcaddon.Addon().getAddonInfo('name'))
 
 
 def addon_version():
@@ -82,7 +87,7 @@ def event(method, data=None, source_id=None):
     """ Data is a dictionary.
     """
     data = data or {}
-    source_id = source_id or xbmcaddon.Addon().getAddonInfo('id')
+    source_id = source_id or addon_id()
     xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' %
                         (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
 
@@ -130,15 +135,11 @@ def load_test_data():
     return test_episode
 
 
-def unicode_to_ascii(text):
-    return text.encode('ascii', 'replace')
-
-
 def calculate_progress_steps(period):
     return (100.0 / int(period)) / 10
 
 
-class JSONRPC(object):
+class JSONRPC:
     id = 1
     jsonrpc = "2.0"
     params = None

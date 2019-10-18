@@ -1,6 +1,8 @@
 # Test caches
 *.pyc
 *.pyo
+.coverage
+.pytest_cache/
 .tox/
 
 # Logs
