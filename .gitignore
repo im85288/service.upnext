@@ -1,2 +1,8 @@
-
+# Test caches
+*.pyc
 *.pyo
+.tox/
+
+# Logs
+kodi-addon-checker-report.log
+kodi-addon-checker.log

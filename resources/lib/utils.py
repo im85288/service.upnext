@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+
+from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import xbmcgui
 import xbmcaddon
@@ -113,7 +117,8 @@ def load_test_data():
     test_episode["art"]["tvshow.landscape"] = "https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg"
     test_episode["art"]["tvshow.clearart"] = "https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png"
     test_episode["art"]["tvshow.clearlogo"] = "https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png"
-    test_episode["plot"] = "Lord Baelish arrives at Renly's camp just before he faces off against Stannis. Daenerys and her company are welcomed into the city of Qarth. Arya, Gendry, and Hot Pie find themselves imprisoned at Harrenhal."
+    test_episode["plot"] = "Lord Baelish arrives at Renly's camp just before he faces off against Stannis. Daenerys and her company are welcomed "\
+                           " into the city of Qarth. Arya, Gendry, and Hot Pie find themselves imprisoned at Harrenhal."
     test_episode["showtitle"] = "Game of Thrones"
     test_episode["playcount"] = 1
     test_episode["season"] = 2
@@ -125,40 +130,41 @@ def load_test_data():
 
 
 def unicode_to_ascii(text):
-    ascii_text = (text.
-            replace('\xe2\x80\x99', "'").
-            replace('\xc3\xa9', 'e').
-            replace('\xe2\x80\x90', '-').
-            replace('\xe2\x80\x91', '-').
-            replace('\xe2\x80\x92', '-').
-            replace('\xe2\x80\x93', '-').
-            replace('\xe2\x80\x94', '-').
-            replace('\xe2\x80\x94', '-').
-            replace('\xe2\x80\x98', "'").
-            replace('\xe2\x80\x9b', "'").
-            replace('\xe2\x80\x9c', '"').
-            replace('\xe2\x80\x9c', '"').
-            replace('\xe2\x80\x9d', '"').
-            replace('\xe2\x80\x9e', '"').
-            replace('\xe2\x80\x9f', '"').
-            replace('\xe2\x80\xa6', '...').
-            replace('\xe2\x80\xb2', "'").
-            replace('\xe2\x80\xb3', "'").
-            replace('\xe2\x80\xb4', "'").
-            replace('\xe2\x80\xb5', "'").
-            replace('\xe2\x80\xb6', "'").
-            replace('\xe2\x80\xb7', "'").
-            replace('\xe2\x81\xba', "+").
-            replace('\xe2\x81\xbb', "-").
-            replace('\xe2\x81\xbc', "=").
-            replace('\xe2\x81\xbd', "(").
-            replace('\xe2\x81\xbe', ")")
-            )
-    return ascii_text
+    return text.encode('utf8', 'replace')
+#   return (
+#        text.replace('\xe2\x80\x99', "'").
+#            replace('\xc3\xa9', 'e').
+#            replace('\xe2\x80\x90', '-').
+#            replace('\xe2\x80\x91', '-').
+#            replace('\xe2\x80\x92', '-').
+#            replace('\xe2\x80\x93', '-').
+#            replace('\xe2\x80\x94', '-').
+#            replace('\xe2\x80\x94', '-').
+#            replace('\xe2\x80\x98', "'").
+#            replace('\xe2\x80\x9b', "'").
+#            replace('\xe2\x80\x9c', '"').
+#            replace('\xe2\x80\x9c', '"').
+#            replace('\xe2\x80\x9d', '"').
+#            replace('\xe2\x80\x9e', '"').
+#            replace('\xe2\x80\x9f', '"').
+#            replace('\xe2\x80\xa6', '...').
+#            replace('\xe2\x80\xb2', "'").
+#            replace('\xe2\x80\xb3', "'").
+#            replace('\xe2\x80\xb4', "'").
+#            replace('\xe2\x80\xb5', "'").
+#            replace('\xe2\x80\xb6', "'").
+#            replace('\xe2\x80\xb7', "'").
+#            replace('\xe2\x81\xba', "+").
+#            replace('\xe2\x81\xbb', "-").
+#            replace('\xe2\x81\xbc', "=").
+#            replace('\xe2\x81\xbd', "(").
+#            replace('\xe2\x81\xbe', ")")
+#    )
 
 
 def calculate_progress_steps(period):
     return (100.0 / int(period)) / 10
+
 
 class JSONRPC(object):
     id = 1
@@ -182,4 +188,3 @@ class JSONRPC(object):
     def execute(self, params=None):
         self.params = params
         return json.loads(xbmc.executeJSONRPC(self._query()))
-

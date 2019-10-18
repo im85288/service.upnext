@@ -1,6 +1,11 @@
-import xbmcgui, xbmc
+# -*- coding: utf-8 -*-
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+
+from __future__ import absolute_import, division, unicode_literals
 from platform import machine
 import resources.lib.utils as utils
+import xbmc
+import xbmcgui
 
 ACTION_PLAYER_STOP = 13
 OS_MACHINE = machine()
