@@ -55,15 +55,15 @@ msgstr "Verderkijken"
 
 msgctxt "#30013"
 msgid "Include watched episodes"
-msgstr "Op bekeken afleveringen toepassen"
+msgstr "Ook op bekeken afleveringen toepassen"
 
 msgctxt "#30014"
 msgid "Disable Up Next (restart required)"
-msgstr "Schakel Up Next uit (herstarten vereist)"
+msgstr "Up Next uitschakelen (herstarten vereist)"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"
-msgstr "Speel korte video's automatisch af"
+msgstr "Korte video's automatisch afspelen"
 
 msgctxt "#30018"
 msgid "Maximum length for automatic short video play (in minutes)"
@@ -71,7 +71,7 @@ msgstr "Maximale lengte voor het automatisch afspelen van korte video's (in minu
 
 msgctxt "#30019"
 msgid "Show on-screen notification during short video autoplay"
-msgstr "Toon meldingen tijdens het automatisch afspelen van korte video's"
+msgstr "Tijdens het automatisch afspelen van korte video's meldingen tonen"
 
 msgctxt "#30024"
 msgid "Still there?"
@@ -87,7 +87,7 @@ msgstr "Ontwikkelaar"
 
 msgctxt "#30029"
 msgid "Enable developer mode"
-msgstr "Schakel ontwikkelaarsmodus in"
+msgstr "Ontwikkelaarsmodus inschakelen"
 
 msgctxt "#30030"
 msgid "Choose the window to be shown"
@@ -95,7 +95,7 @@ msgstr "Kies het venster om te tonen"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
-msgstr "Toepassen op afspeellijsten"
+msgstr "Ook op afspeellijsten toepassen"
 
 msgctxt "#30034"
 msgid "Close"
@@ -163,4 +163,4 @@ msgstr "Volgende aflevering"
 
 msgctxt "#30050"
 msgid "Stop after dialog close"
-msgstr "Stop met afspelen na het afsluiten"
+msgstr "Na het afsluiten stoppen met afspelen"
