@@ -19,7 +19,7 @@ msgstr ""
 
 msgctxt "#30001"
 msgid "The number of seconds before the end to show the notification"
-msgstr "Aantal seconden voor het einde om meldingen te tonen"
+msgstr "Aantal seconden om vóór het einde te melden"
 
 msgctxt "#30002"
 msgid "Log Level:"
@@ -35,15 +35,15 @@ msgstr "Geavanceerd"
 
 msgctxt "#30005"
 msgid "Default action when nothing selected"
-msgstr "Standaard actie als niets geselecteerd is"
+msgstr "Standaardactie als niets geselecteerd is"
 
 msgctxt "#30006"
 msgid "Watch Now"
-msgstr "Bekijk nu"
+msgstr "Kijk nu"
 
 msgctxt "#30008"
 msgid "Up Next"
-msgstr "Volgend"
+msgstr "Volgende"
 
 msgctxt "#30009"
 msgid "Number of episodes before still watching query"
@@ -51,11 +51,11 @@ msgstr "Aantal afleveringen alvorens te vragen of er nog gekeken wordt"
 
 msgctxt "#30010"
 msgid "Continue watching"
-msgstr "Verder kijken"
+msgstr "Verderkijken"
 
 msgctxt "#30013"
 msgid "Include watched episodes"
-msgstr "Toepassen op bekeken afleveringen"
+msgstr "Op bekeken afleveringen toepassen"
 
 msgctxt "#30014"
 msgid "Disable Up Next (restart required)"
@@ -87,7 +87,7 @@ msgstr "Ontwikkelaar"
 
 msgctxt "#30029"
 msgid "Enable developer mode"
-msgstr "Schakel ontwikkelaarmodus in"
+msgstr "Schakel ontwikkelaarsmodus in"
 
 msgctxt "#30030"
 msgid "Choose the window to be shown"
@@ -139,7 +139,7 @@ msgstr "Info"
 
 msgctxt "#30044"
 msgid "Debug"
-msgstr "Debug"
+msgstr "Foutopsporing"
 
 msgctxt "#30045"
 msgid "UpNext"
@@ -151,15 +151,15 @@ msgstr "UpNextSimple"
 
 msgctxt "#30047"
 msgid "StillWatching"
-msgstr "StilLWatching"
+msgstr "StillWatching"
 
 msgctxt "#30048"
 msgid "StillWatchingSimple"
-msgstr "StilLWatchingSimple"
+msgstr "StillWatchingSimple"
 
 msgctxt "#30049"
 msgid "Next Episode"
-msgstr "Volgend aflevering"
+msgstr "Volgende aflevering"
 
 msgctxt "#30050"
 msgid "Stop after dialog close"
