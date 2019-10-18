@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+
+from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import resources.lib.utils as utils
 from resources.lib.api import Api
@@ -30,7 +34,7 @@ class Player(xbmc.Player):
 
     def onPlayBackStarted(self):
         # Will be called when kodi starts playing a file
-        xbmc.sleep(5000) # Delay for slower devices, should really use onAVStarted for Leia
+        xbmc.sleep(5000)  # Delay for slower devices, should really use onAVStarted for Leia
         if not xbmc.getCondVisibility("videoplayer.content(episodes)"):
             return
         self.state.track = True
@@ -46,4 +50,4 @@ class Player(xbmc.Player):
     def onPlayBackStopped(self):
         # Will be called when user stops playing a file.
         self.api.reset_addon_data()
-        self.state = State() # reset state
+        self.state = State()  # Reset state

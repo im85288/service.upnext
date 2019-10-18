@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+
+from __future__ import absolute_import, division, unicode_literals
 import resources.lib.utils as utils
 from resources.lib.upnext import UpNext
 from resources.lib.stillwatching import StillWatching
@@ -41,5 +45,3 @@ def set_up_developer_pages(episode):
     still_watching_page.setProgressStepSize(progress_step_size)
     still_watching_page_simple.setProgressStepSize(progress_step_size)
     return next_up_page, next_up_page_simple, still_watching_page, still_watching_page_simple
-
-

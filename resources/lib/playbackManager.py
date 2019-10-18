@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+
+from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import json
 import resources.lib.utils as utils
@@ -81,9 +85,9 @@ class PlaybackManager:
         self.log("played in a row %s" % json.dumps(self.state.played_in_a_row), 2)
         showing_next_up_page = False
         showing_still_watching_page = False
-        hide_for_short_videos = (self.state.short_play_notification == "false") and (
-                self.state.short_play_length >= total_time) and (
-                                        self.state.short_play_mode == "true")
+        hide_for_short_videos = bool(self.state.short_play_notification == "false"
+                                     and self.state.short_play_length >= total_time
+                                     and self.state.short_play_mode == "true")
         if int(self.state.played_in_a_row) <= int(played_in_a_row_number) and not hide_for_short_videos:
             self.log(
                 "showing next up page as played in a row is %s" % json.dumps(self.state.played_in_a_row), 2)
@@ -96,9 +100,9 @@ class PlaybackManager:
             still_watching_page.show()
             utils.window('service.upnext.dialog', 'true')
             showing_still_watching_page = True
-        while (self.player.isPlaying() and (
-                total_time - play_time > 1) and not next_up_page.isCancel() and not next_up_page.isWatchNow() and
-                not still_watching_page.isStillWatching() and not still_watching_page.isCancel()):
+        while (self.player.isPlaying() and (total_time - play_time > 1)
+               and not next_up_page.isCancel() and not next_up_page.isWatchNow()
+               and not still_watching_page.isStillWatching() and not still_watching_page.isCancel()):
             xbmc.sleep(100)
             try:
                 play_time = self.player.getTime()
@@ -106,7 +110,7 @@ class PlaybackManager:
                 if episode_runtime:
                     end_time = total_time - play_time + episode["runtime"]
                     end_time = datetime.now() + timedelta(seconds=end_time)
-                    end_time = end_time.strftime("%I:%M %p" if self.clock_twelve else "%H:%M").lstrip("0") # remove leading zero on all platforms
+                    end_time = end_time.strftime("%I:%M %p" if self.clock_twelve else "%H:%M").lstrip("0")  # Remove leading zero on all platforms
                 else:
                     end_time = None
                 if not self.state.pause:

@@ -1,3 +1,7 @@
+# -*- coding: utf-8 -*-
+# GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+
+from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import json
 import resources.lib.utils as utils
@@ -15,7 +19,7 @@ class Api:
         utils.log("%s %s" % (utils.addon_name(), class_name), msg, int(lvl))
 
     def has_addon_data(self):
-       return self.data
+        return self.data
 
     def reset_addon_data(self):
         self.data = {}
@@ -31,10 +35,10 @@ class Api:
     def get_next_in_playlist(self, position):
         result = utils.JSONRPC("Playlist.GetItems").execute({
             "playlistid": 1,
-            "limits": {"start": position+1, "end": position+2},
+            "limits": {"start": position + 1, "end": position + 2},
             "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
                            "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
-                           "dateadded", "lastplayed" , "streamdetails"]})
+                           "dateadded", "lastplayed", "streamdetails"]})
         if result:
             self.log("Got details of next playlist item %s" % json.dumps(result), 2)
             if "result" in result and result["result"].get("items"):
@@ -81,17 +85,17 @@ class Api:
             # Get details of the playing media
             self.log("Getting details of now playing media", 2)
             result = utils.JSONRPC("Player.GetItem").execute({
-                "playerid": playerid, 
-                "properties": ["showtitle","tvshowid","episode","season","playcount","genre","plotoutline"]})
+                "playerid": playerid,
+                "properties": ["showtitle", "tvshowid", "episode", "season", "playcount", "genre", "plotoutline"]})
             self.log("Got details of now playing media %s" % json.dumps(result), 2)
             return result
 
     def handle_kodi_lookup_of_episode(self, tvshowid, current_file, include_watched, current_episode_id):
         result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute({
-            "tvshowid": tvshowid, 
+            "tvshowid": tvshowid,
             "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
                            "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
-                           "dateadded", "lastplayed" , "streamdetails"],
+                           "dateadded", "lastplayed", "streamdetails"],
             "sort": {"method": "episode"}})
 
         if result:
@@ -108,7 +112,7 @@ class Api:
             "tvshowid": tvshowid,
             "properties": ["title", "playcount", "season", "episode", "showtitle", "plot",
                            "file", "rating", "resume", "tvshowid", "art", "firstaired", "runtime", "writer",
-                           "dateadded", "lastplayed" , "streamdetails"],
+                           "dateadded", "lastplayed", "streamdetails"],
             "sort": {"method": "episode"}})
         self.log("Find current episode called", 2)
         position = 0
