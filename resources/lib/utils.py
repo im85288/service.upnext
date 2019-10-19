@@ -16,6 +16,7 @@ ADDON_PATH = to_unicode(ADDON.getAddonInfo('path'))
 
 
 def window(key, value=None, clear=False, window_id=10000):
+    ''' Get or set Window properties '''
     the_window = xbmcgui.Window(window_id)
 
     if clear:
@@ -45,6 +46,7 @@ def window(key, value=None, clear=False, window_id=10000):
 
 
 def settings(setting, value=None):
+    ''' Get or set add-on settings '''
     if value is None:
         result = to_unicode(ADDON.getSetting(setting.replace('.bool', '')))
 
@@ -63,9 +65,7 @@ def settings(setting, value=None):
 
 
 def event(method, data=None, source_id=None):
-
-    """ Data is a dictionary.
-    """
+    ''' Send internal notification event '''
     data = data or {}
     source_id = source_id or ADDON_ID
     xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' %
@@ -73,24 +73,28 @@ def event(method, data=None, source_id=None):
 
 
 def decode_data(data):
+    ''' Decode data coming from a notification event '''
     data = json.loads(data)
     if data:
-        return json.loads(unhexlify(data[0]))
+        return to_unicode(json.loads(unhexlify(data[0])))
     return None
 
 
-def log(title, msg, level=1):
+def log(msg, name=None, level=1):
+    ''' Log information to the Kodi log '''
     log_level = int(settings("logLevel"))
-    window('logLevel', from_unicode(log_level))
+    window('logLevel', log_level)
     if log_level < level:
         return
+    msg = from_unicode(msg)
     if log_level == 2:  # inspect.stack() is expensive
-        xbmc.log('%s -> %s : %s' % (title, stack()[1][3], from_unicode(msg)), level=xbmc.LOGNOTICE)
+        xbmc.log('[%s] %s -> %s: %s' % (ADDON_ID, name, stack()[1][3], msg), level=xbmc.LOGNOTICE)
     else:
-        xbmc.log('%s -> %s' % (title, from_unicode(msg)), level=xbmc.LOGNOTICE)
+        xbmc.log('[%s] %s -> %s' % (ADDON_ID, name, msg), level=xbmc.LOGNOTICE)
 
 
 def load_test_data():
+    ''' Load test data for developer mode '''
     test_episode = {"episodeid": 12345678, "tvshowid": 12345678, "title": "Garden of Bones", "art": {}}
     test_episode["art"]["tvshow.poster"] = "https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg"
     test_episode["art"]["thumb"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg"
@@ -111,29 +115,33 @@ def load_test_data():
 
 
 def calculate_progress_steps(period):
+    ''' Calculate a progress step '''
     return (100.0 / int(period)) / 10
 
 
 class JSONRPC:
-    id = 1
-    jsonrpc = "2.0"
-    params = None
+    ''' A class for performing JSONRPC calls '''
 
     def __init__(self, method, **kwargs):
+        ''' Class constructor '''
+        self.id = 1
+        self.jsonrpc = '2.0'
         self.method = method
-        for arg in kwargs:
-            self.arg = kwargs[arg]
+        self.params = None
+        self.__dict__.update(kwargs)
 
     def _query(self):
-        query = {
-            'jsonrpc': self.jsonrpc,
-            'id': self.id,
-            'method': self.method,
-        }
+        ''' Query builder '''
+        query = dict(
+            id=self.id,
+            jsonrpc=self.jsonrpc,
+            method=self.method,
+        )
         if self.params is not None:
             query['params'] = self.params
         return json.dumps(query)
 
     def execute(self, params=None):
+        ''' Perform the actual request '''
         self.params = params
         return json.loads(xbmc.executeJSONRPC(self._query()))

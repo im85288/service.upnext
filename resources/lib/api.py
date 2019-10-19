@@ -14,9 +14,8 @@ class Api:
         self.__dict__ = self._shared_state
         self.data = {}
 
-    def log(self, msg, lvl=2):
-        class_name = self.__class__.__name__
-        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
+    def log(self, msg, level=2):
+        utils.log(msg, name=self.__class__.__name__, level=level)
 
     def has_addon_data(self):
         return self.data
@@ -50,7 +49,7 @@ class Api:
         return None
 
     def play_addon_item(self):
-        self.log("sending data to addon to play:  %s " % json.dumps(self.data.get('play_info')), 2)
+        self.log("sending data to addon to play: %s " % json.dumps(self.data.get('play_info')), 2)
         utils.event(self.data.get('id'), self.data.get('play_info'), 'upnextprovider')
 
     def handle_addon_lookup_of_next_episode(self):

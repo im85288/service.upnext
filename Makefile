@@ -57,7 +57,7 @@ run:
 	@sleep 10
 #	python test/run.py
 	@sleep 5
-	@-pkill -ef service.py
+	@-pkill -ef -INT service.py
 
 zip: clean
 	@echo -e "$(white)=$(blue) Building new package$(reset)"

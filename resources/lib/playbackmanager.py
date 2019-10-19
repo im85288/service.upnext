@@ -24,9 +24,8 @@ class PlaybackManager:  # pylint: disable=invalid-name
         self.player = Player()
         self.clock_twelve = None
 
-    def log(self, msg, lvl=2):
-        class_name = self.__class__.__name__
-        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
+    def log(self, msg, level=2):
+        utils.log(msg, name=self.__class__.__name__, level=level)
 
     def launch_up_next(self):
         playlist_item = True
