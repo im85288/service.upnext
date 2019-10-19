@@ -21,7 +21,7 @@ class PlayItem:
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
-        utils.log("[%s] %s" % (utils.addon_id(), class_name), msg, int(lvl))
+        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
 
     def get_episode(self):
         current_file = self.player.getPlayingFile()
@@ -36,9 +36,9 @@ class PlayItem:
         else:
             episode = self.api.handle_addon_lookup_of_next_episode()
             current_episode = self.api.handle_addon_lookup_of_current_episode()
-            self.state.current_episode_id = current_episode["episodeid"]
-            if self.state.current_tv_show_id != current_episode["tvshowid"]:
-                self.state.current_tv_show_id = current_episode["tvshowid"]
+            self.state.current_episode_id = current_episode.get('episodeid')
+            if self.state.current_tv_show_id != current_episode.get('tvshowid'):
+                self.state.current_tv_show_id = current_episode.get('tvshowid')
                 self.state.played_in_a_row = 1
         return episode
 
@@ -50,22 +50,28 @@ class PlayItem:
         return False
 
     def handle_now_playing_result(self, result):
-        if 'result' in result:
-            item_type = result["result"]["item"]["type"]
-            current_episode_number = result["result"]["item"]["episode"]
-            current_season_id = result["result"]["item"]["season"]
-            current_show_title = result["result"]["item"]["showtitle"].encode('utf-8')
-            self.state.tv_show_id = result["result"]["item"]["tvshowid"]
-            if item_type == "episode":
-                if int(self.state.tv_show_id) == -1:
-                    self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
-                    self.log("Fetched missing tvshowid " + json.dumps(self.state.tv_show_id), 2)
+        if not result.get('result'):
+            return
 
-                # Get current episodeid
-                current_episode_id = self.api.get_episode_id(
-                    showid=str(self.state.tv_show_id), show_season=current_season_id,
-                    show_episode=current_episode_number)
-                self.state.current_episode_id = current_episode_id
-                if self.state.current_tv_show_id != self.state.tv_show_id:
-                    self.state.current_tv_show_id = self.state.tv_show_id
-                    self.state.played_in_a_row = 1
+        item = result.get('result').get('item')
+        self.state.tv_show_id = item.get('tvshowid')
+        if item.get('type') != 'episode':
+            return
+
+        if int(self.state.tv_show_id) == -1:
+            current_show_title = item.get('showtitle').encode('utf-8')
+            self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
+            self.log("Fetched missing tvshowid " + json.dumps(self.state.tv_show_id), 2)
+
+        current_episode_number = item.get('episode')
+        current_season_id = item.get('season')
+        # Get current episodeid
+        current_episode_id = self.api.get_episode_id(
+            showid=str(self.state.tv_show_id),
+            show_episode=current_episode_number,
+            show_season=current_season_id,
+        )
+        self.state.current_episode_id = current_episode_id
+        if self.state.current_tv_show_id != self.state.tv_show_id:
+            self.state.current_tv_show_id = self.state.tv_show_id
+            self.state.played_in_a_row = 1

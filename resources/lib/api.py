@@ -16,7 +16,7 @@ class Api:
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
-        utils.log("[%s] %s" % (utils.addon_id(), class_name), msg, int(lvl))
+        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
 
     def has_addon_data(self):
         return self.data
@@ -30,7 +30,7 @@ class Api:
 
     @staticmethod
     def play_kodi_item(episode):
-        utils.JSONRPC("Player.Open", id=0).execute({"item": {"episodeid": episode["episodeid"]}})
+        utils.JSONRPC("Player.Open", id=0).execute({"item": {"episodeid": episode.get('episodeid')}})
 
     def get_next_in_playlist(self, position):
         result = utils.JSONRPC("Playlist.GetItems").execute({
@@ -41,33 +41,33 @@ class Api:
                            "dateadded", "lastplayed", "streamdetails"]})
         if result:
             self.log("Got details of next playlist item %s" % json.dumps(result), 2)
-            if "result" in result and result["result"].get("items"):
-                item = result["result"]["items"][0]
-                if item["type"] == "episode":
-                    item["episodeid"] = item["id"]
-                    item["tvshowid"] = item.get("tvshowid", item["id"])
+            if result.get('result') and result.get('result', {}).get('items'):
+                item = result.get('result', {}).get('items', [])[0]
+                if item.get('type') == 'episode':
+                    item['episodeid'] = item.get('id')
+                    item['tvshowid'] = item.get('tvshowid', item.get('id'))
                     return item
         return None
 
     def play_addon_item(self):
-        self.log("sending data to addon to play:  %s " % json.dumps(self.data['play_info']), 2)
-        utils.event(self.data['id'], self.data['play_info'], "upnextprovider")
+        self.log("sending data to addon to play:  %s " % json.dumps(self.data.get('play_info')), 2)
+        utils.event(self.data.get('id'), self.data.get('play_info'), 'upnextprovider')
 
     def handle_addon_lookup_of_next_episode(self):
         if not self.data:
             return None
         text = ("handle_addon_lookup_of_next_episode episode returning data %s "
-                % json.dumps(self.data["next_episode"]))
+                % json.dumps(self.data.get('next_episode')))
         self.log(text, 2)
-        return self.data["next_episode"]
+        return self.data.get('next_episode')
 
     def handle_addon_lookup_of_current_episode(self):
         if not self.data:
             return None
         text = ("handle_addon_lookup_of_current episode returning data %s "
-                % json.dumps(self.data["current_episode"]))
+                % json.dumps(self.data.get('current_episode')))
         self.log(text, 2)
-        return self.data["current_episode"]
+        return self.data.get('current_episode')
 
     def notification_time(self):
         return self.data.get('notification_time') or utils.settings('autoPlaySeasonTime')
@@ -78,12 +78,12 @@ class Api:
         self.log("Got active player %s" % json.dumps(result), 2)
 
         # Seems to work too fast loop whilst waiting for it to become active
-        while not result["result"]:
+        while not result.get('result'):
             result = utils.JSONRPC("Player.GetActivePlayers").execute()
             self.log("Got active player %s" % json.dumps(result), 2)
 
-        if 'result' in result and result["result"][0] is not None:
-            playerid = result["result"][0]["playerid"]
+        if result.get('result') and result.get('result', [])[0] is not None:
+            playerid = result.get('result')[0].get('playerid')
 
             # Get details of the playing media
             self.log("Getting details of now playing media", 2)
@@ -106,7 +106,7 @@ class Api:
             xbmc.sleep(100)
 
             # Find the next unwatched and the newest added episodes
-            if "result" in result and "episodes" in result["result"]:
+            if result.get('result') and result.get('result', {}).get('episodes'):
                 episode = self.find_next_episode(result, current_file, include_watched, current_episode_id)
                 return episode
         return None
@@ -124,18 +124,18 @@ class Api:
             xbmc.sleep(100)
 
             # Find the next unwatched and the newest added episodes
-            if "result" in result and "episodes" in result["result"]:
-                for episode in result["result"]["episodes"]:
+            if result.get('result') and result.get('result', {}).get('episodes'):
+                for episode in result.get('result').get('episodes'):
                     # find position of current episode
-                    if current_episode_id == episode["episodeid"]:
+                    if current_episode_id == episode.get('episodeid'):
                         # found a match so get out of here
                         break
                     position += 1
 
                 # now return the episode
-                self.log("Find current episode found episode in position: %s" % str(position), 2)
+                self.log("Find current episode found episode in position: %d" % position, 2)
                 try:
-                    episode = result["result"]["episodes"][position]
+                    episode = result.get('result').get('episodes')[position]
                 except Exception as exc:  # pylint: disable=broad-except
                     # no next episode found
                     episode = None
@@ -144,20 +144,18 @@ class Api:
                 return episode
         return None
 
-    def showtitle_to_id(self, title):
-        try:
-            json_result = utils.JSONRPC("VideoLibrary.GetTVShows", id="libTvShows").execute({"properties": ["title"]})
-            if 'result' in json_result and 'tvshows' in json_result['result']:
-                json_result = json_result['result']['tvshows']
-                for tvshow in json_result:
-                    if tvshow['label'] == title:
-                        return tvshow['tvshowid']
-            return '-1'
-        except Exception as exc:  # pylint: disable=broad-except
-            self.log("error showtitle_to_id  %s" % repr(exc), 1)
-            return '-1'
+    @staticmethod
+    def showtitle_to_id(title):
+        json_result = utils.JSONRPC("VideoLibrary.GetTVShows", id="libTvShows").execute({"properties": ["title"]})
+        if json_result.get('result') and json_result.get('result', {}).get('tvshows'):
+            json_result = json_result.get('result').get('tvshows')
+            for tvshow in json_result:
+                if tvshow.get('label') == title:
+                    return tvshow.get('tvshowid')
+        return '-1'
 
-    def get_episode_id(self, showid, show_season, show_episode):
+    @staticmethod
+    def get_episode_id(showid, show_season, show_episode):
         show_season = int(show_season)
         show_episode = int(show_episode)
         episodeid = 0
@@ -165,37 +163,33 @@ class Api:
             "properties": ["season", "episode"],
             "tvshowid": int(showid)
         }
-        try:
-            json_result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute(query)
-            if 'result' in json_result and 'episodes' in json_result['result']:
-                json_result = json_result['result']['episodes']
-                for episode in json_result:
-                    if episode['season'] == show_season and episode['episode'] == show_episode:
-                        if 'episodeid' in episode:
-                            episodeid = episode['episodeid']
-            return episodeid
-        except Exception as exc:  # pylint: disable=broad-except
-            self.log("error get_episode_id  %s" % repr(exc), 1)
-            return episodeid
+        json_result = utils.JSONRPC("VideoLibrary.GetEpisodes").execute(query)
+        if json_result.get('result') and json_result.get('result', {}).get('episodes'):
+            json_result = json_result.get('result').get('episodes')
+            for episode in json_result:
+                if episode.get('season') == show_season and episode.get('episode') == show_episode:
+                    if episode.get('episodeid'):
+                        episodeid = episode.get('episodeid')
+        return episodeid
 
     def find_next_episode(self, result, current_file, include_watched, current_episode_id):
         position = 0
-        for episode in result["result"]["episodes"]:
+        for episode in result.get('result').get('episodes'):
             # find position of current episode
-            if current_episode_id == episode["episodeid"]:
+            if current_episode_id == episode.get('episodeid'):
                 # found a match so add 1 for the next and get out of here
                 position += 1
                 break
             position += 1
         # check if it may be a multi-part episode
-        while result["result"]["episodes"][position]["file"] == current_file:
+        while result.get('result').get('episodes')[position].get('file') == current_file:
             position += 1
         # skip already watched episodes?
-        while not include_watched and result["result"]["episodes"][position]["playcount"] > 1:
+        while not include_watched and result.get('result').get('episodes')[position].get('playcount') > 1:
             position += 1
 
         try:
-            episode = result["result"]["episodes"][position]
+            episode = result.get('result').get('episodes')[position]
         except Exception as exc:  # pylint: disable=broad-except
             self.log("error get_episode_id  %s" % repr(exc), 1)
             # no next episode found

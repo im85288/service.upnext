@@ -2,33 +2,17 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import binascii
-import inspect
+from binascii import hexlify, unhexlify
+from inspect import stack
 import json
 import xbmc
 import xbmcaddon
 import xbmcgui
-from .statichelper import to_unicode
+from .statichelper import from_unicode, to_unicode
 
-
-def addon_path():
-    return to_unicode(xbmcaddon.Addon().getAddonInfo('path'))
-
-
-def kodi_version():
-    return xbmc.getInfoLabel('System.BuildVersion')[:2]
-
-
-def addon_id():
-    return to_unicode(xbmcaddon.Addon().getAddonInfo('id'))
-
-
-def addon_name():
-    return to_unicode(xbmcaddon.Addon().getAddonInfo('name'))
-
-
-def addon_version():
-    return xbmcaddon.Addon().getAddonInfo('version')
+ADDON = xbmcaddon.Addon()
+ADDON_ID = to_unicode(ADDON.getAddonInfo('id'))
+ADDON_PATH = to_unicode(ADDON.getAddonInfo('path'))
 
 
 def window(key, value=None, clear=False, window_id=10000):
@@ -36,49 +20,45 @@ def window(key, value=None, clear=False, window_id=10000):
 
     if clear:
         the_window.clearProperty(key)
-    elif value is not None:
-        if key.endswith('.json'):
-
-            key = key.replace('.json', "")
-            value = json.dumps(value)
-
-        elif key.endswith('.bool'):
-
-            key = key.replace('.bool', "")
-            value = "true" if value else "false"
-
-        the_window.setProperty(key, value)
-    else:
-        result = the_window.getProperty(key.replace('.json', "").replace('.bool', ""))
+    elif value is None:
+        result = to_unicode(the_window.getProperty(key.replace('.json', '').replace('.bool', '')))
 
         if result:
             if key.endswith('.json'):
                 result = json.loads(result)
             elif key.endswith('.bool'):
-                result = result in ("true", "1")
-
+                result = bool(result in ('true', '1'))
         return result
+    else:
+        if key.endswith('.json'):
+
+            key = key.replace('.json', '')
+            value = json.dumps(value)
+
+        elif key.endswith('.bool'):
+
+            key = key.replace('.bool', '')
+            value = 'true' if value else 'false'
+
+        the_window.setProperty(key, from_unicode(str(value)))
     return None
 
 
 def settings(setting, value=None):
-
-    addon = xbmcaddon.Addon()
-
     if value is None:
-        result = addon.getSetting(setting.replace('.bool', ""))
+        result = to_unicode(ADDON.getSetting(setting.replace('.bool', '')))
 
         if result and setting.endswith('.bool'):
-            result = result in ("true", "1")
+            result = bool(result in ('true', '1'))
 
         return result
 
     if setting.endswith('.bool'):
 
         setting = setting.replace('.bool', '')
-        value = "true" if value else "false"
+        value = 'true' if value else 'false'
 
-    addon.setSetting(setting, value)
+    ADDON.setSetting(setting, from_unicode(value))
     return None
 
 
@@ -87,32 +67,27 @@ def event(method, data=None, source_id=None):
     """ Data is a dictionary.
     """
     data = data or {}
-    source_id = source_id or addon_id()
+    source_id = source_id or ADDON_ID
     xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' %
-                        (source_id, method, '\\"[\\"{0}\\"]\\"'.format(binascii.hexlify(json.dumps(data)))))
+                        (source_id, method, '\\"[\\"{0}\\"]\\"'.format(to_unicode(hexlify(json.dumps(data))))))
 
 
 def decode_data(data):
     data = json.loads(data)
     if data:
-        return json.loads(binascii.unhexlify(data[0]))
+        return json.loads(unhexlify(data[0]))
     return None
 
 
 def log(title, msg, level=1):
     log_level = int(settings("logLevel"))
-    window('logLevel', str(log_level))
-    if log_level >= level:
-        if log_level == 2:  # inspect.stack() is expensive
-            try:
-                xbmc.log(title + " -> " + inspect.stack()[1][3] + " : " + str(msg), level=xbmc.LOGNOTICE)
-            except UnicodeEncodeError:
-                xbmc.log(title + " -> " + inspect.stack()[1][3] + " : " + str(msg.encode('utf-8')), level=xbmc.LOGNOTICE)
-        else:
-            try:
-                xbmc.log(title + " -> " + str(msg), level=xbmc.LOGNOTICE)
-            except UnicodeEncodeError:
-                xbmc.log(title + " -> " + str(msg.encode('utf-8')), level=xbmc.LOGNOTICE)
+    window('logLevel', from_unicode(log_level))
+    if log_level < level:
+        return
+    if log_level == 2:  # inspect.stack() is expensive
+        xbmc.log('%s -> %s : %s' % (title, stack()[1][3], from_unicode(msg)), level=xbmc.LOGNOTICE)
+    else:
+        xbmc.log('%s -> %s' % (title, from_unicode(msg)), level=xbmc.LOGNOTICE)
 
 
 def load_test_data():
