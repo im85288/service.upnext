@@ -26,7 +26,7 @@ class PlaybackManager:  # pylint: disable=invalid-name
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
-        utils.log("[%s] %s" % (utils.addon_id(), class_name), msg, int(lvl))
+        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
 
     def launch_up_next(self):
         playlist_item = True
@@ -44,8 +44,8 @@ class PlaybackManager:  # pylint: disable=invalid-name
         self.api.reset_addon_data()
 
     def launch_popup(self, episode, playlist_item):
-        episode_id = episode["episodeid"]
-        no_play_count = episode["playcount"] is None or episode["playcount"] == 0
+        episode_id = episode.get('episodeid')
+        no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
         include_play_count = True if self.state.include_watched else no_play_count
         if include_play_count and self.state.current_episode_id != episode_id:
             # we have a next up episode choose mode
@@ -109,7 +109,7 @@ class PlaybackManager:  # pylint: disable=invalid-name
                 play_time = self.player.getTime()
                 total_time = self.player.getTotalTime()
                 if episode_runtime:
-                    end_time = total_time - play_time + episode["runtime"]
+                    end_time = total_time - play_time + episode.get('runtime')
                     end_time = datetime.now() + timedelta(seconds=end_time)
                     end_time = end_time.strftime("%I:%M %p" if self.clock_twelve else "%H:%M").lstrip("0")  # Remove leading zero on all platforms
                 else:

@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from platform import machine
 import xbmcgui
+from .statichelper import from_unicode
 
 ACTION_PLAYER_STOP = 13
 OS_MACHINE = machine()
@@ -30,43 +31,29 @@ class StillWatching(xbmcgui.WindowXMLDialog):
         self.prepare_progress_control()
 
     def set_info(self):
-        episode_info = str(self.item['season']) + 'x' + str(self.item['episode']) + '.'
-        if self.item['rating'] is not None:
-            rating = str(round(float(self.item['rating']), 1))
+        episode_info = '%(season)sx%(episode)s.' % self.item
+        if self.item.get('rating') is not None:
+            rating = round(float(self.item.get('rating')), 1)
         else:
             rating = None
 
         if self.item is not None:
-            self.setProperty(
-                'fanart', self.item['art'].get('tvshow.fanart', ''))
-            self.setProperty(
-                'landscape', self.item['art'].get('tvshow.landscape', ''))
-            self.setProperty(
-                'clearart', self.item['art'].get('tvshow.clearart', ''))
-            self.setProperty(
-                'clearlogo', self.item['art'].get('tvshow.clearlogo', ''))
-            self.setProperty(
-                'poster', self.item['art'].get('tvshow.poster', ''))
-            self.setProperty(
-                'thumb', self.item['art'].get('thumb', ''))
-            self.setProperty(
-                'plot', self.item['plot'])
-            self.setProperty(
-                'tvshowtitle', self.item['showtitle'])
-            self.setProperty(
-                'title', self.item['title'])
-            self.setProperty(
-                'season', str(self.item['season']))
-            self.setProperty(
-                'episode', str(self.item['episode']))
-            self.setProperty(
-                'seasonepisode', episode_info)
-            self.setProperty(
-                'year', str(self.item['firstaired']))
-            self.setProperty(
-                'rating', rating)
-            self.setProperty(
-                'playcount', str(self.item['playcount']))
+            art = self.item.get('art')
+            self.setProperty('fanart', from_unicode(art.get('tvshow.fanart', '')))
+            self.setProperty('landscape', from_unicode(art.get('tvshow.landscape', '')))
+            self.setProperty('clearart', from_unicode(art.get('tvshow.clearart', '')))
+            self.setProperty('clearlogo', from_unicode(art.get('tvshow.clearlogo', '')))
+            self.setProperty('poster', from_unicode(art.get('tvshow.poster', '')))
+            self.setProperty('thumb', from_unicode(art.get('thumb', '')))
+            self.setProperty('plot', from_unicode(self.item.get('plot', '')))
+            self.setProperty('tvshowtitle', from_unicode(self.item.get('showtitle', '')))
+            self.setProperty('title', from_unicode(self.item.get('title', '')))
+            self.setProperty('season', from_unicode(str(self.item.get('season', ''))))
+            self.setProperty('episode', from_unicode(str(self.item.get('episode', ''))))
+            self.setProperty('seasonepisode', from_unicode(episode_info))
+            self.setProperty('year', from_unicode(str(self.item.get('firstaired', ''))))
+            self.setProperty('rating', from_unicode(rating))
+            self.setProperty('playcount', from_unicode(self.item.get('playcount', '')))
 
     def prepare_progress_control(self):
         # noinspection PyBroadException
@@ -91,7 +78,7 @@ class StillWatching(xbmcgui.WindowXMLDialog):
             if self.progress_control is not None:
                 self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
             if endtime:
-                self.setProperty('endtime', str(endtime))
+                self.setProperty('endtime', from_unicode(str(endtime)))
         except Exception:  # pylint: disable=broad-except
             pass
 

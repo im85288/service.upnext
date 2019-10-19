@@ -19,7 +19,7 @@ class Monitor(xbmc.Monitor):
 
     def log(self, msg, lvl=1):
         class_name = self.__class__.__name__
-        utils.log("[%s] %s" % (utils.addon_id(), class_name), str(msg), int(lvl))
+        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
 
     def run(self):
 
@@ -52,7 +52,7 @@ class Monitor(xbmc.Monitor):
                         self.log("No file is playing - stop up next tracking.", 2)
                         self.player.disable_tracking()
 
-        self.log("======== STOP service.upnext ========", 0)
+        self.log('Service stopped.', 0)
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
 
