@@ -2,9 +2,9 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import resources.lib.utils as utils
-from resources.lib.upnext import UpNext
-from resources.lib.stillwatching import StillWatching
+from . import utils
+from .stillwatching import StillWatching
+from .upnext import UpNext
 
 
 def set_up_pages():

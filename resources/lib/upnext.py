@@ -5,9 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 from platform import machine
 import xbmc
 import xbmcgui
-import resources.lib.utils as utils
-import xbmc
-import xbmcgui
+from . import utils
 
 ACTION_PLAYER_STOP = 13
 OS_MACHINE = machine()
@@ -28,7 +26,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
 
-    def onInit(self):
+    def onInit(self):  # pylint: disable=invalid-name
         self.set_info()
         self.prepare_progress_control()
 
@@ -119,7 +117,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
     def closeDialog(self):  # pylint: disable=invalid-name
         self.close()
 
-    def onClick(self, controlId):
+    def onClick(self, controlId):  # pylint: disable=invalid-name
         if controlId == 3012:
             # watch now
             self.set_watch_now(True)

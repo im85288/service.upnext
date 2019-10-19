@@ -4,10 +4,10 @@
 from __future__ import absolute_import, division, unicode_literals
 import json
 import xbmc
-import resources.lib.utils as utils
-from resources.lib.api import Api
-from resources.lib.player import Player
-from resources.lib.state import State
+from . import utils
+from .api import Api
+from .player import Player
+from .state import State
 
 
 class PlayItem:
@@ -21,7 +21,7 @@ class PlayItem:
 
     def log(self, msg, lvl=2):
         class_name = self.__class__.__name__
-        utils.log("%s %s" % (utils.addon_name(), class_name), msg, int(lvl))
+        utils.log("[%s] %s" % (utils.addon_id(), class_name), msg, int(lvl))
 
     def get_episode(self):
         current_file = self.player.getPlayingFile()
@@ -55,7 +55,6 @@ class PlayItem:
             current_episode_number = result["result"]["item"]["episode"]
             current_season_id = result["result"]["item"]["season"]
             current_show_title = result["result"]["item"]["showtitle"].encode('utf-8')
-            current_show_title = utils.unicode_to_ascii(current_show_title)
             self.state.tv_show_id = result["result"]["item"]["tvshowid"]
             if item_type == "episode":
                 if int(self.state.tv_show_id) == -1:
