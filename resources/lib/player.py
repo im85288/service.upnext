@@ -9,8 +9,8 @@ from .developer import Developer
 from .state import State
 
 
-# service class for playback monitoring
 class Player(xbmc.Player):
+    ''' Service class for playback monitoring '''
     last_file = None
     track = False
 
@@ -33,12 +33,12 @@ class Player(xbmc.Player):
         self.state.track = False
 
     def onPlayBackStarted(self):  # pylint: disable=invalid-name
-        # Will be called when kodi starts playing a file
+        ''' Will be called when kodi starts playing a file '''
         xbmc.sleep(5000)  # Delay for slower devices, should really use onAVStarted for Leia
-        if not xbmc.getCondVisibility("videoplayer.content(episodes)"):
+        if not xbmc.getCondVisibility('videoplayer.content(episodes)'):
             return
         self.state.track = True
-        if utils.settings("developerMode") == "true":
+        if utils.settings('developerMode') == 'true':
             self.developer.developer_play_back()
 
     def onPlayBackPaused(self):  # pylint: disable=invalid-name
@@ -48,6 +48,6 @@ class Player(xbmc.Player):
         self.state.pause = False
 
     def onPlayBackStopped(self):  # pylint: disable=invalid-name
-        # Will be called when user stops playing a file.
+        ''' Will be called when user stops playing a file '''
         self.api.reset_addon_data()
         self.state = State()  # Reset state

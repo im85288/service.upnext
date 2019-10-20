@@ -18,13 +18,13 @@ class Developer:
         episode = utils.load_test_data()
         next_up_page, next_up_page_simple, still_watching_page, still_watching_page_simple = (
             pages.set_up_developer_pages(episode))
-        if utils.settings("windowMode") == "0":
+        if utils.settings('windowMode') == '0':
             next_up_page.show()
-        elif utils.settings("windowMode") == "1":
+        elif utils.settings('windowMode') == '1':
             next_up_page_simple.show()
-        elif utils.settings("windowMode") == "2":
+        elif utils.settings('windowMode') == '2':
             still_watching_page.show()
-        elif utils.settings("windowMode") == "3":
+        elif utils.settings('windowMode') == '3':
             still_watching_page_simple.show()
         utils.window('service.upnext.dialog', 'true')
 
@@ -38,12 +38,12 @@ class Developer:
             still_watching_page.update_progress_control()
             still_watching_page_simple.update_progress_control()
 
-        if utils.settings("windowMode") == "0":
+        if utils.settings('windowMode') == '0':
             next_up_page.close()
-        elif utils.settings("windowMode") == "1":
+        elif utils.settings('windowMode') == '1':
             next_up_page_simple.close()
-        elif utils.settings("windowMode") == "2":
+        elif utils.settings('windowMode') == '2':
             still_watching_page.close()
-        elif utils.settings("windowMode") == "3":
+        elif utils.settings('windowMode') == '3':
             still_watching_page_simple.close()
         utils.window('service.upnext.dialog', clear=True)

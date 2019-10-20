@@ -2,7 +2,6 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import json
 import xbmc
 from . import utils
 from .api import Api
@@ -28,7 +27,7 @@ class PlayItem:
             # Get the active player
             result = self.api.get_now_playing()
             self.handle_now_playing_result(result)
-            # get the next episode from kodi
+            # Get the next episode from Kodi
             episode = (
                 self.api.handle_kodi_lookup_of_episode(
                     self.state.tv_show_id, current_file, self.state.include_watched, self.state.current_episode_id))
@@ -61,7 +60,7 @@ class PlayItem:
         if int(self.state.tv_show_id) == -1:
             current_show_title = item.get('showtitle').encode('utf-8')
             self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
-            self.log("Fetched missing tvshowid " + json.dumps(self.state.tv_show_id), 2)
+            self.log('Fetched missing tvshowid %s' % self.state.tv_show_id, 2)
 
         current_episode_number = item.get('episode')
         current_season_id = item.get('season')

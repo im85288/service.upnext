@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from binascii import hexlify, unhexlify
-from inspect import stack
 import json
 import xbmc
 import xbmcaddon
@@ -64,12 +63,15 @@ def settings(setting, value=None):
     return None
 
 
-def event(method, data=None, source_id=None):
+def event(message, data=None, sender=None):
     ''' Send internal notification event '''
     data = data or {}
-    source_id = source_id or ADDON_ID
-    xbmc.executebuiltin('NotifyAll(%s.SIGNAL, %s, %s)' %
-                        (source_id, method, '\\"[\\"{0}\\"]\\"'.format(to_unicode(hexlify(json.dumps(data).encode())))))
+    sender = sender or ADDON_ID
+    jsonrpc(method='JSONRPC.NotifyAll', params=dict(
+        sender='%s.SIGNAL' % sender,
+        message=message,
+        data=[to_unicode(hexlify(json.dumps(data).encode()))],
+    ))
 
 
 def decode_data(data):
@@ -82,66 +84,45 @@ def decode_data(data):
 
 def log(msg, name=None, level=1):
     ''' Log information to the Kodi log '''
-    log_level = int(settings("logLevel"))
+    log_level = int(settings('logLevel'))
     window('logLevel', log_level)
     if log_level < level:
         return
-    msg = from_unicode(msg)
-    if log_level == 2:  # inspect.stack() is expensive
-        xbmc.log('[%s] %s -> %s: %s' % (ADDON_ID, name, stack()[1][3], msg), level=xbmc.LOGNOTICE)
-    else:
-        xbmc.log('[%s] %s -> %s' % (ADDON_ID, name, msg), level=xbmc.LOGNOTICE)
+    xbmc.log('[%s] %s -> %s' % (ADDON_ID, name, from_unicode(msg)), level=xbmc.LOGNOTICE)
 
 
 def load_test_data():
     ''' Load test data for developer mode '''
-    test_episode = {"episodeid": 12345678, "tvshowid": 12345678, "title": "Garden of Bones", "art": {}}
-    test_episode["art"]["tvshow.poster"] = "https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg"
-    test_episode["art"]["thumb"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg"
-    test_episode["art"]["tvshow.fanart"] = "https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg"
-    test_episode["art"]["tvshow.landscape"] = "https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg"
-    test_episode["art"]["tvshow.clearart"] = "https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png"
-    test_episode["art"]["tvshow.clearlogo"] = "https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png"
-    test_episode["plot"] = "Lord Baelish arrives at Renly's camp just before he faces off against Stannis. Daenerys and her company are welcomed "\
-                           " into the city of Qarth. Arya, Gendry, and Hot Pie find themselves imprisoned at Harrenhal."
-    test_episode["showtitle"] = "Game of Thrones"
-    test_episode["playcount"] = 1
-    test_episode["season"] = 2
-    test_episode["episode"] = 4
-    test_episode["seasonepisode"] = "2x4."
-    test_episode["rating"] = "8.9"
-    test_episode["firstaired"] = "23/04/2012"
+    test_episode = {'episodeid': 12345678, 'tvshowid': 12345678, 'title': 'Garden of Bones', 'art': {}}
+    test_episode['art']['tvshow.poster'] = 'https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg'
+    test_episode['art']['thumb'] = 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg'
+    test_episode['art']['tvshow.fanart'] = 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg'
+    test_episode['art']['tvshow.landscape'] = 'https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg'
+    test_episode['art']['tvshow.clearart'] = 'https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png'
+    test_episode['art']['tvshow.clearlogo'] = 'https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png'
+    test_episode['plot'] = 'Lord Baelish arrives at Renly\'s camp just before he faces off against Stannis. Daenerys and her company are welcomed '\
+                           ' into the city of Qarth. Arya, Gendry, and Hot Pie find themselves imprisoned at Harrenhal.'
+    test_episode['showtitle'] = 'Game of Thrones'
+    test_episode['playcount'] = 1
+    test_episode['season'] = 2
+    test_episode['episode'] = 4
+    test_episode['seasonepisode'] = '2x4.'
+    test_episode['rating'] = '8.9'
+    test_episode['firstaired'] = '23/04/2012'
     return test_episode
 
 
 def calculate_progress_steps(period):
     ''' Calculate a progress step '''
+    if int(period) == 0:  # Avoid division by zero
+        return 10.0
     return (100.0 / int(period)) / 10
 
 
-class JSONRPC:
-    ''' A class for performing JSONRPC calls '''
-
-    def __init__(self, method, **kwargs):
-        ''' Class constructor '''
-        self.id = 1
-        self.jsonrpc = '2.0'
-        self.method = method
-        self.params = None
-        self.__dict__.update(kwargs)
-
-    def _query(self):
-        ''' Query builder '''
-        query = dict(
-            id=self.id,
-            jsonrpc=self.jsonrpc,
-            method=self.method,
-        )
-        if self.params is not None:
-            query['params'] = self.params
-        return json.dumps(query)
-
-    def execute(self, params=None):
-        ''' Perform the actual request '''
-        self.params = params
-        return json.loads(xbmc.executeJSONRPC(self._query()))
+def jsonrpc(**kwargs):
+    ''' Perform JSONRPC calls '''
+    if 'id' not in kwargs:
+        kwargs.update(id=1)
+    if 'jsonrpc' not in kwargs:
+        kwargs.update(jsonrpc='2.0')
+    return json.loads(xbmc.executeJSONRPC(json.dumps(kwargs)))

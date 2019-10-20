@@ -56,13 +56,9 @@ class StillWatching(xbmcgui.WindowXMLDialog):
             self.setProperty('playcount', from_unicode(self.item.get('playcount', '')))
 
     def prepare_progress_control(self):
-        # noinspection PyBroadException
-        try:
-            self.progress_control = self.getControl(3014)
-            if self.progress_control is not None:
-                self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
-        except Exception:  # pylint: disable=broad-except
-            pass
+        self.progress_control = self.getControl(3014)
+        if self.progress_control is not None:
+            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
 
     def set_item(self, item):
         self.item = item
@@ -71,16 +67,12 @@ class StillWatching(xbmcgui.WindowXMLDialog):
         self.progress_step_size = progress_step_size
 
     def update_progress_control(self, endtime=None):
-        # noinspection PyBroadException
-        try:
-            self.current_progress_percent = self.current_progress_percent - self.progress_step_size
-            self.progress_control = self.getControl(3014)
-            if self.progress_control is not None:
-                self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
-            if endtime:
-                self.setProperty('endtime', from_unicode(str(endtime)))
-        except Exception:  # pylint: disable=broad-except
-            pass
+        self.current_progress_percent = self.current_progress_percent - self.progress_step_size
+        self.progress_control = self.getControl(3014)
+        if self.progress_control is not None:
+            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+        if endtime:
+            self.setProperty('endtime', from_unicode(str(endtime)))
 
     def set_cancel(self, cancel):
         self.cancel = cancel
@@ -104,12 +96,10 @@ class StillWatching(xbmcgui.WindowXMLDialog):
         self.close()
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
-        if controlId == 3012:
-            # still watching
+        if controlId == 3012:  # Still watching
             self.set_still_watching(True)
             self.close()
-        elif controlId == 3013:
-            # cancel
+        elif controlId == 3013:  # Cancel
             self.set_cancel(True)
             self.close()
 
