@@ -7,6 +7,7 @@ from . import utils
 from .api import Api
 from .playbackmanager import PlaybackManager
 from .player import Player
+from .statichelper import from_unicode
 
 
 class Monitor(xbmc.Monitor):
@@ -17,9 +18,8 @@ class Monitor(xbmc.Monitor):
         self.playback_manager = PlaybackManager()
         xbmc.Monitor.__init__(self)
 
-    def log(self, msg, lvl=1):
-        class_name = self.__class__.__name__
-        utils.log('[%s] %s' % (utils.ADDON_ID, class_name), msg, int(lvl))
+    def log(self, msg, level=1):
+        utils.log(msg, name=self.__class__.__name__, level=level)
 
     def run(self):
 
@@ -35,11 +35,11 @@ class Monitor(xbmc.Monitor):
                     last_file = self.player.get_last_file()
                     current_file = self.player.getPlayingFile()
                     notification_time = self.api.notification_time()
-                    up_next_disabled = utils.settings("disableNextUp") == "true"
-                    if utils.window("PseudoTVRunning") != "True" and not up_next_disabled:
+                    up_next_disabled = utils.settings('disableNextUp') == 'true'
+                    if utils.window('PseudoTVRunning') != 'True' and not up_next_disabled:
                         if (total_time - play_time <= int(notification_time) and (
                                 last_file is None or last_file != current_file)) and total_time != 0:
-                            self.player.set_last_file(current_file)
+                            self.player.set_last_file(from_unicode(current_file))
                             self.log("Calling autoplayback totaltime - playtime is %s" % (total_time - play_time), 2)
                             self.playback_manager.launch_up_next()
                             self.log("Up Next style autoplay succeeded.", 2)

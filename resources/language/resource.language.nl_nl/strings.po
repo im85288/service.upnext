@@ -43,7 +43,7 @@ msgstr "Kijk nu"
 
 msgctxt "#30008"
 msgid "Up Next"
-msgstr "Volgende"
+msgstr "Volgende aflevering"
 
 msgctxt "#30009"
 msgid "Number of episodes before still watching query"
