@@ -45,7 +45,8 @@ class PlayItem:
     def get_next(self):
         playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
         position = playlist.getposition()
-        if position < playlist.size():
+        # A playlist with only one element has no next item and xbmc.PlayList().getposition() starts counting from zero
+        if playlist.size() > 1 and position < (playlist.size() - 1):
             return self.api.get_next_in_playlist(position)
         return False
 
