@@ -43,7 +43,7 @@ class PlaybackManager:  # pylint: disable=invalid-name
 
     def launch_popup(self, episode, playlist_item):
         episode_id = episode.get('episodeid')
-        no_play_count = episode.get('playcount', 0) == 0
+        no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
         include_play_count = True if self.state.include_watched else no_play_count
         if not include_play_count or self.state.current_episode_id == episode_id:
             return
