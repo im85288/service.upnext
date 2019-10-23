@@ -85,10 +85,12 @@ def decode_data(data):
 def log(msg, name=None, level=1):
     ''' Log information to the Kodi log '''
     log_level = int(settings('logLevel'))
+    debug_logging = get_global_setting('debug.showloginfo')
     window('logLevel', log_level)
-    if log_level < level:
+    if not debug_logging and log_level < level:
         return
-    xbmc.log('[%s] %s -> %s' % (ADDON_ID, name, from_unicode(msg)), level=xbmc.LOGNOTICE)
+    level = xbmc.LOGDEBUG if debug_logging else xbmc.LOGNOTICE
+    xbmc.log('[%s] %s -> %s' % (ADDON_ID, name, from_unicode(msg)), level=level)
 
 
 def load_test_data():
@@ -126,3 +128,9 @@ def jsonrpc(**kwargs):
     if 'jsonrpc' not in kwargs:
         kwargs.update(jsonrpc='2.0')
     return json.loads(xbmc.executeJSONRPC(json.dumps(kwargs)))
+
+
+def get_global_setting(setting):
+    ''' Get a Kodi setting '''
+    result = jsonrpc(method='Settings.GetSettingValue', params=dict(setting=setting))
+    return result.get('result', {}).get('value')

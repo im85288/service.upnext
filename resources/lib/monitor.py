@@ -26,6 +26,8 @@ class Monitor(xbmc.Monitor):
 
     def run(self):
         ''' Main service loop '''
+        self.log('Service started.', 0)
+
         while not self.abortRequested():
             # check every 1 sec
             if self.waitForAbort(1):
