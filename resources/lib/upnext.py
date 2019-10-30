@@ -9,6 +9,7 @@ from . import utils
 from .statichelper import from_unicode
 
 ACTION_PLAYER_STOP = 13
+ACTION_NAV_BACK = 92
 OS_MACHINE = machine()
 
 
@@ -108,4 +109,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):  # pylint: disable=invalid-name
         if action == ACTION_PLAYER_STOP:
+            self.close()
+        elif action == ACTION_NAV_BACK:
+            self.set_cancel(True)
             self.close()
