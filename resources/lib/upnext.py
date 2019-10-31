@@ -31,6 +31,11 @@ class UpNext(xbmcgui.WindowXMLDialog):
         self.set_info()
         self.prepare_progress_control()
 
+        if utils.settings('stopAfterClose') == 'true':
+            self.getControl(3013).setLabel(utils.localize(30033))  # Stop
+        else:
+            self.getControl(3013).setLabel(utils.localize(30034))  # Close
+
     def set_info(self):
         episode_info = '%(season)sx%(episode)s.' % self.item
         if self.item.get('rating') is not None:
@@ -100,7 +105,7 @@ class UpNext(xbmcgui.WindowXMLDialog):
         if controlId == 3012:  # Watch now
             self.set_watch_now(True)
             self.close()
-        elif controlId == 3013:  # Cancel
+        elif controlId == 3013:  # Close / Stop
             self.set_cancel(True)
             if utils.settings('stopAfterClose') == 'true':
                 xbmc.Player().stop()

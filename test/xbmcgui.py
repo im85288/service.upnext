@@ -9,6 +9,29 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from xbmcextra import kodi_to_ansi
 
 
+class Control:
+    ''' A reimplementation of the xbmcgui Control class '''
+
+    def __init__(self):
+        ''' A stub constructor for the xbmcgui Control class '''
+
+
+class ControlLabel(Control):
+    ''' A reimplementation of the xbmcgui ControlLabel class '''
+
+    def __init__(self):  # pylint: disable=super-init-not-called
+        ''' A stub constructor for the xbmcgui ControlLabel class '''
+
+    @staticmethod
+    def getLabel():
+        ''' A stub implementation for the xbmcgui ControlLabel class getLabel() method '''
+        return 'Label'
+
+    @staticmethod
+    def setLabel(label='', font=None, textColor=None, disabledColor=None, shadowColor=None, focusedColor=None, label2=''):
+        ''' A stub implementation for the xbmcgui ControlLabel class getLabel() method '''
+
+
 class Dialog:
     ''' A reimplementation of the xbmcgui Dialog class '''
 
@@ -186,7 +209,7 @@ class Window:
     @staticmethod
     def getControl():
         ''' A stub implementation for the xbmcgui Window class getControl() method '''
-        return ''
+        return ControlLabel()
 
     @staticmethod
     def getProperty():

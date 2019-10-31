@@ -97,6 +97,10 @@ msgctxt "#30032"
 msgid "Enable on playlists"
 msgstr "Ook op afspeellijsten toepassen"
 
+msgctxt "#30033"
+msgid "Stop"
+msgstr "Stop"
+
 msgctxt "#30034"
 msgid "Close"
 msgstr "Sluit"
@@ -162,5 +166,5 @@ msgid "Next Episode"
 msgstr "Volgende aflevering"
 
 msgctxt "#30050"
-msgid "Stop after dialog close"
+msgid "Stop playback when closing dialog"
 msgstr "Na het afsluiten stoppen met afspelen"
