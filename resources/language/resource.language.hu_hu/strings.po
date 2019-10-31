@@ -91,6 +91,10 @@ msgctxt "#30032"
 msgid "Enable on playlists"
 msgstr "Lejátszólistán engedélyezve"
 
+msgctxt "#30033"
+msgid "Stop"
+msgstr ""
+
 msgctxt "#30034"
 msgid "Close"
 msgstr "Bezár"
@@ -154,3 +158,7 @@ msgstr "Még nézem"
 msgctxt "#30049"
 msgid "Next Episode"
 msgstr "Következő rész"
+
+msgctxt "#30050"
+msgid "Stop playback when closing dialog"
+msgstr ""

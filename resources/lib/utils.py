@@ -134,3 +134,8 @@ def get_global_setting(setting):
     ''' Get a Kodi setting '''
     result = jsonrpc(method='Settings.GetSettingValue', params=dict(setting=setting))
     return result.get('result', {}).get('value')
+
+
+def localize(string_id):
+    ''' Return the translated string from the .po language files, optionally translating variables '''
+    return ADDON.getLocalizedString(string_id)

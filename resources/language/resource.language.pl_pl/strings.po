@@ -112,6 +112,11 @@ msgid "Enable on playlists"
 msgstr "Włącz na listach odtwarzania"
 
 #: 
+msgctxt "#30033"
+msgid "Stop"
+msgstr ""
+
+#: 
 msgctxt "#30034"
 msgid "Close"
 msgstr "Zamknij"
@@ -193,6 +198,5 @@ msgstr "Następny odcinek"
 
 #: 
 msgctxt "#30050"
-msgid "Stop after dialog close"
+msgid "Stop playback when closing dialog"
 msgstr "Zatrzymaj po zamknięciu okna dialogowego"
-
