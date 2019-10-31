@@ -199,4 +199,4 @@ msgstr "Następny odcinek"
 #: 
 msgctxt "#30050"
 msgid "Stop playback when closing dialog"
-msgstr "Zatrzymaj po zamknięciu okna dialogowego"
+msgstr "Zatrzymaj odtwarzanie po zamknięciu okna dialogowego"
