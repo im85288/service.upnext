@@ -38,7 +38,7 @@ msgstr "Jetzt abspielen"
 
 msgctxt "#30008"
 msgid "Up Next"
-msgstr "Up Next"
+msgstr "Als Nächstes"
 
 msgctxt "#30009"
 msgid "Number of episodes before still watching query"
