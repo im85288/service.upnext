@@ -106,14 +106,10 @@ class Api:
             sort=dict(method='episode'),
         ))
 
-        if not result:
+        if not result.get('result'):
             return None
 
         self.log('Got details of next up episode %s' % result, 2)
-
-        if not result.get('result', {}).get('episodes'):
-            return None
-
         xbmc.sleep(100)
 
         # Find the next unwatched and the newest added episodes
@@ -128,43 +124,29 @@ class Api:
             sort=dict(method='episode'),
         ))
 
+        if not result.get('result'):
+            return None
+
         self.log('Find current episode called', 2)
-        if not result:
-            return None
-
-        # Find the next unwatched and the newest added episodes
-        if not result.get('result', {}).get('episodes'):
-            return None
-
         xbmc.sleep(100)
 
-        position = 0
-        for episode in result.get('result').get('episodes'):
+        # Find the next unwatched and the newest added episodes
+        episodes = result.get('result', {}).get('episodes', [])
+        for idx, episode in enumerate(episodes):
             # Find position of current episode
             if current_episode_id == episode.get('episodeid'):
-                # Found a match so get out of here
-                break
-            position += 1
+                self.log('Find current episode found episode in position: %d' % idx, 2)
+                return episode
 
-        # Now return the episode
-        self.log('Find current episode found episode in position: %d' % position, 2)
-        try:
-            episode = result.get('result').get('episodes')[position]
-        except (IndexError, KeyError) as exc:
-            # No next episode found
-            episode = None
-            self.log('error handle_kodi_lookup_of_current_episode %s' % repr(exc), 1)
-
-        return episode
+        # No next episode found
+        self.log('No next episode found', 1)
+        return None
 
     @staticmethod
     def showtitle_to_id(title):
         result = utils.jsonrpc(method='VideoLibrary.GetTVShows', id='libTvShows', params=dict(properties=['title']))
 
-        if not result.get('result', {}).get('tvshows'):
-            return '-1'
-
-        for tvshow in result.get('result').get('tvshows'):
+        for tvshow in result.get('result', {}).get('tvshows', []):
             if tvshow.get('label') == title:
                 return tvshow.get('tvshowid')
         return '-1'
@@ -178,38 +160,30 @@ class Api:
             tvshowid=int(showid),
         ))
 
-        if not result.get('result', {}).get('episodes'):
-            return 0
-
         episodeid = 0
-        for episode in result.get('result').get('episodes'):
+        for episode in result.get('result', {}).get('episodes', []):
             if episode.get('episodeid') and episode.get('season') == show_season and episode.get('episode') == show_episode:
                 episodeid = episode.get('episodeid')
 
         return episodeid
 
     def find_next_episode(self, result, current_file, include_watched, current_episode_id):
-        position = 1
-        for episode in result.get('result').get('episodes'):
+        found_match = False
+        episodes = result.get('result', {}).get('episodes', [])
+        for episode in episodes:
             # Find position of current episode
             if current_episode_id == episode.get('episodeid'):
-                # Found a match so get out of here
-                break
-            position += 1
+                found_match = True
+                continue
+            # Check if it may be a multi-part episode
+            if episode.get('file') == current_file:
+                continue
+            # Skip already watched episodes?
+            if not include_watched and episode.get('playcount') > 0:
+                continue
+            if found_match:
+                return episode
 
-        # Check if it may be a multi-part episode
-        while result.get('result').get('episodes')[position].get('file') == current_file:
-            position += 1
-
-        # Skip already watched episodes?
-        while not include_watched and result.get('result').get('episodes')[position].get('playcount') > 1:
-            position += 1
-
-        try:
-            episode = result.get('result').get('episodes')[position]
-        except (IndexError, KeyError) as exc:
-            self.log('error get_episode_id %s' % repr(exc), 1)
-            # No next episode found
-            episode = None
-
-        return episode
+        # No next episode found
+        self.log('No next episode found', 1)
+        return None
