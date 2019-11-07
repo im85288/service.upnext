@@ -33,28 +33,28 @@ class StillWatching(xbmcgui.WindowXMLDialog):
 
     def set_info(self):
         episode_info = '%(season)sx%(episode)s.' % self.item
-        if self.item.get('rating') is not None:
-            rating = round(float(self.item.get('rating')), 1)
+        if self.item.get('rating') is None:
+            rating = ''
         else:
-            rating = None
+            rating = str(round(float(self.item.get('rating')), 1))
 
         if self.item is not None:
             art = self.item.get('art')
-            self.setProperty('fanart', from_unicode(art.get('tvshow.fanart', '')))
-            self.setProperty('landscape', from_unicode(art.get('tvshow.landscape', '')))
-            self.setProperty('clearart', from_unicode(art.get('tvshow.clearart', '')))
-            self.setProperty('clearlogo', from_unicode(art.get('tvshow.clearlogo', '')))
-            self.setProperty('poster', from_unicode(art.get('tvshow.poster', '')))
-            self.setProperty('thumb', from_unicode(art.get('thumb', '')))
-            self.setProperty('plot', from_unicode(self.item.get('plot', '')))
-            self.setProperty('tvshowtitle', from_unicode(self.item.get('showtitle', '')))
-            self.setProperty('title', from_unicode(self.item.get('title', '')))
-            self.setProperty('season', from_unicode(str(self.item.get('season', ''))))
-            self.setProperty('episode', from_unicode(str(self.item.get('episode', ''))))
-            self.setProperty('seasonepisode', from_unicode(episode_info))
-            self.setProperty('year', from_unicode(str(self.item.get('firstaired', ''))))
-            self.setProperty('rating', from_unicode(rating))
-            self.setProperty('playcount', from_unicode(self.item.get('playcount', '')))
+            self.setProperty('fanart', art.get('tvshow.fanart', ''))
+            self.setProperty('landscape', art.get('tvshow.landscape', ''))
+            self.setProperty('clearart', art.get('tvshow.clearart', ''))
+            self.setProperty('clearlogo', art.get('tvshow.clearlogo', ''))
+            self.setProperty('poster', art.get('tvshow.poster', ''))
+            self.setProperty('thumb', art.get('thumb', ''))
+            self.setProperty('plot', self.item.get('plot', ''))
+            self.setProperty('tvshowtitle', self.item.get('showtitle', ''))
+            self.setProperty('title', self.item.get('title', ''))
+            self.setProperty('season', str(self.item.get('season', '')))
+            self.setProperty('episode', str(self.item.get('episode', '')))
+            self.setProperty('seasonepisode', episode_info)
+            self.setProperty('year', str(self.item.get('firstaired', '')))
+            self.setProperty('rating', rating)
+            self.setProperty('playcount', str(self.item.get('playcount', 0)))
 
     def prepare_progress_control(self):
         self.progress_control = self.getControl(3014)
