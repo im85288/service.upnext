@@ -51,3 +51,13 @@ class Player(xbmc.Player):
         ''' Will be called when user stops playing a file '''
         self.api.reset_addon_data()
         self.state = State()  # Reset state
+
+    def onPlayBackEnded(self):  # pylint: disable=invalid-name
+        ''' Will be called when Kodi has ended playing a file '''
+        self.api.reset_addon_data()
+        self.state = State()  # Reset state
+
+    def onPlayBackError(self):  # pylint: disable=invalid-name
+        ''' Will be called when when playback stops due to an error '''
+        self.api.reset_addon_data()
+        self.state = State()  # Reset state
