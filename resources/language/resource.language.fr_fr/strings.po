@@ -3,13 +3,12 @@
 # Addon id: service.upnext
 # Addon Provider: im85288
 # Translators:
-# Thierry, 2019
-# Kévin Commaille <zecakeh@pm.me>, 2019
-#
+# - Thierry, 2019
+# - Kévin Commaille <zecakeh@pm.me>, 2019
 msgid ""
 msgstr ""
 "Project-Id-Version: service.upnext\n"
-"Report-Msgid-Bugs-To: http://trac.xbmc.org/\n"
+"Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2018-02-26 13:31+0000\n"
 "Last-Translator: Kévin Commaille <zecakeh@pm.me>\n"

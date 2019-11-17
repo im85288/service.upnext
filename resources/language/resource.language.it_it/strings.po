@@ -5,7 +5,7 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: service.upnext\n"
-"Report-Msgid-Bugs-To: http://trac.xbmc.org/\n"
+"Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2019-05-03 13:13+0200\n"
 "Last-Translator: EffeF\n"
