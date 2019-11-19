@@ -3,12 +3,19 @@
 # Addon id: service.upnext
 # Addon Provider: im85288
 # Translators:
-# sualfred <su4lfred@gmail.com>, 2018
-# semool <semool@protonmail.com>, 2019
+# - sualfred <su4lfred@gmail.com>, 2018
+# - semool <semool@protonmail.com>, 2019
 msgid ""
 msgstr ""
+"Project-Id-Version: service.upnext\n"
+"Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
+"POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"PO-Revision-Date: 2018-02-26 13:31+0000\n"
 "Last-Translator: semool <semool@protonmail.com>, 2019\n"
 "Language-Team: German (Germany) (https://www.transifex.com/emby/teams/92605/de_DE/)\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
 "Language: de_DE\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 

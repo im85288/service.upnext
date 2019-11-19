@@ -14,6 +14,8 @@ include_paths = $(patsubst %,$(name)/%,$(include_files))
 exclude_files = \*.new \*.orig \*.pyc \*.pyo
 zip_dir = $(name)/
 
+languages := de_de fr_fr hu_hu it_it nl_nl pl_pl
+
 blue = \e[1;34m
 white = \e[1;37m
 reset = \e[0;39m
