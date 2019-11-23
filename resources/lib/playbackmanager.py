@@ -64,7 +64,7 @@ class PlaybackManager:  # pylint: disable=invalid-name
 
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
-        utils.event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id))
+        utils.event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         # Play media
         if playlist_item:
             self.player.seekTime(self.player.getTotalTime())

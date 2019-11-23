@@ -14,6 +14,7 @@ class Api:
         ''' Constructor for Api class '''
         self.__dict__ = self._shared_state
         self.data = {}
+        self.encoding = 'base64'
 
     def log(self, msg, level=2):
         ''' Log wrapper '''
@@ -25,9 +26,10 @@ class Api:
     def reset_addon_data(self):
         self.data = {}
 
-    def addon_data_received(self, data):
+    def addon_data_received(self, data, encoding='base64'):
         self.log('addon_data_received called with data %s' % data, 2)
         self.data = data
+        self.encoding = encoding
 
     @staticmethod
     def play_kodi_item(episode):
@@ -58,8 +60,8 @@ class Api:
         return item
 
     def play_addon_item(self):
-        self.log('sending data to addon to play: %(play_info)s' % self.data, 2)
-        utils.event(message=self.data.get('id'), data=self.data.get('play_info'), sender='upnextprovider')
+        self.log('sending %(encoding)s data to addon to play: %(play_info)s' % dict(encoding=self.encoding, **self.data), 2)
+        utils.event(message=self.data.get('id'), data=self.data.get('play_info'), sender='upnextprovider', encoding=self.encoding)
 
     def handle_addon_lookup_of_next_episode(self):
         if not self.data:

@@ -2,7 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from binascii import hexlify, unhexlify
+import sys
 import json
 import xbmc
 import xbmcaddon
@@ -63,27 +63,59 @@ def settings(setting, value=None):
     return None
 
 
-def event(message, data=None, sender=None):
+def encode_data(data, encoding='base64'):
+    ''' Encode data for a notification event '''
+    json_data = json.dumps(data).encode()
+    if encoding == 'base64':
+        from base64 import b64encode
+        encoded_data = b64encode(json_data)
+    elif encoding == 'hex':
+        from binascii import hexlify
+        encoded_data = hexlify(json_data)
+    else:
+        log("Unknown payload encoding type '%s'" % encoding, level=0)
+        return None
+    if sys.version_info[0] > 2:
+        encoded_data = encoded_data.decode('ascii')
+    return encoded_data
+
+
+def decode_data(encoded):
+    ''' Decode data coming from a notification event '''
+    encoding = 'base64'
+    from binascii import Error, unhexlify
+    try:
+        json_data = unhexlify(encoded)
+    except (TypeError, Error):
+        from base64 import b64decode
+        json_data = b64decode(encoded)
+    else:
+        encoding = 'hex'
+    # NOTE: With Python 3.5 and older json.loads() does not support bytes or bytearray, so we convert to unicode
+    return json.loads(to_unicode(json_data)), encoding
+
+
+def decode_json(data):
+    encoded = json.loads(data)
+    if not encoded:
+        return None, None
+    return decode_data(encoded[0])
+
+
+def event(message, data=None, sender=None, encoding='base64'):
     ''' Send internal notification event '''
     data = data or {}
     sender = sender or ADDON_ID
+
+    encoded = encode_data(data, encoding=encoding)
+    if not encoded:
+        return
+
     jsonrpc(method='JSONRPC.NotifyAll', params=dict(
         sender='%s.SIGNAL' % sender,
         message=message,
-        data=[to_unicode(hexlify(json.dumps(data).encode()))],
+        data=[encoded],
     ))
-
-
-def decode_data(data):
-    ''' Decode data coming from a notification event '''
-    data = json.loads(data)
-    if data:
-        json_data = unhexlify(data[0])
-        # NOTE: With Python 3.5 and older json.loads does not support bytes or bytearray
-        if isinstance(json_data, bytes):
-            json_data = json_data.decode('utf-8')
-        return to_unicode(json.loads(json_data))
-    return None
 
 
 def log(msg, name=None, level=1):
