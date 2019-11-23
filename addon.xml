@@ -10,6 +10,7 @@
 
 A lot of existing add-ons already integrate with this service out-of-the-box.</description>
         <platform>all</platform>
+        <license>GPL-2.0-only</license>
         <assets>
             <icon>resources/media/icon.png</icon>
             <fanart>resources/media/fanart.jpg</fanart>
