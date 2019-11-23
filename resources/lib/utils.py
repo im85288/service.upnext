@@ -78,7 +78,11 @@ def decode_data(data):
     ''' Decode data coming from a notification event '''
     data = json.loads(data)
     if data:
-        return to_unicode(json.loads(unhexlify(data[0])))
+        json_data = unhexlify(data[0])
+        # NOTE: With Python 3.5 and older json.loads does not support bytes or bytearray
+        if isinstance(json_data, bytes):
+            json_data = json_data.decode('utf-8')
+        return to_unicode(json.loads(json_data))
     return None
 
 
