@@ -101,7 +101,7 @@ msgstr "Aktiviere Wiedergabelisten"
 
 msgctxt "#30033"
 msgid "Stop"
-msgstr ""
+msgstr "Stopp"
 
 msgctxt "#30034"
 msgid "Close"
