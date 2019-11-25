@@ -63,6 +63,23 @@ def settings(setting, value=None):
     return None
 
 
+def decode_data(data):
+    ''' Decode data coming from a notification event '''
+    data = json.loads(data)
+    if not data:
+        return None
+    json_data = unhexlify(data[0])
+    # NOTE: With Python 3.5 and older json.loads does not support bytes or bytearray
+    if isinstance(json_data, bytes):
+        json_data = json_data.decode('utf-8')
+    return to_unicode(json.loads(json_data))
+
+
+def encode_data(data):
+    ''' Encode data for a notification event '''
+    return json.dumps([to_unicode(hexlify(json.dumps(data).encode()))])
+
+
 def event(message, data=None, sender=None):
     ''' Send internal notification event '''
     data = data or {}
@@ -70,20 +87,8 @@ def event(message, data=None, sender=None):
     jsonrpc(method='JSONRPC.NotifyAll', params=dict(
         sender='%s.SIGNAL' % sender,
         message=message,
-        data=[to_unicode(hexlify(json.dumps(data).encode()))],
+        data=encode_data(data),
     ))
-
-
-def decode_data(data):
-    ''' Decode data coming from a notification event '''
-    data = json.loads(data)
-    if data:
-        json_data = unhexlify(data[0])
-        # NOTE: With Python 3.5 and older json.loads does not support bytes or bytearray
-        if isinstance(json_data, bytes):
-            json_data = json_data.decode('utf-8')
-        return to_unicode(json.loads(json_data))
-    return None
 
 
 def log(msg, name=None, level=1):
