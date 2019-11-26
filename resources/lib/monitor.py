@@ -76,6 +76,6 @@ class Monitor(xbmc.Monitor):
         if not method.endswith('upnext_data'):  # Method looks like Other.upnext_data
             return
 
-        data = utils.decode_data(data)
+        data, encoding = utils.decode_json(data)
         data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
-        self.api.addon_data_received(data)
+        self.api.addon_data_received(data, encoding=encoding)
