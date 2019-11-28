@@ -75,8 +75,25 @@ class Api:
         self.log('handle_addon_lookup_of_current episode returning data %(current_episode)s' % self.data, 2)
         return self.data.get('current_episode')
 
-    def notification_time(self):
-        return self.data.get('notification_time') or get_setting('autoPlaySeasonTime')
+    def notification_time(self, total_time=None):
+        # Alway use metadata, when available
+        if self.data.get('notification_time'):
+            return int(self.data.get('notification_time'))
+
+        # Use a customized notification time, when configured
+        if bool(get_setting('customAutoPlayTime') == 'true') and total_time:
+            if total_time > 60 * 60:
+                return int(get_setting('autoPlayTimeXL'))
+            if total_time > 40 * 60:
+                return int(get_setting('autoPlayTimeL'))
+            if total_time > 20 * 60:
+                return int(get_setting('autoPlayTimeM'))
+            if total_time > 10 * 60:
+                return int(get_setting('autoPlayTimeS'))
+            return int(get_setting('autoPlayTimeXS'))
+
+        # Use one global default, regardless of episode length
+        return int(get_setting('autoPlaySeasonTime'))
 
     def get_now_playing(self):
         # Seems to work too fast loop whilst waiting for it to become active

@@ -59,12 +59,12 @@ class UpNextMonitor(Monitor):
                 continue
 
             play_time = self.player.getTime()
-            notification_time = self.api.notification_time()
-            if total_time - play_time > int(notification_time):
+            notification_time = self.api.notification_time(total_time=total_time)
+            if total_time - play_time > notification_time:
                 continue
 
             self.player.set_last_file(from_unicode(current_file))
-            self.log('Calling autoplayback totaltime - playtime is %s' % (total_time - play_time), 2)
+            self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
             self.playback_manager.launch_up_next()
             self.log('Up Next style autoplay succeeded', 2)
             self.player.disable_tracking()
