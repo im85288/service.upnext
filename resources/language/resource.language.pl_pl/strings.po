@@ -99,7 +99,7 @@ msgstr "Włącz na listach odtwarzania"
 
 msgctxt "#30033"
 msgid "Stop"
-msgstr ""
+msgstr "Zatrzymaj"
 
 msgctxt "#30034"
 msgid "Close"
