@@ -1,2 +1,10 @@
-
+# Test caches
+*.pyc
 *.pyo
+.coverage
+.pytest_cache/
+.tox/
+
+# Logs
+kodi-addon-checker-report.log
+kodi-addon-checker.log
