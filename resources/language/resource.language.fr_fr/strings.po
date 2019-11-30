@@ -101,7 +101,7 @@ msgstr "Activer sur les listes de lecture"
 
 msgctxt "#30033"
 msgid "Stop"
-msgstr ""
+msgstr "Arrêter"
 
 msgctxt "#30034"
 msgid "Close"
@@ -169,4 +169,4 @@ msgstr "Prochain épisode"
 
 msgctxt "#30050"
 msgid "Stop playback when closing dialog"
-msgstr ""
+msgstr "Arrêter la lecture à la fermeture de la boîte de dialogue"
