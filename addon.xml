@@ -3,6 +3,10 @@
     <requires>
         <import addon="xbmc.python" version="2.26.0"/>
     </requires>
+    <!-- This is needed to get an addon icon -->
+    <extension point="xbmc.python.script" library="default.py">
+      <provides>executable</provides>
+    </extension>
     <extension library="service.py" point="xbmc.service"/>
     <extension point="xbmc.addon.metadata">
         <summary lang="en_GB">Propose to play the next episode automatically</summary>
