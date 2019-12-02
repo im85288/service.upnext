@@ -97,7 +97,7 @@
                         <font>font30_title</font>
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>[CAPITALIZE]$LOCALIZE[30024][/CAPITALIZE]</label>
+                        <label>[CAPITALIZE]$ADDON[service.upnext 30024][/CAPITALIZE]</label>
                     </control>
                     <!-- Details -->
                     <control type="grouplist">
@@ -157,7 +157,7 @@
                         <bottom>20</bottom>
                         <itemgap>10</itemgap>
                         <control type="button" id="10">
-                            <label>    $LOCALIZE[30010]</label>
+                            <label>    $ADDON[service.upnext 30010]</label>
                             <onclick>SendClick(3012)</onclick>
                             <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
                             <height>56</height>
@@ -177,7 +177,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="11">
-                            <label>    $LOCALIZE[30035]</label>
+                            <label>    $ADDON[service.upnext 30035]</label>
                             <onclick>SendClick(3012)</onclick>
                             <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                             <height>56</height>
@@ -197,7 +197,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="3013">
-                            <label>$LOCALIZE[30034]</label>
+                            <label>$ADDON[service.upnext 30034]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>

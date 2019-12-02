@@ -108,16 +108,16 @@ msgid "Close"
 msgstr "Fermer"
 
 msgctxt "#30035"
-msgid "seconds"
-msgstr "secondes"
+msgid "Continue watching in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
+msgstr "Continuer à regarder dans [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] secondes"
 
 msgctxt "#30036"
-msgid "in"
-msgstr "dans"
+msgid "Up next in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
+msgstr "À suivre dans [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] secondes"
 
 msgctxt "#30037"
-msgid "Next Episode in"
-msgstr "Prochain épisode dans"
+msgid "Next episode in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
+msgstr "Prochain épisode dans [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] secondes"
 
 msgctxt "#30038"
 msgid "Simple"

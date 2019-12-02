@@ -105,15 +105,15 @@ msgctxt "#30034"
 msgid "Close"
 msgstr ""
 
-msgctxt "#30035"  #30010 #30036 [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] #30035
+msgctxt "#30035"
 msgid "Continue watching in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
 msgstr ""
 
-msgctxt "#30036"  #30008 #30036 [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] #30035
+msgctxt "#30036"
 msgid "Up next in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
 msgstr ""
 
-msgctxt "#30037"  #30037 [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] #30035
+msgctxt "#30037"
 msgid "Next episode in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
 msgstr ""
 
