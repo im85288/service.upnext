@@ -172,6 +172,9 @@ def get_global_setting(setting):
     return result.get('result', {}).get('value')
 
 
-def localize(string_id):
+def localize(string_id, **kwargs):
     ''' Return the translated string from the .po language files, optionally translating variables '''
+    if kwargs:
+        from string import Formatter
+        return Formatter().vformat(ADDON.getLocalizedString(string_id), (), SafeDict(**kwargs))
     return ADDON.getLocalizedString(string_id)

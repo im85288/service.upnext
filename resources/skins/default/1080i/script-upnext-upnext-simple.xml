@@ -39,7 +39,7 @@
                         <itemgap>10</itemgap>
                         <align>left</align>
                         <control type="button" id="10">
-                            <label>    $ADDON[service.upnext 30049]</label>
+                            <label>    $LOCALIZE[30049]</label>
                             <onclick>SendClick(3012)</onclick>
                             <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
                             <height>56</height>
@@ -59,7 +59,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="11">
-                            <label>    $ADDON[service.upnext 30037] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
+                            <label>    $LOCALIZE[30037]</label>
                             <onclick>SendClick(3012)</onclick>
                             <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                             <height>56</height>
@@ -79,7 +79,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="3013">
-                            <label>$ADDON[service.upnext 30034]</label>
+                            <label>$LOCALIZE[30034]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>

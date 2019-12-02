@@ -39,7 +39,7 @@
                         <itemgap>10</itemgap>
                         <align>left</align>
                         <control type="button" id="10">
-                            <label>    $ADDON[service.upnext 30010]</label>
+                            <label>    $LOCALIZE[30010]</label>
                             <onclick>SendClick(3012)</onclick>
                             <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
                             <height>56</height>
@@ -59,7 +59,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="11">
-                            <label>    $ADDON[service.upnext 30010] $ADDON[service.upnext 30036] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
+                            <label>    $LOCALIZE[30035]</label>
                             <onclick>SendClick(3012)</onclick>
                             <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                             <height>56</height>
@@ -79,7 +79,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="3013">
-                            <label>$ADDON[service.upnext 30034]</label>
+                            <label>$LOCALIZE[30034]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
@@ -104,7 +104,7 @@
                             <font>font32_title</font>
                             <textcolor>eeffffff</textcolor>
                             <shadowcolor>00000000</shadowcolor>
-                            <label>[CAPITALIZE]$ADDON[service.upnext 30024][/CAPITALIZE]</label>
+                            <label>[CAPITALIZE]$LOCALIZE[30024][/CAPITALIZE]</label>
                         </control>
                     </control>
                     <control type="image">

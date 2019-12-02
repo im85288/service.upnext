@@ -97,7 +97,7 @@
                         <font>font25_title</font>
                         <textcolor>eeffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>$ADDON[service.upnext 30008] $ADDON[service.upnext 30036] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
+                        <label>$LOCALIZE[#30036]</label>
                         <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <control type="label">
@@ -107,7 +107,7 @@
                         <font>font25_title</font>
                         <textcolor>eeffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>$ADDON[service.upnext 30008]</label>
+                        <label>$LOCALIZE[30008]</label>
                         <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <!-- Details -->
@@ -162,7 +162,7 @@
                         <bottom>20</bottom>
                         <itemgap>10</itemgap>
                         <control type="button" id="3012">
-                            <label>    $ADDON[service.upnext 30006]</label>
+                            <label>    $LOCALIZE[30006]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
@@ -180,7 +180,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="3013">
-                            <label>$ADDON[service.upnext 30034]</label>
+                            <label>$LOCALIZE[30034]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
