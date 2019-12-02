@@ -10,7 +10,7 @@ from .api import Api
 from .player import Player
 from .playitem import PlayItem
 from .state import State
-from .statichelper import to_unicode
+from .utils import get_global_setting
 
 
 class PlaybackManager:  # pylint: disable=invalid-name
@@ -38,7 +38,7 @@ class PlaybackManager:  # pylint: disable=invalid-name
                 self.log('Error: no episode could be found to play next...exiting', 1)
                 return
         self.log('episode details %s' % episode, 2)
-        self.clock_twelve = 'm' in to_unicode(xbmc.getInfoLabel('System.Time')).lower()
+        self.clock_twelve = bool(not get_global_setting('locale.use24hourclock'))
         self.launch_popup(episode, playlist_item)
         self.api.reset_addon_data()
 
