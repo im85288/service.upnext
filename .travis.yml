@@ -20,7 +20,6 @@ script:
 - tox
 - tox -e flake8
 - pylint service.py resources/lib/ test/
-- msgcmp resources/language/resource.language.{nl_nl,en_gb}/strings.po
 #- kodi-addon-checker . --branch=krypton
 #- kodi-addon-checker . --branch=leia
 - coverage run -p -m unittest discover

@@ -1,9 +1,8 @@
-export PYTHONPATH := $(CURDIR):test/
-addon_xml := addon.xml
+export PYTHONPATH := $(CURDIR):$(CURDIR)/test
+PYTHON := python
 
-# Collect information to build as sensible package name
-name = $(shell xmllint --xpath 'string(/addon/@id)' $(addon_xml))
-version = $(shell xmllint --xpath 'string(/addon/@version)' $(addon_xml))
+name = $(shell xmllint --xpath 'string(/addon/@id)' addon.xml)
+version = $(shell xmllint --xpath 'string(/addon/@version)' addon.xml)
 git_branch = $(shell git rev-parse --abbrev-ref HEAD)
 git_hash = $(shell git rev-parse --short HEAD)
 
@@ -13,7 +12,7 @@ include_paths = $(patsubst %,$(name)/%,$(include_files))
 exclude_files = \*.new \*.orig \*.pyc \*.pyo
 zip_dir = $(name)/
 
-languages := de_de fr_fr hu_hu it_it nl_nl pl_pl
+languages = $(filter-out en_gb, $(patsubst resources/language/resource.language.%, %, $(wildcard resources/language/*)))
 
 blue = \e[1;34m
 white = \e[1;37m
@@ -31,11 +30,11 @@ sanity: tox pylint language
 
 tox:
 	@echo -e "$(white)=$(blue) Starting sanity tox test$(reset)"
-	tox -q
+	$(PYTHON) -m tox -q
 
 pylint:
 	@echo -e "$(white)=$(blue) Starting sanity pylint test$(reset)"
-	pylint default.py service.py resources/lib/ test/
+	$(PYTHON) -m pylint default.py service.py resources/lib/ test/
 
 language:
 	@echo -e "$(white)=$(blue) Starting language test$(reset)"
@@ -49,23 +48,27 @@ addon: clean
 
 unit: clean
 	@echo -e "$(white)=$(blue) Starting unit tests$(reset)"
-	python -m unittest discover
+	$(PYTHON) -m unittest discover
 
 run:
 	@echo -e "$(white)=$(blue) Run CLI$(reset)"
-	python default.py &
-	@-pkill -ef service.py
-	python service.py &
+	$(PYTHON) default.py &
+	@-pkill -ef '$(PYTHON) service.py'
+	$(PYTHON) service.py &
 	@sleep 10
-#	python test/run.py
+#	$(PYTHON) test/run.py
 	@sleep 5
-	@-pkill -ef -INT service.py
+	@-pkill -ef -INT '$(PYTHON) service.py'
 
 zip: clean
 	@echo -e "$(white)=$(blue) Building new package$(reset)"
 	@rm -f ../$(zip_name)
 	cd ..; zip -r $(zip_name) $(include_paths) -x $(exclude_files)
 	@echo -e "$(white)=$(blue) Successfully wrote package as: $(white)../$(zip_name)$(reset)"
+
+codecov:
+	@echo -e "$(white)=$(blue) Test codecov.yml syntax$(reset)"
+	curl --data-binary @.codecov.yml https://codecov.io/validate
 
 clean:
 	find . -name '*.pyc' -type f -delete
