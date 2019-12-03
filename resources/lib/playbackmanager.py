@@ -21,7 +21,6 @@ class PlaybackManager:  # pylint: disable=invalid-name
         self.play_item = PlayItem()
         self.state = State()
         self.player = Player()
-        self.clock_twelve = None
 
     def log(self, msg, level=2):
         utils.log(msg, name=self.__class__.__name__, level=level)
@@ -37,7 +36,6 @@ class PlaybackManager:  # pylint: disable=invalid-name
                 self.log('Error: no episode could be found to play next...exiting', 1)
                 return
         self.log('episode details %s' % episode, 2)
-        self.clock_twelve = 'm' in xbmc.getInfoLabel('System.Time').lower()
         self.launch_popup(episode, playlist_item)
         self.api.reset_addon_data()
 
@@ -108,7 +106,8 @@ class PlaybackManager:  # pylint: disable=invalid-name
             if episode_runtime:
                 end_time = total_time - play_time + episode.get('runtime')
                 end_time = datetime.now() + timedelta(seconds=end_time)
-                end_time = end_time.strftime('%I:%M %p' if self.clock_twelve else '%H:%M').lstrip('0')  # Remove leading zero on all platforms
+                time_format = xbmc.getRegion('time').replace(':%S', '')  # Strip off seconds
+                end_time = end_time.strftime(time_format).lstrip('0')  # Remove leading zero on all platforms
             else:
                 end_time = None
             if not self.state.pause:
