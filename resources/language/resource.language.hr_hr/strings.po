@@ -58,8 +58,8 @@ msgid "Include watched episodes"
 msgstr "Uključi gledane epizode"
 
 msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
-msgstr "Onemogući Up Next (restart potreban)"
+msgid "Disable Up Next"
+msgstr "Onemogući Up Next"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"

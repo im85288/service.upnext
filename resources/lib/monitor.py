@@ -2,31 +2,31 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
-from . import utils
+from xbmc import Monitor
 from .api import Api
 from .playbackmanager import PlaybackManager
-from .player import Player
+from .player import UpNextPlayer
 from .statichelper import from_unicode
+from .utils import decode_json, get_property, get_setting, log as ulog
 
 
-class Monitor(xbmc.Monitor):
+class UpNextMonitor(Monitor):
     ''' Service monitor for Kodi '''
 
     def __init__(self):
         ''' Constructor for Monitor '''
-        self.player = Player()
+        self.player = UpNextPlayer()
         self.api = Api()
         self.playback_manager = PlaybackManager()
-        xbmc.Monitor.__init__(self)
+        Monitor.__init__(self)
 
     def log(self, msg, level=1):
         ''' Log wrapper '''
-        utils.log(msg, name=self.__class__.__name__, level=level)
+        ulog(msg, name=self.__class__.__name__, level=level)
 
     def run(self):
         ''' Main service loop '''
-        self.log('Service started.', 0)
+        self.log('Service started', 0)
 
         while not self.abortRequested():
             # check every 1 sec
@@ -37,8 +37,8 @@ class Monitor(xbmc.Monitor):
             if not self.player.is_tracking():
                 continue
 
-            up_next_disabled = utils.settings('disableNextUp') == 'true'
-            if utils.window('PseudoTVRunning') == 'True' or up_next_disabled:
+            up_next_disabled = bool(get_setting('disableNextUp') == 'true')
+            if bool(get_property('PseudoTVRunning') == 'True') or up_next_disabled:
                 continue
 
             last_file = self.player.get_last_file()
@@ -46,7 +46,7 @@ class Monitor(xbmc.Monitor):
                 current_file = self.player.getPlayingFile()
             except RuntimeError as exc:
                 if 'not playing any' in str(exc):
-                    self.log('No file is playing - stop up next tracking.', 2)
+                    self.log('No file is playing - stop up next tracking', 2)
                     self.player.disable_tracking()
                     continue
                 raise
@@ -66,16 +66,16 @@ class Monitor(xbmc.Monitor):
             self.player.set_last_file(from_unicode(current_file))
             self.log('Calling autoplayback totaltime - playtime is %s' % (total_time - play_time), 2)
             self.playback_manager.launch_up_next()
-            self.log('Up Next style autoplay succeeded.', 2)
+            self.log('Up Next style autoplay succeeded', 2)
             self.player.disable_tracking()
 
-        self.log('Service stopped.', 0)
+        self.log('Service stopped', 0)
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         ''' Notification event handler for accepting data from add-ons '''
         if not method.endswith('upnext_data'):  # Method looks like Other.upnext_data
             return
 
-        data, encoding = utils.decode_json(data)
+        data, encoding = decode_json(data)
         data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
         self.api.addon_data_received(data, encoding=encoding)

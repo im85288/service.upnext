@@ -60,8 +60,8 @@ msgid "Include watched episodes"
 msgstr "Inclure les épisodes visionnés"
 
 msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
-msgstr "Désactiver Up Next (redémarrage requis)"
+msgid "Disable Up Next"
+msgstr "Désactiver Up Next"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"

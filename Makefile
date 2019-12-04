@@ -1,4 +1,4 @@
-export PYTHONPATH := $(CURDIR):$(CURDIR)/test
+export PYTHONPATH := $(CURDIR):$(CURDIR)/test/
 PYTHON := python
 
 name = $(shell xmllint --xpath 'string(/addon/@id)' addon.xml)

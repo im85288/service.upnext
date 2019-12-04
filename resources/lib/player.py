@@ -2,14 +2,14 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
-from . import utils
+from xbmc import getCondVisibility, Player, sleep
 from .api import Api
 from .developer import Developer
 from .state import State
+from .utils import get_setting
 
 
-class Player(xbmc.Player):
+class UpNextPlayer(Player):
     ''' Service class for playback monitoring '''
     last_file = None
     track = False
@@ -18,7 +18,7 @@ class Player(xbmc.Player):
         self.api = Api()
         self.state = State()
         self.developer = Developer()
-        xbmc.Player.__init__(self)
+        Player.__init__(self)
 
     def set_last_file(self, filename):
         self.state.last_file = filename
@@ -34,11 +34,11 @@ class Player(xbmc.Player):
 
     def onPlayBackStarted(self):  # pylint: disable=invalid-name
         ''' Will be called when kodi starts playing a file '''
-        xbmc.sleep(5000)  # Delay for slower devices, should really use onAVStarted for Leia
-        if not xbmc.getCondVisibility('videoplayer.content(episodes)'):
+        sleep(5000)  # Delay for slower devices, should really use onAVStarted for Leia
+        if not getCondVisibility('videoplayer.content(episodes)'):
             return
         self.state.track = True
-        if utils.settings('developerMode') == 'true':
+        if bool(get_setting('developerMode') == 'true'):
             self.developer.developer_play_back()
 
     def onPlayBackPaused(self):  # pylint: disable=invalid-name

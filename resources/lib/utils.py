@@ -4,63 +4,54 @@
 from __future__ import absolute_import, division, unicode_literals
 import sys
 import json
-import xbmc
-import xbmcaddon
-import xbmcgui
+from xbmc import executeJSONRPC, log as xlog, LOGDEBUG, LOGNOTICE
+from xbmcaddon import Addon
+from xbmcgui import Window
 from .statichelper import from_unicode, to_unicode
 
-ADDON = xbmcaddon.Addon()
-ADDON_ID = to_unicode(ADDON.getAddonInfo('id'))
-ADDON_PATH = to_unicode(ADDON.getAddonInfo('path'))
+ADDON = Addon()
 
 
-def window(key, value=None, clear=False, window_id=10000):
-    ''' Get or set Window properties '''
-    the_window = xbmcgui.Window(window_id)
-
-    if clear:
-        the_window.clearProperty(key)
-    elif value is None:
-        result = to_unicode(the_window.getProperty(key.replace('.json', '').replace('.bool', '')))
-
-        if result:
-            if key.endswith('.json'):
-                result = json.loads(result)
-            elif key.endswith('.bool'):
-                result = bool(result in ('true', '1'))
-        return result
-    else:
-        if key.endswith('.json'):
-
-            key = key.replace('.json', '')
-            value = json.dumps(value)
-
-        elif key.endswith('.bool'):
-
-            key = key.replace('.bool', '')
-            value = 'true' if value else 'false'
-
-        the_window.setProperty(key, from_unicode(str(value)))
-    return None
+def get_addon_info(key):
+    ''' Return addon information '''
+    return to_unicode(ADDON.getAddonInfo(key))
 
 
-def settings(setting, value=None):
-    ''' Get or set add-on settings '''
-    if value is None:
-        result = to_unicode(ADDON.getSetting(setting.replace('.bool', '')))
+def addon_id():
+    ''' Return add-on ID '''
+    return get_addon_info('id')
 
-        if result and setting.endswith('.bool'):
-            result = bool(result in ('true', '1'))
 
-        return result
+def addon_path():
+    ''' Return add-on path '''
+    return get_addon_info('path')
 
-    if setting.endswith('.bool'):
 
-        setting = setting.replace('.bool', '')
-        value = 'true' if value else 'false'
+def get_property(key, window_id=10000):
+    ''' Get a Window property '''
+    return to_unicode(Window(window_id).getProperty(key))
 
-    ADDON.setSetting(setting, from_unicode(value))
-    return None
+
+def set_property(key, value, window_id=10000):
+    ''' Set a Window property '''
+    return Window(window_id).setProperty(key, from_unicode(str(value)))
+
+
+def clear_property(key, window_id=10000):
+    ''' Clear a Window property '''
+    return Window(window_id).clearProperty(key)
+
+
+def get_setting(key, default=None):
+    ''' Get an add-on setting '''
+    # We use Addon() here to ensure changes in settings are reflected instantly
+    try:
+        value = to_unicode(Addon().getSetting(key))
+    except RuntimeError:  # Occurs when the add-on is disabled
+        return default
+    if value == '' and default is not None:
+        return default
+    return value
 
 
 def encode_data(data, encoding='base64'):
@@ -105,7 +96,7 @@ def decode_json(data):
 def event(message, data=None, sender=None, encoding='base64'):
     ''' Send internal notification event '''
     data = data or {}
-    sender = sender or ADDON_ID
+    sender = sender or addon_id()
 
     encoded = encode_data(data, encoding=encoding)
     if not encoded:
@@ -120,13 +111,13 @@ def event(message, data=None, sender=None, encoding='base64'):
 
 def log(msg, name=None, level=1):
     ''' Log information to the Kodi log '''
-    log_level = int(settings('logLevel'))
+    log_level = int(get_setting('logLevel', level))
     debug_logging = get_global_setting('debug.showloginfo')
-    window('logLevel', log_level)
+    set_property('logLevel', log_level)
     if not debug_logging and log_level < level:
         return
-    level = xbmc.LOGDEBUG if debug_logging else xbmc.LOGNOTICE
-    xbmc.log('[%s] %s -> %s' % (ADDON_ID, name, from_unicode(msg)), level=level)
+    level = LOGDEBUG if debug_logging else LOGNOTICE
+    xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)
 
 
 def load_test_data():
@@ -163,7 +154,7 @@ def jsonrpc(**kwargs):
         kwargs.update(id=1)
     if 'jsonrpc' not in kwargs:
         kwargs.update(jsonrpc='2.0')
-    return json.loads(xbmc.executeJSONRPC(json.dumps(kwargs)))
+    return json.loads(executeJSONRPC(json.dumps(kwargs)))
 
 
 def get_global_setting(setting):
@@ -172,9 +163,6 @@ def get_global_setting(setting):
     return result.get('result', {}).get('value')
 
 
-def localize(string_id, **kwargs):
+def localize(string_id):
     ''' Return the translated string from the .po language files, optionally translating variables '''
-    if kwargs:
-        from string import Formatter
-        return Formatter().vformat(ADDON.getLocalizedString(string_id), (), SafeDict(**kwargs))
     return ADDON.getLocalizedString(string_id)

@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from platform import machine
-import xbmcgui
+from xbmcgui import WindowXMLDialog
 from .statichelper import from_unicode
 
 ACTION_PLAYER_STOP = 13
@@ -11,7 +11,7 @@ ACTION_NAV_BACK = 92
 OS_MACHINE = machine()
 
 
-class StillWatching(xbmcgui.WindowXMLDialog):
+class StillWatching(WindowXMLDialog):
     item = None
     cancel = False
     stillwatching = False
@@ -23,9 +23,9 @@ class StillWatching(xbmcgui.WindowXMLDialog):
         self.action_exitkeys_id = [10, 13]
         self.progress_control = None
         if OS_MACHINE[0:5] == 'armv7':
-            xbmcgui.WindowXMLDialog.__init__(self)
+            WindowXMLDialog.__init__(self)
         else:
-            xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
+            WindowXMLDialog.__init__(self, *args, **kwargs)
 
     def onInit(self):  # pylint: disable=invalid-name
         self.set_info()

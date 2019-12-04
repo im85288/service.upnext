@@ -58,8 +58,8 @@ msgid "Include watched episodes"
 msgstr "Megnézett epizódokat is beleértve"
 
 msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
-msgstr "Up Next kikapcsolása (restart kell hozzá)"
+msgid "Disable Up Next"
+msgstr "Up Next kikapcsolása"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"

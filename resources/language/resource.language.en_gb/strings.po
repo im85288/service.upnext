@@ -58,7 +58,7 @@ msgid "Include watched episodes"
 msgstr ""
 
 msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
+msgid "Disable Up Next"
 msgstr ""
 
 msgctxt "#30017"

@@ -3,17 +3,17 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from platform import machine
-import xbmc
-import xbmcgui
-from . import utils
+from xbmc import Player
+from xbmcgui import WindowXMLDialog
 from .statichelper import from_unicode
+from .utils import get_setting, localize
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
 OS_MACHINE = machine()
 
 
-class UpNext(xbmcgui.WindowXMLDialog):
+class UpNext(WindowXMLDialog):
     item = None
     cancel = False
     watchnow = False
@@ -24,18 +24,18 @@ class UpNext(xbmcgui.WindowXMLDialog):
         self.action_exitkeys_id = [10, 13]
         self.progress_control = None
         if OS_MACHINE[0:5] == 'armv7':
-            xbmcgui.WindowXMLDialog.__init__(self)
+            WindowXMLDialog.__init__(self)
         else:
-            xbmcgui.WindowXMLDialog.__init__(self, *args, **kwargs)
+            WindowXMLDialog.__init__(self, *args, **kwargs)
 
     def onInit(self):  # pylint: disable=invalid-name
         self.set_info()
         self.prepare_progress_control()
 
-        if utils.settings('stopAfterClose') == 'true':
-            self.getControl(3013).setLabel(utils.localize(30033))  # Stop
+        if bool(get_setting('stopAfterClose') == 'true'):
+            self.getControl(3013).setLabel(localize(30033))  # Stop
         else:
-            self.getControl(3013).setLabel(utils.localize(30034))  # Close
+            self.getControl(3013).setLabel(localize(30034))  # Close
 
     def set_info(self):
         episode_info = '%(season)sx%(episode)s.' % self.item
@@ -108,8 +108,8 @@ class UpNext(xbmcgui.WindowXMLDialog):
             self.close()
         elif controlId == 3013:  # Close / Stop
             self.set_cancel(True)
-            if utils.settings('stopAfterClose') == 'true':
-                xbmc.Player().stop()
+            if bool(get_setting('stopAfterClose') == 'true'):
+                Player().stop()
             self.close()
 
     def onAction(self, action):  # pylint: disable=invalid-name

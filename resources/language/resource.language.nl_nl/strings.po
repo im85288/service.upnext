@@ -58,8 +58,8 @@ msgid "Include watched episodes"
 msgstr "Ook op bekeken afleveringen toepassen"
 
 msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
-msgstr "Up Next uitschakelen (herstarten vereist)"
+msgid "Disable Up Next"
+msgstr "Up Next uitschakelen"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"
