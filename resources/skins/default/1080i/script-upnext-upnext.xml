@@ -97,7 +97,7 @@
                         <font>font25_title</font>
                         <textcolor>eeffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>$ADDON[service.upnext 30008] $ADDON[service.upnext 30036] [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] $ADDON[service.upnext 30035]</label>
+                        <label>$ADDON[service.upnext 30036]</label>
                         <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
                     </control>
                     <control type="label">
