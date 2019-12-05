@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: service.upnext\n"
 "Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2019-11-26 17:13+0100\n"
+"PO-Revision-Date: 2019-12-05 17:08+0100\n"
 "Last-Translator: EffeF\n"
 "Language-Team: Italian\n"
 "Language: it\n"
@@ -17,6 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 2.2.3\n"
 
+# APPLICATION
 msgctxt "#30006"
 msgid "Watch Now"
 msgstr "Guarda Ora"
@@ -79,11 +80,11 @@ msgstr "Decorata"
 
 msgctxt "#30040"
 msgid "Play next"
-msgstr "Riproduci"
+msgstr "Riproduci prossimo"
 
 msgctxt "#30041"
 msgid "Stop playing"
-msgstr "Non Riprodurre"
+msgstr "Ferma riproduzione"
 
 msgctxt "#30042"
 msgid "None"
@@ -117,16 +118,14 @@ msgctxt "#30049"
 msgid "Next Episode"
 msgstr "Prossimo Episodio"
 
-
-
-### SETTINGS
+# SETTINGS
 msgctxt "#30500"
 msgid "Interface"
-msgstr ""
+msgstr "Interfaccia"
 
 msgctxt "#30501"
 msgid "Features"
-msgstr ""
+msgstr "Funzionalità"
 
 msgctxt "#30503"
 msgid "Set the display mode for the notifications"
@@ -134,15 +133,15 @@ msgstr "Imposta la modalità di visualizzazione per le notifiche"
 
 msgctxt "#30505"
 msgid "Stop playback when closing dialog"
-msgstr "Interrompere la riproduzione alla chiusura della finestra di dialogo"
+msgstr "Fermare la riproduzione alla chiusura della finestra di dialogo"
 
 msgctxt "#30600"
 msgid "Behaviour"
-msgstr ""
+msgstr "Comportamento"
 
 msgctxt "#30601"
 msgid "Features"
-msgstr ""
+msgstr "Funzionalità"
 
 msgctxt "#30603"
 msgid "Default action when nothing selected"
@@ -150,47 +149,47 @@ msgstr "Azione predefinita quando non viene selezionato niente"
 
 msgctxt "#30605"
 msgid "Include already watched episodes"
-msgstr "Includi episodi guardati"
+msgstr "Includi episodi già visti"
 
 msgctxt "#30607"
 msgid "Number of episodes before \"Still there?\" query"
-msgstr "Numero di episodi prima della richiesta guarda ancora"
+msgstr "Numero di episodi prima della richiesta \"Ancora qui?\""
 
 msgctxt "#30609"
 msgid "Duration in seconds for notification to be shown"
-msgstr "Il numero di secondi prima della fine dell'episodio per mostrare la notifica"
+msgstr "Durata in secondi per la visualizzazione della notifica"
 
 msgctxt "#30611"
 msgid "Customize autoplay duration by episode length"
-msgstr ""
+msgstr "Personalizza la durata della riproduzione automatica in base alla durata dell'episodio"
 
 msgctxt "#30613"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
-msgstr ""
+msgstr "Tutti gli episodi  [COLOR gray]qualsiasi lunghezza[/COLOR]"
 
 msgctxt "#30615"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
-msgstr ""
+msgstr "Episodi molto brevi  [COLOR gray]< 10 minuti[/COLOR]"
 
 msgctxt "#30617"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
-msgstr ""
+msgstr "Episodi brevi  [COLOR gray]> 10 minuti[/COLOR]"
 
 msgctxt "#30619"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
-msgstr ""
+msgstr "Episodi medi  [COLOR gray]> 20 minuti[/COLOR]"
 
 msgctxt "#30621"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
-msgstr ""
+msgstr "Episodi lunghi  [COLOR gray]> 40 minuti[/COLOR]"
 
 msgctxt "#30623"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr ""
+msgstr "Episodi molto lunghi  [COLOR gray]> 60 minuti[/COLOR]"
 
 msgctxt "#30700"
 msgid "Expert"
-msgstr ""
+msgstr "Esperto"
 
 msgctxt "#30703"
 msgid "Disable Up Next"
@@ -198,7 +197,7 @@ msgstr "Disabilita Up Next"
 
 msgctxt "#30705"
 msgid "Enable developer mode"
-msgstr "Abilita la modalità sviluppatore"
+msgstr "Abilita modalità sviluppatore"
 
 msgctxt "#30707"
 msgid "Choose the window to be shown"
@@ -206,4 +205,4 @@ msgstr "Scegli la finestra da mostrare"
 
 msgctxt "#30709"
 msgid "Log Level"
-msgstr "Livello log"
+msgstr "Livello Log"
