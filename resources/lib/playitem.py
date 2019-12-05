@@ -3,10 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import PlayList, PLAYLIST_VIDEO
-from .api import Api
-from .player import Player
-from .state import State
-from .utils import log as ulog
+from api import Api
+from player import Player
+from state import State
+from utils import log as ulog
 
 
 class PlayItem:

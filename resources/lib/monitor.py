@@ -3,11 +3,11 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import Monitor
-from .api import Api
-from .playbackmanager import PlaybackManager
-from .player import UpNextPlayer
-from .statichelper import from_unicode
-from .utils import decode_json, get_property, get_setting, log as ulog
+from api import Api
+from playbackmanager import PlaybackManager
+from player import UpNextPlayer
+from statichelper import from_unicode
+from utils import decode_json, get_property, get_setting, log as ulog
 
 
 class UpNextMonitor(Monitor):

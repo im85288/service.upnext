@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import sleep
-from .utils import event, get_setting, jsonrpc, log as ulog
+from utils import event, get_setting, jsonrpc, log as ulog
 
 
 class Api:
