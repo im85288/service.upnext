@@ -79,7 +79,7 @@ msgstr "Fancy"
 
 msgctxt "#30040"
 msgid "Play next"
-msgstr "Odtwarzaj"
+msgstr "Odtwarzaj następny"
 
 msgctxt "#30041"
 msgid "Stop playing"
@@ -121,11 +121,11 @@ msgstr "Następny odcinek"
 ### SETTINGS
 msgctxt "#30500"
 msgid "Interface"
-msgstr ""
+msgstr "Wygląd"
 
 msgctxt "#30501"
 msgid "Features"
-msgstr ""
+msgstr "Funkcje"
 
 msgctxt "#30503"
 msgid "Set the display mode for the notifications"
@@ -137,11 +137,11 @@ msgstr "Zatrzymaj odtwarzanie po zamknięciu okna dialogowego"
 
 msgctxt "#30600"
 msgid "Behaviour"
-msgstr ""
+msgstr "Zachowanie"
 
 msgctxt "#30601"
 msgid "Features"
-msgstr ""
+msgstr "Funkcje"
 
 msgctxt "#30603"
 msgid "Default action when nothing selected"
@@ -161,35 +161,35 @@ msgstr "Liczba sekund przed końcem, aby wyświetlić powiadomienie"
 
 msgctxt "#30611"
 msgid "Customize autoplay duration by episode length"
-msgstr ""
+msgstr "Dostosuj czas trwania autoodtwarzania według długości odcinka"
 
 msgctxt "#30613"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
-msgstr ""
+msgstr "Wszystkie odcinki  [COLOR gray]dowolnej długości[/COLOR]"
 
 msgctxt "#30615"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
-msgstr ""
+msgstr "Bardzo krótkie odcinki  [COLOR gray]< 10 minut[/COLOR]"
 
 msgctxt "#30617"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
-msgstr ""
+msgstr "Krótkie odcinki [COLOR gray]> 10 minut[/COLOR]"
 
 msgctxt "#30619"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
-msgstr ""
+msgstr "Średnie odcinki [COLOR gray]> 20 min[/COLOR]"
 
 msgctxt "#30621"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
-msgstr ""
+msgstr "Długie odcinki [COLOR gray]> 40 minut[/COLOR]"
 
 msgctxt "#30623"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr ""
+msgstr "Bardzo długie odcinki [COLOR gray]> 60 minut[/COLOR]"
 
 msgctxt "#30700"
 msgid "Expert"
-msgstr ""
+msgstr "Eksperckie"
 
 msgctxt "#30703"
 msgid "Disable Up Next"
