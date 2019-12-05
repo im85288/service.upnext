@@ -6,6 +6,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import unittest
+import AddonSignals
 from resources.lib import utils
 
 xbmc = __import__('xbmc')
@@ -51,7 +52,6 @@ class TestEncoding(unittest.TestCase):
         self.assertEqual(encoding, 'base64')
 
     def test_from_addon_signals(self):
-        import AddonSignals
         data = 'Fòöbàr'
 
         base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='
@@ -62,7 +62,6 @@ class TestEncoding(unittest.TestCase):
         self.assertEqual(encoding, 'base64')
 
     def test_to_addon_signals(self):
-        import AddonSignals
         data = 'Fòöbàr'
 
         base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='

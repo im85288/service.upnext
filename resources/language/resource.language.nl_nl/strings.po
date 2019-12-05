@@ -17,26 +17,6 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.8.7\n"
 
-msgctxt "#30001"
-msgid "The number of seconds before the end to show the notification"
-msgstr "Aantal seconden om vóór het einde te melden"
-
-msgctxt "#30002"
-msgid "Log Level:"
-msgstr "Logniveau"
-
-msgctxt "#30003"
-msgid "Settings"
-msgstr "Instellingen"
-
-msgctxt "#30004"
-msgid "Advanced"
-msgstr "Geavanceerd"
-
-msgctxt "#30005"
-msgid "Default action when nothing selected"
-msgstr "Standaardactie als niets geselecteerd is"
-
 msgctxt "#30006"
 msgid "Watch Now"
 msgstr "Kijk nu"
@@ -45,21 +25,9 @@ msgctxt "#30008"
 msgid "Up Next"
 msgstr "Volgende aflevering"
 
-msgctxt "#30009"
-msgid "Number of episodes before still watching query"
-msgstr "Aantal afleveringen alvorens te vragen of er nog gekeken wordt"
-
 msgctxt "#30010"
 msgid "Continue watching"
 msgstr "Verder kijken"
-
-msgctxt "#30013"
-msgid "Include watched episodes"
-msgstr "Ook op bekeken afleveringen toepassen"
-
-msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
-msgstr "Up Next uitschakelen (herstarten vereist)"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"
@@ -76,22 +44,6 @@ msgstr "Tijdens het automatisch afspelen van korte video's meldingen tonen"
 msgctxt "#30024"
 msgid "Still there?"
 msgstr "Ben je er nog?"
-
-msgctxt "#30025"
-msgid "Set the display mode for the notifications"
-msgstr "Schermmodus voor meldingen"
-
-msgctxt "#30028"
-msgid "Developer"
-msgstr "Ontwikkelaar"
-
-msgctxt "#30029"
-msgid "Enable developer mode"
-msgstr "Ontwikkelaarsmodus inschakelen"
-
-msgctxt "#30030"
-msgid "Choose the window to be shown"
-msgstr "Kies het venster om te tonen"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
@@ -126,12 +78,12 @@ msgid "Fancy"
 msgstr "Mooi"
 
 msgctxt "#30040"
-msgid "Play"
-msgstr "Afspelen"
+msgid "Play next"
+msgstr "Volgende afspelen"
 
 msgctxt "#30041"
-msgid "Don't Play"
-msgstr "Niet afspelen"
+msgid "Stop playing"
+msgstr "Stoppen"
 
 msgctxt "#30042"
 msgid "None"
@@ -165,6 +117,92 @@ msgctxt "#30049"
 msgid "Next Episode"
 msgstr "Volgende aflevering"
 
-msgctxt "#30050"
+
+### SETTINGS
+msgctxt "#30500"
+msgid "Interface"
+msgstr "Interface"
+
+msgctxt "#30501"
+msgid "Features"
+msgstr "Functionaliteit"
+
+msgctxt "#30503"
+msgid "Set the display mode for the notifications"
+msgstr "Schermmodus voor meldingen"
+
+msgctxt "#30505"
 msgid "Stop playback when closing dialog"
 msgstr "Na het afsluiten stoppen met afspelen"
+
+msgctxt "#30600"
+msgid "Behaviour"
+msgstr "Gedrag"
+
+msgctxt "#30601"
+msgid "Features"
+msgstr "Functionaliteit"
+
+msgctxt "#30603"
+msgid "Default action when nothing selected"
+msgstr "Standaardactie als niets geselecteerd is"
+
+msgctxt "#30605"
+msgid "Include already watched episodes"
+msgstr "Ook op reeds bekeken afleveringen toepassen"
+
+msgctxt "#30607"
+msgid "Number of episodes before \"Still there?\" query"
+msgstr "Aantal afleveringen alvorens te vragen of er nog gekeken wordt"
+
+msgctxt "#30609"
+msgid "Duration in seconds for notification to be shown"
+msgstr "Aantal seconden om vóór het einde te melden"
+
+msgctxt "#30611"
+msgid "Customize autoplay duration by episode length"
+msgstr "Autoplay melding aanpassen op basis van episode lengte"
+
+msgctxt "#30613"
+msgid "All episodes  [COLOR gray]any length[/COLOR]"
+msgstr "Alle afleveringen  [COLOR gray]ongeacht lengte[/COLOR]"
+
+msgctxt "#30615"
+msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
+msgstr "Zeer korte afleveringen  [COLOR gray]< 10 min[/COLOR]"
+
+msgctxt "#30617"
+msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
+msgstr "Korte afleveringen  [COLOR gray]> 10min[/COLOR]"
+
+msgctxt "#30619"
+msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
+msgstr "Normale afleveringen  [COLOR gray]> 20min[/COLOR]"
+
+msgctxt "#30621"
+msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
+msgstr "Lange afleveringen  [COLOR gray]> 40 min[/COLOR]"
+
+msgctxt "#30623"
+msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
+msgstr "Zeer lange afleveringen  [COLOR gray]> 60 min[/COLOR]"
+
+msgctxt "#30700"
+msgid "Expert"
+msgstr "Expert"
+
+msgctxt "#30703"
+msgid "Disable Up Next"
+msgstr "Up Next uitschakelen"
+
+msgctxt "#30705"
+msgid "Enable developer mode"
+msgstr "Ontwikkelaarsmodus inschakelen"
+
+msgctxt "#30707"
+msgid "Choose the window to be shown"
+msgstr "Kies het venster om te tonen"
+
+msgctxt "#30709"
+msgid "Log Level"
+msgstr "Logniveau"
