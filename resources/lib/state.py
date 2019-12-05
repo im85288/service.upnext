@@ -12,9 +12,6 @@ class State:
     def __init__(self):
         self.__dict__ = self._shared_state
         self.play_mode = get_setting('autoPlayMode')
-        self.short_play_mode = get_setting('shortPlayMode')
-        self.short_play_notification = get_setting('shortPlayNotification')
-        self.short_play_length = int(get_setting('shortPlayLength')) * 60
         self.include_watched = bool(get_setting('includeWatched') == 'true')
         self.current_tv_show_id = None
         self.current_episode_id = None

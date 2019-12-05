@@ -17,9 +17,6 @@
         <setting label="30621" type="slider" id="autoPlayTimeL" default="50" range="0,5,120" option="int" visible="eq(-5,true)"/>
         <setting label="30623" type="slider" id="autoPlayTimeXL" default="60" range="0,5,120" option="int" visible="eq(-6,true)"/>
         <!-- Old unused settings -->
-        <setting label="30017" type="bool" id="shortPlayMode" default="false" visible="false"/>
-        <setting label="30018" type="number" id="shortPlayLength" default="10" visible="false"/>
-        <setting label="30019" type="bool" id="shortPlayNotification" default="true" visible="false"/>
         <setting label="30032" type="bool" id="enablePlaylist" visible="false" enable="false"/> <!-- To avoid log spam just disable setting -->
     </category>
     <category label="30700"> <!-- Expert -->

@@ -12,4 +12,5 @@ disable=
     too-many-arguments,
     too-many-function-args,
     too-many-instance-attributes,
+    too-many-return-statements,
     useless-super-delegation,
