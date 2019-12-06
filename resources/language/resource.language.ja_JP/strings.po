@@ -17,26 +17,7 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: Poedit 1.8.7\n"
 
-msgctxt "#30001"
-msgid "The number of seconds before the end to show the notification"
-msgstr "終了の何秒前に通知を表示しましょうか。"
-
-msgctxt "#30002"
-msgid "Log Level:"
-msgstr "ログレベル:"
-
-msgctxt "#30003"
-msgid "Settings"
-msgstr "設定"
-
-msgctxt "#30004"
-msgid "Advanced"
-msgstr "高級"
-
-msgctxt "#30005"
-msgid "Default action when nothing selected"
-msgstr "何も選択しなかったら"
-
+### APPLICATION
 msgctxt "#30006"
 msgid "Watch Now"
 msgstr "観る"
@@ -45,21 +26,9 @@ msgctxt "#30008"
 msgid "Up Next"
 msgstr "次のエピソードまで"
 
-msgctxt "#30009"
-msgid "Number of episodes before still watching query"
-msgstr "何個のエピソードを観てから続いて観るか聞きましょうか。"
-
 msgctxt "#30010"
 msgid "Continue watching"
 msgstr "続いて観る"
-
-msgctxt "#30013"
-msgid "Include watched episodes"
-msgstr "観たエピソードを含む"
-
-msgctxt "#30014"
-msgid "Disable Up Next (restart required)"
-msgstr "Up Nextを使わない(再起動必須)"
 
 msgctxt "#30017"
 msgid "Automatically play short videos"
@@ -76,22 +45,6 @@ msgstr "短いビデオを自動再生する際に通知を見せる。"
 msgctxt "#30024"
 msgid "Still there?"
 msgstr "まだ観るの。"
-
-msgctxt "#30025"
-msgid "Set the display mode for the notifications"
-msgstr "通知モード"
-
-msgctxt "#30028"
-msgid "Developer"
-msgstr "デベロッパー"
-
-msgctxt "#30029"
-msgid "Enable developer mode"
-msgstr "デベロッパーモードを使う"
-
-msgctxt "#30030"
-msgid "Choose the window to be shown"
-msgstr "使いたい通知ウィンドウ"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
@@ -126,11 +79,11 @@ msgid "Fancy"
 msgstr "オシャレ"
 
 msgctxt "#30040"
-msgid "Play"
+msgid "Play next"
 msgstr "再生"
 
 msgctxt "#30041"
-msgid "Don't Play"
+msgid "Stop playing"
 msgstr "再生しない"
 
 msgctxt "#30042"
@@ -165,6 +118,92 @@ msgctxt "#30049"
 msgid "Next Episode"
 msgstr "次のエピソード"
 
-msgctxt "#30050"
+
+### SETTINGS
+msgctxt "#30500"
+msgid "Interface"
+msgstr "インターフェイス"
+
+msgctxt "#30501"
+msgid "Features"
+msgstr ""
+
+msgctxt "#30503"
+msgid "Set the display mode for the notifications"
+msgstr "通知モード"
+
+msgctxt "#30505"
 msgid "Stop playback when closing dialog"
 msgstr "通知を閉じると再生を停止する。"
+
+msgctxt "#30600"
+msgid "Behaviour"
+msgstr "機能設定"
+
+msgctxt "#30601"
+msgid "Features"
+msgstr ""
+
+msgctxt "#30603"
+msgid "Default action when nothing selected"
+msgstr "何も選択しなかったら"
+
+msgctxt "#30605"
+msgid "Include already watched episodes"
+msgstr "観たエピソードを含む"
+
+msgctxt "#30607"
+msgid "Number of episodes before \"Still there?\" query"
+msgstr "何個のエピソードを観てから\"続いて観る?\"と聞きましょうか。"
+
+msgctxt "#30609"
+msgid "Duration in seconds for notification to be shown"
+msgstr "通知を表示する時間(秒)"
+
+msgctxt "#30611"
+msgid "Customize autoplay duration by episode length"
+msgstr "カスタマイズ"
+
+msgctxt "#30613"
+msgid "All episodes  [COLOR gray]any length[/COLOR]"
+msgstr "[COLOR gray]上映時間に関係なく[/COLOR]全てのエピソード"
+
+msgctxt "#30615"
+msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
+msgstr "[COLOR gray]10分以下[/COLOR]の超短いエピソード""
+
+msgctxt "#30617"
+msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
+msgstr "[COLOR gray]10分以上[/COLOR]の短いエピソード"
+
+msgctxt "#30619"
+msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
+msgstr "[COLOR gray]20分以上[/COLOR]の丁度良いエピソード"
+
+msgctxt "#30621"
+msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
+msgstr "[COLOR gray]40分以上[/COLOR]の長いエピソード"
+
+msgctxt "#30623"
+msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
+msgstr "[COLOR gray]60分以上[/COLOR]の超長いエピソード"
+
+msgctxt "#30700"
+msgid "Expert"
+msgstr "エキスパート"
+
+msgctxt "#30703"
+msgid "Disable Up Next"
+msgstr "Up Nextを使わない"
+
+msgctxt "#30705"
+msgid "Enable developer mode"
+msgstr "デベロッパーモードを使う"
+
+msgctxt "#30707"
+msgid "Choose the window to be shown"
+msgstr "使いたい通知ウィンドウ"
+
+msgctxt "#30709"
+msgid "Log Level"
+msgstr "ログレベル"
