@@ -55,11 +55,13 @@ class PlaybackManager:  # pylint: disable=invalid-name
             next_up_page = UpNext('script-upnext-upnext.xml', addon_path(), 'default', '1080i')
             still_watching_page = StillWatching('script-upnext-stillwatching.xml', addon_path(), 'default', '1080i')
 
-        showing_next_up_page, showing_still_watching_page = (
-            self.show_popup_and_wait(episode, next_up_page, still_watching_page))
-        should_play_default, should_play_non_default = (
-            self.extract_play_info(next_up_page, showing_next_up_page, showing_still_watching_page,
-                                   still_watching_page))
+        showing_next_up_page, showing_still_watching_page = self.show_popup_and_wait(episode,
+                                                                                     next_up_page,
+                                                                                     still_watching_page)
+        should_play_default, should_play_non_default = self.extract_play_info(next_up_page,
+                                                                              showing_next_up_page,
+                                                                              showing_still_watching_page,
+                                                                              still_watching_page)
         if not self.state.track:
             self.log('exit launch_popup early due to disabled tracking', 2)
             return
@@ -80,8 +82,12 @@ class PlaybackManager:  # pylint: disable=invalid-name
             self.api.play_kodi_item(episode)
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
-        play_time = self.player.getTime()
-        total_time = self.player.getTotalTime()
+        try:
+            play_time = self.player.getTime()
+            total_time = self.player.getTotalTime()
+        except RuntimeError:
+            self.log('exit early because player is no longer running', 2)
+            return False, False
         progress_step_size = calculate_progress_steps(total_time - play_time)
         episode_runtime = episode.get('runtime') is not None
         next_up_page.set_item(episode)
@@ -106,8 +112,18 @@ class PlaybackManager:  # pylint: disable=invalid-name
         while (self.player.isPlaying() and (total_time - play_time > 1)
                and not next_up_page.is_cancel() and not next_up_page.is_watch_now()
                and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
-            play_time = self.player.getTime()
-            total_time = self.player.getTotalTime()
+            try:
+                play_time = self.player.getTime()
+                total_time = self.player.getTotalTime()
+            except RuntimeError:
+                if showing_next_up_page:
+                    next_up_page.close()
+                    showing_next_up_page = False
+                if showing_still_watching_page:
+                    still_watching_page.close()
+                    showing_still_watching_page = False
+                break
+
             remaining = total_time - play_time
             if episode_runtime:
                 end_time = total_time - play_time + episode.get('runtime')
