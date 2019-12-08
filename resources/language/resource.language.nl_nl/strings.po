@@ -58,16 +58,16 @@ msgid "Close"
 msgstr "Sluit"
 
 msgctxt "#30035"
-msgid "Continue watching in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "Verder kijken in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconden"
+msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Verder kijken in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconden"
 
 msgctxt "#30036"
-msgid "Up next in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "Volgende aflevering in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconden"
+msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Volgende aflevering in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconden"
 
 msgctxt "#30037"
-msgid "Next episode in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "Volgende aflevering in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconden"
+msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Volgende aflevering in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconden"
 
 msgctxt "#30038"
 msgid "Simple"
@@ -204,5 +204,29 @@ msgid "Choose the window to be shown"
 msgstr "Kies het venster om te tonen"
 
 msgctxt "#30709"
-msgid "Log Level"
+msgid "Log level"
 msgstr "Logniveau"
+
+msgctxt "#30800"
+msgid "Developer"
+msgstr "Ontwikkelaar"
+
+msgctxt "#30801"
+msgid "Test how the user interface looks"
+msgstr "Test hoe de gebruikersinterface er uit ziet"
+
+msgctxt "#30805"
+msgid "Show an UpNext pop-up…"
+msgstr "Toon een upNext pop-up…"
+
+msgctxt "#30807"
+msgid "Show an UpNextSimple pop-up…"
+msgstr "Toon een UpNextSimple pop-up…"
+
+msgctxt "#30809"
+msgid "Show a StillWatching pop-up…"
+msgstr "Toon een StillWatching pop-up…"
+
+msgctxt "#30811"
+msgid "Show a StillWatchingSimple pop-up…"
+msgstr "Toon een StillWatchingSimple pop-up…"

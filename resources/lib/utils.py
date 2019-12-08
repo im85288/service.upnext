@@ -7,7 +7,7 @@ import json
 from xbmc import executeJSONRPC, log as xlog, LOGDEBUG, LOGNOTICE
 from xbmcaddon import Addon
 from xbmcgui import Window
-from .statichelper import from_unicode, to_unicode
+from statichelper import from_unicode, to_unicode
 
 ADDON = Addon()
 
@@ -118,27 +118,6 @@ def log(msg, name=None, level=1):
         return
     level = LOGDEBUG if debug_logging else LOGNOTICE
     xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)
-
-
-def load_test_data():
-    ''' Load test data for developer mode '''
-    test_episode = {'episodeid': 12345678, 'tvshowid': 12345678, 'title': 'Garden of Bones', 'art': {}}
-    test_episode['art']['tvshow.poster'] = 'https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg'
-    test_episode['art']['thumb'] = 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg'
-    test_episode['art']['tvshow.fanart'] = 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg'
-    test_episode['art']['tvshow.landscape'] = 'https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg'
-    test_episode['art']['tvshow.clearart'] = 'https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png'
-    test_episode['art']['tvshow.clearlogo'] = 'https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png'
-    test_episode['plot'] = 'Lord Baelish arrives at Renly\'s camp just before he faces off against Stannis. Daenerys and her company are welcomed '\
-                           ' into the city of Qarth. Arya, Gendry, and Hot Pie find themselves imprisoned at Harrenhal.'
-    test_episode['showtitle'] = 'Game of Thrones'
-    test_episode['playcount'] = 1
-    test_episode['season'] = 2
-    test_episode['episode'] = 4
-    test_episode['seasonepisode'] = '2x4.'
-    test_episode['rating'] = '8.9'
-    test_episode['firstaired'] = '23/04/2012'
-    return test_episode
 
 
 def calculate_progress_steps(period):

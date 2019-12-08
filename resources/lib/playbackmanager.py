@@ -4,12 +4,13 @@
 from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from xbmc import getRegion, sleep
-from .api import Api
-from .pages import set_up_pages
-from .player import Player
-from .playitem import PlayItem
-from .state import State
-from .utils import calculate_progress_steps, clear_property, event, get_setting, log as ulog, set_property
+from api import Api
+from player import Player
+from playitem import PlayItem
+from state import State
+from stillwatching import StillWatching
+from upnext import UpNext
+from utils import addon_path, calculate_progress_steps, clear_property, event, get_setting, log as ulog, set_property
 
 
 class PlaybackManager:  # pylint: disable=invalid-name
@@ -45,13 +46,22 @@ class PlaybackManager:  # pylint: disable=invalid-name
         include_play_count = True if self.state.include_watched else no_play_count
         if not include_play_count or self.state.current_episode_id == episode_id:
             return
+
         # We have a next up episode choose mode
-        next_up_page, still_watching_page = set_up_pages()
-        showing_next_up_page, showing_still_watching_page = (
-            self.show_popup_and_wait(episode, next_up_page, still_watching_page))
-        should_play_default, should_play_non_default = (
-            self.extract_play_info(next_up_page, showing_next_up_page, showing_still_watching_page,
-                                   still_watching_page))
+        if get_setting('simpleMode') == '0':
+            next_up_page = UpNext('script-upnext-upnext-simple.xml', addon_path(), 'default', '1080i')
+            still_watching_page = StillWatching('script-upnext-stillwatching-simple.xml', addon_path(), 'default', '1080i')
+        else:
+            next_up_page = UpNext('script-upnext-upnext.xml', addon_path(), 'default', '1080i')
+            still_watching_page = StillWatching('script-upnext-stillwatching.xml', addon_path(), 'default', '1080i')
+
+        showing_next_up_page, showing_still_watching_page = self.show_popup_and_wait(episode,
+                                                                                     next_up_page,
+                                                                                     still_watching_page)
+        should_play_default, should_play_non_default = self.extract_play_info(next_up_page,
+                                                                              showing_next_up_page,
+                                                                              showing_still_watching_page,
+                                                                              still_watching_page)
         if not self.state.track:
             self.log('exit launch_popup early due to disabled tracking', 2)
             return
@@ -72,8 +82,12 @@ class PlaybackManager:  # pylint: disable=invalid-name
             self.api.play_kodi_item(episode)
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
-        play_time = self.player.getTime()
-        total_time = self.player.getTotalTime()
+        try:
+            play_time = self.player.getTime()
+            total_time = self.player.getTotalTime()
+        except RuntimeError:
+            self.log('exit early because player is no longer running', 2)
+            return False, False
         progress_step_size = calculate_progress_steps(total_time - play_time)
         episode_runtime = episode.get('runtime') is not None
         next_up_page.set_item(episode)
@@ -98,8 +112,19 @@ class PlaybackManager:  # pylint: disable=invalid-name
         while (self.player.isPlaying() and (total_time - play_time > 1)
                and not next_up_page.is_cancel() and not next_up_page.is_watch_now()
                and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
-            play_time = self.player.getTime()
-            total_time = self.player.getTotalTime()
+            try:
+                play_time = self.player.getTime()
+                total_time = self.player.getTotalTime()
+            except RuntimeError:
+                if showing_next_up_page:
+                    next_up_page.close()
+                    showing_next_up_page = False
+                if showing_still_watching_page:
+                    still_watching_page.close()
+                    showing_still_watching_page = False
+                break
+
+            remaining = total_time - play_time
             if episode_runtime:
                 end_time = total_time - play_time + episode.get('runtime')
                 end_time = datetime.now() + timedelta(seconds=end_time)
@@ -109,9 +134,9 @@ class PlaybackManager:  # pylint: disable=invalid-name
                 end_time = None
             if not self.state.pause:
                 if showing_next_up_page:
-                    next_up_page.update_progress_control(end_time)
+                    next_up_page.update_progress_control(remaining=remaining, endtime=end_time)
                 elif showing_still_watching_page:
-                    still_watching_page.update_progress_control(end_time)
+                    still_watching_page.update_progress_control(remaining=remaining, endtime=end_time)
             sleep(100)
         return showing_next_up_page, showing_still_watching_page
 

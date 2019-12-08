@@ -59,16 +59,16 @@ msgid "Close"
 msgstr "Chiudi"
 
 msgctxt "#30035"
-msgid "Continue watching in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "Continua a guardare fra [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] secondi"
+msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Continua a guardare fra [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] secondi"
 
 msgctxt "#30036"
-msgid "Up next in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "Prossimo fra [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] secondi"
+msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Prossimo fra [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] secondi"
 
 msgctxt "#30037"
-msgid "Next episode in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "Prossimo episodio fra [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] secondi"
+msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Prossimo episodio fra [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] secondi"
 
 msgctxt "#30038"
 msgid "Simple"
@@ -97,22 +97,6 @@ msgstr "Info"
 msgctxt "#30044"
 msgid "Debug"
 msgstr "Debug"
-
-msgctxt "#30045"
-msgid "UpNext"
-msgstr "UpNext"
-
-msgctxt "#30046"
-msgid "UpNextSimple"
-msgstr "UpNextSimple"
-
-msgctxt "#30047"
-msgid "StillWatching"
-msgstr "StillWatching"
-
-msgctxt "#30048"
-msgid "StillWatchingSimple"
-msgstr "StillWatchingSimple"
 
 msgctxt "#30049"
 msgid "Next Episode"
@@ -195,14 +179,34 @@ msgctxt "#30703"
 msgid "Disable Up Next"
 msgstr "Disabilita Up Next"
 
-msgctxt "#30705"
-msgid "Enable developer mode"
-msgstr "Abilita modalità sviluppatore"
-
 msgctxt "#30707"
 msgid "Choose the window to be shown"
 msgstr "Scegli la finestra da mostrare"
 
 msgctxt "#30709"
-msgid "Log Level"
-msgstr "Livello Log"
+msgid "Log level"
+msgstr "Livello log"
+
+msgctxt "#30800"
+msgid "Developer"
+msgstr ""
+
+msgctxt "#30801"
+msgid "Test how the user interface looks"
+msgstr ""
+
+msgctxt "#30805"
+msgid "Show an UpNext pop-up…"
+msgstr ""
+
+msgctxt "#30807"
+msgid "Show an UpNextSimple pop-up…"
+msgstr ""
+
+msgctxt "#30809"
+msgid "Show a StillWatching pop-up…"
+msgstr ""
+
+msgctxt "#30811"
+msgid "Show a StillWatchingSimple pop-up…"
+msgstr ""

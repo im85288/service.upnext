@@ -122,7 +122,7 @@
                             <font>font12</font>
                             <textcolor>eeffffff</textcolor>
                             <shadowcolor>00000000</shadowcolor>
-                            <label>$INFO[Window.Property(year),,   ]</label>
+                            <label>$INFO[Window.Property(year),(,)   ]</label>
                             <visible>!String.IsEmpty(Window.Property(year))</visible>
                         </control>
                         <control type="image">
