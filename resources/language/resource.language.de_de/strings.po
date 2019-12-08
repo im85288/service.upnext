@@ -123,11 +123,11 @@ msgstr "Nächste Episode"
 ### SETTINGS
 msgctxt "#30500"
 msgid "Interface"
-msgstr ""
+msgstr "Oberfläche"
 
 msgctxt "#30501"
 msgid "Features"
-msgstr ""
+msgstr "Funktionen"
 
 msgctxt "#30503"
 msgid "Set the display mode for the notifications"
@@ -135,15 +135,15 @@ msgstr "Anzeigemodus der Benachrichtigung"
 
 msgctxt "#30505"
 msgid "Stop playback when closing dialog"
-msgstr "Stop nach dem schließen des Dialogfelds"
+msgstr "Wiedergabe nach dem Schließen des Dialogs stoppen"
 
 msgctxt "#30600"
 msgid "Behaviour"
-msgstr ""
+msgstr "Verhalten"
 
 msgctxt "#30601"
 msgid "Features"
-msgstr ""
+msgstr "Funktionen"
 
 msgctxt "#30603"
 msgid "Default action when nothing selected"
@@ -159,39 +159,39 @@ msgstr "Anzahl der Episoden bevor der \"Noch da?\" Dialog eingeblendet wird"
 
 msgctxt "#30609"
 msgid "Duration in seconds for notification to be shown"
-msgstr "Restlaufzeit bevor der Dialog eingeblendet wird (Sekunden)"
+msgstr "Restlaufzeit bevor Benachrichtigung eingeblendet wird (Sekunden)"
 
 msgctxt "#30611"
 msgid "Customize autoplay duration by episode length"
-msgstr ""
+msgstr "Automatisch Abspielen anhand Episodenlänge festlegen"
 
 msgctxt "#30613"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
-msgstr ""
+msgstr "Alle Episoden  [COLOR gray]Beliebige Länge[/COLOR]"
 
 msgctxt "#30615"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
-msgstr ""
+msgstr "Sehr kurze Episoden  [COLOR gray]< 10 min[/COLOR]"
 
 msgctxt "#30617"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
-msgstr ""
+msgstr "Kurze Episoden  [COLOR gray]> 10 min[/COLOR]"
 
 msgctxt "#30619"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
-msgstr ""
+msgstr "Mittellange Episoden  [COLOR gray]> 20 min[/COLOR]"
 
 msgctxt "#30621"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
-msgstr ""
+msgstr "Lange Episoden  [COLOR gray]> 40 min[/COLOR]"
 
 msgctxt "#30623"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr ""
+msgstr "Sehr lange Episoden  [COLOR gray]> 60 min[/COLOR]"
 
 msgctxt "#30700"
 msgid "Expert"
-msgstr ""
+msgstr "Experte"
 
 msgctxt "#30703"
 msgid "Disable Up Next"
@@ -199,7 +199,7 @@ msgstr "Up Next deaktivieren"
 
 msgctxt "#30705"
 msgid "Enable developer mode"
-msgstr "Entwicklermodus"
+msgstr "Entwicklermodus aktivieren"
 
 msgctxt "#30707"
 msgid "Choose the window to be shown"
