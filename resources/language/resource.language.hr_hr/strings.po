@@ -200,17 +200,17 @@ msgid "Test how the user interface looks"
 msgstr ""
 
 msgctxt "#30805"
-msgid "Show an UpNext popup…"
+msgid "Show an UpNext pop-up…"
 msgstr ""
 
 msgctxt "#30807"
-msgid "Show an UpNextSimple popup…"
+msgid "Show an UpNextSimple pop-up…"
 msgstr ""
 
 msgctxt "#30809"
-msgid "Show a StillWatching popup…"
+msgid "Show a StillWatching pop-up…"
 msgstr ""
 
 msgctxt "#30811"
-msgid "Show a StillWatchingSimple popup…"
+msgid "Show a StillWatchingSimple pop-up…"
 msgstr ""
