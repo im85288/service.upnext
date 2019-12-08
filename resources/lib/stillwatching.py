@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from platform import machine
 from xbmcgui import WindowXMLDialog
-from .statichelper import from_unicode
+from statichelper import from_unicode
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
@@ -67,11 +67,13 @@ class StillWatching(WindowXMLDialog):
     def set_progress_step_size(self, progress_step_size):
         self.progress_step_size = progress_step_size
 
-    def update_progress_control(self, endtime=None):
+    def update_progress_control(self, remaining=None, endtime=None):
         self.current_progress_percent = self.current_progress_percent - self.progress_step_size
         self.progress_control = self.getControl(3014)
         if self.progress_control is not None:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+        if remaining:
+            self.setProperty('remaining', from_unicode('%02d' % remaining))
         if endtime:
             self.setProperty('endtime', from_unicode(str(endtime)))
 

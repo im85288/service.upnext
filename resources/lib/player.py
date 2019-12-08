@@ -3,10 +3,8 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import getCondVisibility, Player, sleep
-from .api import Api
-from .developer import Developer
-from .state import State
-from .utils import get_setting
+from api import Api
+from state import State
 
 
 class UpNextPlayer(Player):
@@ -17,7 +15,6 @@ class UpNextPlayer(Player):
     def __init__(self):
         self.api = Api()
         self.state = State()
-        self.developer = Developer()
         Player.__init__(self)
 
     def set_last_file(self, filename):
@@ -38,8 +35,6 @@ class UpNextPlayer(Player):
         if not getCondVisibility('videoplayer.content(episodes)'):
             return
         self.state.track = True
-        if bool(get_setting('developerMode') == 'true'):
-            self.developer.developer_play_back()
 
     def onPlayBackPaused(self):  # pylint: disable=invalid-name
         self.state.pause = True

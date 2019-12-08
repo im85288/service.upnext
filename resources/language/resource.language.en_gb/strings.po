@@ -59,15 +59,15 @@ msgid "Close"
 msgstr ""
 
 msgctxt "#30035"
-msgid "Continue watching in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
+msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30036"
-msgid "Up next in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
+msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30037"
-msgid "Next episode in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
+msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30038"
@@ -96,22 +96,6 @@ msgstr ""
 
 msgctxt "#30044"
 msgid "Debug"
-msgstr ""
-
-msgctxt "#30045"
-msgid "UpNext"
-msgstr ""
-
-msgctxt "#30046"
-msgid "UpNextSimple"
-msgstr ""
-
-msgctxt "#30047"
-msgid "StillWatching"
-msgstr ""
-
-msgctxt "#30048"
-msgid "StillWatchingSimple"
 msgstr ""
 
 msgctxt "#30049"
@@ -197,13 +181,29 @@ msgid "Disable Up Next"
 msgstr ""
 
 msgctxt "#30705"
-msgid "Enable developer mode"
+msgid "Log level"
 msgstr ""
 
-msgctxt "#30707"
-msgid "Choose the window to be shown"
+msgctxt "#30800"
+msgid "Developer"
 msgstr ""
 
-msgctxt "#30709"
-msgid "Log Level"
+msgctxt "#30801"
+msgid "Test how the user interface looks"
+msgstr ""
+
+msgctxt "#30805"
+msgid "Show an UpNext pop-up…"
+msgstr ""
+
+msgctxt "#30807"
+msgid "Show an UpNextSimple pop-up…"
+msgstr ""
+
+msgctxt "#30809"
+msgid "Show a StillWatching pop-up…"
+msgstr ""
+
+msgctxt "#30811"
+msgid "Show a StillWatchingSimple pop-up…"
 msgstr ""

@@ -1,4 +1,4 @@
-export PYTHONPATH := $(CURDIR):$(CURDIR)/test/
+export PYTHONPATH := $(CURDIR)/resources/lib/:$(CURDIR)/test/
 PYTHON := python
 
 name = $(shell xmllint --xpath 'string(/addon/@id)' addon.xml)
@@ -7,7 +7,7 @@ git_branch = $(shell git rev-parse --abbrev-ref HEAD)
 git_hash = $(shell git rev-parse --short HEAD)
 
 zip_name = $(name)-$(version)-$(git_branch)-$(git_hash).zip
-include_files = addon.xml default.py LICENSE README.md resources/ service.py
+include_files = addon.xml LICENSE README.md resources/
 include_paths = $(patsubst %,$(name)/%,$(include_files))
 exclude_files = \*.new \*.orig \*.pyc \*.pyo
 zip_dir = $(name)/
@@ -34,7 +34,7 @@ tox:
 
 pylint:
 	@echo -e "$(white)=$(blue) Starting sanity pylint test$(reset)"
-	$(PYTHON) -m pylint default.py service.py resources/lib/ test/
+	$(PYTHON) -m pylint resources/lib/ test/
 
 language:
 	@echo -e "$(white)=$(blue) Starting language test$(reset)"
@@ -52,13 +52,13 @@ unit: clean
 
 run:
 	@echo -e "$(white)=$(blue) Run CLI$(reset)"
-	$(PYTHON) default.py &
-	@-pkill -ef '$(PYTHON) service.py'
-	$(PYTHON) service.py &
+	$(PYTHON) resources/lib/addon_entry.py &
+	@-pkill -ef '$(PYTHON) resources/lib/service_entry.py'
+	$(PYTHON) resources/lib/service_entry.py &
 	@sleep 10
 #	$(PYTHON) test/run.py
 	@sleep 5
-	@-pkill -ef -INT '$(PYTHON) service.py'
+	@-pkill -ef -INT '$(PYTHON) resources/lib/service_entry.py'
 
 zip: clean
 	@echo -e "$(white)=$(blue) Building new package$(reset)"
