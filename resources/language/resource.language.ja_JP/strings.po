@@ -30,18 +30,6 @@ msgctxt "#30010"
 msgid "Continue watching"
 msgstr "続いて観る"
 
-msgctxt "#30017"
-msgid "Automatically play short videos"
-msgstr "短いビデオは自動再生"
-
-msgctxt "#30018"
-msgid "Maximum length for automatic short video play (in minutes)"
-msgstr "最長何分ぐらいが短いビデオでしょうか。"
-
-msgctxt "#30019"
-msgid "Show on-screen notification during short video autoplay"
-msgstr "短いビデオを自動再生する際に通知を見せる。"
-
 msgctxt "#30024"
 msgid "Still there?"
 msgstr "まだ観るの。"
@@ -98,22 +86,6 @@ msgctxt "#30044"
 msgid "Debug"
 msgstr "Debug"
 
-msgctxt "#30045"
-msgid "UpNext"
-msgstr "UpNext"
-
-msgctxt "#30046"
-msgid "UpNextSimple"
-msgstr "UpNextSimple"
-
-msgctxt "#30047"
-msgid "StillWatching"
-msgstr "StillWatching"
-
-msgctxt "#30048"
-msgid "StillWatchingSimple"
-msgstr "StillWatchingSimple"
-
 msgctxt "#30049"
 msgid "Next Episode"
 msgstr "次のエピソード"
@@ -133,7 +105,7 @@ msgid "Set the display mode for the notifications"
 msgstr "通知モード"
 
 msgctxt "#30505"
-msgid "Stop playback when closing dialog"
+msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr "通知を閉じると再生を停止する。"
 
 msgctxt "#30600"

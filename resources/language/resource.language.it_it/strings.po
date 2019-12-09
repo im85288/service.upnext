@@ -30,18 +30,6 @@ msgctxt "#30010"
 msgid "Continue watching"
 msgstr "Continua a guardare"
 
-msgctxt "#30017"
-msgid "Automatically play short videos"
-msgstr "Riproduci automaticamente video brevi"
-
-msgctxt "#30018"
-msgid "Maximum length for automatic short video play (in minutes)"
-msgstr "Lunghezza massima per la riproduzione automatica di video brevi (in minuti)"
-
-msgctxt "#30019"
-msgid "Show on-screen notification during short video autoplay"
-msgstr "Mostra notifica sullo schermo durante la riproduzione automatica di video brevi"
-
 msgctxt "#30024"
 msgid "Still there?"
 msgstr "Ancora qui?"
@@ -116,7 +104,7 @@ msgid "Set the display mode for the notifications"
 msgstr "Imposta la modalità di visualizzazione per le notifiche"
 
 msgctxt "#30505"
-msgid "Stop playback when closing dialog"
+msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr "Fermare la riproduzione alla chiusura della finestra di dialogo"
 
 msgctxt "#30600"
