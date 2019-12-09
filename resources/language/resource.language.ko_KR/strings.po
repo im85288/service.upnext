@@ -30,18 +30,6 @@ msgctxt "#30010"
 msgid "Continue watching"
 msgstr "계속 봅니다."
 
-msgctxt "#30017"
-msgid "Automatically play short videos"
-msgstr "짧은 비디오는 자동으로 재생합니다."
-
-msgctxt "#30018"
-msgid "Maximum length for automatic short video play (in minutes)"
-msgstr "최대 몇 분 정도가 짧은 비디오일까요?"
-
-msgctxt "#30019"
-msgid "Show on-screen notification during short video autoplay"
-msgstr "짧은 비디오를 자동재생할 때 알림창을 보여줍니다."
-
 msgctxt "#30024"
 msgid "Still there?"
 msgstr "계속 보시렵니까?"
@@ -117,7 +105,7 @@ msgid "Set the display mode for the notifications"
 msgstr "알림창을 어떻게 보여줄까요?"
 
 msgctxt "#30505"
-msgid "Stop playback when closing dialog"
+msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr "알림창을 닫을 때 재생도 중지합니다."
 
 msgctxt "#30600"

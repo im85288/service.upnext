@@ -97,7 +97,7 @@
                         <font>font30_title</font>
                         <textcolor>ffffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
-                        <label>[CAPITALIZE]$ADDON[service.upnext 30024][/CAPITALIZE]</label>
+                        <label>$ADDON[service.upnext 30024]</label>
                     </control>
                     <!-- Details -->
                     <control type="grouplist">
