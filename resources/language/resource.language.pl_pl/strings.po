@@ -105,7 +105,7 @@ msgstr "Ustaw tryb wyświetlania powiadomień"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "Zatrzymaj odtwarzanie po zamknięciu okna dialogowego"
+msgstr "Pokaż przycisk \"Stop\" zamiast przycisku \"Zamknij\""
 
 msgctxt "#30600"
 msgid "Behaviour"
@@ -125,7 +125,7 @@ msgstr "Uwzględnij oglądane odcinki"
 
 msgctxt "#30607"
 msgid "Number of episodes before \"Still there?\" query"
-msgstr "Liczba odcinków przed wyświetleniem zapytania"
+msgstr "Liczba odcinków przed wyświetleniem zapytania \"Ciągle jesteś?\""
 
 msgctxt "#30609"
 msgid "Duration in seconds for notification to be shown"
@@ -177,24 +177,24 @@ msgstr "Poziom logów"
 
 msgctxt "#30800"
 msgid "Developer"
-msgstr ""
+msgstr "Deweloper"
 
 msgctxt "#30801"
 msgid "Test how the user interface looks"
-msgstr ""
+msgstr "Testuj wygląd interfejsu"
 
 msgctxt "#30805"
 msgid "Show an UpNext pop-up…"
-msgstr ""
+msgstr "Pokaż okno UpNext…"
 
 msgctxt "#30807"
 msgid "Show an UpNextSimple pop-up…"
-msgstr ""
+msgstr "Pokaż okno UpNextSimple…"
 
 msgctxt "#30809"
 msgid "Show a StillWatching pop-up…"
-msgstr ""
+msgstr "Pokaż okno StillWatching…"
 
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
-msgstr ""
+msgstr "Pokaż okno StillWatchingSimplep…"
