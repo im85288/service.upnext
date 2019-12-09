@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: service.upnext\n"
 "Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2018-02-26 13:31+0000\n"
+"PO-Revision-Date: 2019-12-09 09:19+0900\n"
 "Last-Translator: Thunderbird2086\n"
 "Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
@@ -59,16 +59,16 @@ msgid "Close"
 msgstr "もう良い"
 
 msgctxt "#30035"
-msgid "Continue watching in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "続きを観るまで[COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR]秒"
+msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "続きを観るまで[COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR]秒"
 
 msgctxt "#30036"
-msgid "Up next in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "次まで[COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR]秒"
+msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "次まで[COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR]秒"
 
 msgctxt "#30037"
-msgid "Next episode in [COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR] seconds"
-msgstr "次のエピソードまで[COLOR FFFF4081]$INFO[Player.TimeRemaining(ss),,][/COLOR]秒"
+msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "次のエピソードまで[COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR]秒"
 
 msgctxt "#30038"
 msgid "Simple"
@@ -97,22 +97,6 @@ msgstr "Info"
 msgctxt "#30044"
 msgid "Debug"
 msgstr "Debug"
-
-msgctxt "#30045"
-msgid "UpNext"
-msgstr "UpNext"
-
-msgctxt "#30046"
-msgid "UpNextSimple"
-msgstr "UpNextSimple"
-
-msgctxt "#30047"
-msgid "StillWatching"
-msgstr "StillWatching"
-
-msgctxt "#30048"
-msgid "StillWatchingSimple"
-msgstr "StillWatchingSimple"
 
 msgctxt "#30049"
 msgid "Next Episode"
@@ -197,13 +181,29 @@ msgid "Disable Up Next"
 msgstr "Up Nextを使わない"
 
 msgctxt "#30705"
-msgid "Enable developer mode"
-msgstr "デベロッパーモードを使う"
-
-msgctxt "#30707"
-msgid "Choose the window to be shown"
-msgstr "使いたい通知ウィンドウ"
-
-msgctxt "#30709"
-msgid "Log Level"
+msgid "Log level"
 msgstr "ログレベル"
+
+msgctxt "#30800"
+msgid "Developer"
+msgstr "デベロッパーモード"
+
+msgctxt "#30801"
+msgid "Test how the user interface looks"
+msgstr "テストしたい通知ウィンドウ"
+
+msgctxt "#30805"
+msgid "Show an UpNext pop-up…"
+msgstr "UpNext通知ウィンドウ"
+
+msgctxt "#30807"
+msgid "Show an UpNextSimple pop-up…"
+msgstr "UpNextSimple通知ウィンドウ"
+
+msgctxt "#30809"
+msgid "Show a StillWatching pop-up…"
+msgstr "StillWatching通知ウィンドウ"
+
+msgctxt "#30811"
+msgid "Show a StillWatchingSimple pop-up…"
+msgstr "StillWatchingSimple通知ウィンドウ"
