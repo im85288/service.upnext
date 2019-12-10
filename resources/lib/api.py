@@ -60,8 +60,12 @@ class Api:
         return item
 
     def play_addon_item(self):
-        self.log('sending %(encoding)s data to addon to play: %(play_info)s' % dict(encoding=self.encoding, **self.data), 2)
-        event(message=self.data.get('id'), data=self.data.get('play_info'), sender='upnextprovider', encoding=self.encoding)
+        if self.data.get('play_url'):
+            self.log('Playing the next episode directly: %(play_url)s' % self.data, 2)
+            jsonrpc(method='Player.Open', params=dict(item=dict(file=self.data.get('play_url'))))
+        else:
+            self.log('Sending %(encoding)s data to add-on to play: %(play_info)s' % dict(encoding=self.encoding, **self.data), 2)
+            event(message=self.data.get('id'), data=self.data.get('play_info'), sender='upnextprovider', encoding=self.encoding)
 
     def handle_addon_lookup_of_next_episode(self):
         if not self.data:

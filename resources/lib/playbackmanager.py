@@ -73,12 +73,14 @@ class PlaybackManager:
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
-        # Play media
         if playlist_item:
+            # Play playlist media
             self.player.seekTime(self.player.getTotalTime())
         elif self.api.has_addon_data():
+            # Play add-on media
             self.api.play_addon_item()
         else:
+            # Play local media
             self.api.play_kodi_item(episode)
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
