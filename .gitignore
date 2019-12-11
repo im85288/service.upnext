@@ -1,6 +1,5 @@
 # Test caches
-*.pyc
-*.pyo
+*.py[cod]
 .coverage
 .pytest_cache/
 .tox/
@@ -8,3 +7,6 @@
 # Logs
 kodi-addon-checker-report.log
 kodi-addon-checker.log
+
+# IDE Workspaces
+.idea/
