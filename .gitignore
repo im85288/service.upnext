@@ -8,3 +8,6 @@
 # Logs
 kodi-addon-checker-report.log
 kodi-addon-checker.log
+
+# IDE Workspaces
+.idea/
