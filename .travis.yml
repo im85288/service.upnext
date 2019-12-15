@@ -10,7 +10,7 @@ python:
 sudo: false
 
 env:
-  PYTHONPATH: .:test
+  PYTHONPATH: resources/lib:test
   PYTHONIOENCODING: utf-8
 
 install:
@@ -19,15 +19,15 @@ install:
 script:
 - tox
 - tox -e flake8
-- pylint service.py resources/lib/ test/
+- pylint resources/lib/ test/
 #- kodi-addon-checker . --branch=krypton
 #- kodi-addon-checker . --branch=leia
 - coverage run -p -m unittest discover
-- (sleep 10; pkill -ef -INT service.py || true) &
-- coverage run -p --timid service.py
+- (sleep 10; pkill -ef -INT resources/lib/service_entry.py || true) &
+- coverage run -p --timid resources/lib/service_entry.py
 - sleep 2
 #- coverage run -p test/run.py
-#- pkill -ef -INT service.py || true
+#- pkill -ef -INT resources/lib/service_entry.py || true
 
 after_success:
 - codecov

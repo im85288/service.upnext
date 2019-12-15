@@ -56,7 +56,7 @@ class TestEncoding(unittest.TestCase):
 
         base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='
         encoded_data = AddonSignals._encodeData(data)  # pylint: disable=protected-access
-        self.assertEqual(encoded_data, '\\"[\\"%s\\"]\\"' % base64_encoded_data)
+        self.assertEqual(encoded_data, base64_encoded_data)
         decoded_data, encoding = utils.decode_data(encoded_data)
         self.assertEqual(decoded_data, data)
         self.assertEqual(encoding, 'base64')
@@ -65,7 +65,21 @@ class TestEncoding(unittest.TestCase):
         data = 'Fòöbàr'
 
         base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='
+        base64_encoded_json = '["%s"]' % base64_encoded_data
         encoded_data = utils.encode_data(data, 'base64')
         self.assertEqual(encoded_data, base64_encoded_data)
-        decoded_data = AddonSignals._decodeData('["%s"]' % encoded_data)  # pylint: disable=protected-access
+
+        decoded_data = AddonSignals._decodeData(base64_encoded_json)  # pylint: disable=protected-access
+        self.assertEqual(decoded_data, data)
+
+    def test_addon_signals(self):
+        data = 'Fòöbàr'
+        base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='
+        base64_encoded_json = '\\"[\\"%s\\"]\\"' % base64_encoded_data
+
+        encoded_data = AddonSignals._encodeData(data)  # pylint: disable=protected-access
+        self.assertEqual(encoded_data, base64_encoded_data)
+
+        base64_encoded_json = '["%s"]' % base64_encoded_data
+        decoded_data = AddonSignals._decodeData(base64_encoded_json)  # pylint: disable=protected-access
         self.assertEqual(decoded_data, data)
