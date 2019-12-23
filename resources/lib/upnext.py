@@ -65,9 +65,10 @@ class UpNext(WindowXMLDialog):
     def prepare_progress_control(self):
         try:
             self.progress_control = self.getControl(3014)
-            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
-        except RuntimeError:
+        except RuntimeError: # Occurs when skin does not include progress control
             pass
+        else:
+            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
 
     def set_item(self, item):
         self.item = item
@@ -79,9 +80,11 @@ class UpNext(WindowXMLDialog):
         self.current_progress_percent = self.current_progress_percent - self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
-            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
-        except RuntimeError:
+        except RuntimeError: # Occurs when skin does not include progress control
             pass
+        else:
+            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if endtime:
