@@ -63,9 +63,11 @@ class UpNext(WindowXMLDialog):
             self.setProperty('playcount', str(self.item.get('playcount', 0)))
 
     def prepare_progress_control(self):
-        self.progress_control = self.getControl(3014)
-        if self.progress_control is not None:
+        try:
+            self.progress_control = self.getControl(3014)
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+        except RuntimeError:
+            pass
 
     def set_item(self, item):
         self.item = item
@@ -75,9 +77,11 @@ class UpNext(WindowXMLDialog):
 
     def update_progress_control(self, remaining=None, endtime=None):
         self.current_progress_percent = self.current_progress_percent - self.progress_step_size
-        self.progress_control = self.getControl(3014)
-        if self.progress_control is not None:
+        try:
+            self.progress_control = self.getControl(3014)
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+        except RuntimeError:
+            pass
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if endtime:
