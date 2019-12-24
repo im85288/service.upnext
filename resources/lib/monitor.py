@@ -44,7 +44,7 @@ class UpNextMonitor(Monitor):
             last_file = self.player.get_last_file()
             try:
                 current_file = self.player.getPlayingFile()
-            except RuntimeError as exc:
+            except RuntimeError:
                 self.log('Failed getPlayingFile: No file is playing - stop up next tracking', 2)
                 self.player.disable_tracking()
                 continue
@@ -54,7 +54,7 @@ class UpNextMonitor(Monitor):
 
             try:
                 total_time = self.player.getTotalTime()
-            except RuntimeError as exc:
+            except RuntimeError:
                 self.log('Failed getTotalTime: No file is playing - stop up next tracking', 2)
                 self.player.disable_tracking()
                 continue
@@ -64,7 +64,7 @@ class UpNextMonitor(Monitor):
 
             try:
                 play_time = self.player.getTime()
-            except RuntimeError as exc:
+            except RuntimeError:
                 self.log('Failed getTime: No file is playing - stop up next tracking', 2)
                 self.player.disable_tracking()
                 continue

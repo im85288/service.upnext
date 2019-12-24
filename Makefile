@@ -52,7 +52,7 @@ unit: clean
 
 run:
 	@echo -e "$(white)=$(blue) Run CLI$(reset)"
-	$(PYTHON) resources/lib/addon_entry.py &
+	$(PYTHON) resources/lib/script_entry.py &
 	@-pkill -ef '$(PYTHON) resources/lib/service_entry.py'
 	$(PYTHON) resources/lib/service_entry.py &
 	@sleep 10
