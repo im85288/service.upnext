@@ -149,6 +149,9 @@ class PlaybackManager:  # pylint: disable=invalid-name
             still_watching_page.close()
             should_play_default = still_watching_page.is_still_watching()
             should_play_non_default = still_watching_page.is_still_watching()
+        else:
+            # FIXME: This is a workaround until we handle this better (see comments in #142)
+            return False, False
 
         if next_up_page.is_watch_now() or still_watching_page.is_still_watching():
             self.state.played_in_a_row = 1
