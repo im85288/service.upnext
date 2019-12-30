@@ -50,13 +50,13 @@ class TestPopup(WindowXMLDialog):
         self.progress_control = self.getControl(3014)
         if self.progress_control is None:
             return
-        self.progress_control.setPercent(100.0)  # pylint: disable=no-member
+        self.progress_control.setPercent(100.0)  # pylint: disable=no-member,useless-suppression
 
     def update_progress_control(self, timeout, wait):
         if self.progress_control is None:
             return
         self.current_progress_percent -= 100 * wait / timeout
-        self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+        self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
         self.setProperty('remaining', '%02d' % ceil((timeout / 1000) * (self.current_progress_percent / 100)))
 
     def onFocus(self, controlId):  # pylint: disable=invalid-name
@@ -71,7 +71,7 @@ class TestPopup(WindowXMLDialog):
     def onClick(self, controlId):  # pylint: disable=invalid-name,unused-argument
         self.close()
 
-    def onAction(self, action):  # pylint: disable=invalid-name,unused-argument
+    def onAction(self, action):  # pylint: disable=invalid-name
         if action == self.ACTION_PLAYER_STOP:
             self.close()
         elif action == self.ACTION_NAV_BACK:
