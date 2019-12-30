@@ -34,7 +34,7 @@ tox:
 
 pylint:
 	@echo -e "$(white)=$(blue) Starting sanity pylint test$(reset)"
-	$(PYTHON) -m pylint resources/lib/ test/
+	$(PYTHON) -m pylint -e useless-suppression resources/lib/ test/
 
 language:
 	@echo -e "$(white)=$(blue) Starting language test$(reset)"
@@ -52,7 +52,7 @@ unit: clean
 
 run:
 	@echo -e "$(white)=$(blue) Run CLI$(reset)"
-	$(PYTHON) resources/lib/script_entry.py &
+	$(PYTHON) resources/lib/script_entry.py
 	@-pkill -ef '$(PYTHON) resources/lib/service_entry.py'
 	$(PYTHON) resources/lib/service_entry.py &
 	@sleep 10

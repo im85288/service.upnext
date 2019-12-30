@@ -3,7 +3,7 @@
 # GNU General Public License v3.0 (see COPYING or https://www.gnu.org/licenses/gpl-3.0.txt)
 ''' This file implements the Kodi xbmc module, either using stubs or alternative functionality '''
 
-# pylint: disable=invalid-name,no-self-use,unused-argument
+# pylint: disable=invalid-name,no-self-use
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 
@@ -82,7 +82,7 @@ class Player:
         ''' A stub constructor for the xbmc Player class '''
         self._count = 0
 
-    def play(self, item='', listitem=None, windowed=False, startpos=-1):
+    def play(self, item='', listitem=None, windowed=False, startpos=-1):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc Player class play() method '''
         return
 
@@ -100,11 +100,11 @@ class Player:
         self._count += 1
         return bool(self._count % 5 != 0)
 
-    def seekTime(self, seekTime):
+    def seekTime(self, seekTime):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc Player class seekTime() method '''
         return
 
-    def showSubtitles(self, bVisible):
+    def showSubtitles(self, bVisible):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc Player class showSubtitles() method '''
         return
 
@@ -185,7 +185,7 @@ def executeJSONRPC(jsonrpccommand):
     return json.dumps(dict(error=dict(code=-1, message='Not implemented'), id=1, jsonrpc='2.0'))
 
 
-def getCondVisibility(string):  # pylint: disable=unused-argument
+def getCondVisibility(string):
     ''' A reimplementation of the xbmc getCondVisibility() function '''
     if string == 'system.platform.android':
         return False
@@ -226,7 +226,7 @@ def log(msg, level):
         print('\033[32;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
 
 
-def setContent(self, content):
+def setContent(self, content):  # pylint: disable=unused-argument
     ''' A stub implementation of the xbmc setContent() function '''
     return
 

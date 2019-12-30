@@ -62,7 +62,7 @@ class StillWatching(WindowXMLDialog):
         except RuntimeError: # Occurs when skin does not include progress control
             pass
         else:
-            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
     def set_item(self, item):
         self.item = item
@@ -77,7 +77,7 @@ class StillWatching(WindowXMLDialog):
         except RuntimeError: # Occurs when skin does not include progress control
             pass
         else:
-            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member
+            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))

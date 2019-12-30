@@ -23,6 +23,7 @@ script:
 #- kodi-addon-checker . --branch=krypton
 #- kodi-addon-checker . --branch=leia
 - coverage run -p -m unittest discover
+- coverage run -p --timid resources/lib/script_entry.py
 - (sleep 10; pkill -ef -INT resources/lib/service_entry.py || true) &
 - coverage run -p --timid resources/lib/service_entry.py
 - sleep 2

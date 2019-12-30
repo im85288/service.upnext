@@ -13,7 +13,7 @@ from upnext import UpNext
 from utils import addon_path, calculate_progress_steps, clear_property, event, get_setting, log as ulog, set_property
 
 
-class PlaybackManager:  # pylint: disable=invalid-name
+class PlaybackManager:
     _shared_state = {}
 
     def __init__(self):
