@@ -14,9 +14,9 @@
 
 A lot of existing add-ons already integrate with this service out-of-the-box.</description>
         <summary lang="de_DE">Bietet Ihnen an, die nächste Episode automatisch wiederzugeben</summary>
-        <description lang="de_DE">Ein kleines Hilfs-Add-on, welches eine Netflix-artige Benachrichtigung zur Wiedergabe der nächsten Episode anzeigt. Nach ein paar automatischen Iterationen fragt es den Anwender, ob er immer noch schaut.
+        <description lang="de_DE">Ein kleines Hilfs-Add-on, welches eine Netflix-artige Benachrichtigung zur Wiedergabe der nächsten Episode anzeigt. Nach ein paar automatischen Iterationen fragt es den Anwender, ob er sie immer noch anschaut.
 
-Viele existierende Add-ons haben diesen Dienst bereits von haus aus integriert.</description>
+Viele existierende Add-ons haben diesen Dienst bereits von Haus aus integriert.</description>
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <assets>
