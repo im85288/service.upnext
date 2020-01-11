@@ -80,6 +80,9 @@ class Api:
         if self.data.get('notification_time'):
             return int(self.data.get('notification_time'))
 
+        if self.data.get('notification_time_offset'):
+            return total_time - int(self.data.get('notification_time_offset'))
+
         # Use a customized notification time, when configured
         if bool(get_setting('customAutoPlayTime') == 'true') and total_time:
             if total_time > 60 * 60:
