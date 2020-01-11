@@ -29,18 +29,6 @@ msgctxt "#30010"
 msgid "Continue watching"
 msgstr "Lejátszás folytatása"
 
-msgctxt "#30017"
-msgid "Automatically play short videos"
-msgstr "Rövid videók automatikus lejátszása"
-
-msgctxt "#30018"
-msgid "Maximum length for automatic short video play (in minutes)"
-msgstr "Rövid videók max. hossza amit automatikusan lejátszik"
-
-msgctxt "#30019"
-msgid "Show on-screen notification during short video autoplay"
-msgstr "Rövid videóknál jelzés bekapcsolása"
-
 msgctxt "#30024"
 msgid "Still there?"
 msgstr "Még itt vagy?"
@@ -205,4 +193,4 @@ msgstr "Még nézed pop-up mutatása"
 
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
-msgstr "Még nézeg egyszerű pop-up mutatása"
+msgstr "Még nézed egyszerű pop-up mutatása"
