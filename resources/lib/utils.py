@@ -13,7 +13,7 @@ ADDON = Addon()
 
 
 def get_addon_info(key):
-    ''' Return addon information '''
+    ''' Return add-on information '''
     return to_unicode(ADDON.getAddonInfo(key))
 
 
