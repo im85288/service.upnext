@@ -32,8 +32,19 @@ class Api:
         self.encoding = encoding
 
     @staticmethod
-    def play_kodi_item(episode):
-        jsonrpc(method='Player.Open', id=0, params=dict(item=dict(episodeid=episode.get('episodeid'))))
+    def play_kodi_item(episode, current_episodeid):
+        ''' Play the next local episode '''
+        # Reset resume_time for next episode so we force starting from the beginning
+        # jsonrpc(dict(method='VideoLibrary.SetEpisodeDetails', params=dict(episodeid=episode.get('episodeid'), resume=dict(position=0))))
+
+        # Play the next episode
+        jsonrpc(dict(method='Player.Open', params=dict(item=dict(episodeid=episode.get('episodeid')))))
+
+        # If we do this too quickly, it won't be effective :-(
+        sleep(200)
+
+        # Mark the current episode as watched and reset position
+        jsonrpc(dict(method='VideoLibrary.SetEpisodeDetails', params=dict(episodeid=current_episodeid, playcount=1, resume=dict(position=0))))
 
     def get_next_in_playlist(self, position):
         result = jsonrpc(method='Playlist.GetItems', params=dict(
@@ -76,7 +87,8 @@ class Api:
         return self.data.get('current_episode')
 
     def notification_time(self, total_time=None):
-        # Alway use metadata, when available
+        ''' Determine the best notification time to use '''
+        # Always use metadata, when available
         if self.data.get('notification_time'):
             return int(self.data.get('notification_time'))
 
@@ -167,7 +179,7 @@ class Api:
 
     @staticmethod
     def showtitle_to_id(title):
-        result = jsonrpc(method='VideoLibrary.GetTVShows', id='libTvShows', params=dict(properties=['title']))
+        result = jsonrpc(method='VideoLibrary.GetTVShows', params=dict(properties=['title']))
 
         for tvshow in result.get('result', {}).get('tvshows', []):
             if tvshow.get('label') == title:

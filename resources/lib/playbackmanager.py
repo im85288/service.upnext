@@ -79,7 +79,7 @@ class PlaybackManager:
         elif self.api.has_addon_data():
             self.api.play_addon_item()
         else:
-            self.api.play_kodi_item(episode)
+            self.api.play_kodi_item(episode, self.state.current_episode_id)
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
         try:
