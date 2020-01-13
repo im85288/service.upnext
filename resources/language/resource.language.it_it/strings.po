@@ -167,11 +167,7 @@ msgctxt "#30703"
 msgid "Disable Up Next"
 msgstr "Disabilita Up Next"
 
-msgctxt "#30707"
-msgid "Choose the window to be shown"
-msgstr "Scegli la finestra da mostrare"
-
-msgctxt "#30709"
+msgctxt "#30705"
 msgid "Log level"
 msgstr "Livello log"
 

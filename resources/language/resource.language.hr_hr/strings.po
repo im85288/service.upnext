@@ -17,10 +17,6 @@ msgstr ""
 "Plural-Forms: nplurals=3; plural=(n%10==1 && n%100!=11 ? 0 : n%10>=2 && n%10<=4 && (n%100<12 || n%100>14) ? 1 : 2);\n"
 "X-Generator: Poedit 2.2.4\n"
 
-msgctxt "#30005"
-msgid "Default action when nothing selected"
-msgstr "Zadana akcija kada ništa nije odabrano"
-
 msgctxt "#30006"
 msgid "Watch Now"
 msgstr "Gledaj sada"
@@ -70,11 +66,11 @@ msgid "Fancy"
 msgstr "Složeno"
 
 msgctxt "#30040"
-msgid "Play"
+msgid "Play next"
 msgstr "Reproduciraj"
 
 msgctxt "#30041"
-msgid "Don't Play"
+msgid "Stop playing"
 msgstr "Ne reproduciraj"
 
 msgctxt "#30042"
@@ -121,7 +117,7 @@ msgstr ""
 
 msgctxt "#30603"
 msgid "Default action when nothing selected"
-msgstr ""
+msgstr "Zadana akcija kada ništa nije odabrano"
 
 msgctxt "#30605"
 msgid "Include already watched episodes"
@@ -171,11 +167,7 @@ msgctxt "#30703"
 msgid "Disable Up Next"
 msgstr "Onemogući Up Next"
 
-msgctxt "#30707"
-msgid "Choose the window to be shown"
-msgstr "Odaberite prozor koji će se prikazati"
-
-msgctxt "#30709"
+msgctxt "#30705"
 msgid "Log level"
 msgstr "Log level"
 
