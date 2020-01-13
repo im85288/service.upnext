@@ -168,14 +168,6 @@ msgid "Disable Up Next"
 msgstr "Up Next uitschakelen"
 
 msgctxt "#30705"
-msgid "Enable developer mode"
-msgstr "Ontwikkelaarsmodus inschakelen"
-
-msgctxt "#30707"
-msgid "Choose the window to be shown"
-msgstr "Kies het venster om te tonen"
-
-msgctxt "#30709"
 msgid "Log level"
 msgstr "Logniveau"
 
