@@ -80,8 +80,12 @@ class Api:
         if self.data.get('notification_time'):
             return int(self.data.get('notification_time'))
 
+        # Some consumers send the offset when the credits start (e.g. Netflix)
+        if total_time and self.data.get('notification_offset'):
+            return total_time - int(self.data.get('notification_offset'))
+
         # Use a customized notification time, when configured
-        if bool(get_setting('customAutoPlayTime') == 'true') and total_time:
+        if total_time and bool(get_setting('customAutoPlayTime') == 'true'):
             if total_time > 60 * 60:
                 return int(get_setting('autoPlayTimeXL'))
             if total_time > 40 * 60:
