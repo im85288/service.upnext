@@ -26,6 +26,10 @@ msgctxt "#30008"
 msgid "Up Next"
 msgstr "다음 에피소드 시작까지"
 
+msgctxt "#30009"
+msgid "Ends at: $INFO[Window.Property(endtime)]"
+msgstr "종료: $INFO[Window.Property(endtime)]"
+
 msgctxt "#30010"
 msgid "Continue watching"
 msgstr "계속 봅니다."

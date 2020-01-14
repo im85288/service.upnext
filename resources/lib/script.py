@@ -3,10 +3,12 @@
 ''' This is the actual Up Next API script '''
 
 from __future__ import absolute_import, division, unicode_literals
+from datetime import datetime, timedelta
 from math import ceil
 from xbmc import sleep
 from xbmcgui import WindowXMLDialog
-from utils import addon_path, get_setting, localize
+from statichelper import from_unicode
+from utils import addon_path, get_setting, localize, localize_time
 
 
 class TestPopup(WindowXMLDialog):
@@ -45,6 +47,7 @@ class TestPopup(WindowXMLDialog):
         self.setProperty('title', 'Garden of Bones')
         self.setProperty('tvshowtitle', 'Game of Thrones')
         self.setProperty('year', '2012')
+        self.setProperty('runtime', '50')
 
     def prepare_progress_control(self):
         self.progress_control = self.getControl(3014)
@@ -57,7 +60,8 @@ class TestPopup(WindowXMLDialog):
             return
         self.current_progress_percent -= 100 * wait / timeout
         self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
-        self.setProperty('remaining', '%02d' % ceil((timeout / 1000) * (self.current_progress_percent / 100)))
+        self.setProperty('remaining', from_unicode('%02d' % ceil((timeout / 1000) * (self.current_progress_percent / 100))))
+        self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=50 * 60))))
 
     def onFocus(self, controlId):  # pylint: disable=invalid-name
         pass
