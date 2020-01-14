@@ -206,6 +206,32 @@
                         <texture colordiffuse="ddffffff">nextupicons/00.png</texture>
                         <animation effect="slide" end="13,-5" time="0" condition="true">Conditional</animation>
                     </control>
+                    <control type="group">
+                        <visible>!Window.IsVisible(extendedprogressdialog)</visible>
+                        <animation effect="fade" time="150">VisibleChange</animation>
+                        <control type="label">
+                            <font>font_clock</font>
+                            <shadowcolor>text_shadow</shadowcolor>
+                            <top>0</top>
+                            <right>20</right>
+                            <height>200</height>
+                            <width>600</width>
+                            <align>right</align>
+                            <label>$INFO[System.Time]</label>
+                        </control>
+                        <control type="label">
+                            <right>24</right>
+                            <top>74</top>
+                            <width>800</width>
+                            <height>100</height>
+                            <align>right</align>
+                            <itemgap>5</itemgap>
+                            <orientation>horizontal</orientation>
+                            <usecontrolcoords>true</usecontrolcoords>
+                            <label>$ADDON[service.upnext 30009]</label>
+                            <shadowcolor>text_shadow</shadowcolor>
+                        </control>
+                    </control>
                 </control>
             </control>
         </control>

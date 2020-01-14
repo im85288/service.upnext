@@ -2,11 +2,12 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
+from datetime import datetime, timedelta
 from platform import machine
 from xbmc import Player
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import get_setting, localize
+from utils import get_setting, localize, localize_time
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
@@ -61,11 +62,12 @@ class UpNext(WindowXMLDialog):
             self.setProperty('year', str(self.item.get('firstaired', '')))
             self.setProperty('rating', rating)
             self.setProperty('playcount', str(self.item.get('playcount', 0)))
+            self.setProperty('runtime', str(self.item.get('runtime', '')))
 
     def prepare_progress_control(self):
         try:
             self.progress_control = self.getControl(3014)
-        except RuntimeError: # Occurs when skin does not include progress control
+        except RuntimeError:  # Occurs when skin does not include progress control
             pass
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
@@ -76,19 +78,19 @@ class UpNext(WindowXMLDialog):
     def set_progress_step_size(self, progress_step_size):
         self.progress_step_size = progress_step_size
 
-    def update_progress_control(self, remaining=None, endtime=None):
+    def update_progress_control(self, remaining=None, runtime=None):
         self.current_progress_percent = self.current_progress_percent - self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
-        except RuntimeError: # Occurs when skin does not include progress control
+        except RuntimeError:  # Occurs when skin does not include progress control
             pass
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
-        if endtime:
-            self.setProperty('endtime', from_unicode(str(endtime)))
+        if runtime:
+            self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
 
     def set_cancel(self, cancel):
         self.cancel = cancel

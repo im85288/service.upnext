@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import sys
 import json
-from xbmc import executeJSONRPC, log as xlog, LOGDEBUG, LOGNOTICE
+from xbmc import executeJSONRPC, getRegion, log as xlog, LOGDEBUG, LOGNOTICE
 from xbmcaddon import Addon
 from xbmcgui import Window
 from statichelper import from_unicode, to_unicode
@@ -145,3 +145,9 @@ def get_global_setting(setting):
 def localize(string_id):
     ''' Return the translated string from the .po language files, optionally translating variables '''
     return ADDON.getLocalizedString(string_id)
+
+
+def localize_time(time):
+    """Localize time format"""
+    time_format = getRegion('time').replace(':%S', '')  # Strip off seconds
+    return time.strftime(time_format).lstrip('0')  # Remove leading zero on all platforms

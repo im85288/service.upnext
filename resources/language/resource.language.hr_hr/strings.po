@@ -25,6 +25,10 @@ msgctxt "#30008"
 msgid "Up Next"
 msgstr "Sljedeće"
 
+msgctxt "#30009"
+msgid "Ends at: $INFO[Window.Property(endtime)]"
+msgstr "Završava u: $INFO[Window.Property(endtime)]"
+
 msgctxt "#30010"
 msgid "Continue watching"
 msgstr "Nastavite gledati"

@@ -2,8 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from datetime import datetime, timedelta
-from xbmc import getRegion, sleep
+from xbmc import sleep
 from api import Api
 from player import Player
 from playitem import PlayItem
@@ -91,7 +90,6 @@ class PlaybackManager:
             self.log('exit early because player is no longer running', 2)
             return False, False
         progress_step_size = calculate_progress_steps(total_time - play_time)
-        episode_runtime = episode.get('runtime') is not None
         next_up_page.set_item(episode)
         next_up_page.set_progress_step_size(progress_step_size)
         still_watching_page.set_item(episode)
@@ -127,18 +125,12 @@ class PlaybackManager:
                 break
 
             remaining = total_time - play_time
-            if episode_runtime:
-                end_time = total_time - play_time + episode.get('runtime')
-                end_time = datetime.now() + timedelta(seconds=end_time)
-                time_format = getRegion('time').replace(':%S', '')  # Strip off seconds
-                end_time = end_time.strftime(time_format).lstrip('0')  # Remove leading zero on all platforms
-            else:
-                end_time = None
+            runtime = episode.get('runtime')
             if not self.state.pause:
                 if showing_next_up_page:
-                    next_up_page.update_progress_control(remaining=remaining, endtime=end_time)
+                    next_up_page.update_progress_control(remaining=remaining, runtime=runtime)
                 elif showing_still_watching_page:
-                    still_watching_page.update_progress_control(remaining=remaining, endtime=end_time)
+                    still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
             sleep(100)
         return showing_next_up_page, showing_still_watching_page
 
