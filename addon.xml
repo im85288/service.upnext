@@ -21,6 +21,10 @@ Viele existierende Add-ons haben diesen Dienst bereits von Haus aus integriert.<
         <description lang="it_IT">Un add-on di servizio che mostra una notifica in stile Netflix per guardare il prossimo episodio. Dopo alcune iterazioni automatiche, chiede all'utente se è ancora lì a guardare.
 
 Molti add-on esistenti hanno già integrato questo servizio.</description>
+        <summary lang="el_GR">Προτάση για αναπαραγωγή του επόμενου επεισοδίου αυτόματα</summary>
+        <description lang="el_GR">Ένα υπηρεσιακό πρόσθετο που δείχνει σε στύλ ειδοποίησης τύπου Νέτφλιξ για την αναπαραγωγή του επόμενου επεισοδίου. Μετά από μερικές αυτόματες εκτελέσεις, ρωτάει τον χρήστη εάν παρακολουθεί ακόμα.
+
+Πολλά από τα υπάρχοντα πρόσθετα ενσωματώνουν την λειτουργία αυτού του υπηρεσιακού προσθέτου εξ'ορισμού.</description>
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <assets>
