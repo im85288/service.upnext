@@ -26,6 +26,10 @@ msgctxt "#30008"
 msgid "Up Next"
 msgstr "A seguir"
 
+msgctxt "#30009"
+msgid "Ends at: $INFO[Window.Property(endtime)]"
+msgstr "Finaliza às: $INFO[Window.Property(endtime)]"
+
 msgctxt "#30010"
 msgid "Continue watching"
 msgstr "Continuar assistindo"
@@ -154,11 +158,11 @@ msgstr "Episódios médios [COLOR gray]> 20 min[/COLOR]"
 
 msgctxt "#30621"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
-msgstr "Episódios longos [COLOR gray]> 40 min[/COLOR]""
+msgstr "Episódios longos [COLOR gray]> 40 min[/COLOR]"
 
 msgctxt "#30623"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr "Episódios longuíssimos [COLOR gray]> 60 min[/COLOR]""
+msgstr "Episódios longuíssimos [COLOR gray]> 60 min[/COLOR]"
 
 msgctxt "#30700"
 msgid "Expert"
