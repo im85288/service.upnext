@@ -10,7 +10,7 @@ msgstr ""
 "Project-Id-Version: service.upnext\n"
 "Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2018-02-26 13:31+0000\n"
+"PO-Revision-Date: 2020-01-15 09:09+0100\n"
 "Last-Translator: Kévin Commaille <zecakeh@pm.me>\n"
 "Language-Team: Français\n"
 "MIME-Version: 1.0\n"
@@ -19,6 +19,7 @@ msgstr ""
 "Language: fr\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
+### APPLICATION
 msgctxt "#30006"
 msgid "Watch Now"
 msgstr "Regarder maintenant"
@@ -77,7 +78,7 @@ msgstr "Lire"
 
 msgctxt "#30041"
 msgid "Stop playing"
-msgstr "Ne pas lire"
+msgstr "Arrêter la lecture"
 
 msgctxt "#30042"
 msgid "None"
@@ -99,11 +100,11 @@ msgstr "Prochain épisode"
 ### SETTINGS
 msgctxt "#30500"
 msgid "Interface"
-msgstr ""
+msgstr "Interface"
 
 msgctxt "#30501"
 msgid "Features"
-msgstr ""
+msgstr "Fonctionnalités"
 
 msgctxt "#30503"
 msgid "Set the display mode for the notifications"
@@ -111,15 +112,15 @@ msgstr "Définir le mode d’affichage des notifications"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "Arrêter la lecture à la fermeture de la boîte de dialogue"
+msgstr "Afficher un bouton Arrêter au lieu d’un bouton Fermer"
 
 msgctxt "#30600"
 msgid "Behaviour"
-msgstr ""
+msgstr "Comportement"
 
 msgctxt "#30601"
 msgid "Features"
-msgstr ""
+msgstr "Fonctionnalités"
 
 msgctxt "#30603"
 msgid "Default action when nothing selected"
@@ -131,43 +132,43 @@ msgstr "Inclure les épisodes visionnés"
 
 msgctxt "#30607"
 msgid "Number of episodes before \"Still there?\" query"
-msgstr "Nombre d’épisodes avant la demande « Vous regardez toujours? »"
+msgstr "Nombre d’épisodes avant la demande « Vous regardez toujours ? »"
 
 msgctxt "#30609"
 msgid "Duration in seconds for notification to be shown"
-msgstr "Le nombre de secondes avant la fin pour afficher la notification"
+msgstr "Durée d’affichage de la notification en secondes"
 
 msgctxt "#30611"
 msgid "Customize autoplay duration by episode length"
-msgstr ""
+msgstr "Personnaliser la durée de la lecture automatique en fonction de la longueur de l’épisode"
 
 msgctxt "#30613"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
-msgstr ""
+msgstr "Tous les épisodes  [COLOR gray]quelque soit la durée[/COLOR]"
 
 msgctxt "#30615"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
-msgstr ""
+msgstr "Épdisodes très courts  [COLOR gray]< 10 min[/COLOR]"
 
 msgctxt "#30617"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
-msgstr ""
+msgstr "Épisodes courts  [COLOR gray]> 10 min[/COLOR]"
 
 msgctxt "#30619"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
-msgstr ""
+msgstr "Épisodes moyens  [COLOR gray]> 20 min[/COLOR]"
 
 msgctxt "#30621"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
-msgstr ""
+msgstr "Épisodes longs  [COLOR gray]> 40 min[/COLOR]"
 
 msgctxt "#30623"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr ""
+msgstr "Épisodes très longs  [COLOR gray]> 60 min[/COLOR]"
 
 msgctxt "#30700"
 msgid "Expert"
-msgstr ""
+msgstr "Expert"
 
 msgctxt "#30703"
 msgid "Disable Up Next"
@@ -183,20 +184,20 @@ msgstr "Développeur"
 
 msgctxt "#30801"
 msgid "Test how the user interface looks"
-msgstr ""
+msgstr "Tester l’apparence de l’interface utilisateur"
 
 msgctxt "#30805"
 msgid "Show an UpNext pop-up…"
-msgstr ""
+msgstr "Afficher une notification UpNext…"
 
 msgctxt "#30807"
 msgid "Show an UpNextSimple pop-up…"
-msgstr ""
+msgstr "Afficher une notification UpNextSimple…"
 
 msgctxt "#30809"
 msgid "Show a StillWatching pop-up…"
-msgstr ""
+msgstr "Afficher une notification StillWatching…"
 
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
-msgstr ""
+msgstr "Afficher une notification StillWatchingSimple…"
