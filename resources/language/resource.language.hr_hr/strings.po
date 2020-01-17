@@ -191,12 +191,10 @@ msgctxt "#30807"
 msgid "Show an UpNextSimple pop-up…"
 msgstr "Prikaži UpNextSimple skočni prozor…"
 
-#, fuzzy
 msgctxt "#30809"
 msgid "Show a StillWatching pop-up…"
 msgstr "Prikaži StillWatching skočni prozor…"
 
-#, fuzzy
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
 msgstr "Prikaži StillWatchingSimple skočni prozor…"
