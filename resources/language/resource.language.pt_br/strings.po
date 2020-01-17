@@ -110,7 +110,7 @@ msgstr "Definir o modo da tela para a notificação"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "Mostrar um botão \"Pare\" ao invés de um botão \"Fechar\"
+msgstr "Mostrar um botão \"Pare\" ao invés de um botão \"Fechar\""
 
 msgctxt "#30600"
 msgid "Behaviour"

@@ -110,7 +110,7 @@ msgstr "通知モード"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "\もう良い"\"ボタンの代わりに\"停止\"ボタンを表示する。"
+msgstr "\"もう良い\"ボタンの代わりに\"停止\"ボタンを表示する。"
 
 msgctxt "#30600"
 msgid "Behaviour"
