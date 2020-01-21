@@ -31,4 +31,4 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Int
 - Show current time and next endtime in notification (@dagwieers)
 - New translations for Brazilian, Czech, Greek, Japanese, Korean (@mediabrasiltv, @svetlemodry, @Twilight0, @Thunderbird2086)
 - New translations for Russian, Slovak, Spanish, Swedish (@vlmaksime, @matejmosko, @sagatxxx, @Sopor)
-- Translation updates to Croatian, German, Hungarian, Italian, Polish (@arvvoid, @tweimer, @frodo19, @EffeF, @notoco)
+- Translation updates to Croatian, French, German, Hungarian, Italian, Polish (@arvvoid, @zecakeh, @tweimer, @frodo19, @EffeF, @notoco)
