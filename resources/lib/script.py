@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-''' This is the actual Up Next API script '''
+"""This is the actual Up Next API script"""
 
 from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
@@ -102,7 +102,7 @@ def open_settings():
 
 
 def run(argv):
-    ''' Route to API method '''
+    """Route to API method"""
     if len(argv) == 3 and argv[1] == 'test_window':
         test_popup(argv[2])
     else:
