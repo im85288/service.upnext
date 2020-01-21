@@ -8,7 +8,7 @@ from state import State
 
 
 class UpNextPlayer(Player):
-    ''' Service class for playback monitoring '''
+    """Service class for playback monitoring"""
     last_file = None
     track = False
 
@@ -30,7 +30,7 @@ class UpNextPlayer(Player):
         self.state.track = False
 
     def onPlayBackStarted(self):  # pylint: disable=invalid-name
-        ''' Will be called when kodi starts playing a file '''
+        """Will be called when kodi starts playing a file"""
         sleep(5000)  # Delay for slower devices, should really use onAVStarted for Leia
         if not getCondVisibility('videoplayer.content(episodes)'):
             return
@@ -43,16 +43,16 @@ class UpNextPlayer(Player):
         self.state.pause = False
 
     def onPlayBackStopped(self):  # pylint: disable=invalid-name
-        ''' Will be called when user stops playing a file '''
+        """Will be called when user stops playing a file"""
         self.api.reset_addon_data()
         self.state = State()  # Reset state
 
     def onPlayBackEnded(self):  # pylint: disable=invalid-name
-        ''' Will be called when Kodi has ended playing a file '''
+        """Will be called when Kodi has ended playing a file"""
         self.api.reset_addon_data()
         self.state = State()  # Reset state
 
     def onPlayBackError(self):  # pylint: disable=invalid-name
-        ''' Will be called when when playback stops due to an error '''
+        """Will be called when when playback stops due to an error"""
         self.api.reset_addon_data()
         self.state = State()  # Reset state

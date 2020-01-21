@@ -7,17 +7,17 @@ from utils import event, get_setting, jsonrpc, log as ulog
 
 
 class Api:
-    ''' Main API class '''
+    """Main API class"""
     _shared_state = {}
 
     def __init__(self):
-        ''' Constructor for Api class '''
+        """Constructor for Api class"""
         self.__dict__ = self._shared_state
         self.data = {}
         self.encoding = 'base64'
 
     def log(self, msg, level=2):
-        ''' Log wrapper '''
+        """Log wrapper"""
         ulog(msg, name=self.__class__.__name__, level=level)
 
     def has_addon_data(self):
