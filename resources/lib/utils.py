@@ -149,5 +149,5 @@ def localize(string_id):
 
 def localize_time(time):
     """Localize time format"""
-    time_format = getRegion('time').replace(':%S', '')  # Strip off seconds
+    time_format = getRegion('time').replace('%H%H', '%H').replace(':%S', '')  # Strip off seconds
     return time.strftime(time_format)
