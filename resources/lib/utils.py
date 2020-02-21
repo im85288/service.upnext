@@ -149,5 +149,13 @@ def localize(string_id):
 
 def localize_time(time):
     """Localize time format"""
-    time_format = getRegion('time').replace(':%S', '')  # Strip off seconds
+    time_format = getRegion('time')
+
+    # Fix a bug in Kodi v18.5 and older causing double hours
+    # https://github.com/xbmc/xbmc/pull/17380
+    time_format = time_format.replace('%H%H:', '%H:')
+
+    # Strip off seconds
+    time_format = time_format.replace(':%S', '')
+
     return time.strftime(time_format)
