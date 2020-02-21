@@ -50,7 +50,10 @@ class TestPopup(WindowXMLDialog):
         self.setProperty('runtime', '50')
 
     def prepare_progress_control(self):
-        self.progress_control = self.getControl(3014)
+        try:
+            self.progress_control = self.getControl(3014)
+        except:
+            self.progress_control = None
         if self.progress_control is None:
             return
         self.progress_control.setPercent(100.0)  # pylint: disable=no-member,useless-suppression
