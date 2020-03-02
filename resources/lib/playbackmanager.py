@@ -26,7 +26,7 @@ class PlaybackManager:
         ulog(msg, name=self.__class__.__name__, level=level)
 
     def launch_up_next(self):
-        playlist_item = True if get_setting('enablePlaylist') == "True" else False
+        playlist_item = bool(get_setting('enablePlaylist') == 'true')
         episode = self.play_item.get_next()
         self.log('Playlist setting: %s' % playlist_item)
         if episode and not playlist_item:
