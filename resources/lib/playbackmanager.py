@@ -26,8 +26,12 @@ class PlaybackManager:
         ulog(msg, name=self.__class__.__name__, level=level)
 
     def launch_up_next(self):
-        playlist_item = True
+        playlist_item = bool(get_setting('enablePlaylist') == 'true')
         episode = self.play_item.get_next()
+        self.log('Playlist setting: %s' % playlist_item)
+        if episode and not playlist_item:
+            self.log('Playlist integration disabled', 2)
+            return
         if not episode:
             playlist_item = False
             episode = self.play_item.get_episode()
@@ -73,8 +77,11 @@ class PlaybackManager:
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if playlist_item:
-            # Play playlist media
-            self.player.seekTime(self.player.getTotalTime())
+            try:
+                # Play playlist media
+                self.player.seekTime(self.player.getTotalTime())
+            except RuntimeError:
+                pass
         elif self.api.has_addon_data():
             # Play add-on media
             self.api.play_addon_item()
