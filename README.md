@@ -1,4 +1,5 @@
 [![GitHub release](https://img.shields.io/github/release/im85288/service.upnext.svg)](https://github.com/im85288/service.upnext/releases)
+[![CI](https://github.com/im85288/service.upnext/workflows/CI/badge.svg)](https://github.com/im85288/service.upnext/actions?query=workflow:CI)
 [![Build Status](https://travis-ci.org/im85288/service.upnext.svg?branch=master)](https://travis-ci.org/im85288/service.upnext)
 [![Codecov status](https://img.shields.io/codecov/c/github/im85288/service.upnext/master)](https://codecov.io/gh/im85288/service.upnext/branch/master)
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv2-yellow.svg)](https://opensource.org/licenses/GPL-2.0)
