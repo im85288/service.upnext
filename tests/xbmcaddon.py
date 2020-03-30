@@ -47,5 +47,5 @@ class Addon:
             ADDON_SETTINGS[self.id] = dict()
         ADDON_SETTINGS[self.id][key] = value
         # NOTE: Disable actual writing as it is no longer needed for testing
-        # with open('test/userdata/addon_settings.json', 'w') as fd:
+        # with open('tests/userdata/addon_settings.json', 'w') as fd:
         #     json.dump(filtered_settings, fd, sort_keys=True, indent=4)

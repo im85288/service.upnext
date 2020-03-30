@@ -1,4 +1,4 @@
-export PYTHONPATH := $(CURDIR)/resources/lib/:$(CURDIR)/test/
+export PYTHONPATH := $(CURDIR)/resources/lib/:$(CURDIR)/tests/
 PYTHON := python
 
 name = $(shell xmllint --xpath 'string(/addon/@id)' addon.xml)
@@ -18,49 +18,48 @@ blue = \e[1;34m
 white = \e[1;37m
 reset = \e[0;39m
 
-.PHONY: test
+all: check test build
+zip: build
+test: check test-unit test-service test-run
 
-all: test zip
+check: check-tox check-pylint check-translations
 
-package: zip
-
-test: sanity unit run
-
-sanity: tox pylint language
-
-tox:
+check-tox:
 	@echo -e "$(white)=$(blue) Starting sanity tox test$(reset)"
 	$(PYTHON) -m tox -q
 
-pylint:
+check-pylint:
 	@echo -e "$(white)=$(blue) Starting sanity pylint test$(reset)"
-	$(PYTHON) -m pylint -e useless-suppression resources/lib/ test/
+	$(PYTHON) -m pylint -e useless-suppression resources/lib/ tests/
 
-language:
+check-translations:
 	@echo -e "$(white)=$(blue) Starting language test$(reset)"
 	@-$(foreach lang,$(languages), \
 		msgcmp resources/language/resource.language.$(lang)/strings.po resources/language/resource.language.en_gb/strings.po; \
 	)
 
-addon: clean
+check-addon: clean
 	@echo -e "$(white)=$(blue) Starting sanity addon tests$(reset)"
 	kodi-addon-checker . --branch=leia
 
-unit: clean
+unit: test-unit
+run: test-run
+
+test-unit: clean
 	@echo -e "$(white)=$(blue) Starting unit tests$(reset)"
 	$(PYTHON) -m unittest discover
 
-run:
+test-run:
 	@echo -e "$(white)=$(blue) Run CLI$(reset)"
 	$(PYTHON) resources/lib/script_entry.py
 	@-pkill -ef '$(PYTHON) resources/lib/service_entry.py'
 	$(PYTHON) resources/lib/service_entry.py &
 	@sleep 10
-#	$(PYTHON) test/run.py
+#	$(PYTHON) tests/run.py
 	@sleep 5
 	@-pkill -ef -INT '$(PYTHON) resources/lib/service_entry.py'
 
-zip: clean
+build: clean
 	@echo -e "$(white)=$(blue) Building new package$(reset)"
 	@rm -f ../$(zip_name)
 	cd ..; zip -r $(zip_name) $(include_paths) -x $(exclude_files)
@@ -71,8 +70,8 @@ codecov:
 	curl --data-binary @.codecov.yml https://codecov.io/validate
 
 clean:
-	find . -name '*.pyc' -type f -delete
-	find . -name '*.pyo' -type f -delete
+	@echo -e "$(white)=$(blue) Cleaning up$(reset)"
+	find . -name '*.py[cod]' -type f -delete
 	find . -name '__pycache__' -type d -delete
 	rm -rf .pytest_cache/ .tox/
 	rm -f *.log
