@@ -86,6 +86,10 @@ class UpNextMonitor(Monitor):
         if not method.endswith('upnext_data'):  # Method looks like Other.upnext_data
             return
 
-        data, encoding = decode_json(data)
-        data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
-        self.api.addon_data_received(data, encoding=encoding)
+        decoded_data, encoding = decode_json(data)
+        if decoded_data is None:
+            self.log('Received data from sender %s is not JSON: %s' % (sender, data), 2)
+            return
+
+        decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
+        self.api.addon_data_received(decoded_data, encoding=encoding)
