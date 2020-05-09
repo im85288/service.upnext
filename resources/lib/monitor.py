@@ -37,6 +37,10 @@ class UpNextMonitor(Monitor):
             if not self.player.is_tracking():
                 continue
 
+            if self.player.isExternalPlayer():
+                self.log('External Player detected...exiting', 2)
+                continue
+
             up_next_disabled = bool(get_setting('disableNextUp') == 'true')
             if bool(get_property('PseudoTVRunning') == 'True') or up_next_disabled:
                 continue
