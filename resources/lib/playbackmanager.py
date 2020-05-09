@@ -26,6 +26,8 @@ class PlaybackManager:
         ulog(msg, name=self.__class__.__name__, level=level)
 
     def launch_up_next(self):
+        if self.player.isExternalPlayer():
+            return
         playlist_item = bool(get_setting('enablePlaylist') == 'true')
         episode = self.play_item.get_next()
         self.log('Playlist setting: %s' % playlist_item)
