@@ -90,6 +90,10 @@ class Player:
         ''' A stub implementation for the xbmc Player class stop() method '''
         return
 
+    def isExternalPlayer(self):
+        ''' A stub implementation for the xbmc Player class isExternalPlayer() method '''
+        return False
+
     def getPlayingFile(self):
         ''' A stub implementation for the xbmc Player class getPlayingFile() method '''
         return '/foo/bar'
