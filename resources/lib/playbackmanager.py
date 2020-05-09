@@ -27,7 +27,7 @@ class PlaybackManager:
 
     def launch_up_next(self):
         if self.player.isExternalPlayer():
-            self.log('Error: External Player detected...exiting', 1)
+            self.log('Error: External player detected...exiting', 1)
             return
         playlist_item = bool(get_setting('enablePlaylist') == 'true')
         episode = self.play_item.get_next()
