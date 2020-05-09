@@ -3,4 +3,4 @@ codecov
 kodi-addon-checker; python_version >= '3.5'
 polib
 pylint
-tox-travis
+tox
