@@ -37,44 +37,54 @@ class UpNextMonitor(Monitor):
             if not self.player.is_tracking():
                 continue
 
-            if self.player.isExternalPlayer():
-                self.log('External Player detected...exiting', 2)
+            if bool(get_property('PseudoTVRunning') == 'True'):
+                self.player.disable_tracking()
                 continue
 
-            up_next_disabled = bool(get_setting('disableNextUp') == 'true')
-            if bool(get_property('PseudoTVRunning') == 'True') or up_next_disabled:
+            if bool(get_setting('disableNextUp') == 'true'):
+                # Next Up is disabled
+                self.player.disable_tracking()
+                continue
+                
+            if self.player.isExternalPlayer():
+                self.log('Up Next tracking stopped, external player detected', 2)
+                self.player.disable_tracking()
                 continue
 
             last_file = self.player.get_last_file()
             try:
                 current_file = self.player.getPlayingFile()
             except RuntimeError:
-                self.log('Failed getPlayingFile: No file is playing - stop up next tracking', 2)
+                self.log('Up Next tracking stopped, failed player.getPlayingFile()', 2)
                 self.player.disable_tracking()
                 continue
 
             if last_file and last_file == current_file:
+                # Already processed this playback before
                 continue
 
             try:
                 total_time = self.player.getTotalTime()
             except RuntimeError:
-                self.log('Failed getTotalTime: No file is playing - stop up next tracking', 2)
+                self.log('Up Next tracking stopped, failed player.getTotalTime()', 2)
                 self.player.disable_tracking()
                 continue
 
             if total_time == 0:
+                self.log('Up Next tracking stopped, no file is playing', 2)
+                self.player.disable_tracking()
                 continue
 
             try:
                 play_time = self.player.getTime()
             except RuntimeError:
-                self.log('Failed getTime: No file is playing - stop up next tracking', 2)
+                self.log('Up Next tracking stopped, failed player.getTime()', 2)
                 self.player.disable_tracking()
                 continue
-
+ 
             notification_time = self.api.notification_time(total_time=total_time)
             if total_time - play_time > notification_time:
+                # Media hasn't reach notification time yet, waiting a bit longer...
                 continue
 
             self.player.set_last_file(from_unicode(current_file))
