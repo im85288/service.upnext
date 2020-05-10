@@ -45,7 +45,7 @@ class UpNextMonitor(Monitor):
                 # Next Up is disabled
                 self.player.disable_tracking()
                 continue
-                
+
             if self.player.isExternalPlayer():
                 self.log('Up Next tracking stopped, external player detected', 2)
                 self.player.disable_tracking()
@@ -81,7 +81,7 @@ class UpNextMonitor(Monitor):
                 self.log('Up Next tracking stopped, failed player.getTime()', 2)
                 self.player.disable_tracking()
                 continue
- 
+
             notification_time = self.api.notification_time(total_time=total_time)
             if total_time - play_time > notification_time:
                 # Media hasn't reach notification time yet, waiting a bit longer...
