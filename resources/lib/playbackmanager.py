@@ -9,7 +9,7 @@ from playitem import PlayItem
 from state import State
 from stillwatching import StillWatching
 from upnext import UpNext
-from utils import addon_path, calculate_progress_steps, clear_property, event, get_setting, log as ulog, set_property
+from utils import addon_path, calculate_progress_steps, clear_property, event, get_setting_bool, get_setting_int, log as ulog, set_property
 
 
 class PlaybackManager:
@@ -26,7 +26,7 @@ class PlaybackManager:
         ulog(msg, name=self.__class__.__name__, level=level)
 
     def launch_up_next(self):
-        playlist_item = bool(get_setting('enablePlaylist') == 'true')
+        playlist_item = get_setting_bool('enablePlaylist')
         episode = self.play_item.get_next()
         self.log('Playlist setting: %s' % playlist_item)
         if episode and not playlist_item:
@@ -51,7 +51,7 @@ class PlaybackManager:
             return
 
         # We have a next up episode choose mode
-        if get_setting('simpleMode') == '0':
+        if get_setting_int('simpleMode') == 0:
             next_up_page = UpNext('script-upnext-upnext-simple.xml', addon_path(), 'default', '1080i')
             still_watching_page = StillWatching('script-upnext-stillwatching-simple.xml', addon_path(), 'default', '1080i')
         else:
@@ -68,8 +68,8 @@ class PlaybackManager:
         if not self.state.track:
             self.log('exit launch_popup early due to disabled tracking', 2)
             return
-        play_item_option_1 = (should_play_default and self.state.play_mode == '0')
-        play_item_option_2 = (should_play_non_default and self.state.play_mode == '1')
+        play_item_option_1 = (should_play_default and self.state.play_mode == 0)
+        play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
             return
 
@@ -101,7 +101,7 @@ class PlaybackManager:
         next_up_page.set_progress_step_size(progress_step_size)
         still_watching_page.set_item(episode)
         still_watching_page.set_progress_step_size(progress_step_size)
-        played_in_a_row_number = get_setting('playedInARow')
+        played_in_a_row_number = get_setting_int('playedInARow')
         self.log('played in a row settings %s' % played_in_a_row_number, 2)
         self.log('played in a row %s' % self.state.played_in_a_row, 2)
         showing_next_up_page = False

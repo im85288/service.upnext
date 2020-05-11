@@ -8,7 +8,7 @@ from math import ceil
 from xbmc import sleep
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import addon_path, get_setting, localize, localize_time
+from utils import addon_path, get_setting_bool, localize, localize_time
 
 
 class TestPopup(WindowXMLDialog):
@@ -23,7 +23,7 @@ class TestPopup(WindowXMLDialog):
         self.set_info()
         self.prepare_progress_control()
 
-        if bool(get_setting('stopAfterClose') == 'true'):
+        if get_setting_bool('stopAfterClose'):
             self.getControl(3013).setLabel(localize(30033))  # Stop
         else:
             self.getControl(3013).setLabel(localize(30034))  # Close
