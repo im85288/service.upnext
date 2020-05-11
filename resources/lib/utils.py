@@ -43,7 +43,7 @@ def clear_property(key, window_id=10000):
 
 
 def get_setting(key, default=None):
-    """Get an add-on setting"""
+    """Get an add-on setting as string"""
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
         value = to_unicode(Addon().getSetting(key))
@@ -52,6 +52,33 @@ def get_setting(key, default=None):
     if value == '' and default is not None:
         return default
     return value
+
+
+def get_setting_bool(key, default=None):
+    """Get an add-on setting as boolean"""
+    try:
+        return Addon().getSettingBool(key)
+    except (AttributeError, TypeError):  # On Krypton or older, or when not a boolean
+        value = get_setting(key, default)
+        if value not in ('false', 'true'):
+            return default
+        return bool(value == 'true')
+    except RuntimeError:  # Occurs when the add-on is disabled
+        return default
+
+
+def get_setting_int(key, default=None):
+    """Get an add-on setting as integer"""
+    try:
+        return Addon().getSettingInt(key)
+    except (AttributeError, TypeError):  # On Krypton or older, or when not an integer
+        value = get_setting(key, default)
+        try:
+            return int(value)
+        except ValueError:
+            return default
+    except RuntimeError:  # Occurs when the add-on is disabled
+        return default
 
 
 def encode_data(data, encoding='base64'):
@@ -111,7 +138,7 @@ def event(message, data=None, sender=None, encoding='base64'):
 
 def log(msg, name=None, level=1):
     """Log information to the Kodi log"""
-    log_level = int(get_setting('logLevel', level))
+    log_level = get_setting_int('logLevel', level)
     debug_logging = get_global_setting('debug.showloginfo')
     set_property('logLevel', log_level)
     if not debug_logging and log_level < level:
@@ -129,9 +156,9 @@ def calculate_progress_steps(period):
 
 def jsonrpc(**kwargs):
     """Perform JSONRPC calls"""
-    if 'id' not in kwargs:
-        kwargs.update(id=1)
-    if 'jsonrpc' not in kwargs:
+    if kwargs.get('id') is None:
+        kwargs.update(id=0)
+    if kwargs.get('jsonrpc') is None:
         kwargs.update(jsonrpc='2.0')
     return json.loads(executeJSONRPC(json.dumps(kwargs)))
 
@@ -143,7 +170,8 @@ def get_global_setting(setting):
 
 
 def localize(string_id):
-    """Return the translated string from the .po language files, optionally translating variables"""
+    """Return the translated string from the .po language files"""
+
     return ADDON.getLocalizedString(string_id)
 
 

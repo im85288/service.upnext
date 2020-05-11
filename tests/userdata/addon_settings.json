@@ -1,6 +1,6 @@
 {
     "service.upnext": {
-        "autoPlayMode": "true",
+        "autoPlayMode": "0",
         "autoPlaySeasonTime": "30",
         "developerMode": "false",
         "disableNexyUp": "false",
@@ -11,7 +11,7 @@
         "shortPlayLength": "10",
         "shortPlayMode": "false",
         "shortPlayNotification": "true",
-        "simpleMode": "false",
+        "simpleMode": "1",
         "windowMode": "false"
     }
 }
