@@ -5,7 +5,7 @@ on:
     - 'v*'
 jobs:
   build:
-    name: Release plugin.video.vrt.nu
+    name: Release service.upnext
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -17,11 +17,11 @@ jobs:
       - name: Get Krypton filename
         id: get-krypton-filename
         run: |
-          echo ::set-output name=krypton-filename::$(cd ..;ls plugin.video.vrt.nu*.zip | grep -v '+matrix.' | head -1)
+          echo ::set-output name=krypton-filename::$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)
       - name: Get Matrix filename
         id: get-matrix-filename
         run: |
-          echo ::set-output name=matrix-filename::$(cd ..;ls plugin.video.vrt.nu*+matrix.*.zip | head -1)
+          echo ::set-output name=matrix-filename::$(cd ..;ls service.upnext*+matrix.*.zip | head -1)
       - name: Get body
         id: get-body
         run: |
@@ -68,7 +68,7 @@ jobs:
         with:
           kodi-repository: repo-plugins
           kodi-version: krypton
-          addon-id: plugin.video.vrt.nu
+          addon-id: service.upnext
           kodi-matrix: true
         env:
           GH_USERNAME: ${{secrets.GH_USERNAME}}
