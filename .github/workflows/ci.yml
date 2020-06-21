@@ -28,16 +28,22 @@ jobs:
         pip install -r requirements.txt
     - name: Run tox
       run: python -m tox -q -e flake8,py
+      if: always()
     - name: Run pylint
       run: python -m pylint resources/lib/ tests/
+      if: always()
     - name: Compare translations
       run: make check-translations
+      if: always()
     - name: Run unit tests
       run: coverage run -m unittest discover
+      if: always()
     - name: Run script entry
       run: coverage run -a resources/lib/script_entry.py
+      if: always()
     - name: Run service entry
       run: coverage run -a resources/lib/service_entry.py &
+      if: always()
     - name: Upload code coverage to CodeCov
       uses: codecov/codecov-action@v1
       continue-on-error: true
@@ -45,10 +51,11 @@ jobs:
     - name: Analyze with SonarCloud
       uses: dagwieers/sonarcloud-github-action@more-options
       with:
-        organization: add-ons
-        projectKey: add-ons_service.upnext
-        sources: resources/lib/
-        tests: tests/
+        args: >
+          -Dsonar.organization=im85288
+          -Dsonar.projectKey=im85288_service.upnext
+          -Dsonar.sources=resources/lib/
+          -Dsonar.tests=tests/
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}

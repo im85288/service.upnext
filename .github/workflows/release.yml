@@ -14,10 +14,10 @@ jobs:
         run: |
           sudo apt-get install libxml2-utils
           make multizip release=1
-      - name: Get Krypton filename
-        id: get-krypton-filename
+      - name: Get Leia filename
+        id: get-leia-filename
         run: |
-          echo ::set-output name=krypton-filename::$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)
+          echo ::set-output name=leia-filename::$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)
       - name: Get Matrix filename
         id: get-matrix-filename
         run: |
@@ -42,15 +42,15 @@ jobs:
           body: ${{ steps.get-body.outputs.body }}
           draft: false
           prerelease: false
-      - name: Upload Krypton/Leia zip
-        id: upload-krypton-zip 
+      - name: Upload Leia zip
+        id: upload-leia-zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ steps.get-krypton-filename.outputs.krypton-filename }}
-          asset_path: ../${{ steps.get-krypton-filename.outputs.krypton-filename }}
+          asset_name: ${{ steps.get-leia-filename.outputs.leia-filename }}
+          asset_path: ../${{ steps.get-leia-filename.outputs.leia-filename }}
           asset_content_type: application/zip
       - name: Upload Matrix zip
         id: upload-matrix-zip 
@@ -67,7 +67,7 @@ jobs:
         uses: xbmc/action-kodi-addon-submitter@v1.2
         with:
           kodi-repository: repo-plugins
-          kodi-version: krypton
+          kodi-version: leia
           addon-id: service.upnext
           kodi-matrix: true
         env:
