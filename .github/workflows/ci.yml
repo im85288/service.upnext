@@ -46,7 +46,7 @@ jobs:
       uses: dagwieers/sonarcloud-github-action@more-options
       with:
         organization: add-ons
-        projectKey: add-ons_plugin.video.vrt.nu
+        projectKey: add-ons_service.upnext
         sources: resources/lib/
         tests: tests/
       env:
