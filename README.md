@@ -23,7 +23,7 @@ The add-on has various settings to fine-tune the experience, however the default
 For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
 
 ## Releases
-### v1.1.1 (2020-05-XX)
+### v1.1.1 (2020-06-21)
 - Avoid conflict with external players (@BrutuZ)
 - Restore "Ignore Playlist" option (@BrutuZ)
 - Fix a known Kodi bug related to displaying hours (@Maven85)

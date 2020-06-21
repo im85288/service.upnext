@@ -40,7 +40,7 @@ Många befintliga tillägg integreras redan med den här utanför lådan-tjänst
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <news>
-### v1.1.1 (2020-05-XX)
+### v1.1.1 (2020-06-21)
 - Avoid conflict with external players
 - Restore "Ignore Playlist" option
 - Fix a known Kodi bug related to displaying hours
