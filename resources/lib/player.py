@@ -31,10 +31,11 @@ class UpNextPlayer(Player):
 
     def onPlayBackStarted(self):  # pylint: disable=invalid-name
         """Will be called when kodi starts playing a file"""
-        sleep(5000)  # Delay for slower devices, should really use onAVStarted for Leia
+        xbmc.Monitor().waitForAbort(5000)
         if not getCondVisibility('videoplayer.content(episodes)'):
             return
         self.state.track = True
+
 
     def onPlayBackPaused(self):  # pylint: disable=invalid-name
         self.state.pause = True
