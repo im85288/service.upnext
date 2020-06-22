@@ -2,7 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import getCondVisibility, Player, sleep
+from xbmc import getCondVisibility, Player, Monitor
 from api import Api
 from state import State
 
@@ -31,7 +31,7 @@ class UpNextPlayer(Player):
 
     def onPlayBackStarted(self):  # pylint: disable=invalid-name
         """Will be called when kodi starts playing a file"""
-        xbmc.Monitor().waitForAbort(5000)
+        Monitor().waitForAbort(5000)
         if not getCondVisibility('videoplayer.content(episodes)'):
             return
         self.state.track = True
