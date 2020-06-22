@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from math import ceil
-from xbmc import sleep
+from xbmc import Monitor
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
 from utils import addon_path, get_setting_bool, localize, localize_time
@@ -89,10 +89,11 @@ def test_popup(window):
     step = 0
     wait = 100
     timeout = 10000
-    while popup and step < timeout:
+    monitor = Monitor()
+    while popup and step < timeout and not monitor.abortRequested():
         if popup.pause:
             continue
-        sleep(wait)
+        monitor.waitForAbort(wait)
         popup.update_progress_control(timeout, wait)
         step += wait
 
