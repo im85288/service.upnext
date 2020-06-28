@@ -40,7 +40,7 @@ msgstr "계속 보시렵니까?"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
-msgstr ""
+msgstr "재생목록에 사용"
 
 msgctxt "#30033"
 msgid "Stop"

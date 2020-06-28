@@ -40,7 +40,7 @@ msgstr "まだ観るの。"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
-msgstr ""
+msgstr "プレイリストに有効"
 
 msgctxt "#30033"
 msgid "Stop"
