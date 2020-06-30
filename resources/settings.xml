@@ -9,7 +9,9 @@
         <setting label="30032" type="bool" id="enablePlaylist" default="false"/>
         <setting label="30605" type="bool" id="includeWatched" default="false"/>
         <setting label="30607" type="slider" id="playedInARow" default="3" range="0,1,15" option="int"/>
-        <setting label="30609" type="lsep"/> <!-- Autoplay duration -->
+        <setting label="30608" type="lsep"/>
+        <setting label="30610" type="slider" id="autoTime" default="6" range="0,3,120"/>
+        <setting label="30612" type="lsep"/> <!-- Autoplay duration -->
         <setting label="30611" type="bool" id="customAutoPlayTime" default="false"/>
         <setting label="30613" type="slider" id="autoPlaySeasonTime" default="30" range="0,5,120" option="int" subsetting="true" visible="eq(-1,false)"/>
         <setting label="30615" type="slider" id="autoPlayTimeXS" default="15" range="0,5,120" option="int" subsetting="true" visible="eq(-2,true)"/>
