@@ -7,7 +7,7 @@ from platform import machine
 from xbmc import Player
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import get_setting_bool, localize, localize_time
+from utils import get_setting_int, get_setting_bool, localize, localize_time
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
@@ -91,6 +91,12 @@ class UpNext(WindowXMLDialog):
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if runtime:
             self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
+        if self.current_progress_percent <= 0:
+            if get_setting_bool('autoWatchOrStop'):
+                if get_setting_int('autoPlayMode') == 0:
+                    self.set_watch_now(True)
+                else:
+                    Player().stop()
 
     def set_cancel(self, cancel):
         self.cancel = cancel

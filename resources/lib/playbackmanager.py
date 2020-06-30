@@ -96,9 +96,13 @@ class PlaybackManager:
         except RuntimeError:
             self.log('exit early because player is no longer running', 2)
             return False, False
+        if get_setting_bool('autoWatchOrStop'):
+            next_up_progress_step_size = calculate_progress_steps(get_setting_int('autoTime'))
+        else:
+            next_up_progress_step_size = calculate_progress_steps(total_time - play_time)
         progress_step_size = calculate_progress_steps(total_time - play_time)
         next_up_page.set_item(episode)
-        next_up_page.set_progress_step_size(progress_step_size)
+        next_up_page.set_progress_step_size(next_up_progress_step_size)
         still_watching_page.set_item(episode)
         still_watching_page.set_progress_step_size(progress_step_size)
         played_in_a_row_number = get_setting_int('playedInARow')

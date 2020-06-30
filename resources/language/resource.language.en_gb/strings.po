@@ -132,8 +132,16 @@ msgctxt "#30607"
 msgid "Number of episodes before \"Still there?\" query"
 msgstr ""
 
+msgctxt "#30608"
+msgid "Automatic Watch or Stop"
+msgstr ""
+
 msgctxt "#30609"
 msgid "Duration in seconds for notification to be shown"
+msgstr ""
+
+msgctxt "#30610"
+msgid "Duration in seconds for auto watch or stop"
 msgstr ""
 
 msgctxt "#30611"
