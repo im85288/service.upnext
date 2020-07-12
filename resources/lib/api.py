@@ -41,13 +41,14 @@ class Api:
             next_item.update(episodeid=episode.get('episodeid'))
         elif self.data.get('play_url'):
             next_item.update(file=self.data.get('play_url'))
-        
+
         if next_item:
             jsonrpc(method='Playlist.Add', id=0, params=dict(playlistid=1, item=next_item))
 
         return bool(next_item)
 
-    def reset_queue(self):
+    @staticmethod
+    def reset_queue():
         jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=0))
 
     def get_next_in_playlist(self, position):
