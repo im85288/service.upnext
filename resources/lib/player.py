@@ -16,7 +16,7 @@ class UpNextPlayer(Player):
         self.api = Api()
         self.state = State()
         self.monitor = Monitor()
-        Player.__init__(self, Player())
+        Player.__init__(self)
 
     def set_last_file(self, filename):
         self.state.last_file = filename
