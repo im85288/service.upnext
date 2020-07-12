@@ -86,6 +86,10 @@ class Player:
         ''' A stub implementation for the xbmc Player class play() method '''
         return
 
+    def playnext(self):
+    ''' A stub implementation for the xbmc Player class playnext() method '''
+        return
+
     def stop(self):
         ''' A stub implementation for the xbmc Player class stop() method '''
         return
