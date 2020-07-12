@@ -87,7 +87,7 @@ class Player:
         return
 
     def playnext(self):
-    ''' A stub implementation for the xbmc Player class playnext() method '''
+        ''' A stub implementation for the xbmc Player class playnext() method '''
         return
 
     def stop(self):
