@@ -50,6 +50,9 @@ class PlaybackManager:
         if not include_play_count or self.state.current_episode_id == episode_id:
             return
 
+        if not playlist_item:
+            self.state.queued = self.api.queue_next_item(episode)
+
         # We have a next up episode choose mode
         if get_setting_int('simpleMode') == 0:
             next_up_page = UpNext('script-upnext-upnext-simple.xml', addon_path(), 'default', '1080i')
@@ -76,10 +79,12 @@ class PlaybackManager:
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
-        if playlist_item:
+        if playlist_item or self.state.queued:
             try:
-                # Play playlist media
-                self.player.seekTime(self.player.getTotalTime())
+                # Play playlist media, only seek/skip if media has not already played through
+                if should_play_non_default:
+                    self.player.seekTime(self.player.getTotalTime())
+                    self.player.playnext()
             except RuntimeError:
                 pass
         elif self.api.has_addon_data():
