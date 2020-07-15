@@ -96,11 +96,13 @@ class PlaybackManager:
         except RuntimeError:
             self.log('exit early because player is no longer running', 2)
             return False, False
+        remaining = total_time - play_time
+        progress_step_size = calculate_progress_steps(remaining)
         if self.api.has_addon_data().get('notification_offset'):
-            next_up_progress_step_size = calculate_progress_steps(get_setting_int('autoTime'))
+            # When a credits offset is provided, advance after X seconds
+            next_up_progress_step_size = calculate_progress_steps(min(remaining, get_setting_int('autoPlayCountdown')))
         else:
-            next_up_progress_step_size = calculate_progress_steps(total_time - play_time)
-        progress_step_size = calculate_progress_steps(total_time - play_time)
+            next_up_progress_step_size = progress_step_size
         next_up_page.set_item(episode)
         next_up_page.set_progress_step_size(next_up_progress_step_size)
         still_watching_page.set_item(episode)
@@ -120,7 +122,7 @@ class PlaybackManager:
             still_watching_page.show()
             set_property('service.upnext.dialog', 'true')
             showing_still_watching_page = True
-        while (self.player.isPlaying() and (total_time - play_time > 1)
+        while (self.player.isPlaying() and (remaining > 1)
                and not next_up_page.is_cancel() and not next_up_page.is_watch_now()
                and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
             try:

@@ -132,34 +132,42 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr "Aantal afleveringen alvorens te vragen \"Ben je er nog?\""
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
-msgstr "Aantal seconden om vóór het einde te melden"
+msgid "When credits offset is known (e.g. Netflix)"
+msgstr "Wanneer aftitelingstijd bekend is (bv. Netflix)"
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
-msgstr "Autoplay melding aanpassen op basis van afleveringlengte"
+msgid "Duration for automatic default action"
+msgstr "Tijdsduur voor een automatische standaardactie"
 
 msgctxt "#30613"
+msgid "When credits offset is unknown (e.g. local media, other)"
+msgstr "Wanneer aftitelingstijd onbekend is (bv. lokale bestanden, andere)"
+
+msgctxt "#30615"
+msgid "Customize notification time by episode length"
+msgstr "Meldingstijd aanpassen op basis van afleveringlengte"
+
+msgctxt "#30617"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
 msgstr "Alle afleveringen  [COLOR gray]ongeacht lengte[/COLOR]"
 
-msgctxt "#30615"
+msgctxt "#30619"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
 msgstr "Zeer korte afleveringen  [COLOR gray]< 10 min[/COLOR]"
 
-msgctxt "#30617"
+msgctxt "#30621"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
 msgstr "Korte afleveringen  [COLOR gray]> 10min[/COLOR]"
 
-msgctxt "#30619"
+msgctxt "#30623"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
 msgstr "Normale afleveringen  [COLOR gray]> 20min[/COLOR]"
 
-msgctxt "#30621"
+msgctxt "#30625"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
 msgstr "Lange afleveringen  [COLOR gray]> 40 min[/COLOR]"
 
-msgctxt "#30623"
+msgctxt "#30627"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
 msgstr "Zeer lange afleveringen  [COLOR gray]> 60 min[/COLOR]"
 

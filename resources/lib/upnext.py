@@ -93,18 +93,22 @@ class UpNext(WindowXMLDialog):
             self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
         if self.current_progress_percent <= 0:
             if get_setting_int('autoPlayMode') == 0:
-                self.set_watch_now(True)
+                self.do_watch_now()
             else:
-                Player().stop()
+                self.do_cancel()
 
-    def set_cancel(self, cancel):
-        self.cancel = cancel
+    def do_cancel(self):
+        self.cancel = True
+        if get_setting_bool('stopAfterClose'):
+            Player().stop()
+        self.close()
 
     def is_cancel(self):
         return self.cancel
 
-    def set_watch_now(self, watchnow):
-        self.watchnow = watchnow
+    def do_watch_now(self):
+        self.watchnow = True
+        self.close()
 
     def is_watch_now(self):
         return self.watchnow
@@ -120,17 +124,12 @@ class UpNext(WindowXMLDialog):
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
         if controlId == 3012:  # Watch now
-            self.set_watch_now(True)
-            self.close()
+            self.do_watch_now()
         elif controlId == 3013:  # Close / Stop
-            self.set_cancel(True)
-            if get_setting_bool('stopAfterClose'):
-                Player().stop()
-            self.close()
+            self.do_cancel()
 
     def onAction(self, action):  # pylint: disable=invalid-name
         if action == ACTION_PLAYER_STOP:
             self.close()
         elif action == ACTION_NAV_BACK:
-            self.set_cancel(True)
-            self.close()
+            self.do_cancel()

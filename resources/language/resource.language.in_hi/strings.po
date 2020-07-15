@@ -133,34 +133,42 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr "\"मौजूद?\" से पहले एपिसोड की संख्या"
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
-msgstr "सूचना दिखाने के लिए सेकंड में अवधि"
+msgid "When credits offset is known (e.g. Netflix)"
+msgstr ""
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
-msgstr "एपिसोड की लंबाई के आधार पर ऑटोप्ले की अवधि को अनुकूलित करें"
+msgid "Duration for automatic default action"
+msgstr ""
 
 msgctxt "#30613"
+msgid "When credits offset is unknown (e.g. local media, other)"
+msgstr ""
+
+msgctxt "#30615"
+msgid "Customize notification time by episode length"
+msgstr ""
+
+msgctxt "#30617"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
 msgstr "सारे एपिसोड  [COLOR gray]quelque soit la durée[/COLOR]"
 
-msgctxt "#30615"
+msgctxt "#30619"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
 msgstr "बहुत छोटे एपिसोड  [COLOR gray]< 10 min[/COLOR]"
 
-msgctxt "#30617"
+msgctxt "#30621"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
 msgstr "छोटे एपिसोड  [COLOR gray]> 10 min[/COLOR]"
 
-msgctxt "#30619"
+msgctxt "#30623"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
 msgstr "मध्यम एपिसोड  [COLOR gray]> 20 min[/COLOR]"
 
-msgctxt "#30621"
+msgctxt "#30625"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
 msgstr "लम्बे एपिसोड  [COLOR gray]> 40 min[/COLOR]"
 
-msgctxt "#30623"
+msgctxt "#30627"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
 msgstr "काफी लम्बे एपिसोड  [COLOR gray]> 60 min[/COLOR]"
 

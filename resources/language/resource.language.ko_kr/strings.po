@@ -133,34 +133,42 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr "몇 개의 에피소드를 보고나서 \"계속 볼 것인지\" 물어볼까요?"
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
-msgstr "알림창을 보여줄 시간(초)"
+msgid "When credits offset is known (e.g. Netflix)"
+msgstr ""
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
-msgstr "상영시간에 따라 다르게"
+msgid "Duration for automatic default action"
+msgstr ""
 
 msgctxt "#30613"
+msgid "When credits offset is unknown (e.g. local media, other)"
+msgstr ""
+
+msgctxt "#30615"
+msgid "Customize notification time by episode length"
+msgstr ""
+
+msgctxt "#30617"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
 msgstr "[COLOR gray]시간에 상관없이[/COLOR] 모든 에피소드"
 
-msgctxt "#30615"
+msgctxt "#30619"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
 msgstr "[COLOR gray]10분이하[/COLOR]의 상당히 짧은 것"
 
-msgctxt "#30617"
+msgctxt "#30621"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
 msgstr "[COLOR gray]10분이상[/COLOR] 정도의 짧은 것"
 
-msgctxt "#30619"
+msgctxt "#30623"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
 msgstr "[COLOR gray]20분이상[/COLOR] 정도의 것"
 
-msgctxt "#30621"
+msgctxt "#30625"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
 msgstr "[COLOR gray]40분이상[/COLOR] 정도의 긴 것"
 
-msgctxt "#30623"
+msgctxt "#30627"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
 msgstr "[COLOR gray]60분[/COLOR]이 넘어가는 상당히 긴 것"
 
