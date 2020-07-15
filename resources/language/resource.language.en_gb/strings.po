@@ -133,7 +133,11 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr ""
 
 msgctxt "#30608"
+<<<<<<< HEAD
 msgid "When credits offset is known (e.g. Netflix)"
+=======
+msgid "Automatic Watch or Stop"
+>>>>>>> 02eeee67b0675df4b98fd39fa11ad25295e303c9
 msgstr ""
 
 msgctxt "#30609"
@@ -141,7 +145,11 @@ msgid "Duration in seconds for notification to be shown"
 msgstr ""
 
 msgctxt "#30610"
+<<<<<<< HEAD
 msgid "Duration for automatic default action"
+=======
+msgid "Duration in seconds for auto watch or stop"
+>>>>>>> 02eeee67b0675df4b98fd39fa11ad25295e303c9
 msgstr ""
 
 msgctxt "#30611"
