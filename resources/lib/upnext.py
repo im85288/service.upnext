@@ -92,18 +92,10 @@ class UpNext(WindowXMLDialog):
         if runtime:
             self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
         if self.current_progress_percent <= 0:
-<<<<<<< HEAD
             if get_setting_int('autoPlayMode') == 0:
                 self.set_watch_now(True)
             else:
                 Player().stop()
-=======
-            if get_setting_bool('autoWatchOrStop'):
-                if get_setting_int('autoPlayMode') == 0:
-                    self.set_watch_now(True)
-                else:
-                    Player().stop()
->>>>>>> 02eeee67b0675df4b98fd39fa11ad25295e303c9
 
     def set_cancel(self, cancel):
         self.cancel = cancel
