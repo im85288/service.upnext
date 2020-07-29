@@ -145,14 +145,20 @@ class PlaybackManager:
                 elif showing_still_watching_page:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
             sleep(100)
-        if next_up_page.is_cancel() and not playlist_item:
+
+        if not playlist_item:
+            self.handle_user_interaction(next_up_page, still_watching_page, episode)
+
+        return showing_next_up_page, showing_still_watching_page
+
+    def handle_user_interaction(self, next_up_page, still_watching_page, episode):
+        if next_up_page.is_cancel():
             # Playback of next episode was cancelled - dequeue the next episode
             self.api.dequeue_next_item()
             self.state.queued = False
-        if still_watching_page.is_still_watching() and not playlist_item:
+        elif still_watching_page.is_still_watching():
             # User is still watching - queue the next episode
             self.state.queued = self.api.queue_next_item(episode)
-        return showing_next_up_page, showing_still_watching_page
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):
         if showing_next_up_page:
