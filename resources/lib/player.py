@@ -57,9 +57,11 @@ class UpNextPlayer(Player):
 
     def onPlayBackEnded(self):  # pylint: disable=invalid-name
         """Will be called when Kodi has ended playing a file"""
-        self.reset_queue()
-        self.api.reset_addon_data()
-        self.state = State()  # Reset state
+        if not self.state.queued:
+            # Reset if playback ended without the next episode being queued
+            self.reset_queue()
+            self.api.reset_addon_data()
+            self.state = State()  # Reset state
 
     def onPlayBackError(self):  # pylint: disable=invalid-name
         """Will be called when when playback stops due to an error"""

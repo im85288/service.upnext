@@ -50,9 +50,6 @@ class PlaybackManager:
         if not include_play_count or self.state.current_episode_id == episode_id:
             return
 
-        if not playlist_item:
-            self.state.queued = self.api.queue_next_item(episode)
-
         # We have a next up episode choose mode
         if get_setting_int('simpleMode') == 0:
             next_up_page = UpNext('script-upnext-upnext-simple.xml', addon_path(), 'default', '1080i')
@@ -63,7 +60,8 @@ class PlaybackManager:
 
         showing_next_up_page, showing_still_watching_page = self.show_popup_and_wait(episode,
                                                                                      next_up_page,
-                                                                                     still_watching_page)
+                                                                                     still_watching_page,
+                                                                                     playlist_item)
         should_play_default, should_play_non_default = self.extract_play_info(next_up_page,
                                                                               showing_next_up_page,
                                                                               showing_still_watching_page,
@@ -94,7 +92,7 @@ class PlaybackManager:
             # Play local media
             self.api.play_kodi_item(episode)
 
-    def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
+    def show_popup_and_wait(self, episode, next_up_page, still_watching_page, playlist_item):
         try:
             play_time = self.player.getTime()
             total_time = self.player.getTotalTime()
@@ -113,6 +111,9 @@ class PlaybackManager:
         showing_still_watching_page = False
         if int(self.state.played_in_a_row) <= int(played_in_a_row_number):
             self.log('showing next up page as played in a row is %s' % self.state.played_in_a_row, 2)
+            # Queue the next episode
+            if not playlist_item:
+                self.state.queued = self.api.queue_next_item(episode)
             next_up_page.show()
             set_property('service.upnext.dialog', 'true')
             showing_next_up_page = True
@@ -144,6 +145,13 @@ class PlaybackManager:
                 elif showing_still_watching_page:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
             sleep(100)
+        if next_up_page.is_cancel() and not playlist_item:
+            # Playback of next episode was cancelled - dequeue the next episode
+            self.api.dequeue_next_item()
+            self.state.queued = False
+        if still_watching_page.is_still_watching() and not playlist_item:
+            # User is still watching - queue the next episode
+            self.state.queued = self.api.queue_next_item(episode)
         return showing_next_up_page, showing_still_watching_page
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):
