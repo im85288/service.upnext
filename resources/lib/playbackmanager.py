@@ -92,7 +92,7 @@ class PlaybackManager:
             # Play local media
             self.api.play_kodi_item(episode)
 
-    def show_popup_and_wait(self, episode, next_up_page, still_watching_page, playlist_item):
+    def show_popup_and_wait(self, episode, next_up_page, still_watching_page, playlist_item):  # pylint: disable=too-many-branches
         try:
             play_time = self.player.getTime()
             total_time = self.player.getTotalTime()
@@ -145,20 +145,14 @@ class PlaybackManager:
                 elif showing_still_watching_page:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
             sleep(100)
-
-        if not playlist_item:
-            self.handle_user_interaction(next_up_page, still_watching_page, episode)
-
-        return showing_next_up_page, showing_still_watching_page
-
-    def handle_user_interaction(self, next_up_page, still_watching_page, episode):
-        if next_up_page.is_cancel():
+        if next_up_page.is_cancel() and not playlist_item:
             # Playback of next episode was cancelled - dequeue the next episode
             self.api.dequeue_next_item()
             self.state.queued = False
-        elif still_watching_page.is_still_watching():
+        if still_watching_page.is_still_watching() and not playlist_item:
             # User is still watching - queue the next episode
             self.state.queued = self.api.queue_next_item(episode)
+        return showing_next_up_page, showing_still_watching_page
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):
         if showing_next_up_page:
