@@ -26,6 +26,7 @@ class PlaybackManager:
         ulog(msg, name=self.__class__.__name__, level=level)
 
     def launch_up_next(self):
+        self.state.playing_next = False
         playlist_item = get_setting_bool('enablePlaylist')
         episode = self.play_item.get_next()
         self.log('Playlist setting: %s' % playlist_item)
@@ -40,7 +41,9 @@ class PlaybackManager:
                 self.log('Error: no episode could be found to play next...exiting', 1)
                 return
         self.log('episode details %s' % episode, 2)
-        self.launch_popup(episode, playlist_item)
+        self.state.playing_next = self.launch_popup(episode, playlist_item)
+        if not self.state.playing_next and self.state.queued:
+            self.state.queued = self.api.dequeue_next_item()
         self.api.reset_addon_data()
 
     def launch_popup(self, episode, playlist_item):
@@ -48,7 +51,7 @@ class PlaybackManager:
         no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
         include_play_count = True if self.state.include_watched else no_play_count
         if not include_play_count or self.state.current_episode_id == episode_id:
-            return
+            return False
 
         if not playlist_item:
             self.state.queued = self.api.queue_next_item(episode)
@@ -70,11 +73,11 @@ class PlaybackManager:
                                                                               still_watching_page)
         if not self.state.track:
             self.log('exit launch_popup early due to disabled tracking', 2)
-            return
+            return False
         play_item_option_1 = (should_play_default and self.state.play_mode == 0)
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
-            return
+            return False
 
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
@@ -93,6 +96,8 @@ class PlaybackManager:
         else:
             # Play local media
             self.api.play_kodi_item(episode)
+        
+        return True
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
         try:

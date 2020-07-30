@@ -51,6 +51,11 @@ class Api:
     def reset_queue():
         jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=0))
 
+    @staticmethod
+    def dequeue_next_item():
+        jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=1))
+        return False
+
     def get_next_in_playlist(self, position):
         result = jsonrpc(method='Playlist.GetItems', params=dict(
             playlistid=1,
