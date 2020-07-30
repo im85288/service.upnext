@@ -96,7 +96,6 @@ class PlaybackManager:
         else:
             # Play local media
             self.api.play_kodi_item(episode)
-        
         return True
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
