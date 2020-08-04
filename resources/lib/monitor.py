@@ -50,42 +50,27 @@ class UpNextMonitor(Monitor):
                 self.log('Up Next tracking stopped, external player detected', 2)
                 self.player.disable_tracking()
                 continue
-            
-            if not self.player.isPlayingVideo():
-                self.log('Up Next tracking stopped, not player.isPlayingVideo()', 2)
+
+            if not self.player.isPlaying():
+                self.log('Up Next tracking stopped, no file is playing', 2)
                 self.player.disable_tracking()
                 continue
 
             last_file = self.player.get_last_file()
-            try:
-                current_file = self.player.getPlayingFile()
-            except RuntimeError:
-                self.log('Up Next tracking stopped, failed player.getPlayingFile()', 2)
-                self.player.disable_tracking()
-                continue
+            current_file = self.player.getPlayingFile()
 
             if last_file and last_file == current_file:
                 # Already processed this playback before
                 continue
 
-            try:
-                total_time = self.player.getTotalTime()
-            except RuntimeError:
-                self.log('Up Next tracking stopped, failed player.getTotalTime()', 2)
-                self.player.disable_tracking()
-                continue
+            total_time = self.player.getTotalTime()
 
             if total_time == 0:
-                self.log('Up Next tracking stopped, no file is playing', 2)
+                self.log('Up Next tracking stopped, zero length file', 2)
                 self.player.disable_tracking()
                 continue
 
-            try:
-                play_time = self.player.getTime()
-            except RuntimeError:
-                self.log('Up Next tracking stopped, failed player.getTime()', 2)
-                self.player.disable_tracking()
-                continue
+            play_time = self.player.getTime()
 
             notification_time = self.api.notification_time(total_time=total_time)
             if total_time - play_time > notification_time:

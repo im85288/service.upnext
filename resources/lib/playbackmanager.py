@@ -88,7 +88,7 @@ class PlaybackManager:
                 if should_play_non_default:
                     self.player.seekTime(self.player.getTotalTime())
                     sleep(100)
-                    if self.player.isPlayingVideo() and self.player.getTime() > self.player.getTotalTime():
+                    if self.player.isPlaying() and self.player.getTime() > self.player.getTotalTime():
                         self.player.playnext()
             except RuntimeError:
                 pass
