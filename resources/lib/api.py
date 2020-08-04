@@ -2,7 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import sleep
+from xbmc import Monitor
 from utils import event, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
@@ -160,7 +160,7 @@ class Api:
             return None
 
         self.log('Got details of next up episode %s' % result, 2)
-        sleep(100)
+        Monitor().waitForAbort(0.1)
 
         # Find the next unwatched and the newest added episodes
         return self.find_next_episode(result, current_file, include_watched, current_episode_id)
@@ -178,7 +178,7 @@ class Api:
             return None
 
         self.log('Find current episode called', 2)
-        sleep(100)
+        Monitor().waitForAbort(0.1)
 
         # Find the next unwatched and the newest added episodes
         episodes = result.get('result', {}).get('episodes', [])

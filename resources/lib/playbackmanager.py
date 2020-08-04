@@ -2,7 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import sleep
+from xbmc import Monitor
 from api import Api
 from player import Player
 from playitem import PlayItem
@@ -43,7 +43,7 @@ class PlaybackManager:
         self.log('episode details %s' % episode, 2)
         self.state.playing_next = self.launch_popup(episode, playlist_item)
         if not self.state.playing_next and self.state.queued:
-            self.state.queued = self.api.dequeue_next_item()
+            self.api.dequeue_next_item()
         self.api.reset_addon_data()
 
     def launch_popup(self, episode, playlist_item):
@@ -83,15 +83,15 @@ class PlaybackManager:
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if playlist_item or self.state.queued:
-            try:
-                # Play playlist media, only seek/skip if media has not already played through
-                if should_play_non_default:
-                    self.player.seekTime(self.player.getTotalTime())
-                    sleep(100)
-                    if self.player.isPlaying() and self.player.getTime() > self.player.getTotalTime():
-                        self.player.playnext()
-            except RuntimeError:
-                pass
+            # Play playlist media, only seek/skip if media has not already played through
+            if should_play_non_default:
+                self.player.seekTime(self.player.getTotalTime())
+                # Seek appears to seek to keyframe sometimes resulting in Player playing past end of file
+                while self.player.isPlaying() and self.player.getTime() <= self.player.getTotalTime():
+                    Monitor().waitForAbort(1)
+                # If Player has played past the end of the currently playing file, skip to next file
+                if self.player.isPlaying():
+                    self.player.playnext()
         elif self.api.has_addon_data():
             # Play add-on media
             self.api.play_addon_item()
@@ -149,7 +149,7 @@ class PlaybackManager:
                     next_up_page.update_progress_control(remaining=remaining, runtime=runtime)
                 elif showing_still_watching_page:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
-            sleep(100)
+            Monitor().waitForAbort(0.1)
         return showing_next_up_page, showing_still_watching_page
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):

@@ -34,6 +34,8 @@ class UpNextPlayer(Player):
         if self.state.queued:
             self.api.reset_queue()
             self.state.queued = False
+            if not self.state.playing_next and not self.state.track:
+                self.stop()
 
     def onPlayBackStarted(self):  # pylint: disable=invalid-name
         """Will be called when kodi starts playing a file"""
