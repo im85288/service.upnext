@@ -107,7 +107,9 @@ class Api:
 
         # Some consumers send the offset when the credits start (e.g. Netflix)
         if total_time and self.data.get('notification_offset'):
-            return total_time - int(self.data.get('notification_offset'))
+            offset = int(self.data.get('notification_offset'))
+            if offset < total_time:
+                return total_time - offset
 
         # Use a customized notification time, when configured
         if total_time and get_setting_bool('customAutoPlayTime'):

@@ -87,7 +87,9 @@ class PlaybackManager:
                 # Play playlist media, only seek/skip if media has not already played through
                 if should_play_non_default:
                     self.player.seekTime(self.player.getTotalTime())
-                    self.player.playnext()
+                    sleep(100)
+                    if self.player.isPlayingVideo() and self.player.getTime() > self.player.getTotalTime():
+                        self.player.playnext()
             except RuntimeError:
                 pass
         elif self.api.has_addon_data():

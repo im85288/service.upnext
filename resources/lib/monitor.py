@@ -50,6 +50,11 @@ class UpNextMonitor(Monitor):
                 self.log('Up Next tracking stopped, external player detected', 2)
                 self.player.disable_tracking()
                 continue
+            
+            if not self.player.isPlayingVideo():
+                self.log('Up Next tracking stopped, not player.isPlayingVideo()', 2)
+                self.player.disable_tracking()
+                continue
 
             last_file = self.player.get_last_file()
             try:
