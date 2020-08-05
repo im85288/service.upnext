@@ -34,7 +34,7 @@ class UpNextPlayer(Player):
             if not self.state.playing_next and not self.state.track:
                 self.stop()
 
-    if callable(getattr(Player,'onAVStarted',None)):
+    if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name
             """Will be called when Kodi has a video or audiostream"""
             if not getCondVisibility('videoplayer.content(episodes)'):
