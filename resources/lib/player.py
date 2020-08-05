@@ -9,13 +9,10 @@ from state import State
 
 class UpNextPlayer(Player):
     """Service class for playback monitoring"""
-    last_file = None
-    track = False
 
     def __init__(self):
         self.api = Api()
         self.state = State()
-        self.monitor = Monitor()
         Player.__init__(self)
 
     def set_last_file(self, filename):
@@ -37,13 +34,28 @@ class UpNextPlayer(Player):
             if not self.state.playing_next and not self.state.track:
                 self.stop()
 
-    def onPlayBackStarted(self):  # pylint: disable=invalid-name
-        """Will be called when kodi starts playing a file"""
-        self.monitor.waitForAbort(5)
-        if not getCondVisibility('videoplayer.content(episodes)'):
-            return
-        self.state.track = True
-        self.reset_queue()
+    if callable(getattr(Player,'onAVStarted',None)):
+        def onAVStarted(self):  # pylint: disable=invalid-name
+            """Will be called when Kodi has a video or audiostream"""
+            if not getCondVisibility('videoplayer.content(episodes)'):
+                return
+            self.state.track = True
+            self.reset_queue()
+    else:
+        def onPlayBackStarted(self):  # pylint: disable=invalid-name
+            """Will be called when kodi starts playing a file"""
+            self.state.starting = True
+            monitor = Monitor()
+            while not monitor.abortRequested():
+                if self.isPlaying() and self.getTotalTime():
+                    break
+                if not self.state.starting:
+                    return
+                monitor.waitForAbort(1)
+            if not getCondVisibility('videoplayer.content(episodes)'):
+                return
+            self.state.track = True
+            self.reset_queue()
 
     def onPlayBackPaused(self):  # pylint: disable=invalid-name
         self.state.pause = True

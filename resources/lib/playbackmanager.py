@@ -86,7 +86,9 @@ class PlaybackManager:
             # Play playlist media, only seek/skip if media has not already played through
             if should_play_non_default:
                 self.player.seekTime(self.player.getTotalTime())
-                # Seek appears to seek to keyframe sometimes resulting in Player playing past end of file
+                # Player().seekTime() appears to seek to keyframe rather than exact time, which can
+                # create a discrepency between reported seek position and actual playing time. This
+                # can somehow result in Kodi playing past the end of the file
                 while self.player.isPlaying() and self.player.getTime() <= self.player.getTotalTime():
                     Monitor().waitForAbort(1)
                 # If Player has played past the end of the currently playing file, skip to next file

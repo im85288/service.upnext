@@ -22,3 +22,4 @@ class State:
         self.pause = False
         self.queued = False
         self.playing_next = False
+        self.starting = False
