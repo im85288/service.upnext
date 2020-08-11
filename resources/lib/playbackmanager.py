@@ -7,8 +7,7 @@ from api import Api
 from player import Player
 from playitem import PlayItem
 from state import State
-from stillwatching import StillWatching
-from upnext import UpNext
+from dialog import StillWatching, UpNext
 from utils import addon_path, calculate_progress_steps, clear_property, event, get_setting_bool, get_setting_int, log as ulog, set_property
 
 
