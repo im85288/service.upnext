@@ -27,9 +27,6 @@ class UpNextPlayer(Player):
     def disable_tracking(self):
         self.state.track = False
 
-    def enable_tracking(self):
-        self.state.track = True
-
     def reset_queue(self):
         if self.state.queued:
             self.api.reset_queue()
@@ -37,28 +34,29 @@ class UpNextPlayer(Player):
             if not self.state.playing_next and not self.state.track:
                 self.stop()
 
+    def track_playback(self):
+        self.state.starting = True
+        monitor = Monitor()
+        while not monitor.abortRequested():
+            if self.isPlaying() and self.getTotalTime():
+                self.state.starting = False
+                break
+            if not self.state.starting:
+                return
+            monitor.waitForAbort(1)
+
+        if self.api.has_addon_data() or getCondVisibility('videoplayer.content(episodes)'):
+            self.state.track = True
+            self.reset_queue()
+
     if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name
             """Will be called when Kodi has a video or audiostream"""
-            if not getCondVisibility('videoplayer.content(episodes)'):
-                return
-            self.state.track = True
-            self.reset_queue()
+            self.track_playback()
     else:
         def onPlayBackStarted(self):  # pylint: disable=invalid-name
             """Will be called when kodi starts playing a file"""
-            self.state.starting = True
-            monitor = Monitor()
-            while not monitor.abortRequested():
-                if self.isPlaying() and self.getTotalTime():
-                    break
-                if not self.state.starting:
-                    return
-                monitor.waitForAbort(1)
-            if not getCondVisibility('videoplayer.content(episodes)'):
-                return
-            self.state.track = True
-            self.reset_queue()
+            self.track_playback()
 
     def onPlayBackPaused(self):  # pylint: disable=invalid-name
         self.state.pause = True
