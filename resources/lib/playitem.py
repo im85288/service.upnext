@@ -18,10 +18,12 @@ class PlayItem:
         self.player = Player()
         self.state = State()
 
-    def log(self, msg, level=2):
-        ulog(msg, name=self.__class__.__name__, level=level)
+    @classmethod
+    def log(cls, msg, level=2):
+        ulog(msg, name=cls.__name__, level=level)
 
-    def playlist_position(self):
+    @staticmethod
+    def playlist_position():
         playlist = PlayList(PLAYLIST_VIDEO)
         position = playlist.getposition()
         # A playlist with only one element has no next item and PlayList().getposition() starts counting from zero

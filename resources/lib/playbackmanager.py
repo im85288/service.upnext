@@ -21,8 +21,9 @@ class PlaybackManager:
         self.state = State()
         self.player = Player()
 
-    def log(self, msg, level=2):
-        ulog(msg, name=self.__class__.__name__, level=level)
+    @classmethod
+    def log(cls, msg, level=2):
+        ulog(msg, name=cls.__name__, level=level)
 
     def launch_up_next(self):
         self.state.playing_next = False

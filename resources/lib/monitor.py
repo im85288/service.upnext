@@ -20,9 +20,9 @@ class UpNextMonitor(Monitor):
         self.playback_manager = PlaybackManager()
         Monitor.__init__(self)
 
-    def log(self, msg, level=1):
-        """Log wrapper"""
-        ulog(msg, name=self.__class__.__name__, level=level)
+    @classmethod
+    def log(cls, msg, level=2):
+        ulog(msg, name=cls.__name__, level=level)
 
     def run(self):
         """Main service loop"""
