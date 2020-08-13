@@ -2,7 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import Monitor
+from xbmc import Monitor, PLAYLIST_VIDEO
 from utils import event, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
@@ -16,9 +16,10 @@ class Api:
         self.data = {}
         self.encoding = 'base64'
 
-    def log(self, msg, level=2):
+    @classmethod
+    def log(cls, msg, level=2):
         """Log wrapper"""
-        ulog(msg, name=self.__class__.__name__, level=level)
+        ulog(msg, name=cls.__name__, level=level)
 
     def has_addon_data(self):
         return self.data
@@ -33,7 +34,7 @@ class Api:
 
     @staticmethod
     def play_kodi_item(episode):
-        jsonrpc(method='Player.Open', id=0, params=dict(item=dict(episodeid=episode.get('episodeid'))))
+        jsonrpc(method='Player.Open', params=dict(item=dict(episodeid=episode.get('episodeid'))))
 
     def queue_next_item(self, episode):
         next_item = {}
@@ -43,23 +44,25 @@ class Api:
             next_item.update(file=self.data.get('play_url'))
 
         if next_item:
-            jsonrpc(method='Playlist.Add', id=0, params=dict(playlistid=1, item=next_item))
+            jsonrpc(method='Playlist.Add', params=dict(playlistid=PLAYLIST_VIDEO, item=next_item))
 
         return bool(next_item)
 
     @staticmethod
     def reset_queue():
-        jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=0))
+        jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=0))
 
     @staticmethod
     def dequeue_next_item():
-        jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=1))
+        jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=1))
         return False
 
-    def get_next_in_playlist(self, position):
+    @staticmethod
+    def get_next_in_playlist(position):
         result = jsonrpc(method='Playlist.GetItems', params=dict(
-            playlistid=1,
-            limits=dict(start=position + 1, end=position + 2),
+            playlistid=PLAYLIST_VIDEO,
+            # limits are zero indexed, position is one indexed
+            limits=dict(start=position, end=position),
             properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
                         'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
                         'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
@@ -68,7 +71,7 @@ class Api:
         if not result:
             return None
 
-        self.log('Got details of next playlist item %s' % result, 2)
+        Api.log('Got details of next playlist item %s' % result, 2)
         if result.get('result', {}).get('items') is None:
             return None
 
@@ -126,28 +129,18 @@ class Api:
         # Use one global default, regardless of episode length
         return get_setting_int('autoPlaySeasonTime')
 
-    def get_now_playing(self):
-        # Seems to work too fast loop whilst waiting for it to become active
-        result = dict()
-        while not result.get('result'):
-            result = jsonrpc(method='Player.GetActivePlayers')
-            self.log('Got active player %s' % result, 2)
-
-        if not result.get('result'):
-            return None
-
-        playerid = result.get('result')[0].get('playerid')
-
-        # Get details of the playing media
-        self.log('Getting details of now playing media', 2)
+    @staticmethod
+    def get_now_playing():
+        Api.log('Getting details of now playing media', 2)
         result = jsonrpc(method='Player.GetItem', params=dict(
-            playerid=playerid,
+            playerid=PLAYLIST_VIDEO,
             properties=['episode', 'genre', 'playcount', 'plotoutline', 'season', 'showtitle', 'tvshowid'],
         ))
-        self.log('Got details of now playing media %s' % result, 2)
+        Api.log('Got details of now playing media %s' % result, 2)
         return result
 
-    def handle_kodi_lookup_of_episode(self, tvshowid, current_file, include_watched, current_episode_id):
+    @staticmethod
+    def handle_kodi_lookup_of_episode(tvshowid, current_file, include_watched, current_episode_id):
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
             tvshowid=tvshowid,
             properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
@@ -159,13 +152,17 @@ class Api:
         if not result.get('result'):
             return None
 
-        self.log('Got details of next up episode %s' % result, 2)
+        Api.log('Got details of next up episode %s' % result, 2)
         Monitor().waitForAbort(0.1)
 
         # Find the next unwatched and the newest added episodes
-        return self.find_next_episode(result, current_file, include_watched, current_episode_id)
+        episode = Api.find_next_episode(result, current_file, include_watched, current_episode_id)
+        if not episode:
+            Api.log('No next episode found', 1)
+        return episode
 
-    def handle_kodi_lookup_of_current_episode(self, tvshowid, current_episode_id):
+    @staticmethod
+    def handle_kodi_lookup_of_current_episode(tvshowid, current_episode_id):
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
             tvshowid=tvshowid,
             properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
@@ -177,7 +174,7 @@ class Api:
         if not result.get('result'):
             return None
 
-        self.log('Find current episode called', 2)
+        Api.log('Find current episode called', 2)
         Monitor().waitForAbort(0.1)
 
         # Find the next unwatched and the newest added episodes
@@ -185,11 +182,11 @@ class Api:
         for idx, episode in enumerate(episodes):
             # Find position of current episode
             if current_episode_id == episode.get('episodeid'):
-                self.log('Find current episode found episode in position: %d' % idx, 2)
+                Api.log('Find current episode found episode in position: %d' % idx, 2)
                 return episode
 
         # No next episode found
-        self.log('No next episode found', 1)
+        Api.log('No next episode found', 1)
         return None
 
     @staticmethod
@@ -217,7 +214,8 @@ class Api:
 
         return episodeid
 
-    def find_next_episode(self, result, current_file, include_watched, current_episode_id):
+    @staticmethod
+    def find_next_episode(result, current_file, include_watched, current_episode_id):
         found_match = False
         episodes = result.get('result', {}).get('episodes', [])
         for episode in episodes:
@@ -234,6 +232,4 @@ class Api:
             if found_match:
                 return episode
 
-        # No next episode found
-        self.log('No next episode found', 1)
         return None

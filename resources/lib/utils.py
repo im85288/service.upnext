@@ -156,9 +156,9 @@ def calculate_progress_steps(period):
 
 def jsonrpc(**kwargs):
     """Perform JSONRPC calls"""
-    if kwargs.get('id') is None:
+    if id not in kwargs:
         kwargs.update(id=0)
-    if kwargs.get('jsonrpc') is None:
+    if jsonrpc not in kwargs:
         kwargs.update(jsonrpc='2.0')
     return json.loads(executeJSONRPC(json.dumps(kwargs)))
 
