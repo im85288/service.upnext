@@ -56,7 +56,7 @@ class PlayItem:
                                                              current_file,
                                                              self.state.include_watched,
                                                              self.state.current_episode_id)
-        return episode
+        return episode, position
 
     def handle_now_playing_result(self, result):
         if not result.get('result'):
