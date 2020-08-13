@@ -26,20 +26,16 @@ class PlaybackManager:
 
     def launch_up_next(self):
         self.state.playing_next = False
-        playlist_item = get_setting_bool('enablePlaylist')
-        episode = self.play_item.get_next()
-        self.log('Playlist setting: %s' % playlist_item)
-        if episode and not playlist_item:
+        playlist_item = self.play_item.playlist_position()
+        if playlist_item and not get_setting_bool('enablePlaylist'):
             self.log('Playlist integration disabled', 2)
             return
+        episode = self.play_item.get_next()
         if not episode:
-            playlist_item = False
-            episode = self.play_item.get_episode()
-            if episode is None:
-                # No episode get out of here
-                self.log('Error: no episode could be found to play next...exiting', 1)
-                return
-        self.log('episode details %s' % episode, 2)
+            # No episode get out of here
+            self.log('Error: no episode could be found to play next...exiting', 1)
+            return
+        self.log('Episode details %s' % episode, 2)
         self.state.playing_next = self.launch_popup(episode, playlist_item)
         if not self.state.playing_next and self.state.queued:
             self.api.dequeue_next_item()
