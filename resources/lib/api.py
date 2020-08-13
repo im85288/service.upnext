@@ -62,7 +62,7 @@ class Api:
         result = jsonrpc(method='Playlist.GetItems', params=dict(
             playlistid=PLAYLIST_VIDEO,
             # limits are zero indexed, position is one indexed
-            limits=dict(start=position, end=position),
+            limits=dict(start=position, end=position+1),
             properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
                         'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
                         'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
