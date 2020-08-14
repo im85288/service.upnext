@@ -75,7 +75,6 @@ class PlaybackManager:
         if not play_item_option_1 and not play_item_option_2:
             return False
 
-        self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if playlist_item or self.state.queued:
