@@ -2,13 +2,62 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import Monitor, PLAYLIST_VIDEO
+from xbmc import PLAYLIST_VIDEO
 from utils import event, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
 class Api:
     """Main API class"""
     _shared_state = {}
+
+    episode_properties = ['title',
+                          'playcount',
+                          'season',
+                          'episode',
+                          'showtitle',
+                          'originaltitle',
+                          'plot',
+                          'votes',
+                          'file',
+                          'rating',
+                          'ratings',
+                          'userrating',
+                          'resume',
+                          'tvshowid',
+                          'firstaired',
+                          'art',
+                          'streamdetails',
+                          'runtime',
+                          'director',
+                          'writer',
+                          #'cast',
+                          'dateadded',
+                          'lastplayed']
+
+    tvshow_properties = ['title',
+                         'studio',
+                         'year',
+                         'plot',
+                         #'cast',
+                         'rating',
+                         'ratings',
+                         'userrating',
+                         'votes',
+                         'genre',
+                         'episode',
+                         'season',
+                         'runtime',
+                         'mpaa',
+                         'premiered',
+                         'playcount',
+                         'lastplayed',
+                         'sorttitle',
+                         'originaltitle',
+                         'art',
+                         'tag',
+                         'dateadded',
+                         'watchedepisodes',
+                         'imdbnumber']
 
     def __init__(self):
         """Constructor for Api class"""
@@ -67,20 +116,20 @@ class Api:
                         'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
                         'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
         ))
+        item = result.get('result', {}).get('items')
 
-        if not result:
+        # Don't check if next item is an episode, just use it if it is there
+        if not item: #item.get('type') != 'episode':
+            Api.log('Playlist error, next item not found', 1)
             return None
 
-        Api.log('Got details of next playlist item %s' % result, 2)
-        if result.get('result', {}).get('items') is None:
-            return None
+        item = item[0]
+        if not item.get('title'):
+            item['title'] = item.get('label', '')
+        item['episodeid'] = item.get('id', position+1)
+        item['tvshowid'] = item.get('tvshowid', '-1')
 
-        item = result.get('result', {}).get('items', [])[0]
-        if item.get('type') != 'episode':
-            return None
-
-        item['episodeid'] = item.get('id')
-        item['tvshowid'] = item.get('tvshowid', item.get('id'))
+        Api.log('Got details of next playlist item: %s' % item, 2)
         return item
 
     def play_addon_item(self):
@@ -136,100 +185,100 @@ class Api:
             playerid=PLAYLIST_VIDEO,
             properties=['episode', 'genre', 'playcount', 'plotoutline', 'season', 'showtitle', 'tvshowid'],
         ))
+
         Api.log('Got details of now playing media %s' % result, 2)
         return result
 
     @staticmethod
-    def handle_kodi_lookup_of_episode(tvshowid, current_file, include_watched, current_episode_id):
-        result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            tvshowid=tvshowid,
-            properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
-                        'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
-                        'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
-            sort=dict(method='episode'),
-        ))
-
-        if not result.get('result'):
+    def get_next_episode_from_library(tvshowid, current_file, include_watched, episodeid):
+        episode = Api.get_episode_from_library(tvshowid, episodeid)
+        if not episode:
+            Api.log('Library error, next episode info not found', 1)
             return None
 
-        Api.log('Got details of next up episode %s' % result, 2)
-        Monitor().waitForAbort(0.1)
+        filters = [{'or': [{'and': [{'field': 'season', 'operator': 'is', 'value': str(episode['season'])},
+                                    {'field': 'episode', 'operator': 'greaterthan', 'value': str(episode['episode'])}]},
+                           {'field': 'season', 'operator': 'greaterthan', 'value': str(episode['season'])}]}]
+        if not include_watched:
+            filters.append({'field': 'playcount', 'operator': 'lessthan', 'value': '1'})
+        filter = {'and': filters}
 
-        # Find the next unwatched and the newest added episodes
-        episode = Api.find_next_episode(result, current_file, include_watched, current_episode_id)
-        if not episode:
-            Api.log('No next episode found', 1)
+        result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
+                         tvshowid=int(tvshowid),
+                         properties=Api.episode_properties,
+                         sort=dict(order='ascending', method='episode'),
+                         limits={'start': 0, 'end': 1},
+                         filter=filter
+                         ))
+        result = result.get('result', {}).get('episodes')
+
+        if not result:
+            Api.log('Library error, next episode info not found', 1)
+            return None
+        episode.update(result[0])
+
+        Api.log('Got details of next up episode %s' % episode, 2)
         return episode
 
     @staticmethod
-    def handle_kodi_lookup_of_current_episode(tvshowid, current_episode_id):
-        result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            tvshowid=tvshowid,
-            properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
-                        'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
-                        'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
-            sort=dict(method='episode'),
-        ))
+    def get_episode_from_library(tvshowid, episodeid):
+        result = jsonrpc(method='VideoLibrary.GetTVShowDetails', params=dict(
+                         tvshowid=int(tvshowid),
+                         properties=Api.tvshow_properties
+                         ))
+        result = result.get('result', {}).get('tvshowdetails')
 
-        if not result.get('result'):
+        if not result:
+            Api.log('Library error, episode info not found', 1)
             return None
+        episode = result
 
-        Api.log('Find current episode called', 2)
-        Monitor().waitForAbort(0.1)
+        result = jsonrpc(method='VideoLibrary.GetEpisodeDetails', params=dict(
+                         episodeid=int(episodeid),
+                         properties=Api.episode_properties
+                         ))
+        result = result.get('result', {}).get('episodedetails')
 
-        # Find the next unwatched and the newest added episodes
-        episodes = result.get('result', {}).get('episodes', [])
-        for idx, episode in enumerate(episodes):
-            # Find position of current episode
-            if current_episode_id == episode.get('episodeid'):
-                Api.log('Find current episode found episode in position: %d' % idx, 2)
-                return episode
+        if not result:
+            Api.log('Library error, episode info not found', 1)
+            return None
+        episode.update(result)
 
-        # No next episode found
-        Api.log('No next episode found', 1)
-        return None
+        Api.log('Got details of episode %s' % episode, 2)
+        return episode
 
     @staticmethod
     def showtitle_to_id(title):
-        result = jsonrpc(method='VideoLibrary.GetTVShows', id='libTvShows', params=dict(properties=['title']))
+        result = jsonrpc(method='VideoLibrary.GetTVShows', params=dict(
+                         properties=['title'],
+                         limits={'start': 0, 'end': 1},
+                         filter={'field': 'title', 'operator': 'is', 'value': str(title)}
+                         ))
+        result = result.get('result', {}).get('tvshows')
 
-        for tvshow in result.get('result', {}).get('tvshows', []):
-            if tvshow.get('label') == title:
-                return tvshow.get('tvshowid')
-        return '-1'
+        if not result:
+            Api.log('Library error, tvshowid not found', 1)
+            return '-1'
+
+        return result[0].get('tvshowid')
 
     @staticmethod
-    def get_episode_id(showid, show_season, show_episode):
-        show_season = int(show_season)
-        show_episode = int(show_episode)
+    def get_episode_id(tvshowid, season, episode):
+        filters = [{'field': 'season', 'operator': 'is', 'value': str(season)},
+                   {'field': 'episode', 'operator': 'is', 'value': str(episode)}]
+        filter = {'and': filters}
+
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            properties=['episode', 'season'],
-            tvshowid=int(showid),
-        ))
+                         tvshowid=int(tvshowid),
+                         properties=Api.episode_properties,
+                         limits={'start': 0, 'end': 1},
+                         filter=filter
+                         ))
 
-        episodeid = 0
-        for episode in result.get('result', {}).get('episodes', []):
-            if episode.get('episodeid') and episode.get('season') == show_season and episode.get('episode') == show_episode:
-                episodeid = episode.get('episodeid')
+        result = result.get('result', {}).get('episodes')
 
-        return episodeid
+        if not result:
+            Api.log('Library error, episodeid not found', 1)
+            return '0'
 
-    @staticmethod
-    def find_next_episode(result, current_file, include_watched, current_episode_id):
-        found_match = False
-        episodes = result.get('result', {}).get('episodes', [])
-        for episode in episodes:
-            # Find position of current episode
-            if current_episode_id == episode.get('episodeid'):
-                found_match = True
-                continue
-            # Check if it may be a multi-part episode
-            if episode.get('file') == current_file:
-                continue
-            # Skip already watched episodes?
-            if not include_watched and episode.get('playcount') > 0:
-                continue
-            if found_match:
-                return episode
-
-        return None
+        return result[0].get('episodeid')

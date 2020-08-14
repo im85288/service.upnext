@@ -34,8 +34,10 @@ class PlayItem:
 
     def get_next(self):
         position = self.playlist_position()
+        if position:
+            episode = self.api.get_next_in_playlist(position)
 
-        if self.api.has_addon_data():
+        elif self.api.has_addon_data():
             episode = self.api.handle_addon_lookup_of_next_episode()
             current_episode = self.api.handle_addon_lookup_of_current_episode()
             self.state.current_episode_id = current_episode.get('episodeid')
@@ -43,16 +45,13 @@ class PlayItem:
                 self.state.current_tv_show_id = current_episode.get('tvshowid')
                 self.state.played_in_a_row = 1
 
-        elif position:
-            episode = self.api.get_next_in_playlist(position)
-
         else:
             current_file = self.player.getPlayingFile()
             # Get the active player
             result = self.api.get_now_playing()
             self.handle_now_playing_result(result)
             # Get the next episode from Kodi
-            episode = self.api.handle_kodi_lookup_of_episode(self.state.tv_show_id,
+            episode = self.api.get_next_episode_from_library(self.state.tv_show_id,
                                                              current_file,
                                                              self.state.include_watched,
                                                              self.state.current_episode_id)
@@ -76,9 +75,9 @@ class PlayItem:
         current_season_id = item.get('season')
         # Get current episodeid
         current_episode_id = self.api.get_episode_id(
-            showid=str(self.state.tv_show_id),
-            show_episode=current_episode_number,
-            show_season=current_season_id,
+            tvshowid=str(self.state.tv_show_id),
+            episode=current_episode_number,
+            season=current_season_id,
         )
         self.state.current_episode_id = current_episode_id
         if self.state.current_tv_show_id != self.state.tv_show_id:
