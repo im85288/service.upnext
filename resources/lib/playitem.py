@@ -41,9 +41,8 @@ class PlayItem:
             self.handle_now_playing_result(result)
             # Get the next episode from Kodi
             episode = self.api.get_next_episode_from_library(self.state.tv_show_id,
-                                                             current_file,
-                                                             self.state.include_watched,
-                                                             self.state.current_episode_id)
+                                                             self.state.current_episode_id,
+                                                             self.state.include_watched)
         return episode, position
 
     def handle_now_playing_result(self, result):
