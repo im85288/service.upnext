@@ -26,20 +26,24 @@ class PlaybackManager:
         ulog(msg, name=cls.__name__, level=level)
 
     def launch_up_next(self):
-        self.state.playing_next = False
+        self.state.playing_next = True
         episode, playlist_item = self.play_item.get_next()
+
         if playlist_item and not get_setting_bool('enablePlaylist'):
+            self.state.playing_next = False
             self.log('Playlist integration disabled', 2)
-            return False
-        if not episode:
+
+        elif not episode:
             # No episode get out of here
+            self.state.playing_next = False
             self.log('Error: no episode could be found to play next...exiting', 1)
-            return False
-        self.log('Episode details %s' % episode, 2)
-        self.state.playing_next = self.launch_popup(episode, playlist_item)
-        if not self.state.playing_next and self.state.queued:
-            self.api.dequeue_next_item()
-        self.api.reset_addon_data()
+
+        else:
+            self.log('Episode details %s' % episode, 2)
+            self.state.playing_next = self.launch_popup(episode, playlist_item)
+            if not self.state.playing_next and self.state.queued:
+                self.api.dequeue_next_item()
+
         return self.state.playing_next
 
     def launch_popup(self, episode, playlist_item):
@@ -82,13 +86,19 @@ class PlaybackManager:
             if should_play_non_default:
                 self.player.seekTime(self.player.getTotalTime())
                 # Player().seekTime() appears to seek to keyframe rather than exact time, which can
-                # create a discrepency between reported seek position and actual playing time. This
+                # create a discrepancy between reported seek position and actual playing time. This
                 # can somehow result in Kodi playing past the end of the file
                 while self.player.isPlaying() and self.player.getTime() <= self.player.getTotalTime():
-                    Monitor().waitForAbort(1)
-                # If Player has played past the end of the currently playing file, skip to next file
+                    # But sometimes Kodi skips straight to the next file and onPlayBackStarted gets
+                    # missed
+                    if not self.player.getTime() or not self.player.getTotalTime():
+                        return True
+                    Monitor().waitForAbort(0.1)
+                # If Player has played past the end of the currently playing file, try seeking again
+                # Note that skipping to the next file doesn't work as it can result in Kodi skipping
+                # to the next file twice in quick succession
                 if self.player.isPlaying():
-                    self.player.playnext()
+                    self.player.seekTime(self.player.getTotalTime())
         elif self.api.has_addon_data():
             # Play add-on media
             self.api.play_addon_item()

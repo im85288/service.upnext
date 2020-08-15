@@ -72,7 +72,7 @@ class UpNextMonitor(Monitor):
 
             play_time = self.player.getTime()
 
-            notification_time = self.api.notification_time(total_time=total_time)
+            notification_time = self.api.notification_time(total_time)
             if total_time - play_time > notification_time:
                 # Media hasn't reach notification time yet, waiting a bit longer...
                 continue
@@ -81,6 +81,7 @@ class UpNextMonitor(Monitor):
             self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
             playing_next = self.playback_manager.launch_up_next()
             self.log('Up Next playback: %s' % ('succeeded' if playing_next else 'failed'), 2)
+            self.api.reset_addon_data()
             self.player.disable_tracking()
 
         self.log('Service stopped', 0)
@@ -96,5 +97,5 @@ class UpNextMonitor(Monitor):
             return
 
         decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
-        self.api.addon_data_received(decoded_data, encoding=encoding)
         self.player.track_playback()
+        self.api.addon_data_received(decoded_data, encoding=encoding)
