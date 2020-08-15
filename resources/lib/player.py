@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 from xbmc import getCondVisibility, Player, Monitor
 from api import Api
 from state import State
+from utils import get_setting_bool
 
 
 class UpNextPlayer(Player):
@@ -26,6 +27,7 @@ class UpNextPlayer(Player):
 
     def disable_tracking(self):
         self.state.track = False
+        self.state.playing_next = False
 
     def reset_queue(self):
         if self.state.queued:
@@ -45,7 +47,16 @@ class UpNextPlayer(Player):
                 return
             monitor.waitForAbort(1)
 
-        if self.api.has_addon_data() or getCondVisibility('videoplayer.content(episodes)'):
+        playlist_item = self.api.playlist_position()
+        has_addon_data = self.api.has_addon_data()
+
+        if playlist_item and not get_setting_bool('enablePlaylist'):
+            return
+
+        if self.state.track and has_addon_data and not self.state.playing_next:
+            self.api.reset_addon_data()
+
+        if playlist_item or has_addon_data or getCondVisibility('videoplayer.content(episodes)'):
             self.state.track = True
             self.reset_queue()
 

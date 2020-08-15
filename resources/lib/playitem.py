@@ -22,11 +22,13 @@ class PlayItem:
         ulog(msg, name=cls.__name__, level=level)
 
     def get_next(self):
-        if position:
         position = self.api.playlist_position()
+        has_addon_data = self.api.has_addon_data()
+
+        if position and not has_addon_data:
             episode = self.api.get_next_in_playlist(position)
 
-        elif self.api.has_addon_data():
+        elif has_addon_data:
             episode = self.api.handle_addon_lookup_of_next_episode()
             current_episode = self.api.handle_addon_lookup_of_current_episode()
             self.state.current_episode_id = current_episode.get('episodeid')
