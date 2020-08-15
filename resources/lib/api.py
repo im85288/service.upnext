@@ -201,6 +201,7 @@ class Api:
         filters = [{'or': [{'and': [{'field': 'season', 'operator': 'is', 'value': str(episode['season'])},
                                     {'field': 'episode', 'operator': 'greaterthan', 'value': str(episode['episode'])}]},
                            {'field': 'season', 'operator': 'greaterthan', 'value': str(episode['season'])}]}]
+        filters.append({'field': 'file', 'operator': 'isnot', 'value': str(episode['file'])})
         if not include_watched:
             filters.append({'field': 'playcount', 'operator': 'lessthan', 'value': '1'})
         filters = {'and': filters}
