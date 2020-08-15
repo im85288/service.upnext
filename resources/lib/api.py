@@ -152,19 +152,21 @@ class Api:
         self.log('handle_addon_lookup_of_current episode returning data %(current_episode)s' % self.data, 2)
         return self.data.get('current_episode')
 
-    def notification_time(self, total_time=None):
+    def notification_time(self, total_time):
         # Alway use metadata, when available
         if self.data.get('notification_time'):
-            return int(self.data.get('notification_time'))
+            notification_time = int(self.data.get('notification_time'))
+            if notification_time < total_time:
+                return notification_time
 
         # Some consumers send the offset when the credits start (e.g. Netflix)
-        if total_time and self.data.get('notification_offset'):
+        if self.data.get('notification_offset'):
             offset = int(self.data.get('notification_offset'))
             if offset < total_time:
                 return total_time - offset
 
         # Use a customized notification time, when configured
-        if total_time and get_setting_bool('customAutoPlayTime'):
+        if get_setting_bool('customAutoPlayTime'):
             if total_time > 60 * 60:
                 return get_setting_int('autoPlayTimeXL')
             if total_time > 40 * 60:
