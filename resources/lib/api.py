@@ -2,7 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import PLAYLIST_VIDEO
+from xbmc import PlayList, PLAYLIST_VIDEO
 from utils import event, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
@@ -107,6 +107,16 @@ class Api:
         return False
 
     @staticmethod
+    def playlist_position():
+        playlist = PlayList(PLAYLIST_VIDEO)
+        position = playlist.getposition()
+        # A playlist with only one element has no next item and PlayList().getposition() starts counting from zero
+        if playlist.size() > 1 and position < (playlist.size() - 1):
+            # Return 1 based index value
+            return position + 1
+        return None
+
+    @staticmethod
     def get_next_in_playlist(position):
         result = jsonrpc(method='Playlist.GetItems', params=dict(
             playlistid=PLAYLIST_VIDEO,
@@ -128,6 +138,10 @@ class Api:
             item['title'] = item.get('label', '')
         item['episodeid'] = item.get('id', position+1)
         item['tvshowid'] = item.get('tvshowid', '-1')
+        if item.get('season', '-1'):
+            item['season'] = ''
+        if item.get('episode', '-1'):
+            item['episode'] = ''
 
         Api.log('Got details of next playlist item: %s' % item, 2)
         return item

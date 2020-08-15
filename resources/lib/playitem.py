@@ -2,7 +2,6 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import PlayList, PLAYLIST_VIDEO
 from api import Api
 from player import Player
 from state import State
@@ -22,19 +21,9 @@ class PlayItem:
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
 
-    @staticmethod
-    def playlist_position():
-        playlist = PlayList(PLAYLIST_VIDEO)
-        position = playlist.getposition()
-        # A playlist with only one element has no next item and PlayList().getposition() starts counting from zero
-        if playlist.size() > 1 and position < (playlist.size() - 1):
-            # Return 1 based index value
-            return position + 1
-        return None
-
     def get_next(self):
-        position = self.playlist_position()
         if position:
+        position = self.api.playlist_position()
             episode = self.api.get_next_in_playlist(position)
 
         elif self.api.has_addon_data():
