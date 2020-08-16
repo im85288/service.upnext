@@ -61,6 +61,7 @@ class UpNextMonitor(Monitor):
 
             if last_file and last_file == current_file:
                 # Already processed this playback before
+                self.log('Up Next processing stopped, current file same as old file', 2)
                 continue
 
             total_time = self.player.getTotalTime()
