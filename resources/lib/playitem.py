@@ -39,22 +39,16 @@ class PlayItem:
 
         else:
             # Get the active player
-            result = self.api.get_now_playing()
-            self.handle_now_playing_result(result)
             # Get the next episode from Kodi
             episode = self.api.get_next_episode_from_library(self.state.tv_show_id,
                                                              self.state.current_episode_id,
                                                              self.state.include_watched)
         return episode, position
 
-    def handle_now_playing_result(self, result):
-        if not result.get('result'):
-            return
-
-        item = result.get('result').get('item')
-        self.state.tv_show_id = item.get('tvshowid')
-        if item.get('type') != 'episode':
-            return
+    def handle_now_playing_result(self):
+        item = self.api.get_now_playing()
+        if not item or item.get('type') != 'episode':
+            return None
 
         self.state.tv_show_id = int(item.get('tvshowid', -1))
         if self.state.tv_show_id == -1:
@@ -74,3 +68,7 @@ class PlayItem:
         if self.state.current_tv_show_id != self.state.tv_show_id:
             self.state.current_tv_show_id = self.state.tv_show_id
             self.state.played_in_a_row = 1
+
+        self.state.current_playcount = item.get('playcount', 0)
+
+        return item

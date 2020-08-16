@@ -197,11 +197,15 @@ class Api:
 
     @staticmethod
     def get_now_playing():
-        Api.log('Getting details of now playing media', 2)
         result = jsonrpc(method='Player.GetItem', params=dict(
             playerid=PLAYLIST_VIDEO,
             properties=['episode', 'genre', 'playcount', 'plotoutline', 'season', 'showtitle', 'tvshowid'],
         ))
+        result = result.get('result', {}).get('item')
+
+        if not result:
+            Api.log('Player error, now playing media info not found', 1)
+            return None
 
         Api.log('Got details of now playing media %s' % result, 2)
         return result

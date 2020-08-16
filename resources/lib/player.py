@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import getCondVisibility, Player, Monitor
 from api import Api
+from playitem import PlayItem
 from state import State
 from utils import get_setting_bool
 
@@ -14,6 +15,7 @@ class UpNextPlayer(Player):
     def __init__(self):
         self.api = Api()
         self.state = State()
+        self.play_item = PlayItem()
         Player.__init__(self)
 
     def set_last_file(self, filename):
@@ -58,6 +60,7 @@ class UpNextPlayer(Player):
         if playlist_item or has_addon_data or getCondVisibility('videoplayer.content(episodes)'):
             self.state.track = True
             self.reset_queue()
+            self.play_item.handle_now_playing_result()
 
     if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name

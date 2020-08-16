@@ -15,6 +15,7 @@ class State:
         self.include_watched = get_setting_bool('includeWatched')
         self.current_tv_show_id = None
         self.current_episode_id = None
+        self.current_playcount = 0
         self.tv_show_id = None
         self.played_in_a_row = 1
         self.last_file = None
