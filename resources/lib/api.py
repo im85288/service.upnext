@@ -217,8 +217,8 @@ class Api:
                                     {'field': 'episode', 'operator': 'greaterthan', 'value': str(episode['episode'])}]},
                            {'field': 'season', 'operator': 'greaterthan', 'value': str(episode['season'])}]}]
         (path, filename) = os.path.split(str(episode['file']))
-        filters.append({'field': 'filename', 'operator': 'isnot', 'value': filename})
-        filters.append({'field': 'path', 'operator': 'isnot', 'value': path})
+        filters.append({'or': [{'field': 'filename', 'operator': 'isnot', 'value': filename},
+                              {'field': 'path', 'operator': 'isnot', 'value': path}]})
         if not include_watched:
             filters.append({'field': 'playcount', 'operator': 'lessthan', 'value': '1'})
         filters = {'and': filters}
