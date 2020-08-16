@@ -312,7 +312,6 @@ class Api:
             episodeid=episodeid,
             properties=['playcount'],
             ))
-        Api.log(result,2)
         result = result.get('result', {}).get('episodedetails')
 
         if result:
