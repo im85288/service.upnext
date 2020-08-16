@@ -306,3 +306,26 @@ class Api:
 
         return int(result[0].get('episodeid', -1))
 
+    @staticmethod
+    def handle_just_watched(episodeid, playcount=0, reset_resume=True):
+        result = jsonrpc(method='VideoLibrary.GetEpisodeDetails', params=dict(
+            episodeid=episodeid,
+            properties=['playcount'],
+            ))
+        Api.log(result,2)
+        result = result.get('result', {}).get('episodedetails')
+
+        if result:
+            current_playcount = int(result.get('playcount', 0))
+        else:
+            return
+        if current_playcount <= playcount:
+            playcount += 1
+
+        params = dict(episodeid=episodeid,
+            playcount=playcount)
+        if reset_resume:
+            params['resume'] = dict(position=0)
+        
+        Api.log('Library update, id: %s, playcount change from %s to %s' % (episodeid, current_playcount, playcount), 2)
+        jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)
