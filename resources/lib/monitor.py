@@ -98,5 +98,8 @@ class UpNextMonitor(Monitor):
             return
 
         decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
-        self.player.track_playback()
-        self.api.addon_data_received(decoded_data, encoding=encoding)
+        if not self.player.is_tracking():
+            self.player.track_playback()
+        self.waitForAbort(5)
+        if self.player.is_tracking():
+            self.api.addon_data_received(decoded_data, encoding=encoding)
