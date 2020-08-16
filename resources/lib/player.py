@@ -39,13 +39,12 @@ class UpNextPlayer(Player):
     def track_playback(self):
         self.state.starting = True
         monitor = Monitor()
-        while not monitor.abortRequested():
-            if self.isPlaying() and self.getTotalTime():
-                self.state.starting = False
-                break
+
+        while not self.isPlaying() or not self.getTotalTime():
             if not self.state.starting:
                 return
             monitor.waitForAbort(1)
+        self.state.starting = False
 
         playlist_item = self.api.playlist_position()
         has_addon_data = self.api.has_addon_data()
