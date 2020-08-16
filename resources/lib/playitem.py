@@ -37,7 +37,6 @@ class PlayItem:
                 self.state.played_in_a_row = 1
 
         else:
-            current_file = self.player.getPlayingFile()
             # Get the active player
             result = self.api.get_now_playing()
             self.handle_now_playing_result(result)

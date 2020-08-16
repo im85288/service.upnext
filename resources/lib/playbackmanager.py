@@ -91,29 +91,21 @@ class PlaybackManager:
 
                 self.player.seekTime(total_time)
 
-                """
-                Player().seekTime() appears to seek to keyframe rather than exact time, which can
-                create a discrepancy between reported seek position and actual playing time.
-                
-                This can sometimes result in playing past the end of the file.
-                
-                Other times Kodi will skip straight to the next file and onPlayBackStarted does
-                not fire.
-                
-                Check playback state to handle these inconsistencies.
-                """
-                while self.player.isPlaying() and playtime and totaltime and play_time <= total_time:
+                # Player().seekTime() appears to seek to keyframe rather than exact time, which can
+                # create a discrepancy between reported seek position and actual playing time.
+                # This can sometimes result in playing past the end of the file.
+                # Other times Kodi will skip straight to the next file and onPlayBackStarted does
+                # not fire.
+                # Check playback state to handle these inconsistencies.
+                while self.player.isPlaying() and play_time and total_time and play_time <= total_time:
                     total_time = self.player.getTotalTime()
                     play_time = self.player.getTime()
                     Monitor().waitForAbort(1)
 
-                """
-                If Player has played past the end of the currently playing file, try seek again.
-                
-                Note that skipping to the next file won't work as it can result in Kodi skipping
-                to the next file twice in quick succession.
-                """
-                if self.player.isPlaying() and playtime and totaltime:
+                # If Player has played past the end of the currently playing file, try seek again.
+                # Note that skipping to the next file won't work as it can result in Kodi skipping
+                # to the next file twice in quick succession.
+                if self.player.isPlaying() and play_time and total_time:
                     self.player.seekTime(total_time)
 
         elif self.api.has_addon_data():
