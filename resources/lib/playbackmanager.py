@@ -84,29 +84,14 @@ class PlaybackManager:
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if playlist_item or self.state.queued:
-            # Play playlist media, only seek/skip if media has not already played through
+            # Play playlist media, only skip if media has not already played through
+            # Can't seek as this triggers inconsistent Kodi behaviour:
+            # - Will sometimes continue playing past the end of the file preventing next file from playing
+            # - Will sometimes play the next file correctly then play it again resulting in loss of UpNext state
+            # - Will sometimes play the next file immediately without onPlayBackStarted triggering resulting in tracking not activating
+            # - Will sometimes work just fine
             if should_play_non_default:
-                total_time = self.player.getTotalTime()
-                play_time = self.player.getTime()
-
-                self.player.seekTime(total_time)
-
-                # Player().seekTime() appears to seek to keyframe rather than exact time, which can
-                # create a discrepancy between reported seek position and actual playing time.
-                # This can sometimes result in playing past the end of the file.
-                # Other times Kodi will skip straight to the next file and onPlayBackStarted does
-                # not fire.
-                # Check playback state to handle these inconsistencies.
-                while self.player.isPlaying() and play_time and total_time and play_time <= total_time:
-                    total_time = self.player.getTotalTime()
-                    play_time = self.player.getTime()
-                    Monitor().waitForAbort(1)
-
-                # If Player has played past the end of the currently playing file, try seek again.
-                # Note that skipping to the next file won't work as it can result in Kodi skipping
-                # to the next file twice in quick succession.
-                if self.player.isPlaying() and play_time and total_time:
-                    self.player.seekTime(total_time)
+                self.player.playnext()
 
         elif self.api.has_addon_data():
             # Play add-on media
