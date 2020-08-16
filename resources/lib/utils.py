@@ -171,7 +171,6 @@ def get_global_setting(setting):
 
 def localize(string_id):
     """Return the translated string from the .po language files"""
-
     return ADDON.getLocalizedString(string_id)
 
 

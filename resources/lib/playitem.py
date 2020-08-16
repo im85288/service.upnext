@@ -29,11 +29,12 @@ class PlayItem:
             episode = self.api.get_next_in_playlist(position)
 
         elif has_addon_data:
-            episode = self.api.handle_addon_lookup_of_next_episode()
             current_episode = self.api.handle_addon_lookup_of_current_episode()
-            self.state.current_episode_id = current_episode.get('episodeid')
-            if self.state.current_tv_show_id != current_episode.get('tvshowid'):
-                self.state.current_tv_show_id = current_episode.get('tvshowid')
+            episode = self.api.handle_addon_lookup_of_next_episode()
+            self.state.current_episode_id = int(current_episode.get('episodeid', -1))
+            tvshowid = int(current_episode.get('tvshowid', -1))
+            if self.state.current_tv_show_id != tvshowid:
+                self.state.current_tv_show_id = tvshowid
                 self.state.played_in_a_row = 1
 
         else:
@@ -55,7 +56,8 @@ class PlayItem:
         if item.get('type') != 'episode':
             return
 
-        if int(self.state.tv_show_id) == -1:
+        self.state.tv_show_id = int(item.get('tvshowid', -1))
+        if self.state.tv_show_id == -1:
             current_show_title = item.get('showtitle').encode('utf-8')
             self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
             self.log('Fetched missing tvshowid %s' % self.state.tv_show_id, 2)

@@ -84,12 +84,12 @@ class Api:
 
     @staticmethod
     def play_kodi_item(episode):
-        jsonrpc(method='Player.Open', params=dict(item=dict(episodeid=episode.get('episodeid'))))
+        jsonrpc(method='Player.Open', params=dict(item=dict(episodeid=int(episode.get('episodeid')))))
 
     def queue_next_item(self, episode):
         next_item = {}
         if not self.data:
-            next_item.update(episodeid=episode.get('episodeid'))
+            next_item.update(episodeid=int(episode.get('episodeid')))
         elif self.data.get('play_url'):
             next_item.update(file=self.data.get('play_url'))
 
@@ -137,11 +137,11 @@ class Api:
         item = item[0]
         if not item.get('title'):
             item['title'] = item.get('label', '')
-        item['episodeid'] = item.get('id', position+1)
-        item['tvshowid'] = item.get('tvshowid', '-1')
-        if item.get('season', '-1'):
+        item['episodeid'] = int(item.get('id', position+1))
+        item['tvshowid'] = int(item.get('tvshowid', -1))
+        if item.get('season', '-1') == '-1':
             item['season'] = ''
-        if item.get('episode', '-1'):
+        if item.get('episode', '-1') == '-1':
             item['episode'] = ''
 
         Api.log('Got details of next playlist item: %s' % item, 2)
@@ -224,7 +224,7 @@ class Api:
         filters = {'and': filters}
 
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            tvshowid=int(tvshowid),
+            tvshowid=tvshowid,
             properties=Api.episode_properties,
             sort=dict(order='ascending', method='episode'),
             limits={'start': 0, 'end': 1},
@@ -243,7 +243,7 @@ class Api:
     @staticmethod
     def get_episode_from_library(tvshowid, episodeid):
         result = jsonrpc(method='VideoLibrary.GetTVShowDetails', params=dict(
-            tvshowid=int(tvshowid),
+            tvshowid=tvshowid,
             properties=Api.tvshow_properties
         ))
         result = result.get('result', {}).get('tvshowdetails')
@@ -254,7 +254,7 @@ class Api:
         episode = result
 
         result = jsonrpc(method='VideoLibrary.GetEpisodeDetails', params=dict(
-            episodeid=int(episodeid),
+            episodeid=episodeid,
             properties=Api.episode_properties
         ))
         result = result.get('result', {}).get('episodedetails')
@@ -280,7 +280,7 @@ class Api:
             Api.log('Library error, tvshowid not found', 1)
             return '-1'
 
-        return result[0].get('tvshowid')
+        return int(result[0].get('tvshowid', -1))
 
     @staticmethod
     def get_episode_id(tvshowid, season, episode):
@@ -289,7 +289,7 @@ class Api:
         filters = {'and': filters}
 
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            tvshowid=int(tvshowid),
+            tvshowid=tvshowid,
             properties=Api.episode_properties,
             limits={'start': 0, 'end': 1},
             filter=filters
@@ -298,6 +298,7 @@ class Api:
 
         if not result:
             Api.log('Library error, episodeid not found', 1)
-            return '0'
+            return '-1'
 
-        return result[0].get('episodeid')
+        return int(result[0].get('episodeid', -1))
+

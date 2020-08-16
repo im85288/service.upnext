@@ -47,7 +47,7 @@ class PlaybackManager:
         return self.state.playing_next
 
     def launch_popup(self, episode, playlist_item):
-        episode_id = episode.get('episodeid')
+        episode_id = int(episode.get('episodeid', -1))
         watched = not self.state.include_watched and episode.get('playcount', 0)
         if watched or self.state.current_episode_id == episode_id:
             self.log('Exit launch_popup early: already watched file', 2)
