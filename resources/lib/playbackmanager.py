@@ -74,6 +74,7 @@ class PlaybackManager:
         if not self.state.track:
             self.log('Exit launch_popup early: disabled tracking', 2)
             return False
+
         play_item_option_1 = (should_play_default and self.state.play_mode == 0)
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
@@ -85,24 +86,40 @@ class PlaybackManager:
         if playlist_item or self.state.queued:
             # Play playlist media, only seek/skip if media has not already played through
             if should_play_non_default:
-                self.player.seekTime(self.player.getTotalTime())
-                # Player().seekTime() appears to seek to keyframe rather than exact time, which can
-                # create a discrepancy between reported seek position and actual playing time. This
-                # can somehow result in Kodi playing past the end of the file
-                while self.player.isPlaying() and self.player.getTime() <= self.player.getTotalTime():
-                    # But sometimes Kodi skips straight to the next file and onPlayBackStarted gets
-                    # missed
-                    if not self.player.getTime() or not self.player.getTotalTime():
-                        return True
-                    Monitor().waitForAbort(0.1)
-                # If Player has played past the end of the currently playing file, try seeking again
-                # Note that skipping to the next file doesn't work as it can result in Kodi skipping
-                # to the next file twice in quick succession
-                if self.player.isPlaying():
-                    self.player.seekTime(self.player.getTotalTime())
+                total_time = self.player.getTotalTime()
+                play_time = self.player.getTime()
+
+                self.player.seekTime(total_time)
+
+                """
+                Player().seekTime() appears to seek to keyframe rather than exact time, which can
+                create a discrepancy between reported seek position and actual playing time.
+                
+                This can sometimes result in playing past the end of the file.
+                
+                Other times Kodi will skip straight to the next file and onPlayBackStarted does
+                not fire.
+                
+                Check playback state to handle these inconsistencies.
+                """
+                while self.player.isPlaying() and playtime and totaltime and play_time <= total_time:
+                    total_time = self.player.getTotalTime()
+                    play_time = self.player.getTime()
+                    Monitor().waitForAbort(1)
+
+                """
+                If Player has played past the end of the currently playing file, try seek again.
+                
+                Note that skipping to the next file won't work as it can result in Kodi skipping
+                to the next file twice in quick succession.
+                """
+                if self.player.isPlaying() and playtime and totaltime:
+                    self.player.seekTime(total_time)
+
         elif self.api.has_addon_data():
             # Play add-on media
             self.api.play_addon_item()
+
         else:
             # Play local media
             self.api.play_kodi_item(episode)
