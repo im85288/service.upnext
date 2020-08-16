@@ -48,9 +48,9 @@ class PlaybackManager:
 
     def launch_popup(self, episode, playlist_item):
         episode_id = episode.get('episodeid')
-        no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
-        include_play_count = True if self.state.include_watched else no_play_count
-        if not include_play_count or self.state.current_episode_id == episode_id:
+        watched = not self.state.include_watched and episode.get('playcount', 0)
+        if watched or self.state.current_episode_id == episode_id:
+            self.log('Exit launch_popup early: already watched file', 2)
             return False
 
         if not playlist_item:
@@ -72,11 +72,12 @@ class PlaybackManager:
                                                                               showing_still_watching_page,
                                                                               still_watching_page)
         if not self.state.track:
-            self.log('exit launch_popup early due to disabled tracking', 2)
+            self.log('Exit launch_popup early: disabled tracking', 2)
             return False
         play_item_option_1 = (should_play_default and self.state.play_mode == 0)
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
+            self.log('Exit launch_popup early: no playback option selected', 2)
             return False
 
         # Signal to trakt previous episode watched
@@ -105,6 +106,8 @@ class PlaybackManager:
         else:
             # Play local media
             self.api.play_kodi_item(episode)
+
+        self.log('Exit launch_popup: next file requested', 2)
         return True
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
