@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from api import Api
-from player import Player
 from state import State
 from utils import log as ulog
 
@@ -14,7 +13,6 @@ class PlayItem:
     def __init__(self):
         self.__dict__ = self._shared_state
         self.api = Api()
-        self.player = Player()
         self.state = State()
 
     @classmethod
@@ -22,6 +20,7 @@ class PlayItem:
         ulog(msg, name=cls.__name__, level=level)
 
     def get_next(self):
+        episode = None
         position = self.api.playlist_position()
         has_addon_data = self.api.has_addon_data()
 
@@ -38,7 +37,6 @@ class PlayItem:
                 self.state.played_in_a_row = 1
 
         else:
-            # Get the active player
             # Get the next episode from Kodi
             episode = self.api.get_next_episode_from_library(self.state.tv_show_id,
                                                              self.state.current_episode_id,
@@ -56,15 +54,16 @@ class PlayItem:
             self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
             self.log('Fetched missing tvshowid %s' % self.state.tv_show_id, 2)
 
-        current_episode_number = item.get('episode')
-        current_season_id = item.get('season')
         # Get current episodeid
-        current_episode_id = self.api.get_episode_id(
-            tvshowid=str(self.state.tv_show_id),
-            episode=current_episode_number,
-            season=current_season_id,
-        )
-        self.state.current_episode_id = current_episode_id
+        self.state.current_episode_id = int(item.get('id', -1))
+        if self.state.current_episode_id == -1:
+            self.state.current_episode_id = self.api.get_episode_id(
+                tvshowid=str(self.state.tv_show_id),
+                episode=item.get('episode'),
+                season=item.get('season'),
+            )
+            self.log('Fetched missing episodeid %s' % self.state.current_episode_id, 2)
+
         if self.state.current_tv_show_id != self.state.tv_show_id:
             self.state.current_tv_show_id = self.state.tv_show_id
             self.state.played_in_a_row = 1
