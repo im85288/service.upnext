@@ -2,6 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
+import os.path
 from xbmc import PlayList, PLAYLIST_VIDEO
 from utils import event, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
@@ -215,7 +216,9 @@ class Api:
         filters = [{'or': [{'and': [{'field': 'season', 'operator': 'is', 'value': str(episode['season'])},
                                     {'field': 'episode', 'operator': 'greaterthan', 'value': str(episode['episode'])}]},
                            {'field': 'season', 'operator': 'greaterthan', 'value': str(episode['season'])}]}]
-        filters.append({'field': 'file', 'operator': 'isnot', 'value': str(episode['file'])})
+        (path, filename) = os.path.split(str(episode['file']))
+        filters.append({'field': 'filename', 'operator': 'isnot', 'value': filename})
+        filters.append({'field': 'path', 'operator': 'isnot', 'value': path})
         if not include_watched:
             filters.append({'field': 'playcount', 'operator': 'lessthan', 'value': '1'})
         filters = {'and': filters}
