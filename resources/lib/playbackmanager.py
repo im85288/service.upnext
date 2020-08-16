@@ -101,6 +101,11 @@ class PlaybackManager:
             # Play local media
             self.api.play_kodi_item(episode)
 
+        # Increase playcount and reset resume point
+        self.api.handle_just_watched(episodeid=self.state.current_episode_id,
+                                     playcount=self.state.current_playcount,
+                                     reset_resume=True)
+
         self.log('Exit launch_popup: next file requested', 2)
         return True
 
