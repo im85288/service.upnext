@@ -9,7 +9,8 @@ from playitem import PlayItem
 from state import State
 from dialog import StillWatching, UpNext
 from utils import (addon_path, calculate_progress_steps, clear_property, event,
-    get_setting_bool, get_setting_int, get_int, log as ulog, set_property)
+                   get_setting_bool, get_setting_int, get_int, log as ulog,
+                   set_property)
 
 
 class PlaybackManager:
@@ -49,9 +50,9 @@ class PlaybackManager:
 
     def launch_popup(self, episode, playlist_item):
         episode_id = get_int(episode, 'episodeid')
-        watched = (not self.state.include_watched and episode.get('playcount', 0)) or
-                  (self.state.current_episode_id == episode_id and episode_id != -1)
-        if watched:
+        watched = not self.state.include_watched and episode.get('playcount', 0)
+        if (episode_id != -1 and self.state.current_episode_id == episode_id or
+            watched):
             self.log('Exit launch_popup early: already watched file', 2)
             return False
 

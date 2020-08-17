@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import os.path
 from xbmc import PlayList, PLAYLIST_VIDEO
 from utils import (event, get_setting_bool, get_setting_int, get_int, jsonrpc,
-    log as ulog)
+                   log as ulog)
 
 
 class Api:
