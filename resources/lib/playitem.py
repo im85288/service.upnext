@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from api import Api
 from state import State
-from utils import log as ulog
+from utils import get_int, log as ulog
 
 
 class PlayItem:
@@ -30,8 +30,8 @@ class PlayItem:
         elif has_addon_data:
             current_episode = self.api.handle_addon_lookup_of_current_episode()
             episode = self.api.handle_addon_lookup_of_next_episode()
-            self.state.current_episode_id = int(current_episode.get('episodeid', -1))
-            tvshowid = int(current_episode.get('tvshowid', -1))
+            self.state.current_episode_id = get_int(current_episode, 'episodeid')
+            tvshowid = get_int(current_episode, 'tvshowid')
             if self.state.current_tv_show_id != tvshowid:
                 self.state.current_tv_show_id = tvshowid
                 self.state.played_in_a_row = 1
@@ -48,14 +48,14 @@ class PlayItem:
         if not item or item.get('type') != 'episode':
             return None
 
-        self.state.tv_show_id = int(item.get('tvshowid', -1))
+        self.state.tv_show_id = get_int(item, 'tvshowid')
         if self.state.tv_show_id == -1:
             current_show_title = item.get('showtitle').encode('utf-8')
             self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
             self.log('Fetched missing tvshowid %s' % self.state.tv_show_id, 2)
 
         # Get current episodeid
-        self.state.current_episode_id = int(item.get('id', -1))
+        self.state.current_episode_id = get_int(item, 'id')
         if self.state.current_episode_id == -1:
             self.state.current_episode_id = self.api.get_episode_id(
                 tvshowid=str(self.state.tv_show_id),

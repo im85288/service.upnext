@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import os.path
 from xbmc import PlayList, PLAYLIST_VIDEO
-from utils import event, get_setting_bool, get_setting_int, jsonrpc, log as ulog
+from utils import event, get_setting_bool, get_setting_int, get_int, jsonrpc, log as ulog
 
 
 class Api:
@@ -84,12 +84,12 @@ class Api:
 
     @staticmethod
     def play_kodi_item(episode):
-        jsonrpc(method='Player.Open', params=dict(item=dict(episodeid=int(episode.get('episodeid')))))
+        jsonrpc(method='Player.Open', params=dict(item=dict(episodeid=get_int(episode, 'episodeid'))))
 
     def queue_next_item(self, episode):
         next_item = {}
         if not self.data:
-            next_item.update(episodeid=int(episode.get('episodeid')))
+            next_item.update(episodeid=get_int(episode, 'episodeid'))
         elif self.data.get('play_url'):
             next_item.update(file=self.data.get('play_url'))
 
@@ -137,11 +137,11 @@ class Api:
         item = item[0]
         if not item.get('title'):
             item['title'] = item.get('label', '')
-        item['episodeid'] = int(item.get('id', -(position+1)))
-        item['tvshowid'] = int(item.get('tvshowid', -1))
-        if item.get('season', -1) == -1:
+        item['episodeid'] = get_int(item, 'id')
+        item['tvshowid'] = get_int(item, 'tvshowid')
+        if get_int(item, 'season') == -1:
             item['season'] = ''
-        if item.get('episode', -1) == -1:
+        if get_int(item, 'episode') == -1:
             item['episode'] = ''
 
         Api.log('Got details of next playlist item: %s' % item, 2)
@@ -169,16 +169,14 @@ class Api:
 
     def notification_time(self, total_time):
         # Alway use metadata, when available
-        if self.data.get('notification_time'):
-            notification_time = int(self.data.get('notification_time'))
-            if notification_time < total_time:
-                return notification_time
+        notification_time = get_int(self.data, 'notification_time')
+        if 0 < notification_time < total_time:
+            return notification_time
 
         # Some consumers send the offset when the credits start (e.g. Netflix)
-        if self.data.get('notification_offset'):
-            offset = int(self.data.get('notification_offset'))
-            if offset < total_time:
-                return total_time - offset
+        notification_offset = get_int(self.data, 'notification_offset')
+        if 0 < notification_offset < total_time:
+            return total_time - notification_offset
 
         # Use a customized notification time, when configured
         if get_setting_bool('customAutoPlayTime'):
@@ -284,7 +282,7 @@ class Api:
             Api.log('Library error, tvshowid not found', 1)
             return '-1'
 
-        return int(result[0].get('tvshowid', -1))
+        return get_int(result[0], 'tvshowid')
 
     @staticmethod
     def get_episode_id(tvshowid, season, episode):
@@ -304,7 +302,7 @@ class Api:
             Api.log('Library error, episodeid not found', 1)
             return '-1'
 
-        return int(result[0].get('episodeid', -1))
+        return get_int(result[0], 'episodeid')
 
     @staticmethod
     def handle_just_watched(episodeid, playcount=0, reset_resume=True):
@@ -315,7 +313,7 @@ class Api:
         result = result.get('result', {}).get('episodedetails')
 
         if result:
-            current_playcount = int(result.get('playcount', 0))
+            current_playcount = get_int(result, 'playcount')
         else:
             return
         if current_playcount <= playcount:

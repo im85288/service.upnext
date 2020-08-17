@@ -81,6 +81,20 @@ def get_setting_int(key, default=None):
         return default
 
 
+def get_int(obj, key):
+    """Returns a value for the given key, as integer.
+       Returns -1 if key is not available.
+       Returns value if value cannot be converted to integer."""
+    try:
+        val = obj.get(key, -1)
+    except (AttributeError, TypeError):
+        return -1
+    try:
+        return int(val)
+    except ValueError:
+        return val if val else -1
+
+
 def encode_data(data, encoding='base64'):
     """Encode data for a notification event"""
     json_data = json.dumps(data).encode()
