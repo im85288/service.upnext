@@ -137,11 +137,11 @@ class Api:
         item = item[0]
         if not item.get('title'):
             item['title'] = item.get('label', '')
-        item['episodeid'] = int(item.get('id', position+1))
+        item['episodeid'] = int(item.get('id', -(position+1)))
         item['tvshowid'] = int(item.get('tvshowid', -1))
-        if item.get('season', '-1') == '-1':
+        if item.get('season', -1) == -1:
             item['season'] = ''
-        if item.get('episode', '-1') == '-1':
+        if item.get('episode', -1) == -1:
             item['episode'] = ''
 
         Api.log('Got details of next playlist item: %s' % item, 2)
