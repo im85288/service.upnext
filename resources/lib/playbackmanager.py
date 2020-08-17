@@ -8,8 +8,8 @@ from player import Player
 from playitem import PlayItem
 from state import State
 from dialog import StillWatching, UpNext
-from utils import addon_path, calculate_progress_steps, clear_property, event, get_setting_bool, get_setting_int, get_int,
-                  log as ulog, set_property
+from utils import (addon_path, calculate_progress_steps, clear_property, event,
+    get_setting_bool, get_setting_int, get_int, log as ulog, set_property)
 
 
 class PlaybackManager:
