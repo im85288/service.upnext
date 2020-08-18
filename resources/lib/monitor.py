@@ -75,6 +75,9 @@ class UpNextMonitor(Monitor):
                 # Media hasn't reach notification time yet, waiting a bit longer
                 continue
 
+            # Disable tracking to ensure second notification can't trigger after
+            # next file requested but not loaded
+            self.player.set_tracking(False)
             self.player.set_last_file(from_unicode(current_file))
             msg = 'Show Up Next popup: episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, notification_time)

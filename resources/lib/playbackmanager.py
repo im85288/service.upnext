@@ -84,10 +84,6 @@ class PlaybackManager:
             self.log('Exit launch_popup early: current file not playing', 2)
             return False
 
-        if not self.player.is_tracking():
-            self.log('Exit launch_popup early: disabled tracking', 2)
-            return False
-
         auto_play, play_now = self.extract_play_info(dialog)
         if not auto_play and not play_now:
             self.log('Exit launch_popup early: no playback option selected', 2)
