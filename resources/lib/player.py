@@ -60,6 +60,7 @@ class UpNextPlayer(Player):
 
         is_playlist_item = self.api.get_playlist_position()
         has_addon_data = self.api.has_addon_data()
+        is_episode = getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not get_setting_bool('enablePlaylist'):
@@ -71,8 +72,7 @@ class UpNextPlayer(Player):
             has_addon_data = False
 
         # Start tracking if Up Next can handle the currently playing file
-        if (is_playlist_item or has_addon_data
-            or getCondVisibility('videoplayer.content(episodes)')):
+        if is_playlist_item or has_addon_data or is_episode:
             self.set_tracking()
             self.reset_queue()
             # Get details of currently playing file to save playcount

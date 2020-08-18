@@ -88,7 +88,7 @@ class UpNextMonitor(Monitor):
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Notification event handler for accepting data from add-ons"""
-        # Ignore notifications not targeting Up Next 
+        # Ignore notifications not targeting Up Next
         if not method.endswith('upnext_data'):
             return
 
