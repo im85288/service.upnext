@@ -63,8 +63,8 @@ class PlaybackManager:
 
         self.log('Played in a row setting: %s' % played_in_a_row_number, 2)
         self.log('Played in a row: {0}, showing {1} page'.format(
-                    self.state.played_in_a_row,
-                    'next up' if show_next_up else 'still watching'), 2)
+            self.state.played_in_a_row,
+            'next up' if show_next_up else 'still watching'), 2)
 
         filename = 'script-upnext{0}{1}.xml'.format(
             '-upnext' if show_next_up else '-stillwatching',
@@ -149,9 +149,11 @@ class PlaybackManager:
                 return False
 
             remaining = total_time - self.player.getTime()
-            if (remaining <= 1 or dialog.is_cancel()
-                or (is_upnext and dialog.is_watch_now())
-                or (not is_upnext and dialog.is_still_watching())):
+            if remaining <= 1 or dialog.is_cancel():
+                break
+            if is_upnext and dialog.is_watch_now():
+                break
+            if not is_upnext and dialog.is_still_watching():
                 break
 
             if self.state.pause:

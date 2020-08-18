@@ -108,7 +108,7 @@ class UpNextPlayer(Player):
         if not self.state.playing_next:
             self.api.reset_addon_data()
             self.state = State()  # Reset state
-        
+
     def onPlayBackError(self):  # pylint: disable=invalid-name
         """Will be called when when playback stops due to an error"""
         self.reset_queue()
