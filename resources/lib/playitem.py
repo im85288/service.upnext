@@ -44,9 +44,9 @@ class PlayItem:
                 self.state.tvshowid = tvshowid
                 self.state.played_in_a_row = 1
 
-           self.state.episodeid = get_int(episode, 'episodeid')
+            self.state.episodeid = get_int(episode, 'episodeid')
 
-           episode = self.api.handle_addon_lookup_of_next_episode()
+            episode = self.api.handle_addon_lookup_of_next_episode()
 
         # File from Kodi library
         else:
