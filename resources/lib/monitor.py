@@ -76,10 +76,8 @@ class UpNextMonitor(Monitor):
                 continue
 
             self.player.set_last_file(from_unicode(current_file))
-            playing_next = self.playback_manager.launch_up_next()
-            self.api.reset_addon_data()
-            self.player.disable_tracking()
             self.log('Show Up Next notification: episode ({0}s runtime) ends in {1}s'.format(total_time, notification_time), 2)
+            self.playback_manager.launch_up_next()
 
         self.log('Service stopped', 0)
 
@@ -94,8 +92,6 @@ class UpNextMonitor(Monitor):
             return
 
         decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
-        if not self.player.is_tracking():
-            self.player.track_playback()
-        self.waitForAbort(5)
+        self.player.track_playback()
         if self.player.is_tracking():
             self.api.addon_data_received(decoded_data, encoding=encoding)

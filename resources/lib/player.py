@@ -24,6 +24,7 @@ class UpNextPlayer(Player):
 
     def set_last_file(self, filename):
         self.state.last_file = filename
+        self.state.playing_next = False
 
     def get_last_file(self):
         return self.state.last_file
@@ -36,34 +37,46 @@ class UpNextPlayer(Player):
 
     def reset_queue(self):
         if self.state.queued:
-            self.api.reset_queue()
-            self.state.queued = False
-            if not self.state.playing_next and not self.state.track:
-                self.stop()
+            self.state.queued = self.api.reset_queue()
 
     def track_playback(self):
         self.state.starting = True
-        monitor = Monitor()
 
-        while not self.isPlaying() or not self.getTotalTime():
+        # onPlayBackEnded for current file can trigger after next file starts
+        # Wait 5s to check file playback after onPlayBackEnded
+        monitor = Monitor()
+        monitor.waitForAbort(5)
+        while not monitor.abortRequested():
+            # Exit if starting state has been reset by playback error/end/stop
             if not self.state.starting:
                 return
+
+            # Got a file to play
+            if self.isPlaying() and self.getTotalTime():
+                break
+
             monitor.waitForAbort(1)
         self.state.starting = False
 
         playlist_item = self.api.playlist_position()
         has_addon_data = self.api.has_addon_data()
 
+        # Exit if Up Next playlist handling has not been enabled
         if playlist_item and not get_setting_bool('enablePlaylist'):
             return
 
-        if self.state.track and has_addon_data and not self.state.playing_next:
+        # Ensure that old addon data is not used
+        if self.is_tracking() and has_addon_data and not self.state.playing_next:
             self.api.reset_addon_data()
+            has_addon_data = False
 
+        # Start tracking if Up Next can handle the currently playing file
         if playlist_item or has_addon_data or getCondVisibility('videoplayer.content(episodes)'):
-            self.state.track = True
+            self.set_tracking()
             self.reset_queue()
-            self.play_item.handle_now_playing_result()
+            # Get details of currently playing file to save playcount
+            if not has_addon_data:
+                self.play_item.handle_now_playing_result()
 
     if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name
@@ -89,10 +102,13 @@ class UpNextPlayer(Player):
     def onPlayBackEnded(self):  # pylint: disable=invalid-name
         """Will be called when Kodi has ended playing a file"""
         self.reset_queue()
+        self.set_tracking(False)
+        # Event can occur before or after the next file has started playing
+        # Only reset state if Up Next has not requested the next file to play
         if not self.state.playing_next:
             self.api.reset_addon_data()
             self.state = State()  # Reset state
-
+        
     def onPlayBackError(self):  # pylint: disable=invalid-name
         """Will be called when when playback stops due to an error"""
         self.reset_queue()

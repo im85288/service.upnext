@@ -4,13 +4,12 @@
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import Monitor
 from api import Api
-from player import Player
+from player import UpNextPlayer
 from playitem import PlayItem
 from state import State
 from dialog import StillWatching, UpNext
-from utils import (addon_path, calculate_progress_steps, clear_property, event,
-                   get_setting_bool, get_setting_int, get_int, log as ulog,
-                   set_property)
+from utils import (addon_path, clear_property, event, get_setting_bool,
+                   get_setting_int, get_int, log as ulog, set_property)
 
 
 class PlaybackManager:
@@ -21,79 +20,91 @@ class PlaybackManager:
         self.api = Api()
         self.play_item = PlayItem()
         self.state = State()
-        self.player = Player()
+        self.player = UpNextPlayer()
 
     @classmethod
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
 
     def launch_up_next(self):
-        self.state.playing_next = True
         episode, playlist_item = self.play_item.get_next()
 
         if playlist_item and not get_setting_bool('enablePlaylist'):
-            self.state.playing_next = False
             self.log('Playlist integration disabled', 2)
 
         elif not episode:
             # No episode get out of here
-            self.state.playing_next = False
             self.log('Error: no episode to play next...exiting', 1)
 
         else:
             self.log('Episode details: %s' % episode, 2)
             self.state.playing_next = self.launch_popup(episode, playlist_item)
-            if not self.state.playing_next and self.state.queued:
-                self.api.dequeue_next_item()
-
-        return self.state.playing_next
+            # Dequeue and stop playback if not playing next file
+            if not self.state.playing_next:
+                self.log('Stopping playback', 2)
+                if self.state.queued:
+                    self.state.queued = self.api.dequeue_next_item()
+                self.player.stop()
 
     def launch_popup(self, episode, playlist_item):
         episode_id = get_int(episode, 'episodeid')
         watched = not self.state.include_watched and episode.get('playcount', 0)
         if (episode_id != -1 and self.state.current_episode_id == episode_id or
-            watched):
+                watched):
             self.log('Exit launch_popup early: already watched file', 2)
             return False
 
+        # Add next file to playlist if existing playlist is not being used
         if not playlist_item:
             self.state.queued = self.api.queue_next_item(episode)
 
-        # We have a next up episode choose mode
-        if get_setting_int('simpleMode') == 0:
-            next_up_page = UpNext('script-upnext-upnext-simple.xml', addon_path(), 'default', '1080i')
-            still_watching_page = StillWatching('script-upnext-stillwatching-simple.xml', addon_path(), 'default', '1080i')
-        else:
-            next_up_page = UpNext('script-upnext-upnext.xml', addon_path(), 'default', '1080i')
-            still_watching_page = StillWatching('script-upnext-stillwatching.xml', addon_path(), 'default', '1080i')
+        played_in_a_row_number = get_setting_int('playedInARow')
+        show_next_up = self.state.played_in_a_row < played_in_a_row_number
 
-        showing_next_up_page, showing_still_watching_page = self.show_popup_and_wait(episode,
-                                                                                     next_up_page,
-                                                                                     still_watching_page)
-        should_play_default, should_play_non_default = self.extract_play_info(next_up_page,
-                                                                              showing_next_up_page,
-                                                                              showing_still_watching_page,
-                                                                              still_watching_page)
-        if not self.state.track:
+        self.log('Played in a row setting: %s' % played_in_a_row_number, 2)
+        self.log('Played in a row: {0}, showing {1} page'.format(
+                    self.state.played_in_a_row,
+                    'next up' if show_next_up else 'still watching'), 2)
+
+        filename = 'script-upnext{0}{1}.xml'.format(
+            '-upnext' if show_next_up else '-stillwatching',
+            '-simple' if get_setting_int('simpleMode') == 0 else '')
+        if show_next_up:
+            dialog = UpNext(filename, addon_path(), 'default', '1080i')
+        else:
+            dialog = StillWatching(filename, addon_path(), 'default', '1080i')
+        dialog.set_item(episode)
+
+        abort_popup = not self.show_popup_and_wait(dialog)
+        dialog.close()
+        clear_property('service.upnext.dialog')
+
+        if abort_popup:
+            self.log('Exit launch_popup early: current file not playing', 2)
+            return False
+
+        if not self.player.is_tracking():
             self.log('Exit launch_popup early: disabled tracking', 2)
             return False
 
-        play_item_option_1 = (should_play_default and self.state.play_mode == 0)
-        play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
-        if not play_item_option_1 and not play_item_option_2:
+        auto_play, play_now = self.extract_play_info(dialog)
+        if not auto_play and not play_now:
             self.log('Exit launch_popup early: no playback option selected', 2)
             return False
 
-        # Signal to trakt previous episode watched
-        event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if playlist_item or self.state.queued:
-            # Play playlist media, only skip if media has not already played through
-            # Can't seek as this triggers inconsistent Kodi behaviour:
-            # - Will sometimes continue playing past the end of the file preventing next file from playing
-            # - Will sometimes play the next file correctly then play it again resulting in loss of UpNext state
-            # - Will sometimes play the next file immediately without onPlayBackStarted triggering resulting in tracking not activating
+            # Can't just seek to end of file as this triggers inconsistent Kodi
+            # behaviour:
+            # - Will sometimes continue playing past the end of the file
+            #   preventing next file from playing
+            # - Will sometimes play the next file correctly then play it again
+            #   resulting in loss of UpNext state
+            # - Will sometimes play the next file immediately without
+            #   onPlayBackStarted firing resulting in tracking not activating
             # - Will sometimes work just fine
-            if should_play_non_default:
+            # Can't just wait for next file to play as VideoPlayer closes all
+            # video threads when the current file finishes
+            if play_now:
                 self.player.playnext()
 
         elif self.api.has_addon_data():
@@ -104,82 +115,64 @@ class PlaybackManager:
             # Play local media
             self.api.play_kodi_item(episode)
 
+        # Signal to trakt previous episode watched
+        event(message='NEXTUPWATCHEDSIGNAL',
+              data=dict(episodeid=self.state.current_episode_id),
+              encoding='base64')
+
         # Increase playcount and reset resume point
         self.api.handle_just_watched(episodeid=self.state.current_episode_id,
                                      playcount=self.state.current_playcount,
                                      reset_resume=True)
 
-        self.log('Exit launch_popup: next file requested', 2)
+        self.log('Up Next playback: next file requested', 2)
         return True
 
-    def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
-        try:
-            play_time = self.player.getTime()
-            total_time = self.player.getTotalTime()
-        except RuntimeError:
-            self.log('exit early because player is no longer running', 2)
-            return False, False
-        progress_step_size = calculate_progress_steps(total_time - play_time)
-        next_up_page.set_item(episode)
-        next_up_page.set_progress_step_size(progress_step_size)
-        still_watching_page.set_item(episode)
-        still_watching_page.set_progress_step_size(progress_step_size)
-        played_in_a_row_number = get_setting_int('playedInARow')
-        self.log('played in a row settings %s' % played_in_a_row_number, 2)
-        self.log('played in a row %s' % self.state.played_in_a_row, 2)
-        showing_next_up_page = False
-        showing_still_watching_page = False
-        if int(self.state.played_in_a_row) <= int(played_in_a_row_number):
-            self.log('showing next up page as played in a row is %s' % self.state.played_in_a_row, 2)
-            next_up_page.show()
-            set_property('service.upnext.dialog', 'true')
-            showing_next_up_page = True
-        else:
-            self.log('showing still watching page as played in a row %s' % self.state.played_in_a_row, 2)
-            still_watching_page.show()
-            set_property('service.upnext.dialog', 'true')
-            showing_still_watching_page = True
-        while (self.player.isPlaying() and (total_time - play_time > 1)
-               and not next_up_page.is_cancel() and not next_up_page.is_watch_now()
-               and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
-            try:
-                play_time = self.player.getTime()
-                total_time = self.player.getTotalTime()
-            except RuntimeError:
-                if showing_next_up_page:
-                    next_up_page.close()
-                    showing_next_up_page = False
-                if showing_still_watching_page:
-                    still_watching_page.close()
-                    showing_still_watching_page = False
+    def show_popup_and_wait(self, dialog):
+        if not self.player.isPlaying():
+            return False
+
+        is_upnext = isinstance(dialog, UpNext)
+
+        total_time = self.player.getTotalTime()
+        remaining = total_time - self.player.getTime()
+
+        dialog.set_progress_step_size(remaining)
+        dialog.show()
+        set_property('service.upnext.dialog', 'true')
+
+        monitor = Monitor()
+        while not monitor.abortRequested():
+            # Current file can stop or next file can start while loop is running
+            # Abort popup update
+            if not self.player.isPlaying() or self.state.starting:
+                return False
+
+            remaining = total_time - self.player.getTime()
+            if (remaining <= 1 or dialog.is_cancel()
+                or (is_upnext and dialog.is_watch_now())
+                or (not is_upnext and dialog.is_still_watching())):
                 break
 
-            remaining = total_time - play_time
-            runtime = episode.get('runtime')
-            if not self.state.pause:
-                if showing_next_up_page:
-                    next_up_page.update_progress_control(remaining=remaining, runtime=runtime)
-                elif showing_still_watching_page:
-                    still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
-            Monitor().waitForAbort(0.1)
-        return showing_next_up_page, showing_still_watching_page
+            if self.state.pause:
+                pass
 
-    def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):
-        if showing_next_up_page:
-            next_up_page.close()
-            should_play_default = not next_up_page.is_cancel()
-            should_play_non_default = next_up_page.is_watch_now()
-        elif showing_still_watching_page:
-            still_watching_page.close()
-            should_play_default = still_watching_page.is_still_watching()
-            should_play_non_default = still_watching_page.is_still_watching()
+            dialog.update_progress_control(remaining, total_time)
+            wait_time = min(0.5, remaining - 1)
+            monitor.waitForAbort(wait_time)
+        return True
+
+    def extract_play_info(self, dialog):
+        if isinstance(dialog, UpNext):
+            auto_play = not dialog.is_cancel() and self.state.play_mode == 0
+            play_now = dialog.is_watch_now()
         else:
-            # FIXME: This is a workaround until we handle this better (see comments in #142)
-            return False, False
+            auto_play = False
+            play_now = dialog.is_still_watching()
 
-        if next_up_page.is_watch_now() or still_watching_page.is_still_watching():
+        if play_now:
             self.state.played_in_a_row = 1
         else:
             self.state.played_in_a_row += 1
-        clear_property('service.upnext.dialog')
-        return should_play_default, should_play_non_default
+
+        return auto_play, play_now
