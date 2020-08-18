@@ -21,27 +21,41 @@ class PlayItem:
 
     def get_next(self):
         episode = None
-        position = self.api.playlist_position()
+        position = self.api.get_playlist_position()
         has_addon_data = self.api.has_addon_data()
 
+        # File from non addon playlist
         if position and not has_addon_data:
             episode = self.api.get_next_in_playlist(position)
 
+        # File from addon
         elif has_addon_data:
-            current_episode = self.api.handle_addon_lookup_of_current_episode()
-            episode = self.api.handle_addon_lookup_of_next_episode()
-            self.state.current_episode_id = get_int(current_episode, 'episodeid')
-            tvshowid = get_int(current_episode, 'tvshowid')
-            if self.state.current_tv_show_id != tvshowid:
-                self.log('Reset played in a row count: tvshowid change from {0} to {1}'.format(self.state.current_tv_show_id, tvshowid), 2)
-                self.state.current_tv_show_id = tvshowid
+            episode = self.api.handle_addon_lookup_of_current_episode()
+
+            tvshowid = get_int(episode, 'tvshowid')
+            # Reset play count if new show playing
+            if self.state.tvshowid != tvshowid:
+                msg = 'Reset played count: tvshowid change from {0} to {1}'
+                msg = msg.format(
+                    self.state.tvshowid,
+                    tvshowid
+                )
+                self.log(msg, 2)
+                self.state.tvshowid = tvshowid
                 self.state.played_in_a_row = 1
 
+           self.state.episodeid = get_int(episode, 'episodeid')
+
+           episode = self.api.handle_addon_lookup_of_next_episode()
+
+        # File from Kodi library
         else:
-            # Get the next episode from Kodi
-            episode = self.api.get_next_episode_from_library(self.state.tv_show_id,
-                                                             self.state.current_episode_id,
-                                                             self.state.include_watched)
+            episode = self.api.get_next_episode_from_library(
+                self.state.tvshowid,
+                self.state.episodeid,
+                self.state.include_watched
+            )
+
         return episode, position
 
     def handle_now_playing_result(self):
@@ -49,27 +63,35 @@ class PlayItem:
         if not item or item.get('type') != 'episode':
             return None
 
-        self.state.tv_show_id = get_int(item, 'tvshowid')
-        if self.state.tv_show_id == -1:
-            current_show_title = item.get('showtitle').encode('utf-8')
-            self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
-            self.log('Fetched tvshowid: %s' % self.state.tv_show_id, 2)
+        # Get current tvshowid or search in library if detail missing
+        tvshowid = get_int(item, 'tvshowid')
+        if tvshowid == -1:
+            title = item.get('showtitle').encode('utf-8')
+            self.state.tvshowid = self.api.get_tvshowid(title)
+            self.log('Fetched tvshowid: %s' % self.state.tvshowid, 2)
 
-        # Get current episodeid
-        self.state.current_episode_id = get_int(item, 'id')
-        if self.state.current_episode_id == -1:
-            self.state.current_episode_id = self.api.get_episode_id(
-                tvshowid=str(self.state.tv_show_id),
-                episode=item.get('episode'),
-                season=item.get('season'),
+        # Reset play count if new show playing
+        if self.state.tvshowid != tvshowid:
+            msg = 'Reset played count: tvshowid change from {0} to {1}'
+            msg = msg.format(
+                self.state.tvshowid,
+                tvshowid
             )
-            self.log('Fetched episodeid: %s' % self.state.current_episode_id, 2)
-
-        if self.state.current_tv_show_id != self.state.tv_show_id:
-            self.log('Reset played in a row count: tvshowid change from {0} to {1}'.format(self.state.current_tv_show_id, self.state.tv_show_id), 2)
-            self.state.current_tv_show_id = self.state.tv_show_id
+            self.log(msg, 2)
+            self.state.tvshowid = tvshowid
             self.state.played_in_a_row = 1
 
-        self.state.current_playcount = item.get('playcount', 0)
+        # Get current episodeid or search in library if detail missing
+        self.state.episodeid = get_int(item, 'id')
+        if self.state.episodeid == -1:
+            self.state.episodeid = self.api.get_episodeid(
+                tvshowid,
+                item.get('season'),
+                item.get('episode'),
+
+            )
+            self.log('Fetched episodeid: %s' % self.state.episodeid, 2)
+
+        self.state.playcount = item.get('playcount', 0)
 
         return item

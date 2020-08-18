@@ -47,7 +47,8 @@ def get_setting(key, default=None):
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
         value = to_unicode(Addon().getSetting(key))
-    except RuntimeError:  # Occurs when the add-on is disabled
+    # Occurs when the add-on is disabled
+    except RuntimeError:
         return default
     if value == '' and default is not None:
         return default
@@ -58,12 +59,14 @@ def get_setting_bool(key, default=None):
     """Get an add-on setting as boolean"""
     try:
         return Addon().getSettingBool(key)
-    except (AttributeError, TypeError):  # On Krypton or older, or when not a boolean
+    # On Krypton or older, or when not a boolean
+    except (AttributeError, TypeError):
         value = get_setting(key, default)
         if value not in ('false', 'true'):
             return default
         return bool(value == 'true')
-    except RuntimeError:  # Occurs when the add-on is disabled
+    # Occurs when the add-on is disabled
+    except RuntimeError:
         return default
 
 
@@ -71,13 +74,15 @@ def get_setting_int(key, default=None):
     """Get an add-on setting as integer"""
     try:
         return Addon().getSettingInt(key)
-    except (AttributeError, TypeError):  # On Krypton or older, or when not an integer
+    # On Krypton or older, or when not an integer
+    except (AttributeError, TypeError):
         value = get_setting(key, default)
         try:
             return int(value)
         except ValueError:
             return default
-    except RuntimeError:  # Occurs when the add-on is disabled
+    # Occurs when the add-on is disabled
+    except RuntimeError:
         return default
 
 
@@ -123,7 +128,8 @@ def decode_data(encoded):
         json_data = b64decode(encoded)
     else:
         encoding = 'hex'
-    # NOTE: With Python 3.5 and older json.loads() does not support bytes or bytearray, so we convert to unicode
+    # NOTE: With Python 3.5 and older json.loads() does not support bytes
+    # or bytearray, so we convert to unicode
     return json.loads(to_unicode(json_data)), encoding
 
 
@@ -179,7 +185,10 @@ def jsonrpc(**kwargs):
 
 def get_global_setting(setting):
     """Get a Kodi setting"""
-    result = jsonrpc(method='Settings.GetSettingValue', params=dict(setting=setting))
+    result = jsonrpc(
+        method='Settings.GetSettingValue',
+        params=dict(setting=setting)
+    )
     return result.get('result', {}).get('value')
 
 

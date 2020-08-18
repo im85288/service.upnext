@@ -13,10 +13,9 @@ class State:
         self.__dict__ = self._shared_state
         self.play_mode = get_setting_int('autoPlayMode')
         self.include_watched = get_setting_bool('includeWatched')
-        self.current_tv_show_id = None
-        self.current_episode_id = None
-        self.current_playcount = 0
-        self.tv_show_id = None
+        self.tvshowid = None
+        self.episodeid = None
+        self.playcount = 0
         self.played_in_a_row = 1
         self.last_file = None
         self.track = False

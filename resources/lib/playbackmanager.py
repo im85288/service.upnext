@@ -29,11 +29,12 @@ class PlaybackManager:
     def launch_up_next(self):
         episode, playlist_item = self.play_item.get_next()
 
+        # Shouldn't get here if playlist setting is disabled, but just in case
         if playlist_item and not get_setting_bool('enablePlaylist'):
             self.log('Playlist integration disabled', 2)
 
+        # No episode get out of here
         elif not episode:
-            # No episode get out of here
             self.log('Error: no episode to play next...exiting', 1)
 
         else:
@@ -47,9 +48,9 @@ class PlaybackManager:
                 self.player.stop()
 
     def launch_popup(self, episode, playlist_item):
-        episode_id = get_int(episode, 'episodeid')
+        episodeid = get_int(episode, 'episodeid')
         watched = not self.state.include_watched and episode.get('playcount', 0)
-        if (episode_id != -1 and self.state.current_episode_id == episode_id or
+        if (episodeid != -1 and self.state.episodeid == episodeid or
                 watched):
             self.log('Exit launch_popup early: already watched file', 2)
             return False
@@ -117,12 +118,12 @@ class PlaybackManager:
 
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL',
-              data=dict(episodeid=self.state.current_episode_id),
+              data=dict(episodeid=self.state.episodeid),
               encoding='base64')
 
         # Increase playcount and reset resume point
-        self.api.handle_just_watched(episodeid=self.state.current_episode_id,
-                                     playcount=self.state.current_playcount,
+        self.api.handle_just_watched(episodeid=self.state.episodeid,
+                                     playcount=self.state.playcount,
                                      reset_resume=True)
 
         self.log('Up Next playback: next file requested', 2)

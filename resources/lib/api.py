@@ -17,20 +17,20 @@ class Api:
                           'season',
                           'episode',
                           'showtitle',
-                          'originaltitle',
+                          #'originaltitle',
                           'plot',
-                          'votes',
+                          #'votes',
                           'file',
                           'rating',
-                          'ratings',
-                          'userrating',
+                          #'ratings',
+                          #'userrating',
                           'resume',
                           'tvshowid',
                           'firstaired',
                           'art',
                           'streamdetails',
                           'runtime',
-                          'director',
+                          #'director',
                           'writer',
                           #'cast',
                           'dateadded',
@@ -42,9 +42,9 @@ class Api:
                          'plot',
                          #'cast',
                          'rating',
-                         'ratings',
-                         'userrating',
-                         'votes',
+                         #'ratings',
+                         #'userrating',
+                         #'votes',
                          'genre',
                          'episode',
                          'season',
@@ -53,13 +53,13 @@ class Api:
                          'premiered',
                          'playcount',
                          'lastplayed',
-                         'sorttitle',
-                         'originaltitle',
+                         #'sorttitle',
+                         #'originaltitle',
                          'art',
                          'tag',
                          'dateadded',
                          'watchedepisodes',
-                         'imdbnumber']
+                         #'imdbnumber']
 
     def __init__(self):
         """Constructor for Api class"""
@@ -85,7 +85,10 @@ class Api:
 
     @staticmethod
     def play_kodi_item(episode):
-        jsonrpc(method='Player.Open', params=dict(item=dict(episodeid=get_int(episode, 'episodeid'))))
+        jsonrpc(
+            method='Player.Open',
+            params=dict(item=dict(episodeid=get_int(episode, 'episodeid')))
+        )
 
     def queue_next_item(self, episode):
         next_item = {}
@@ -95,27 +98,37 @@ class Api:
             next_item.update(file=self.data.get('play_url'))
 
         if next_item:
-            jsonrpc(method='Playlist.Add', params=dict(playlistid=PLAYLIST_VIDEO, item=next_item))
+            jsonrpc(
+                method='Playlist.Add',
+                params=dict(playlistid=PLAYLIST_VIDEO, item=next_item)
+            )
 
         return bool(next_item)
 
     @staticmethod
     def reset_queue():
         Api.log('Up Next queue: removing previously played item', 2)
-        jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=0))
+        jsonrpc(
+            method='Playlist.Remove',
+            params=dict(playlistid=PLAYLIST_VIDEO, position=0)
+        )
         return False
 
     @staticmethod
     def dequeue_next_item():
         Api.log('Up Next queue: removing unplayed next item', 2)
-        jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=1))
+        jsonrpc(
+            method='Playlist.Remove',
+            params=dict(playlistid=PLAYLIST_VIDEO, position=1)
+        )
         return False
 
     @staticmethod
-    def playlist_position():
+    def get_playlist_position():
         playlist = PlayList(PLAYLIST_VIDEO)
         position = playlist.getposition()
-        # A playlist with only one element has no next item and PlayList().getposition() starts counting from zero
+        # A playlist with only one element has no next item
+        # PlayList().getposition() starts counting from zero
         if playlist.size() > 1 and position < (playlist.size() - 1):
             # Return 1 based index value
             return position + 1
@@ -123,14 +136,15 @@ class Api:
 
     @staticmethod
     def get_next_in_playlist(position):
-        result = jsonrpc(method='Playlist.GetItems', params=dict(
-            playlistid=PLAYLIST_VIDEO,
-            # limits are zero indexed, position is one indexed
-            limits=dict(start=position, end=position+1),
-            properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
-                        'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
-                        'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
-        ))
+        result = jsonrpc(
+            method='Playlist.GetItems',
+            params=dict(
+                playlistid=PLAYLIST_VIDEO,
+                # limits are zero indexed, position is one indexed
+                limits=dict(start=position, end=position+1),
+                properties=Api.episode_properties
+            )
+        )
         item = result.get('result', {}).get('items')
 
         # Don't check if next item is an episode, just use it if it is there
@@ -153,22 +167,37 @@ class Api:
 
     def play_addon_item(self):
         if self.data.get('play_url'):
-            self.log('Playing the next episode directly: %(play_url)s' % self.data, 2)
-            jsonrpc(method='Player.Open', params=dict(item=dict(file=self.data.get('play_url'))))
+            msg = 'Playing the next episode directly: %(play_url)s' % self.data
+            self.log(msg, 2)
+            jsonrpc(
+                method='Player.Open',
+                params=dict(item=dict(file=self.data.get('play_url')))
+            )
         else:
-            self.log('Sending %(encoding)s data to add-on to play: %(play_info)s' % dict(encoding=self.encoding, **self.data), 2)
-            event(message=self.data.get('id'), data=self.data.get('play_info'), sender='upnextprovider', encoding=self.encoding)
+            msg = 'Sending {encoding} data to add-on to play: {play_info}'
+            msg = msg.format(dict(encoding=self.encoding, **self.data))
+            self.log(msg, 2)
+            event(
+                message=self.data.get('id'),
+                data=self.data.get('play_info'),
+                sender='upnextprovider',
+                encoding=self.encoding
+            )
 
     def handle_addon_lookup_of_next_episode(self):
         if not self.data:
             return None
-        self.log('handle_addon_lookup_of_next_episode episode returning data %(next_episode)s' % self.data, 2)
+        msg = 'handle_addon_lookup_of_next_episode: {next_episode}'
+        msg = msg.format(self.data)
+        self.log(msg, 2)
         return self.data.get('next_episode')
 
     def handle_addon_lookup_of_current_episode(self):
         if not self.data:
             return None
-        self.log('handle_addon_lookup_of_current episode returning data %(current_episode)s' % self.data, 2)
+        msg = 'handle_addon_lookup_of_current: {current_episode}'
+        msg.format(self.data)
+        self.log(msg, 2)
         return self.data.get('current_episode')
 
     def notification_time(self, total_time):
@@ -199,10 +228,13 @@ class Api:
 
     @staticmethod
     def get_now_playing():
-        result = jsonrpc(method='Player.GetItem', params=dict(
-            playerid=PLAYLIST_VIDEO,
-            properties=['episode', 'genre', 'playcount', 'plotoutline', 'season', 'showtitle', 'tvshowid'],
-        ))
+        result = jsonrpc(
+            method='Player.GetItem',
+            params=dict(
+                playerid=PLAYLIST_VIDEO,
+                properties=Api.episode_properties,
+            )
+        )
         result = result.get('result', {}).get('item')
 
         if not result:
@@ -219,23 +251,58 @@ class Api:
             Api.log('Library error: next episode info not found', 1)
             return None
 
-        filters = [{'or': [{'and': [{'field': 'season', 'operator': 'is', 'value': str(episode['season'])},
-                                    {'field': 'episode', 'operator': 'greaterthan', 'value': str(episode['episode'])}]},
-                           {'field': 'season', 'operator': 'greaterthan', 'value': str(episode['season'])}]}]
         (path, filename) = os.path.split(str(episode['file']))
-        filters.append({'or': [{'field': 'filename', 'operator': 'isnot', 'value': filename},
-                               {'field': 'path', 'operator': 'isnot', 'value': path}]})
+        filters = [
+            {'or': [
+                {'and': [
+                    {
+                        'field': 'season',
+                        'operator': 'is',
+                        'value': str(episode['season'])
+                    },
+                    {
+                        'field': 'episode',
+                        'operator': 'greaterthan',
+                        'value': str(episode['episode'])
+                    }
+                ]},
+                {
+                    'field': 'season',
+                    'operator': 'greaterthan',
+                    'value': str(episode['season'])
+                }
+            ]},
+            {'or': [
+                {
+                    'field': 'filename',
+                    'operator': 'isnot',
+                    'value': filename
+                },
+                {
+                    'field': 'path',
+                    'operator': 'isnot',
+                    'value': path
+                }
+            ]}
+        ]
         if not include_watched:
-            filters.append({'field': 'playcount', 'operator': 'lessthan', 'value': '1'})
+            filters.append({
+                'field': 'playcount',
+                'operator': 'lessthan',
+                'value': '1'
+            })
         filters = {'and': filters}
 
-        result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            tvshowid=tvshowid,
-            properties=Api.episode_properties,
-            sort=dict(order='ascending', method='episode'),
-            limits={'start': 0, 'end': 1},
-            filter=filters
-        ))
+        result = jsonrpc(
+            method='VideoLibrary.GetEpisodes',
+            params=dict(
+                tvshowid=tvshowid,
+                properties=Api.episode_properties,
+                sort=dict(order='ascending', method='episode'),
+                limits={'start': 0, 'end': 1},
+                filter=filters
+            )
+        )
         result = result.get('result', {}).get('episodes')
 
         if not result:
@@ -248,10 +315,13 @@ class Api:
 
     @staticmethod
     def get_episode_from_library(tvshowid, episodeid):
-        result = jsonrpc(method='VideoLibrary.GetTVShowDetails', params=dict(
-            tvshowid=tvshowid,
-            properties=Api.tvshow_properties
-        ))
+        result = jsonrpc(
+            method='VideoLibrary.GetTVShowDetails',
+            params=dict(
+                tvshowid=tvshowid,
+                properties=Api.tvshow_properties
+            )
+        )
         result = result.get('result', {}).get('tvshowdetails')
 
         if not result:
@@ -259,10 +329,13 @@ class Api:
             return None
         episode = result
 
-        result = jsonrpc(method='VideoLibrary.GetEpisodeDetails', params=dict(
-            episodeid=episodeid,
-            properties=Api.episode_properties
-        ))
+        result = jsonrpc(
+            method='VideoLibrary.GetEpisodeDetails',
+            params=dict(
+                episodeid=episodeid,
+                properties=Api.episode_properties
+            )
+        )
         result = result.get('result', {}).get('episodedetails')
 
         if not result:
@@ -274,12 +347,19 @@ class Api:
         return episode
 
     @staticmethod
-    def showtitle_to_id(title):
-        result = jsonrpc(method='VideoLibrary.GetTVShows', params=dict(
-            properties=['title'],
-            limits={'start': 0, 'end': 1},
-            filter={'field': 'title', 'operator': 'is', 'value': str(title)}
-        ))
+    def get_tvshowid(title):
+        result = jsonrpc(
+            method='VideoLibrary.GetTVShows',
+            params=dict(
+                properties=['title'],
+                limits={'start': 0, 'end': 1},
+                filter={
+                    'field': 'title',
+                    'operator': 'is',
+                    'value': str(title)
+                }
+            )
+        )
         result = result.get('result', {}).get('tvshows')
 
         if not result:
@@ -289,17 +369,30 @@ class Api:
         return get_int(result[0], 'tvshowid')
 
     @staticmethod
-    def get_episode_id(tvshowid, season, episode):
-        filters = [{'field': 'season', 'operator': 'is', 'value': str(season)},
-                   {'field': 'episode', 'operator': 'is', 'value': str(episode)}]
+    def get_episodeid(tvshowid, season, episode):
+        filters = [
+            {
+                'field': 'season',
+                'operator': 'is',
+                'value': str(season)
+            },
+            {
+                'field': 'episode',
+                'operator': 'is',
+                'value': str(episode)
+            }
+        ]
         filters = {'and': filters}
 
-        result = jsonrpc(method='VideoLibrary.GetEpisodes', params=dict(
-            tvshowid=tvshowid,
-            properties=Api.episode_properties,
-            limits={'start': 0, 'end': 1},
-            filter=filters
-        ))
+        result = jsonrpc(
+            method='VideoLibrary.GetEpisodes',
+            params=dict(
+                tvshowid=tvshowid,
+                properties=Api.episode_properties,
+                limits={'start': 0, 'end': 1},
+                filter=filters
+            )
+        )
         result = result.get('result', {}).get('episodes')
 
         if not result:
@@ -310,10 +403,13 @@ class Api:
 
     @staticmethod
     def handle_just_watched(episodeid, playcount=0, reset_resume=True):
-        result = jsonrpc(method='VideoLibrary.GetEpisodeDetails', params=dict(
-            episodeid=episodeid,
-            properties=['playcount'],
-            ))
+        result = jsonrpc(
+            method='VideoLibrary.GetEpisodeDetails',
+            params=dict(
+                episodeid=episodeid,
+                properties=['playcount'],
+            )
+        )
         result = result.get('result', {}).get('episodedetails')
 
         if result:
@@ -328,5 +424,7 @@ class Api:
         if reset_resume:
             params['resume'] = dict(position=0)
 
-        Api.log('Library update: id: {0}, playcount change from {1} to {2}'.format(episodeid, current_playcount, playcount), 2)
+        msg = 'Library update: id: {0}, playcount change from {1} to {2}'
+        msg = msg.format(episodeid, current_playcount, playcount)
+        Api.log(msg, 2)
         jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)

@@ -60,7 +60,7 @@ class UpNextMonitor(Monitor):
             current_file = self.player.getPlayingFile()
             if last_file and last_file == current_file:
                 # Already processed this playback before
-                self.log('Up Next processing stopped: old file still playing', 2)
+                self.log('Up Next processing stopped: old file is playing', 2)
                 continue
 
             total_time = self.player.getTotalTime()
@@ -72,23 +72,27 @@ class UpNextMonitor(Monitor):
             play_time = self.player.getTime()
             notification_time = self.api.notification_time(total_time)
             if total_time - play_time > notification_time:
-                # Media hasn't reach notification time yet, waiting a bit longer...
+                # Media hasn't reach notification time yet, waiting a bit longer
                 continue
 
             self.player.set_last_file(from_unicode(current_file))
-            self.log('Show Up Next notification: episode ({0}s runtime) ends in {1}s'.format(total_time, notification_time), 2)
+            msg = 'Show Up Next popup: episode ({0}s runtime) ends in {1}s'
+            msg = msg.format(total_time, notification_time)
+            self.log(msg, 2)
             self.playback_manager.launch_up_next()
 
         self.log('Service stopped', 0)
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Notification event handler for accepting data from add-ons"""
-        if not method.endswith('upnext_data'):  # Method looks like Other.upnext_data
+        # Ignore notifications not targeting Up Next 
+        if not method.endswith('upnext_data'):
             return
 
         decoded_data, encoding = decode_json(data)
         if decoded_data is None:
-            self.log('Up Next communication: received data from sender {0} is not JSON: {1}'.format(sender, data), 2)
+            msg = 'Up Next data error: {0} sent {1}'.format(sender, data)
+            self.log(msg, 2)
             return
 
         decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
