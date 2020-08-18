@@ -103,11 +103,13 @@ class Api:
     def reset_queue():
         Api.log('Up Next queue: removing previously played item', 2)
         jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=0))
+        return False
 
     @staticmethod
     def dequeue_next_item():
         Api.log('Up Next queue: removing unplayed next item', 2)
         jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=1))
+        return False
 
     @staticmethod
     def playlist_position():
