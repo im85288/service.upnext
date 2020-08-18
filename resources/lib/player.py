@@ -6,7 +6,7 @@ from xbmc import getCondVisibility, Player, Monitor
 from api import Api
 from playitem import PlayItem
 from state import State
-from utils import get_setting_bool
+from utils import get_setting_bool, log as ulog
 
 
 class UpNextPlayer(Player):
@@ -18,6 +18,10 @@ class UpNextPlayer(Player):
         self.play_item = PlayItem()
         Player.__init__(self)
 
+    @classmethod
+    def log(cls, msg, level=2):
+        ulog(msg, name=cls.__name__, level=level)
+
     def set_last_file(self, filename):
         self.state.last_file = filename
 
@@ -27,9 +31,8 @@ class UpNextPlayer(Player):
     def is_tracking(self):
         return self.state.track
 
-    def disable_tracking(self):
-        self.state.track = False
-        self.state.playing_next = False
+    def set_tracking(self, track=True):
+        self.state.track = track
 
     def reset_queue(self):
         if self.state.queued:

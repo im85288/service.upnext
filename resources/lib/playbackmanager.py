@@ -38,10 +38,10 @@ class PlaybackManager:
         elif not episode:
             # No episode get out of here
             self.state.playing_next = False
-            self.log('Error: no episode could be found to play next...exiting', 1)
+            self.log('Error: no episode to play next...exiting', 1)
 
         else:
-            self.log('Episode details %s' % episode, 2)
+            self.log('Episode details: %s' % episode, 2)
             self.state.playing_next = self.launch_popup(episode, playlist_item)
             if not self.state.playing_next and self.state.queued:
                 self.api.dequeue_next_item()

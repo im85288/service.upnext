@@ -33,6 +33,7 @@ class PlayItem:
             self.state.current_episode_id = get_int(current_episode, 'episodeid')
             tvshowid = get_int(current_episode, 'tvshowid')
             if self.state.current_tv_show_id != tvshowid:
+                self.log('Reset played in a row count: tvshowid change from {0} to {1}'.format(self.state.current_tv_show_id, tvshowid), 2)
                 self.state.current_tv_show_id = tvshowid
                 self.state.played_in_a_row = 1
 
@@ -52,7 +53,7 @@ class PlayItem:
         if self.state.tv_show_id == -1:
             current_show_title = item.get('showtitle').encode('utf-8')
             self.state.tv_show_id = self.api.showtitle_to_id(title=current_show_title)
-            self.log('Fetched missing tvshowid %s' % self.state.tv_show_id, 2)
+            self.log('Fetched tvshowid: %s' % self.state.tv_show_id, 2)
 
         # Get current episodeid
         self.state.current_episode_id = get_int(item, 'id')
@@ -62,9 +63,10 @@ class PlayItem:
                 episode=item.get('episode'),
                 season=item.get('season'),
             )
-            self.log('Fetched missing episodeid %s' % self.state.current_episode_id, 2)
+            self.log('Fetched episodeid: %s' % self.state.current_episode_id, 2)
 
         if self.state.current_tv_show_id != self.state.tv_show_id:
+            self.log('Reset played in a row count: tvshowid change from {0} to {1}'.format(self.state.current_tv_show_id, self.state.tv_show_id), 2)
             self.state.current_tv_show_id = self.state.tv_show_id
             self.state.played_in_a_row = 1
 

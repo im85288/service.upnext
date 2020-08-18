@@ -38,52 +38,48 @@ class UpNextMonitor(Monitor):
                 continue
 
             if bool(get_property('PseudoTVRunning') == 'True'):
-                self.player.disable_tracking()
+                self.player.set_tracking(False)
                 continue
 
             if get_setting_bool('disableNextUp'):
                 # Next Up is disabled
-                self.player.disable_tracking()
+                self.player.set_tracking(False)
                 continue
 
             if self.player.isExternalPlayer():
-                self.log('Up Next tracking stopped, external player detected', 2)
-                self.player.disable_tracking()
+                self.log('Up Next tracking stopped: external player used', 2)
+                self.player.set_tracking(False)
                 continue
 
             if not self.player.isPlaying():
-                self.log('Up Next tracking stopped, no file is playing', 2)
-                self.player.disable_tracking()
+                self.log('Up Next tracking stopped: no file is playing', 2)
+                self.player.set_tracking(False)
                 continue
 
             last_file = self.player.get_last_file()
             current_file = self.player.getPlayingFile()
-
             if last_file and last_file == current_file:
                 # Already processed this playback before
-                self.log('Up Next processing stopped, current file same as old file', 2)
+                self.log('Up Next processing stopped: old file still playing', 2)
                 continue
 
             total_time = self.player.getTotalTime()
-
             if total_time == 0:
-                self.log('Up Next tracking stopped, zero length file', 2)
-                self.player.disable_tracking()
+                self.log('Up Next tracking stopped: zero length file', 2)
+                self.player.set_tracking(False)
                 continue
 
             play_time = self.player.getTime()
-
             notification_time = self.api.notification_time(total_time)
             if total_time - play_time > notification_time:
                 # Media hasn't reach notification time yet, waiting a bit longer...
                 continue
 
             self.player.set_last_file(from_unicode(current_file))
-            self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
             playing_next = self.playback_manager.launch_up_next()
-            self.log('Up Next playback: %s' % ('succeeded' if playing_next else 'failed'), 2)
             self.api.reset_addon_data()
             self.player.disable_tracking()
+            self.log('Show Up Next notification: episode ({0}s runtime) ends in {1}s'.format(total_time, notification_time), 2)
 
         self.log('Service stopped', 0)
 
@@ -94,7 +90,7 @@ class UpNextMonitor(Monitor):
 
         decoded_data, encoding = decode_json(data)
         if decoded_data is None:
-            self.log('Received data from sender %s is not JSON: %s' % (sender, data), 2)
+            self.log('Up Next communication: received data from sender {0} is not JSON: {1}'.format(sender, data), 2)
             return
 
         decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))

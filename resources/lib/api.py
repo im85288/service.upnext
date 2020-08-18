@@ -79,7 +79,7 @@ class Api:
         self.data = {}
 
     def addon_data_received(self, data, encoding='base64'):
-        self.log('addon_data_received called with data %s' % data, 2)
+        self.log('Up Next addon_data_received: %s' % data, 2)
         self.data = data
         self.encoding = encoding
 
@@ -101,10 +101,12 @@ class Api:
 
     @staticmethod
     def reset_queue():
+        Api.log('Up Next queue: removing previously played item', 2)
         jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=0))
 
     @staticmethod
     def dequeue_next_item():
+        Api.log('Up Next queue: removing unplayed next item', 2)
         jsonrpc(method='Playlist.Remove', params=dict(playlistid=PLAYLIST_VIDEO, position=1))
         return False
 
@@ -132,7 +134,7 @@ class Api:
 
         # Don't check if next item is an episode, just use it if it is there
         if not item: #item.get('type') != 'episode':
-            Api.log('Playlist error, next item not found', 1)
+            Api.log('Playlist error: next item not found', 1)
             return None
 
         item = item[0]
@@ -203,17 +205,17 @@ class Api:
         result = result.get('result', {}).get('item')
 
         if not result:
-            Api.log('Player error, now playing media info not found', 1)
+            Api.log('Player error: now playing media info not found', 1)
             return None
 
-        Api.log('Got details of now playing media %s' % result, 2)
+        Api.log('Got details of now playing media: %s' % result, 2)
         return result
 
     @staticmethod
     def get_next_episode_from_library(tvshowid, episodeid, include_watched):
         episode = Api.get_episode_from_library(tvshowid, episodeid)
         if not episode:
-            Api.log('Library error, next episode info not found', 1)
+            Api.log('Library error: next episode info not found', 1)
             return None
 
         filters = [{'or': [{'and': [{'field': 'season', 'operator': 'is', 'value': str(episode['season'])},
@@ -236,11 +238,11 @@ class Api:
         result = result.get('result', {}).get('episodes')
 
         if not result:
-            Api.log('Library error, next episode info not found', 1)
+            Api.log('Library error: next episode info not found', 1)
             return None
         episode.update(result[0])
 
-        Api.log('Got details of next up episode %s' % episode, 2)
+        Api.log('Got details of next up episode: %s' % episode, 2)
         return episode
 
     @staticmethod
@@ -252,7 +254,7 @@ class Api:
         result = result.get('result', {}).get('tvshowdetails')
 
         if not result:
-            Api.log('Library error, episode info not found', 1)
+            Api.log('Library error: episode info not found', 1)
             return None
         episode = result
 
@@ -263,11 +265,11 @@ class Api:
         result = result.get('result', {}).get('episodedetails')
 
         if not result:
-            Api.log('Library error, episode info not found', 1)
+            Api.log('Library error: episode info not found', 1)
             return None
         episode.update(result)
 
-        Api.log('Got details of episode %s' % episode, 2)
+        Api.log('Got details of episode: %s' % episode, 2)
         return episode
 
     @staticmethod
@@ -280,7 +282,7 @@ class Api:
         result = result.get('result', {}).get('tvshows')
 
         if not result:
-            Api.log('Library error, tvshowid not found', 1)
+            Api.log('Library error: tvshowid not found', 1)
             return '-1'
 
         return get_int(result[0], 'tvshowid')
@@ -300,7 +302,7 @@ class Api:
         result = result.get('result', {}).get('episodes')
 
         if not result:
-            Api.log('Library error, episodeid not found', 1)
+            Api.log('Library error: episodeid not found', 1)
             return '-1'
 
         return get_int(result[0], 'episodeid')
@@ -325,5 +327,5 @@ class Api:
         if reset_resume:
             params['resume'] = dict(position=0)
 
-        Api.log('Library update, id: %s, playcount change from %s to %s' % (episodeid, current_playcount, playcount), 2)
+        Api.log('Library update: id: {0}, playcount change from {1} to {2}'.format(episodeid, current_playcount, playcount), 2)
         jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)
