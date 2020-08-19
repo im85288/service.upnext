@@ -79,8 +79,10 @@ class UpNextPlayer(Player):
             self.set_tracking()
             self.reset_queue()
             # Get details of currently playing file to save playcount
-            if not has_addon_data:
-                self.play_item.handle_now_playing_result()
+            if has_addon_data:
+                self.play_item.handle_addon_now_playing()
+            else:
+                self.play_item.handle_library_now_playing()
 
     if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name

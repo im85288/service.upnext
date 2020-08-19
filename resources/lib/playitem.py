@@ -30,22 +30,6 @@ class PlayItem:
 
         # File from addon
         elif has_addon_data:
-            episode = self.api.handle_addon_lookup_of_current_episode()
-
-            tvshowid = get_int(episode, 'tvshowid')
-            # Reset play count if new show playing
-            if self.state.tvshowid != tvshowid:
-                msg = 'Reset played count: tvshowid change from {0} to {1}'
-                msg = msg.format(
-                    self.state.tvshowid,
-                    tvshowid
-                )
-                self.log(msg, 2)
-                self.state.tvshowid = tvshowid
-                self.state.played_in_a_row = 1
-
-            self.state.episodeid = get_int(episode, 'episodeid')
-
             episode = self.api.handle_addon_lookup_of_next_episode()
 
         # File from Kodi library
@@ -58,7 +42,29 @@ class PlayItem:
 
         return episode, position
 
-    def handle_now_playing_result(self):
+    def handle_addon_now_playing(self):
+        item = self.api.handle_addon_lookup_of_current_episode()
+        if not item:
+            return None
+
+        tvshowid = get_int(item, 'tvshowid')
+
+        # Reset play count if new show playing
+        if self.state.tvshowid != tvshowid:
+            msg = 'Reset played count: tvshowid change from {0} to {1}'
+            msg = msg.format(
+                self.state.tvshowid,
+                tvshowid
+            )
+            self.log(msg, 2)
+            self.state.tvshowid = tvshowid
+            self.state.played_in_a_row = 1
+
+        self.state.episodeid = get_int(item, 'episodeid')
+
+        return item
+
+    def handle_library_now_playing(self):
         item = self.api.get_now_playing()
         if not item or item.get('type') != 'episode':
             return None
