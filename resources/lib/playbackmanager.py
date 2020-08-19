@@ -39,12 +39,14 @@ class PlaybackManager:
 
         else:
             self.log('Episode details: %s' % episode, 2)
-            self.state.playing_next = self.launch_popup(episode, playlist_item)
+            play_next, keep_playing = self.launch_popup(episode, playlist_item)
+            self.state.playing_next = play_next
+
             # Dequeue and stop playback if not playing next file
-            if not self.state.playing_next:
+            if not play_next and self.state.queued:
+                self.state.queued = self.api.dequeue_next_item()
+            if not keep_playing:
                 self.log('Stopping playback', 2)
-                if self.state.queued:
-                    self.state.queued = self.api.dequeue_next_item()
                 self.player.stop()
 
     def launch_popup(self, episode, playlist_item):
@@ -53,7 +55,9 @@ class PlaybackManager:
         if (episodeid != -1 and self.state.episodeid == episodeid or
                 watched):
             self.log('Exit launch_popup early: already watched file', 2)
-            return False
+            play_next = False
+            keep_playing = True
+            return play_next, keep_playing
 
         # Add next file to playlist if existing playlist is not being used
         if not playlist_item:
@@ -82,12 +86,16 @@ class PlaybackManager:
 
         if abort_popup:
             self.log('Exit launch_popup early: current file not playing', 2)
-            return False
+            play_next = False
+            keep_playing = True
+            return play_next, keep_playing
 
         auto_play, play_now = self.extract_play_info(dialog)
         if not auto_play and not play_now:
             self.log('Exit launch_popup early: no playback option selected', 2)
-            return False
+            play_next = False
+            keep_playing = dialog.is_cancel()
+            return play_next, keep_playing
 
         if playlist_item or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
@@ -123,11 +131,14 @@ class PlaybackManager:
                                      reset_resume=True)
 
         self.log('Up Next playback: next file requested', 2)
-        return True
+        play_next = True
+        keep_playing = True
+        return play_next, keep_playing
 
     def show_popup_and_wait(self, dialog):
         if not self.player.isPlaying():
-            return False
+            popup_done = False
+            return popup_done
 
         is_upnext = isinstance(dialog, UpNext)
 
@@ -143,7 +154,8 @@ class PlaybackManager:
             # Current file can stop or next file can start while loop is running
             # Abort popup update
             if not self.player.isPlaying() or self.state.starting:
-                return False
+                popup_done = False
+                return popup_done
 
             remaining = total_time - self.player.getTime()
             if remaining <= 1 or dialog.is_cancel():
@@ -159,7 +171,9 @@ class PlaybackManager:
             dialog.update_progress_control(remaining, total_time)
             wait_time = min(0.5, remaining - 1)
             monitor.waitForAbort(wait_time)
-        return True
+
+        popup_done = True
+        return popup_done
 
     def extract_play_info(self, dialog):
         if isinstance(dialog, UpNext):
