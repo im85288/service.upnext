@@ -9,6 +9,7 @@ from xbmcaddon import Addon
 from xbmcgui import Window
 from statichelper import from_unicode, to_unicode
 
+
 ADDON = Addon()
 
 
@@ -86,18 +87,18 @@ def get_setting_int(key, default=None):
         return default
 
 
-def get_int(obj, key):
+def get_int(obj, key, default=-1):
     """Returns a value for the given key, as integer.
-       Returns -1 if key is not available.
+       Returns default value if key is not available.
        Returns value if value cannot be converted to integer."""
     try:
-        val = obj.get(key, -1)
+        val = obj.get(key, default)
     except (AttributeError, TypeError):
-        return -1
+        return default
     try:
         return int(val)
     except ValueError:
-        return val if val else -1
+        return val if val else default
 
 
 def encode_data(data, encoding='base64'):
