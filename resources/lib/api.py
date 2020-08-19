@@ -417,7 +417,7 @@ class Api:
         result = result.get('result', {}).get('episodedetails')
 
         if result:
-            current_playcount = get_int(result, 'playcount')
+            current_playcount = get_int(result, 'playcount', 0)
         else:
             return
         if current_playcount <= playcount:

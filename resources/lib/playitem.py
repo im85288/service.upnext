@@ -62,6 +62,8 @@ class PlayItem:
 
         self.state.episodeid = get_int(item, 'episodeid')
 
+        self.state.playcount = get_int(item, 'playcount', 0)
+
         return item
 
     def handle_library_now_playing(self):
@@ -98,6 +100,6 @@ class PlayItem:
             )
             self.log('Fetched episodeid: %s' % self.state.episodeid, 2)
 
-        self.state.playcount = item.get('playcount', 0)
+        self.state.playcount = get_int(item, 'playcount', 0)
 
         return item
