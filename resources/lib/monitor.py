@@ -7,7 +7,7 @@ from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
 from statichelper import from_unicode
-from utils import decode_json, get_property, get_setting_bool, log as ulog
+from utils import decode_json, get_property, log as ulog
 
 
 class UpNextMonitor(Monitor):
@@ -41,8 +41,8 @@ class UpNextMonitor(Monitor):
                 self.player.set_tracking(False)
                 continue
 
-            if get_setting_bool('disableNextUp'):
-                # Next Up is disabled
+            # Next Up is disabled
+            if self.player.is_disabled():
                 self.player.set_tracking(False)
                 continue
 

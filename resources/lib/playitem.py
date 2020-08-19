@@ -53,7 +53,7 @@ class PlayItem:
             episode = self.api.get_next_episode_from_library(
                 self.state.tvshowid,
                 self.state.episodeid,
-                self.state.include_watched
+                self.state.unwatched_only
             )
 
         return episode, position

@@ -249,7 +249,7 @@ class Api:
         return result
 
     @staticmethod
-    def get_next_episode_from_library(tvshowid, episodeid, include_watched):
+    def get_next_episode_from_library(tvshowid, episodeid, unwatched_only):
         episode = Api.get_episode_from_library(tvshowid, episodeid)
         if not episode:
             Api.log('Library error: next episode info not found', 1)
@@ -289,7 +289,7 @@ class Api:
                 }
             ]}
         ]
-        if not include_watched:
+        if unwatched_only:
             filters.append({
                 'field': 'playcount',
                 'operator': 'lessthan',

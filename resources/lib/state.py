@@ -11,8 +11,12 @@ class State:
 
     def __init__(self):
         self.__dict__ = self._shared_state
-        self.play_mode = get_setting_int('autoPlayMode')
-        self.include_watched = get_setting_bool('includeWatched')
+        self.disabled = get_setting_bool('disableNextUp')
+        self.auto_play = get_setting_int('autoPlayMode') == 0
+        self.unwatched_only = not get_setting_bool('includeWatched')
+        self.enable_playlist = get_setting_bool('enablePlaylist')
+        self.played_limit = get_setting_int('playedInARow')
+        self.simple_mode = get_setting_int('simpleMode') == 0
         self.tvshowid = None
         self.episodeid = None
         self.playcount = 0

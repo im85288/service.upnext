@@ -8,8 +8,8 @@ from player import UpNextPlayer
 from playitem import PlayItem
 from state import State
 from dialog import StillWatching, UpNext
-from utils import (addon_path, clear_property, event, get_setting_bool,
-                   get_setting_int, get_int, log as ulog, set_property)
+from utils import (addon_path, clear_property, event, get_int, log as ulog,
+                   set_property)
 
 
 class PlaybackManager:
@@ -30,7 +30,7 @@ class PlaybackManager:
         episode, playlist_item = self.play_item.get_next()
 
         # Shouldn't get here if playlist setting is disabled, but just in case
-        if playlist_item and not get_setting_bool('enablePlaylist'):
+        if playlist_item and not self.state.enable_playlist:
             self.log('Playlist integration disabled', 2)
 
         # No episode get out of here
@@ -63,17 +63,16 @@ class PlaybackManager:
         if not playlist_item:
             self.state.queued = self.api.queue_next_item(episode)
 
-        played_in_a_row_number = get_setting_int('playedInARow')
-        show_next_up = self.state.played_in_a_row < played_in_a_row_number
+        show_next_up = self.state.played_in_a_row < self.state.played_limit
 
-        self.log('Played in a row setting: %s' % played_in_a_row_number, 2)
+        self.log('Played in a row setting: %s' % self.state.played_limit, 2)
         self.log('Played in a row: {0}, showing {1} page'.format(
             self.state.played_in_a_row,
             'next up' if show_next_up else 'still watching'), 2)
 
         filename = 'script-upnext{0}{1}.xml'.format(
             '-upnext' if show_next_up else '-stillwatching',
-            '-simple' if get_setting_int('simpleMode') == 0 else '')
+            '-simple' if self.state.simple_mode else '')
         if show_next_up:
             dialog = UpNext(filename, addon_path(), 'default', '1080i')
         else:
@@ -151,7 +150,7 @@ class PlaybackManager:
 
         monitor = Monitor()
         while not monitor.abortRequested():
-            # Current file can stop or next file can start while loop is running
+            # Current file can stop or next file can start while in loop
             # Abort popup update
             if not self.player.isPlaying() or self.state.starting:
                 popup_done = False
@@ -177,7 +176,7 @@ class PlaybackManager:
 
     def extract_play_info(self, dialog):
         if isinstance(dialog, UpNext):
-            auto_play = not dialog.is_cancel() and self.state.play_mode == 0
+            auto_play = not dialog.is_cancel() and self.state.auto_play
             play_now = dialog.is_watch_now()
         else:
             auto_play = False

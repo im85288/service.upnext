@@ -6,7 +6,7 @@ from xbmc import getCondVisibility, Player, Monitor
 from api import Api
 from playitem import PlayItem
 from state import State
-from utils import get_setting_bool, log as ulog
+from utils import log as ulog
 
 
 class UpNextPlayer(Player):
@@ -28,6 +28,9 @@ class UpNextPlayer(Player):
 
     def get_last_file(self):
         return self.state.last_file
+
+    def is_disabled(self):
+        return self.state.disabled
 
     def is_tracking(self):
         return self.state.track
@@ -63,7 +66,7 @@ class UpNextPlayer(Player):
         is_episode = getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
-        if is_playlist_item and not get_setting_bool('enablePlaylist'):
+        if is_playlist_item and not self.state.enable_playlist:
             return
 
         # Ensure that old addon data is not used
