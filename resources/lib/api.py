@@ -18,22 +18,22 @@ class Api:
         'season',
         'episode',
         'showtitle',
-        #'originaltitle',
+        # 'originaltitle',
         'plot',
-        #'votes',
+        # 'votes',
         'file',
         'rating',
-        #'ratings',
-        #'userrating',
+        # 'ratings',
+        # 'userrating',
         'resume',
         'tvshowid',
         'firstaired',
         'art',
         'streamdetails',
         'runtime',
-        #'director',
+        # 'director',
         'writer',
-        #'cast',
+        # 'cast',
         'dateadded',
         'lastplayed'
     ]
@@ -43,11 +43,11 @@ class Api:
         'studio',
         'year',
         'plot',
-        #'cast',
+        # 'cast',
         'rating',
-        #'ratings',
-        #'userrating',
-        #'votes',
+        # 'ratings',
+        # 'userrating',
+        # 'votes',
         'genre',
         'episode',
         'season',
@@ -56,13 +56,13 @@ class Api:
         'premiered',
         'playcount',
         'lastplayed',
-        #'sorttitle',
-        #'originaltitle',
+        # 'sorttitle',
+        # 'originaltitle',
         'art',
         'tag',
         'dateadded',
         'watchedepisodes',
-        #'imdbnumber'
+        # 'imdbnumber'
     ]
 
     def __init__(self):
@@ -145,14 +145,14 @@ class Api:
             params=dict(
                 playlistid=PLAYLIST_VIDEO,
                 # limits are zero indexed, position is one indexed
-                limits=dict(start=position, end=position+1),
+                limits=dict(start=position, end=position + 1),
                 properties=Api.episode_properties
             )
         )
         item = result.get('result', {}).get('items')
 
         # Don't check if next item is an episode, just use it if it is there
-        if not item: #item.get('type') != 'episode':
+        if not item:  # item.get('type') != 'episode':
             Api.log('Playlist error: next item not found', 1)
             return None
 
@@ -170,12 +170,13 @@ class Api:
         return item
 
     def play_addon_item(self):
-        if self.data.get('play_url'):
-            msg = 'Playing the next episode directly: %(play_url)s' % self.data
+        data = self.data.get('play_url')
+        if data:
+            msg = 'Playing the next episode directly: {0}'.format(data)
             self.log(msg, 2)
             jsonrpc(
                 method='Player.Open',
-                params=dict(item=dict(file=self.data.get('play_url')))
+                params=dict(item=dict(file=data))
             )
         else:
             msg = 'Sending {encoding} data to add-on to play: {play_info}'
@@ -191,18 +192,16 @@ class Api:
     def handle_addon_lookup_of_next_episode(self):
         if not self.data:
             return None
-        msg = 'handle_addon_lookup_of_next_episode: {next_episode}'
-        msg = msg.format(self.data)
-        self.log(msg, 2)
-        return self.data.get('next_episode')
+        data = self.data.get('next_episode')
+        self.log('handle_addon_lookup_of_next_episode: {0}'.format(data), 2)
+        return data
 
     def handle_addon_lookup_of_current_episode(self):
         if not self.data:
             return None
-        msg = 'handle_addon_lookup_of_current: {current_episode}'
-        msg.format(self.data)
-        self.log(msg, 2)
-        return self.data.get('current_episode')
+        data = self.data.get('current_episode')
+        self.log('handle_addon_lookup_of_current_episode: {0}'.format(data), 2)
+        return data
 
     def notification_time(self, total_time):
         # Alway use metadata, when available

@@ -58,8 +58,8 @@ class UpNextMonitor(Monitor):
 
             last_file = self.player.get_last_file()
             current_file = self.player.getPlayingFile()
+            # Already processed this playback before
             if last_file and last_file == current_file:
-                # Already processed this playback before
                 self.log('Up Next processing stopped: old file is playing', 2)
                 continue
 
@@ -71,12 +71,12 @@ class UpNextMonitor(Monitor):
 
             play_time = self.player.getTime()
             notification_time = self.api.notification_time(total_time)
+            # Media hasn't reach notification time yet, waiting a bit longer
             if total_time - play_time > notification_time:
-                # Media hasn't reach notification time yet, waiting a bit longer
                 continue
 
-            # Disable tracking to ensure second notification can't trigger after
-            # next file requested but not loaded
+            # Disable tracking to ensure second notification can't trigger
+            # after next file has been requested but has not yet loaded
             self.player.set_tracking(False)
             self.player.set_last_file(from_unicode(current_file))
             msg = 'Show Up Next popup: episode ({0}s runtime) ends in {1}s'
