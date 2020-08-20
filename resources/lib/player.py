@@ -36,6 +36,9 @@ class UpNextPlayer(Player):
         return self.state.track
 
     def set_tracking(self, track=True):
+        msg = 'Up Next tracking: {0}'
+        msg = msg.format('Enabled' if track else 'Disabled')
+        self.log(msg, 2)
         self.state.track = track
 
     def reset_queue(self):
@@ -52,6 +55,7 @@ class UpNextPlayer(Player):
         while not monitor.abortRequested():
             # Exit if starting state has been reset by playback error/end/stop
             if not self.state.starting:
+                self.log('Up Next tracking failed: starting state reset', 2)
                 return
 
             # Got a file to play
@@ -67,6 +71,7 @@ class UpNextPlayer(Player):
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
+            self.log('Up Next tracking failed: playlist handling disabled', 2)
             return
 
         # Use new addon data if provided

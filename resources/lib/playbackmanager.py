@@ -36,7 +36,7 @@ class PlaybackManager:
 
         # Shouldn't get here if playlist setting is disabled, but just in case
         if playlist_item and not self.state.enable_playlist:
-            self.log('Playlist integration disabled', 2)
+            self.log('Playlist handling disabled', 2)
             return
 
         self.log('Episode details: %s' % episode, 2)
@@ -192,7 +192,7 @@ class PlaybackManager:
 
         monitor = Monitor()
         while not monitor.abortRequested():
-            # Current file can stop or next file can start while in loop
+            # Current file can stop, or next file can start, while in loop
             # Abort popup update
             if not self.player.isPlaying() or self.state.starting:
                 popup_done = False
