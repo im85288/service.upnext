@@ -95,8 +95,7 @@ class PlayItem:
             self.state.episodeid = self.api.get_episodeid(
                 tvshowid,
                 item.get('season'),
-                item.get('episode'),
-
+                item.get('episode')
             )
             self.log('Fetched episodeid: %s' % self.state.episodeid, 2)
 

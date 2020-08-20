@@ -29,25 +29,27 @@ class PlaybackManager:
     def launch_up_next(self):
         episode, playlist_item = self.play_item.get_next()
 
+        # No episode get out of here
+        if not episode:
+            self.log('Error: no episode to play next...exiting', 1)
+            return
+
         # Shouldn't get here if playlist setting is disabled, but just in case
         if playlist_item and not self.state.enable_playlist:
             self.log('Playlist integration disabled', 2)
+            return
 
-        # No episode get out of here
-        elif not episode:
-            self.log('Error: no episode to play next...exiting', 1)
+        self.log('Episode details: %s' % episode, 2)
+        # Show popup and get new playback state
+        play_next, keep_playing = self.launch_popup(episode, playlist_item)
+        self.state.playing_next = play_next
 
-        else:
-            self.log('Episode details: %s' % episode, 2)
-            play_next, keep_playing = self.launch_popup(episode, playlist_item)
-            self.state.playing_next = play_next
-
-            # Dequeue and stop playback if not playing next file
-            if not play_next and self.state.queued:
-                self.state.queued = self.api.dequeue_next_item()
-            if not keep_playing:
-                self.log('Stopping playback', 2)
-                self.player.stop()
+        # Dequeue and stop playback if not playing next file
+        if not play_next and self.state.queued:
+            self.state.queued = self.api.dequeue_next_item()
+        if not keep_playing:
+            self.log('Stopping playback', 2)
+            self.player.stop()
 
     def launch_popup(self, episode, playlist_item):
         episodeid = get_int(episode, 'episodeid')
@@ -62,23 +64,33 @@ class PlaybackManager:
         if not playlist_item:
             self.state.queued = self.api.queue_next_item(episode)
 
+        # Only use Still Watching? popup if played limit has been reached
         show_next_up = self.state.played_in_a_row < self.state.played_limit
 
         self.log('Played in a row setting: %s' % self.state.played_limit, 2)
         self.log('Played in a row: {0}, showing {1} page'.format(
             self.state.played_in_a_row,
-            'next up' if show_next_up else 'still watching'), 2)
+            'next up' if show_next_up else 'still watching'
+        ), 2)
 
+        # Filename for dialog XML
         filename = 'script-upnext{0}{1}.xml'.format(
             '-upnext' if show_next_up else '-stillwatching',
-            '-simple' if self.state.simple_mode else '')
+            '-simple' if self.state.simple_mode else ''
+        )
+        # Create Kodi dialog to show Up Next or Still Watching? popup
         if show_next_up:
             dialog = UpNext(filename, addon_path(), 'default', '1080i')
         else:
             dialog = StillWatching(filename, addon_path(), 'default', '1080i')
+
+        # Send episode info to popup
         dialog.set_item(episode)
 
+        # Show popup and check that it has not been terminated early
         abort_popup = not self.show_popup_and_wait(dialog)
+
+        # Close dialog once we are done with it
         dialog.close()
         clear_property('service.upnext.dialog')
 
@@ -88,13 +100,19 @@ class PlaybackManager:
             keep_playing = True
             return play_next, keep_playing
 
+        # Generate new playback state details
         auto_play, play_now = self.extract_play_info(dialog)
+
         if not auto_play and not play_now:
             self.log('Exit launch_popup early: no playback option selected', 2)
             play_next = False
+            # Keep playing if Cancel button was clicked on popup
+            # Stop After Close functionality is handled by dialog
             keep_playing = dialog.is_cancel()
             return play_next, keep_playing
 
+        # Request playback of next file
+        # Primary method is to play next playlist item
         if playlist_item or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
             # behaviour:
@@ -108,27 +126,59 @@ class PlaybackManager:
             # Can't just wait for next file to play as VideoPlayer closes all
             # video threads when the current file finishes
             if play_now:
+                # xbmc.Player().playnext() does not allow for control of resume
+                # PlayMedia builtin can't target now playing playlist
+                # PlayMedia('',[playoffset=xx],[resume],[noresume])
+                # JSON Player.Open is too slow (further testing required)
+                # Stick to playnext() for now, without possibility for resuming
                 self.player.playnext()
 
+        # Fallback addon playback option, used if addon provides play_info
         elif self.api.has_addon_data():
-            # Play add-on media
             self.api.play_addon_item()
 
+        # Fallback library playback option, not normally used
         else:
-            # Play local media
             self.api.play_kodi_item(episode)
 
         # Signal to trakt previous episode watched
-        event(message='NEXTUPWATCHEDSIGNAL',
-              data=dict(episodeid=self.state.episodeid),
-              encoding='base64')
+        event(
+            message='NEXTUPWATCHEDSIGNAL',
+            data=dict(episodeid=self.state.episodeid),
+            encoding='base64'
+        )
 
         # Increase playcount and reset resume point
-        self.api.handle_just_watched(episodeid=self.state.episodeid,
-                                     playcount=self.state.playcount,
-                                     reset_resume=True)
+        # TODO: Add settings to control whether file is marked as watched and
+        #       resume point is reset when next file is played
+        self.api.handle_just_watched(
+            episodeid=self.state.episodeid,
+            playcount=self.state.playcount,
+            reset_resume=True
+        )
 
-        self.log('Up Next playback: next file requested', 2)
+        # Determine playback method used for logging purposes
+        method = []
+        if self.state.queued:
+            method.append('queue')
+        elif playlist_item:
+            method.append('playlist')
+        if self.api.has_addon_data():
+            method.append('addon')
+            if self.api.has_addon_data() == 1:
+                method.append('url')
+            else:
+                method.append('info')
+        elif isinstance(episodeid, int) and episodeid != -1:
+            method.append('library')
+        else:
+            method.append('file')
+        method = ' '.join(method)
+
+        msg = 'Up Next playback: next file requested (using {0} method)'
+        msg = msg.format(' '.join(method))
+        self.log(msg, 2)
+
         play_next = True
         keep_playing = True
         return play_next, keep_playing

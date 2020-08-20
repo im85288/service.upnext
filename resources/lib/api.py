@@ -97,7 +97,11 @@ class Api:
     def play_kodi_item(episode):
         jsonrpc(
             method='Player.Open',
-            params=dict(item=dict(episodeid=get_int(episode, 'episodeid')))
+            params=dict(
+                item=dict(
+                    episodeid=get_int(episode, 'episodeid')
+                )
+            ),
         )
 
     def queue_next_item(self, episode):
@@ -161,12 +165,16 @@ class Api:
         if not item:  # item.get('type') != 'episode':
             Api.log('Playlist error: next item not found', 1)
             return None
-
         item = item[0]
+
+        # Playlist item may not have had video info details set
+        # Try and populate required details if missing
         if not item.get('title'):
             item['title'] = item.get('label', '')
         item['episodeid'] = get_int(item, 'id')
         item['tvshowid'] = get_int(item, 'tvshowid')
+        # If missing season/episode, change to empty string to avoid episode
+        # formatting issues ("S-1E-1") in Up Next popup
         if get_int(item, 'season') == -1:
             item['season'] = ''
         if get_int(item, 'episode') == -1:
@@ -263,6 +271,7 @@ class Api:
         (path, filename) = os.path.split(str(episode['file']))
         filters = [
             {'or': [
+                # Next episode in current season
                 {'and': [
                     {
                         'field': 'season',
@@ -275,12 +284,18 @@ class Api:
                         'value': str(episode['episode'])
                     }
                 ]},
+                # Next episode in next season
                 {
                     'field': 'season',
                     'operator': 'greaterthan',
                     'value': str(episode['season'])
                 }
             ]},
+            # Check that both next filename and path are different to current
+            # to deal with different file naming schemes e.g.
+            # Season 1/Episode 1.mkv
+            # Season 1/Episode 1/video.mkv
+            # Season 1/Episode 1-2-3.mkv
             {'or': [
                 {
                     'field': 'filename',
@@ -295,6 +310,7 @@ class Api:
             ]}
         ]
         if unwatched_only:
+            # Exclude watched episodes
             filters.append({
                 'field': 'playcount',
                 'operator': 'lessthan',
@@ -428,8 +444,10 @@ class Api:
         if current_playcount <= playcount:
             playcount += 1
 
-        params = dict(episodeid=episodeid,
-                      playcount=playcount)
+        params = dict(
+            episodeid=episodeid,
+            playcount=playcount
+        )
         if reset_resume:
             params['resume'] = dict(position=0)
 

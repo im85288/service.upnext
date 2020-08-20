@@ -63,6 +63,7 @@ class UpNextMonitor(Monitor):
                 self.log('Up Next processing stopped: old file is playing', 2)
                 continue
 
+            # Check that video stream has actually loaded and started playing
             total_time = self.player.getTotalTime()
             if total_time == 0:
                 self.log('Up Next tracking stopped: zero length file', 2)
@@ -78,7 +79,11 @@ class UpNextMonitor(Monitor):
             # Disable tracking to ensure second notification can't trigger
             # after next file has been requested but has not yet loaded
             self.player.set_tracking(False)
+
+            # Store current file and reset playing_next state
             self.player.set_last_file(from_unicode(current_file))
+
+            # Start Up Next to handle playback of next file
             msg = 'Show Up Next popup: episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, notification_time)
             self.log(msg, 2)

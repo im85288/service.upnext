@@ -89,8 +89,8 @@ class StillWatching(WindowXMLDialog):
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if runtime:
-            endtime = localize_time(datetime.now() + timedelta(seconds=runtime))
-            self.setProperty('endtime', from_unicode(endtime))
+            endtime = datetime.now() + timedelta(seconds=runtime)
+            self.setProperty('endtime', from_unicode(localize_time(endtime)))
 
     def set_cancel(self, cancel):
         self.cancel = cancel
@@ -209,8 +209,8 @@ class UpNext(WindowXMLDialog):
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if runtime:
-            endtime = localize_time(datetime.now() + timedelta(seconds=runtime))
-            self.setProperty('endtime', from_unicode(endtime))
+            endtime = datetime.now() + timedelta(seconds=runtime)
+            self.setProperty('endtime', from_unicode(localize_time(endtime)))
 
     def set_cancel(self, cancel):
         self.cancel = cancel

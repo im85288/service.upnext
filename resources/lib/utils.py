@@ -150,11 +150,14 @@ def event(message, data=None, sender=None, encoding='base64'):
     if not encoded:
         return
 
-    jsonrpc(method='JSONRPC.NotifyAll', params=dict(
-        sender='%s.SIGNAL' % sender,
-        message=message,
-        data=[encoded],
-    ))
+    jsonrpc(
+        method='JSONRPC.NotifyAll',
+        params=dict(
+            sender='%s.SIGNAL' % sender,
+            message=message,
+            data=[encoded],
+        )
+    )
 
 
 def log(msg, name=None, level=1):
