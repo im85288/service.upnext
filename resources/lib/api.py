@@ -389,7 +389,7 @@ class Api:
 
         if not result:
             Api.log('Library error: tvshowid not found', 1)
-            return '-1'
+            return -1
 
         return get_int(result[0], 'tvshowid')
 
@@ -422,7 +422,7 @@ class Api:
 
         if not result:
             Api.log('Library error: episodeid not found', 1)
-            return '-1'
+            return -1
 
         return get_int(result[0], 'episodeid')
 
