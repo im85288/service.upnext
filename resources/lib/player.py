@@ -42,7 +42,7 @@ class UpNextPlayer(Player):
         if self.state.queued:
             self.state.queued = self.api.reset_queue()
 
-    def track_playback(self):
+    def track_playback(self, data=None, encoding=None):
         self.state.starting = True
 
         # onPlayBackEnded for current file can trigger after next file starts
@@ -62,15 +62,20 @@ class UpNextPlayer(Player):
         self.state.starting = False
 
         is_playlist_item = self.api.get_playlist_position()
-        has_addon_data = self.api.has_addon_data()
+        has_addon_data = data or self.api.has_addon_data()
         is_episode = getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
             return
 
-        # Ensure that old addon data is not used
-        if self.is_tracking() and not self.state.playing_next:
+        # Use new addon data if provided
+        if data:
+            self.api.addon_data_received(data, encoding)
+        # Ensure that old addon data is not used. Note this may cause played in
+        # a row count to reset incorrectly if playlist of mixed non-addon and
+        # addon content is used
+        elif not self.state.playing_next:
             self.api.reset_addon_data()
             has_addon_data = False
 

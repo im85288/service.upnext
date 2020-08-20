@@ -103,8 +103,6 @@ class UpNextMonitor(Monitor):
             msg = 'Up Next data error: {0} sent {1}'.format(sender, data)
             self.log(msg, 2)
             return
-
         decoded_data.update(id='%s_play_action' % sender)
-        self.player.track_playback()
-        if self.player.is_tracking():
-            self.api.addon_data_received(decoded_data, encoding=encoding)
+
+        self.player.track_playback(decoded_data, encoding)
