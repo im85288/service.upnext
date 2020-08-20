@@ -77,7 +77,13 @@ class Api:
         ulog(msg, name=cls.__name__, level=level)
 
     def has_addon_data(self):
-        return self.data
+        if self.data:
+            if self.data.get('play_url'):
+                return 1
+            else:
+                return 2
+        else:
+            return 0
 
     def reset_addon_data(self):
         self.data = {}
