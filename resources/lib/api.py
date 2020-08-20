@@ -102,6 +102,11 @@ class Api:
                     episodeid=get_int(episode, 'episodeid')
                 )
             ),
+            # Disable resuming, playback from start
+            # TODO: Add setting to control playback from start or resume point
+            options=dict(
+                resume=False
+            )
         )
 
     def queue_next_item(self, episode):
