@@ -78,12 +78,10 @@ class Api:
 
     def has_addon_data(self):
         if self.data:
-            if self.data.get('play_url'):
-                return 1
-            else:
+            if self.data.get('play_info'):
                 return 2
-        else:
-            return 0
+            return 1
+        return 0
 
     def reset_addon_data(self):
         self.data = {}

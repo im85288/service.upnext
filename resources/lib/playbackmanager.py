@@ -157,26 +157,19 @@ class PlaybackManager:
             reset_resume=True
         )
 
-        # Determine playback method used for logging purposes
-        method = []
-        if self.state.queued:
-            method.append('queue')
-        elif playlist_item:
-            method.append('playlist')
-        if self.api.has_addon_data():
-            method.append('addon')
-            if self.api.has_addon_data() == 1:
-                method.append('url')
-            else:
-                method.append('info')
-        elif isinstance(episodeid, int) and episodeid != -1:
-            method.append('library')
-        else:
-            method.append('file')
-        method = ' '.join(method)
-
-        msg = 'Up Next playback: next file requested (using {0} method)'
-        msg = msg.format(' '.join(method))
+        # Determine playback method. Used for logging purposes
+        msg = 'Up Next playback requested: Using{0}{1}{2} method'
+        msg = msg.format(
+            ' play_now' if play_now else
+            ' auto_play',
+            ' play_url' if (self.api.has_addon_data() == 1) else
+            ' play_info' if (self.api.has_addon_data() == 2) else
+            ' library' if (isinstance(episodeid, int) and episodeid != -1) else
+            ' file',
+            ' playlist' if playlist_item else
+            ' queue' if self.state.queued else
+            ' direct'
+        )
         self.log(msg, 2)
 
         play_next = True

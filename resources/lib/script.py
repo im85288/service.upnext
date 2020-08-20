@@ -88,7 +88,7 @@ def test_popup(window):
     popup.show()
     step = 0
     wait = 100
-    wait_s = wait/1000
+    wait_s = wait / 1000
     timeout = 10000
     monitor = Monitor()
     while popup and step < timeout and not monitor.abortRequested():
