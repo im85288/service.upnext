@@ -16,10 +16,7 @@ def send_signal(sender, upnext_info):
     # Exit if not enough addon information provided
     if (
         'current_episode' not in upnext_info
-        or (
-            'play_url' not in upnext_info
-            and 'play_info' not in upnext_info
-        )
+        or ('play_url' not in upnext_info and 'play_info' not in upnext_info)
     ):
         log('Sending invalid Up Next data: %s' % upnext_info, 1)
         return
