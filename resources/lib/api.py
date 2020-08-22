@@ -267,6 +267,7 @@ class Api:
     @staticmethod
     def get_next_episode_from_library(tvshowid, episodeid, unwatched_only):
         episode = Api.get_episode_from_library(tvshowid, episodeid)
+        new_season = False
         if not episode:
             Api.log('Library error: next episode info not found', 1)
             return None
@@ -288,6 +289,7 @@ class Api:
                     }
                 ]},
                 # Next episode in next season
+                # TODO: Make next season search optional
                 {
                     'field': 'season',
                     'operator': 'greaterthan',
@@ -336,10 +338,12 @@ class Api:
         if not result:
             Api.log('Library error: next episode info not found', 1)
             return None
+        if episode.get('season') != result[0].get('season'):
+            new_season = True
         episode.update(result[0])
 
         Api.log('Got details of next up episode: %s' % episode, 2)
-        return episode
+        return episode, new_season
 
     @staticmethod
     def get_episode_from_library(tvshowid, episodeid):

@@ -34,11 +34,14 @@ class PlayItem:
 
         # File from Kodi library
         else:
-            episode = self.api.get_next_episode_from_library(
+            episode, new_season = self.api.get_next_episode_from_library(
                 self.state.tvshowid,
                 self.state.episodeid,
                 self.state.unwatched_only
             )
+            # Show Still Watching? popup if next episode is from next season
+            if new_season:
+                self.state.played_in_a_row = self.state.played_limit
 
         return episode, position
 
