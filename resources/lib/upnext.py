@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import InfoTagVideo
 from xbmcgui import ListItem
-from utils import event, get_int, log as ulog
+from utils import event, log as ulog
 
 
 def log(msg, level=2):
@@ -59,9 +59,18 @@ def send_signal(sender, upnext_info):
     if not upnext_info.get('next_episode'):
         episode = upnext_info['current_episode']
         episode['episodeid'] = -1
-        episode['title'] = 'Next episode'
         episode['art'] = {}
-        episode['episode'] = get_int(episode, 'episode') + 1
+        # Next provided episode may not be the next consecutive episode so we
+        # can't assume that the episode can simply be incremented, instead set
+        # title to indicate the next episode in the Up Next popup
+        # from utils import get_int
+        # episode['episode'] = get_int(episode, 'episode') + 1
+        # TODO: Change to localised string variable for translation purposes
+        episode['title'] = 'Next episode'
+        # Change season and episode info to empty string to avoid episode
+        # formatting issues ("S-1E-1") in Up Next popup
+        episode['season'] = ''
+        episode['episode'] = ''
         episode['plot'] = ''
         episode['playcount'] = 0
         episode['rating'] = 0
