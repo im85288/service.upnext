@@ -97,7 +97,7 @@ def get_int(obj, key, default=-1):
         return default
     try:
         return int(val)
-    except ValueError:
+    except (ValueError, TypeError):
         return val if val else default
 
 
