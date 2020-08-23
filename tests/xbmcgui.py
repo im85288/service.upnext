@@ -230,7 +230,7 @@ class WindowXML(Window):
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXML class '''
-        super(WindowXML, self).__init__()  # pylint: disable=useless-super-delegation
+        super(WindowXML, self).__init__()  # pylint: disable=super-with-arguments
 
 
 class WindowXMLDialog(WindowXML):
@@ -238,4 +238,4 @@ class WindowXMLDialog(WindowXML):
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
-        super(WindowXMLDialog, self).__init__()  # pylint: disable=useless-super-delegation
+        super(WindowXMLDialog, self).__init__()  # pylint: disable=super-with-arguments
