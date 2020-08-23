@@ -125,7 +125,7 @@ class PlaybackManager:
             # - Will sometimes work just fine
             # Can't just wait for next file to play as VideoPlayer closes all
             # video threads when the current file finishes
-            if play_now:
+            if play_now or (auto_play and self.state.popup_cue):
                 # xbmc.Player().playnext() does not allow for control of resume
                 # PlayMedia builtin can't target now playing playlist
                 # PlayMedia('',[playoffset=xx],[resume],[noresume])
@@ -161,6 +161,7 @@ class PlaybackManager:
         msg = 'Up Next playback requested: Using{0}{1}{2} method'
         msg = msg.format(
             ' play_now' if play_now else
+            ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
             ' auto_play',
             ' play_url' if (self.api.has_addon_data() == 1) else
             ' play_info' if (self.api.has_addon_data() == 2) else
@@ -184,7 +185,14 @@ class PlaybackManager:
         is_upnext = isinstance(dialog, UpNext)
 
         total_time = self.player.getTotalTime()
-        remaining = total_time - self.player.getTime()
+        play_time = self.player.getTime()
+        # If cue point was provided then Up Next will auto play after a fixed
+        # delay time, rather than waiting for the end of the file
+        if is_upnext and self.state.popup_cue:
+            popup_start = max(play_time, self.player.get_popup_time())
+            popup_duration = self.state.auto_play_delay
+            total_time = min(popup_start + popup_duration, total_time)
+        remaining = total_time - play_time
 
         dialog.set_progress_step_size(remaining)
         dialog.show()

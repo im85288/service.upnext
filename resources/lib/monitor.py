@@ -64,6 +64,7 @@ class UpNextMonitor(Monitor):
                 continue
 
             # Check that video stream has actually loaded and started playing
+            # TODO: This check should no longer be required. Test and remove
             total_time = self.player.getTotalTime()
             if total_time == 0:
                 self.log('Up Next tracking stopped: zero length file', 2)
@@ -71,12 +72,12 @@ class UpNextMonitor(Monitor):
                 continue
 
             play_time = self.player.getTime()
-            notification_time = self.api.notification_time(total_time)
-            # Media hasn't reach notification time yet, waiting a bit longer
-            if total_time - play_time > notification_time:
+            popup_time = self.player.get_popup_time()
+            # Media hasn't reach popup time yet, waiting a bit longer
+            if play_time < popup_time:
                 continue
 
-            # Disable tracking to ensure second notification can't trigger
+            # Disable tracking to ensure second popup can't trigger
             # after next file has been requested but has not yet loaded
             self.player.set_tracking(False)
 
@@ -85,7 +86,7 @@ class UpNextMonitor(Monitor):
 
             # Start Up Next to handle playback of next file
             msg = 'Show Up Next popup: episode ({0}s runtime) ends in {1}s'
-            msg = msg.format(total_time, notification_time)
+            msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
             self.playback_manager.launch_up_next()
 

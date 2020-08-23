@@ -45,6 +45,9 @@ class UpNextPlayer(Player):
         if self.state.queued:
             self.state.queued = self.api.reset_queue()
 
+    def get_popup_time(self):
+        return self.state.popup_time
+
     def track_playback(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
@@ -68,7 +71,8 @@ class UpNextPlayer(Player):
             wait_count += 1
 
         # Exit if no file playing
-        if not self.isPlaying() or not self.getTotalTime():
+        total_time = self.isPlaying() and self.getTotalTime()
+        if not total_time:
             return
 
         # Exit if starting counter has been reset or new start detected
@@ -99,11 +103,17 @@ class UpNextPlayer(Player):
         if is_playlist_item or has_addon_data or is_episode:
             self.set_tracking()
             self.reset_queue()
+
             # Get details of currently playing file to save playcount
             if has_addon_data:
                 self.play_item.handle_addon_now_playing()
             else:
                 self.play_item.handle_library_now_playing()
+
+            # Store popup time and check if cue point was provided
+            popup_time, cue = self.api.calc_popup_time(total_time)
+            self.state.popup_time = popup_time
+            self.state.popup_cue = cue
 
     if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name

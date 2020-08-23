@@ -15,6 +15,7 @@ class State:
         # Settings state variables
         self.disabled = get_setting_bool('disableNextUp')
         self.auto_play = get_setting_int('autoPlayMode') == 0
+        self.auto_play_delay = get_setting_int('autoPlayCountdown')
         self.unwatched_only = not get_setting_bool('includeWatched')
         self.enable_playlist = get_setting_bool('enablePlaylist')
         self.played_limit = get_setting_int('playedInARow')
@@ -23,6 +24,8 @@ class State:
         self.tvshowid = None
         self.episodeid = None
         self.playcount = 0
+        self.popup_time = 0
+        self.popup_cue = False
         # Previous file details
         self.last_file = None
         # Internal state variables

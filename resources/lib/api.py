@@ -220,31 +220,38 @@ class Api:
         self.log('handle_addon_lookup_of_current_episode: {0}'.format(data), 2)
         return data
 
-    def notification_time(self, total_time):
+    def calc_popup_time(self, total_time):
         # Alway use metadata, when available
-        notification_time = get_int(self.data, 'notification_time')
-        if 0 < notification_time < total_time:
-            return notification_time
+        popup_duration = get_int(self.data, 'notification_time')
+        if 0 < popup_duration < total_time:
+            cue = True
+            return total_time - popup_duration, cue
 
         # Some consumers send the offset when the credits start (e.g. Netflix)
-        notification_offset = get_int(self.data, 'notification_offset')
-        if 0 < notification_offset < total_time:
-            return total_time - notification_offset
+        popup_time = get_int(self.data, 'notification_offset')
+        if 0 < popup_time < total_time:
+            cue = True
+            return popup_time, cue
 
         # Use a customized notification time, when configured
         if get_setting_bool('customAutoPlayTime'):
             if total_time > 60 * 60:
-                return get_setting_int('autoPlayTimeXL')
-            if total_time > 40 * 60:
-                return get_setting_int('autoPlayTimeL')
-            if total_time > 20 * 60:
-                return get_setting_int('autoPlayTimeM')
-            if total_time > 10 * 60:
-                return get_setting_int('autoPlayTimeS')
-            return get_setting_int('autoPlayTimeXS')
+                duration_setting = 'autoPlayTimeXL'
+            elif total_time > 40 * 60:
+                duration_setting = 'autoPlayTimeL'
+            elif total_time > 20 * 60:
+                duration_setting = 'autoPlayTimeM'
+            elif total_time > 10 * 60:
+                duration_setting = 'autoPlayTimeS'
+            else:
+                duration_setting = 'autoPlayTimeXS'
 
         # Use one global default, regardless of episode length
-        return get_setting_int('autoPlaySeasonTime')
+        else:
+            duration_setting = 'autoPlaySeasonTime'
+
+        cue = False
+        return total_time - get_setting_int(duration_setting), cue
 
     @staticmethod
     def get_now_playing():
