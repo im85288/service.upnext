@@ -9,6 +9,7 @@ from xbmcaddon import Addon
 from xbmcgui import Window
 from statichelper import from_unicode, to_unicode
 
+
 ADDON = Addon()
 
 
@@ -47,7 +48,8 @@ def get_setting(key, default=None):
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
         value = to_unicode(Addon().getSetting(key))
-    except RuntimeError:  # Occurs when the add-on is disabled
+    # Occurs when the add-on is disabled
+    except RuntimeError:
         return default
     if value == '' and default is not None:
         return default
@@ -58,12 +60,14 @@ def get_setting_bool(key, default=None):
     """Get an add-on setting as boolean"""
     try:
         return Addon().getSettingBool(key)
-    except (AttributeError, TypeError):  # On Krypton or older, or when not a boolean
+    # On Krypton or older, or when not a boolean
+    except (AttributeError, TypeError):
         value = get_setting(key, default)
         if value not in ('false', 'true'):
             return default
         return bool(value == 'true')
-    except RuntimeError:  # Occurs when the add-on is disabled
+    # Occurs when the add-on is disabled
+    except RuntimeError:
         return default
 
 
@@ -71,14 +75,30 @@ def get_setting_int(key, default=None):
     """Get an add-on setting as integer"""
     try:
         return Addon().getSettingInt(key)
-    except (AttributeError, TypeError):  # On Krypton or older, or when not an integer
+    # On Krypton or older, or when not an integer
+    except (AttributeError, TypeError):
         value = get_setting(key, default)
         try:
             return int(value)
         except ValueError:
             return default
-    except RuntimeError:  # Occurs when the add-on is disabled
+    # Occurs when the add-on is disabled
+    except RuntimeError:
         return default
+
+
+def get_int(obj, key, default=-1):
+    """Returns a value for the given key, as integer.
+       Returns default value if key is not available.
+       Returns value if value cannot be converted to integer."""
+    try:
+        val = obj.get(key, default)
+    except (AttributeError, TypeError):
+        return default
+    try:
+        return int(val)
+    except (ValueError, TypeError):
+        return val if val else default
 
 
 def encode_data(data, encoding='base64'):
@@ -109,7 +129,8 @@ def decode_data(encoded):
         json_data = b64decode(encoded)
     else:
         encoding = 'hex'
-    # NOTE: With Python 3.5 and older json.loads() does not support bytes or bytearray, so we convert to unicode
+    # NOTE: With Python 3.5 and older json.loads() does not support bytes
+    # or bytearray, so we convert to unicode
     return json.loads(to_unicode(json_data)), encoding
 
 
@@ -129,11 +150,14 @@ def event(message, data=None, sender=None, encoding='base64'):
     if not encoded:
         return
 
-    jsonrpc(method='JSONRPC.NotifyAll', params=dict(
-        sender='%s.SIGNAL' % sender,
-        message=message,
-        data=[encoded],
-    ))
+    jsonrpc(
+        method='JSONRPC.NotifyAll',
+        params=dict(
+            sender='%s.SIGNAL' % sender,
+            message=message,
+            data=[encoded],
+        )
+    )
 
 
 def log(msg, name=None, level=1):
@@ -156,22 +180,24 @@ def calculate_progress_steps(period):
 
 def jsonrpc(**kwargs):
     """Perform JSONRPC calls"""
-    if kwargs.get('id') is None:
+    if 'id' not in kwargs:
         kwargs.update(id=0)
-    if kwargs.get('jsonrpc') is None:
+    if 'jsonrpc' not in kwargs:
         kwargs.update(jsonrpc='2.0')
     return json.loads(executeJSONRPC(json.dumps(kwargs)))
 
 
 def get_global_setting(setting):
     """Get a Kodi setting"""
-    result = jsonrpc(method='Settings.GetSettingValue', params=dict(setting=setting))
+    result = jsonrpc(
+        method='Settings.GetSettingValue',
+        params=dict(setting=setting)
+    )
     return result.get('result', {}).get('value')
 
 
 def localize(string_id):
     """Return the translated string from the .po language files"""
-
     return ADDON.getLocalizedString(string_id)
 
 
