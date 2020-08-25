@@ -7,7 +7,8 @@ from platform import machine
 from xbmc import Player
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import get_setting_bool, localize, localize_time
+from utils import (calculate_progress_steps, get_setting_bool, localize,
+                   localize_time)
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
@@ -63,7 +64,8 @@ class StillWatching(WindowXMLDialog):
     def prepare_progress_control(self):
         try:
             self.progress_control = self.getControl(3014)
-        except RuntimeError:  # Occurs when skin does not include progress control
+        # Occurs when skin does not include progress control
+        except RuntimeError:
             pass
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
@@ -71,14 +73,15 @@ class StillWatching(WindowXMLDialog):
     def set_item(self, item):
         self.item = item
 
-    def set_progress_step_size(self, progress_step_size):
-        self.progress_step_size = progress_step_size
+    def set_progress_step_size(self, remaining):
+        self.progress_step_size = calculate_progress_steps(remaining)
 
     def update_progress_control(self, remaining=None, runtime=None):
-        self.current_progress_percent = self.current_progress_percent - self.progress_step_size
+        self.current_progress_percent -= self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
-        except RuntimeError:  # Occurs when skin does not include progress control
+        # Occurs when skin does not include progress control
+        except RuntimeError:
             pass
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
@@ -86,7 +89,8 @@ class StillWatching(WindowXMLDialog):
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if runtime:
-            self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
+            endtime = datetime.now() + timedelta(seconds=runtime)
+            self.setProperty('endtime', from_unicode(localize_time(endtime)))
 
     def set_cancel(self, cancel):
         self.cancel = cancel
@@ -110,10 +114,12 @@ class StillWatching(WindowXMLDialog):
         self.close()
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
-        if controlId == 3012:  # Still watching
+        # Still watching
+        if controlId == 3012:
             self.set_still_watching(True)
             self.close()
-        elif controlId == 3013:  # Cancel
+        # Cancel
+        elif controlId == 3013:
             self.set_cancel(True)
             self.close()
 
@@ -178,7 +184,8 @@ class UpNext(WindowXMLDialog):
     def prepare_progress_control(self):
         try:
             self.progress_control = self.getControl(3014)
-        except RuntimeError:  # Occurs when skin does not include progress control
+        # Occurs when skin does not include progress control
+        except RuntimeError:
             pass
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
@@ -186,14 +193,15 @@ class UpNext(WindowXMLDialog):
     def set_item(self, item):
         self.item = item
 
-    def set_progress_step_size(self, progress_step_size):
-        self.progress_step_size = progress_step_size
+    def set_progress_step_size(self, remaining):
+        self.progress_step_size = calculate_progress_steps(remaining)
 
     def update_progress_control(self, remaining=None, runtime=None):
-        self.current_progress_percent = self.current_progress_percent - self.progress_step_size
+        self.current_progress_percent -= self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
-        except RuntimeError:  # Occurs when skin does not include progress control
+        # Occurs when skin does not include progress control
+        except RuntimeError:
             pass
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
@@ -201,7 +209,8 @@ class UpNext(WindowXMLDialog):
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
         if runtime:
-            self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
+            endtime = datetime.now() + timedelta(seconds=runtime)
+            self.setProperty('endtime', from_unicode(localize_time(endtime)))
 
     def set_cancel(self, cancel):
         self.cancel = cancel
@@ -225,10 +234,12 @@ class UpNext(WindowXMLDialog):
         self.close()
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
-        if controlId == 3012:  # Watch now
+        # Watch now
+        if controlId == 3012:
             self.set_watch_now(True)
             self.close()
-        elif controlId == 3013:  # Close / Stop
+        # Close / Stop
+        elif controlId == 3013:
             self.set_cancel(True)
             if get_setting_bool('stopAfterClose'):
                 Player().stop()
