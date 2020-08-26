@@ -29,6 +29,9 @@ class UpNextPlayer(Player):
     def get_last_file(self):
         return self.state.last_file
 
+    def get_tracked_file(self):
+        return self.state.filename
+
     def is_disabled(self):
         return self.state.disabled
 
@@ -36,8 +39,13 @@ class UpNextPlayer(Player):
         return self.state.track
 
     def set_tracking(self, track=True):
-        msg = 'Up Next tracking: {0}'
-        msg = msg.format('Enabled' if track else 'Disabled')
+        msg = 'Tracking: {0}'
+        if track:
+            filename = self.getPlayingFile()
+            self.state.filename = filename
+            msg = msg.format('enabled - %s' % filename)
+        else:
+            msg = msg.format('disabled')
         self.log(msg, 2)
         self.state.track = track
 

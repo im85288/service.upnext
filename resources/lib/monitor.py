@@ -52,22 +52,29 @@ class UpNextMonitor(Monitor):
                 continue
 
             if not self.player.isPlaying():
-                self.log('Tracking: stopped - no file is playing', 2)
+                self.log('Tracking: error - no file is playing', 1)
                 self.player.set_tracking(False)
                 continue
 
             last_file = self.player.get_last_file()
+            tracked_file = self.player.get_tracked_file()
             current_file = self.player.getPlayingFile()
             # Already processed this playback before
             if last_file and last_file == current_file:
                 self.log('Monitoring: old file is playing', 2)
                 continue
 
+            # New stream started without tracking being updated
+            if tracked_file and tracked_file != current_file:
+                self.log('Tracking: error - unknown file playing', 1)
+                self.player.set_tracking(False)
+                continue
+
             # Check that video stream has actually loaded and started playing
             # TODO: This check should no longer be required. Test and remove
             total_time = self.player.getTotalTime()
             if total_time == 0:
-                self.log('Tracking: stopped - zero length file', 2)
+                self.log('Tracking: error - zero length file', 1)
                 self.player.set_tracking(False)
                 continue
 

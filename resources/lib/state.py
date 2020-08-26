@@ -21,6 +21,7 @@ class State:
         self.played_limit = get_setting_int('playedInARow')
         self.simple_mode = get_setting_int('simpleMode') == 0
         # Current file details
+        self.filename = None
         self.tvshowid = None
         self.episodeid = None
         self.playcount = 0
