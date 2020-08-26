@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import getCondVisibility, Player, Monitor
-from api import Api
 from playitem import PlayItem
 from state import State
 from utils import log as ulog
@@ -12,10 +11,10 @@ from utils import log as ulog
 class UpNextPlayer(Player):
     """Service class for playback monitoring"""
 
-    def __init__(self):
-        self.api = Api()
+    def __init__(self, *args, **kwargs):
+        self.api = kwargs.get('__api')
         self.state = State()
-        self.play_item = PlayItem()
+        self.play_item = PlayItem(self.api, self.state)
         Player.__init__(self)
 
     @classmethod

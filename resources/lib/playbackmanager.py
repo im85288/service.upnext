@@ -3,10 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import Monitor
-from api import Api
-from player import UpNextPlayer
-from playitem import PlayItem
-from state import State
 from dialog import StillWatching, UpNext
 from utils import (
     addon_path, clear_property, event, get_int, log as ulog, set_property
@@ -14,14 +10,12 @@ from utils import (
 
 
 class PlaybackManager:
-    _shared_state = {}
 
-    def __init__(self):
-        self.__dict__ = self._shared_state
-        self.api = Api()
-        self.play_item = PlayItem()
-        self.state = State()
-        self.player = UpNextPlayer()
+    def __init__(self, __player):
+        self.player = __player
+        self.api = __player.api
+        self.play_item = __player.play_item
+        self.state = __player.state
 
     @classmethod
     def log(cls, msg, level=2):

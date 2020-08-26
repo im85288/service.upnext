@@ -15,9 +15,9 @@ class UpNextMonitor(Monitor):
 
     def __init__(self):
         """Constructor for Monitor"""
-        self.player = UpNextPlayer()
         self.api = Api()
-        self.playback_manager = PlaybackManager()
+        self.player = UpNextPlayer(__api=self.api)
+        self.playback_manager = PlaybackManager(self.player)
         Monitor.__init__(self)
 
     @classmethod

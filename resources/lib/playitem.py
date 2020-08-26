@@ -2,18 +2,15 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from api import Api
-from state import State
+from xbmc import PlayList, PLAYLIST_VIDEO
 from utils import get_int, log as ulog
 
 
 class PlayItem:
-    _shared_state = {}
 
-    def __init__(self):
-        self.__dict__ = self._shared_state
-        self.api = Api()
-        self.state = State()
+    def __init__(self, __api, __state):
+        self.api = __api
+        self.state = __state
 
     @classmethod
     def log(cls, msg, level=2):
