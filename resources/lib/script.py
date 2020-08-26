@@ -6,9 +6,12 @@ from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from math import ceil
 from xbmc import Monitor
+from xbmcaddon import Addon
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import addon_path, get_setting_bool, localize, localize_time
+from utils import (
+    addon_path, get_setting_bool, localize, localize_time
+)
 
 
 class TestPopup(WindowXMLDialog):
@@ -100,7 +103,6 @@ def test_popup(window):
 
 
 def open_settings():
-    from xbmcaddon import Addon
     Addon().openSettings()
 
 

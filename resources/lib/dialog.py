@@ -7,8 +7,9 @@ from platform import machine
 from xbmc import Player
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import (calculate_progress_steps, get_setting_bool, localize,
-                   localize_time)
+from utils import (
+    calculate_progress_steps, get_setting_bool, localize, localize_time
+)
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
