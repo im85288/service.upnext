@@ -47,12 +47,12 @@ class UpNextMonitor(Monitor):
                 continue
 
             if self.player.isExternalPlayer():
-                self.log('Up Next tracking stopped: external player used', 2)
+                self.log('Tracking: stopped - external player used', 2)
                 self.player.set_tracking(False)
                 continue
 
             if not self.player.isPlaying():
-                self.log('Up Next tracking stopped: no file is playing', 2)
+                self.log('Tracking: stopped - no file is playing', 2)
                 self.player.set_tracking(False)
                 continue
 
@@ -60,14 +60,14 @@ class UpNextMonitor(Monitor):
             current_file = self.player.getPlayingFile()
             # Already processed this playback before
             if last_file and last_file == current_file:
-                self.log('Up Next processing stopped: old file is playing', 2)
+                self.log('Monitoring: old file is playing', 2)
                 continue
 
             # Check that video stream has actually loaded and started playing
             # TODO: This check should no longer be required. Test and remove
             total_time = self.player.getTotalTime()
             if total_time == 0:
-                self.log('Up Next tracking stopped: zero length file', 2)
+                self.log('Tracking: stopped - zero length file', 2)
                 self.player.set_tracking(False)
                 continue
 
@@ -85,7 +85,7 @@ class UpNextMonitor(Monitor):
             self.player.set_last_file(from_unicode(current_file))
 
             # Start Up Next to handle playback of next file
-            msg = 'Show Up Next popup: episode ({0}s runtime) ends in {1}s'
+            msg = 'Popup: launch - episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
             self.playback_manager.launch_up_next()
@@ -101,8 +101,8 @@ class UpNextMonitor(Monitor):
         decoded_data, encoding = decode_json(data)
         sender = sender.replace('.SIGNAL', '')
         if decoded_data is None:
-            msg = 'Up Next data error: {0} sent {1}'.format(sender, data)
-            self.log(msg, 2)
+            msg = 'Addon: data error - {0} sent {1}'.format(sender, data)
+            self.log(msg, 1)
             return
         decoded_data.update(id='%s_play_action' % sender)
 

@@ -64,7 +64,7 @@ class UpNextPlayer(Player):
         while not monitor.abortRequested() and wait_count < wait_limit:
             # Exit if starting state has been reset by playback error/end/stop
             if not self.state.starting:
-                self.log('Up Next tracking failed: starting state reset', 2)
+                self.log('Tracking: failed - starting state reset', 1)
                 return
 
             monitor.waitForAbort(1)
@@ -86,7 +86,7 @@ class UpNextPlayer(Player):
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
-            self.log('Up Next tracking failed: playlist handling disabled', 2)
+            self.log('Tracking: disabled - playlist handling not enabled', 2)
             return
 
         # Use new addon data if provided

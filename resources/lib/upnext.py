@@ -12,7 +12,7 @@ def log(msg, level=2):
 
 
 def send_signal(sender, upnext_info):
-    """Helper function for plugins to send up next data to UpNext"""
+    """Helper function for plugins to send up next data to Up Next"""
     # Exit if not enough addon information provided
     info_check = (
         (upnext_info.get('play_url') or upnext_info.get('play_info'))

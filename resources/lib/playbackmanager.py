@@ -40,7 +40,6 @@ class PlaybackManager:
             self.log('Playlist handling disabled', 2)
             return
 
-        self.log('Episode details: %s' % episode, 2)
         # Show popup and get new playback state
         play_next, keep_playing = self.launch_popup(episode, playlist_item)
         self.state.playing_next = play_next
@@ -159,7 +158,7 @@ class PlaybackManager:
         )
 
         # Determine playback method. Used for logging purposes
-        msg = 'Up Next playback requested: Using{0}{1}{2} method'
+        msg = 'Playback: requested - using{0}{1}{2} method'
         msg = msg.format(
             ' play_now' if play_now else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
