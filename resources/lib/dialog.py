@@ -8,7 +8,8 @@ from xbmc import Player
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
 from utils import (
-    calculate_progress_steps, get_setting_bool, localize, localize_time
+    calculate_progress_steps, get_int, get_setting_bool, localize,
+    localize_time
 )
 
 ACTION_PLAYER_STOP = 13
@@ -74,10 +75,10 @@ class StillWatching(WindowXMLDialog):
     def set_item(self, item):
         self.item = item
 
-    def set_progress_step_size(self, remaining):
-        self.progress_step_size = calculate_progress_steps(remaining)
+    def set_progress_step_size(self, remaining, delta):
+        self.progress_step_size = calculate_progress_steps(remaining, delta)
 
-    def update_progress_control(self, remaining=None, runtime=None):
+    def update_progress_control(self, remaining=None):
         self.current_progress_percent -= self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
@@ -89,6 +90,8 @@ class StillWatching(WindowXMLDialog):
 
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
+
+        runtime = get_int(self.item, 'runtime', 0)
         if runtime:
             endtime = datetime.now() + timedelta(seconds=runtime)
             self.setProperty('endtime', from_unicode(localize_time(endtime)))
@@ -194,10 +197,10 @@ class UpNext(WindowXMLDialog):
     def set_item(self, item):
         self.item = item
 
-    def set_progress_step_size(self, remaining):
-        self.progress_step_size = calculate_progress_steps(remaining)
+    def set_progress_step_size(self, remaining, delta):
+        self.progress_step_size = calculate_progress_steps(remaining, delta)
 
-    def update_progress_control(self, remaining=None, runtime=None):
+    def update_progress_control(self, remaining=None):
         self.current_progress_percent -= self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
@@ -209,6 +212,8 @@ class UpNext(WindowXMLDialog):
 
         if remaining:
             self.setProperty('remaining', from_unicode('%02d' % remaining))
+
+        runtime = get_int(self.item, 'runtime', 0)
         if runtime:
             endtime = datetime.now() + timedelta(seconds=runtime)
             self.setProperty('endtime', from_unicode(localize_time(endtime)))
