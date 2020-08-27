@@ -188,7 +188,8 @@ class PlaybackManager:
             total_time = min(popup_start + popup_duration, total_time)
         remaining = total_time - play_time
 
-        dialog.set_progress_step_size(remaining)
+        wait_time = 0.5
+        dialog.set_progress_step_size(remaining, wait_time)
         dialog.show()
         set_property('service.upnext.dialog', 'true')
 
@@ -211,7 +212,7 @@ class PlaybackManager:
             if self.state.pause:
                 pass
 
-            dialog.update_progress_control(remaining, total_time)
+            dialog.update_progress_control(remaining)
             wait_time = min(0.5, remaining - 1)
             monitor.waitForAbort(wait_time)
 
