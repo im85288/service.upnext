@@ -9,7 +9,7 @@ from utils import (
 )
 
 
-episode_properties = [
+EPISODE_PROPERTIES = [
     'title',
     'playcount',
     'season',
@@ -35,7 +35,7 @@ episode_properties = [
     'lastplayed'
 ]
 
-tvshow_properties = [
+TVSHOW_PROPERTIES = [
     'title',
     'studio',
     'year',
@@ -140,7 +140,7 @@ def get_next_in_playlist(position):
             playlistid=PLAYLIST_VIDEO,
             # limits are zero indexed, position is one indexed
             limits=dict(start=position, end=position + 1),
-            properties=episode_properties
+            properties=EPISODE_PROPERTIES
         )
     )
     item = result.get('result', {}).get('items')
@@ -227,7 +227,7 @@ def get_now_playing():
         method='Player.GetItem',
         params=dict(
             playerid=PLAYLIST_VIDEO,
-            properties=episode_properties,
+            properties=EPISODE_PROPERTIES,
         )
     )
     result = result.get('result', {}).get('item')
@@ -303,7 +303,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
         method='VideoLibrary.GetEpisodes',
         params=dict(
             tvshowid=tvshowid,
-            properties=episode_properties,
+            properties=EPISODE_PROPERTIES,
             sort=dict(order='ascending', method='episode'),
             limits={'start': 0, 'end': 1},
             filter=filters
@@ -329,7 +329,7 @@ def get_from_library(tvshowid, episodeid):
         method='VideoLibrary.GetTVShowDetails',
         params=dict(
             tvshowid=tvshowid,
-            properties=tvshow_properties
+            properties=TVSHOW_PROPERTIES
         )
     )
     result = result.get('result', {}).get('tvshowdetails')
@@ -343,7 +343,7 @@ def get_from_library(tvshowid, episodeid):
         method='VideoLibrary.GetEpisodeDetails',
         params=dict(
             episodeid=episodeid,
-            properties=episode_properties
+            properties=EPISODE_PROPERTIES
         )
     )
     result = result.get('result', {}).get('episodedetails')
@@ -399,7 +399,7 @@ def get_episodeid(tvshowid, season, episode):
         method='VideoLibrary.GetEpisodes',
         params=dict(
             tvshowid=tvshowid,
-            properties=episode_properties,
+            properties=EPISODE_PROPERTIES,
             limits={'start': 0, 'end': 1},
             filter=filters
         )
