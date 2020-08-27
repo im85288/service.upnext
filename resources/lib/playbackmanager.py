@@ -3,6 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import Monitor
+from api import (
+    dequeue_next_item, handle_just_watched, play_addon_item, play_kodi_item,
+    queue_next_item
+)
 from dialog import StillWatching, UpNext
 from utils import (
     addon_path, clear_property, event, get_int, log as ulog, set_property
@@ -11,18 +15,16 @@ from utils import (
 
 class PlaybackManager:
 
-    def __init__(self, __player):
-        self.player = __player
-        self.api = __player.api
-        self.play_item = __player.play_item
-        self.state = __player.state
+    def __init__(self, player, state):
+        self.player = player
+        self.state = state
 
     @classmethod
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
 
     def launch_up_next(self):
-        episode, playlist_item = self.play_item.get_next()
+        episode, playlist_item = self.state.get_next()
 
         # No episode get out of here
         if not episode:
@@ -40,7 +42,7 @@ class PlaybackManager:
 
         # Dequeue and stop playback if not playing next file
         if not play_next and self.state.queued:
-            self.state.queued = self.api.dequeue_next_item()
+            self.state.queued = dequeue_next_item()
         if not keep_playing:
             self.log('Stopping playback', 2)
             self.player.stop()
@@ -56,7 +58,7 @@ class PlaybackManager:
 
         # Add next file to playlist if existing playlist is not being used
         if not playlist_item:
-            self.state.queued = self.api.queue_next_item(episode)
+            self.state.queued = queue_next_item(self.state.data, episode)
 
         # Only use Still Watching? popup if played limit has been reached
         show_next_up = self.state.played_in_a_row < self.state.played_limit
@@ -128,12 +130,12 @@ class PlaybackManager:
                 self.player.playnext()
 
         # Fallback addon playback option, used if addon provides play_info
-        elif self.api.has_addon_data():
-            self.api.play_addon_item()
+        elif self.state.has_addon_data():
+            play_addon_item(self.state.data, self.state.encoding)
 
         # Fallback library playback option, not normally used
         else:
-            self.api.play_kodi_item(episode)
+            play_kodi_item(episode)
 
         # Signal to trakt previous episode watched
         event(
@@ -145,7 +147,7 @@ class PlaybackManager:
         # Increase playcount and reset resume point
         # TODO: Add settings to control whether file is marked as watched and
         #       resume point is reset when next file is played
-        self.api.handle_just_watched(
+        handle_just_watched(
             episodeid=self.state.episodeid,
             playcount=self.state.playcount,
             reset_resume=True
@@ -157,8 +159,8 @@ class PlaybackManager:
             ' play_now' if play_now else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
             ' auto_play',
-            ' play_url' if (self.api.has_addon_data() == 1) else
-            ' play_info' if (self.api.has_addon_data() == 2) else
+            ' play_url' if (self.state.has_addon_data() == 1) else
+            ' play_info' if (self.state.has_addon_data() == 2) else
             ' library' if (isinstance(episodeid, int) and episodeid != -1) else
             ' file',
             ' playlist' if playlist_item else
@@ -183,7 +185,7 @@ class PlaybackManager:
         # If cue point was provided then Up Next will auto play after a fixed
         # delay time, rather than waiting for the end of the file
         if is_upnext and self.state.popup_cue:
-            popup_start = max(play_time, self.player.get_popup_time())
+            popup_start = max(play_time, self.state.get_popup_time())
             popup_duration = self.state.auto_play_delay
             total_time = min(popup_start + popup_duration, total_time)
         remaining = total_time - play_time

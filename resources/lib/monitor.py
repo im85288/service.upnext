@@ -3,9 +3,9 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import Monitor
-from api import Api
 from playbackmanager import PlaybackManager
-from player import UpNextPlayer
+from player import PlayerMonitor
+from state import State
 from statichelper import from_unicode
 from utils import decode_json, get_property, log as ulog
 
@@ -15,9 +15,8 @@ class UpNextMonitor(Monitor):
 
     def __init__(self):
         """Constructor for Monitor"""
-        self.api = Api()
-        self.player = UpNextPlayer(__api=self.api)
-        self.playback_manager = PlaybackManager(self.player)
+        self.state = State()
+        self.player = PlayerMonitor(state=self.state)
         Monitor.__init__(self)
 
     @classmethod
@@ -34,30 +33,30 @@ class UpNextMonitor(Monitor):
                 # Abort was requested while waiting. We should exit
                 break
 
-            if not self.player.is_tracking():
+            if not self.state.is_tracking():
                 continue
 
             if bool(get_property('PseudoTVRunning') == 'True'):
-                self.player.set_tracking(False)
+                self.state.set_tracking(False)
                 continue
 
             # Next Up is disabled
-            if self.player.is_disabled():
-                self.player.set_tracking(False)
+            if self.state.is_disabled():
+                self.state.set_tracking(False)
                 continue
 
             if self.player.isExternalPlayer():
                 self.log('Tracking: stopped - external player used', 2)
-                self.player.set_tracking(False)
+                self.state.set_tracking(False)
                 continue
 
             if not self.player.isPlaying():
                 self.log('Tracking: error - no file is playing', 1)
-                self.player.set_tracking(False)
+                self.state.set_tracking(False)
                 continue
 
-            last_file = self.player.get_last_file()
-            tracked_file = self.player.get_tracked_file()
+            last_file = self.state.get_last_file()
+            tracked_file = self.state.get_tracked_file()
             current_file = self.player.getPlayingFile()
             # Already processed this playback before
             if last_file and last_file == current_file:
@@ -67,7 +66,7 @@ class UpNextMonitor(Monitor):
             # New stream started without tracking being updated
             if tracked_file and tracked_file != current_file:
                 self.log('Tracking: error - unknown file playing', 1)
-                self.player.set_tracking(False)
+                self.state.set_tracking(False)
                 continue
 
             # Check that video stream has actually loaded and started playing
@@ -75,27 +74,30 @@ class UpNextMonitor(Monitor):
             total_time = self.player.getTotalTime()
             if total_time == 0:
                 self.log('Tracking: error - zero length file', 1)
-                self.player.set_tracking(False)
+                self.state.set_tracking(False)
                 continue
 
             play_time = self.player.getTime()
-            popup_time = self.player.get_popup_time()
+            popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
             if play_time < popup_time:
                 continue
 
             # Disable tracking to ensure second popup can't trigger
             # after next file has been requested but has not yet loaded
-            self.player.set_tracking(False)
+            self.state.set_tracking(False)
 
             # Store current file and reset playing_next state
-            self.player.set_last_file(from_unicode(current_file))
+            self.state.set_last_file(from_unicode(current_file))
 
             # Start Up Next to handle playback of next file
             msg = 'Popup: launch - episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
-            self.playback_manager.launch_up_next()
+            PlaybackManager(
+                player=self.player,
+                state=self.state
+            ).launch_up_next()
 
         self.log('Service stopped', 0)
 

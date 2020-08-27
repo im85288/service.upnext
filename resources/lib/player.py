@@ -2,58 +2,22 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import getCondVisibility, Player, Monitor
-from playitem import PlayItem
+from xbmc import getCondVisibility, Monitor, Player
+from api import get_playlist_position, get_popup_time
 from state import State
 from utils import log as ulog
 
 
-class UpNextPlayer(Player):
+class PlayerMonitor(Player):
     """Service class for playback monitoring"""
 
-    def __init__(self, *args, **kwargs):
-        self.api = kwargs.get('__api')
-        self.state = State()
-        self.play_item = PlayItem(self.api, self.state)
+    def __init__(self, state):
+        self.state = state
         Player.__init__(self)
 
     @classmethod
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
-
-    def set_last_file(self, filename):
-        self.state.last_file = filename
-        self.state.playing_next = False
-
-    def get_last_file(self):
-        return self.state.last_file
-
-    def get_tracked_file(self):
-        return self.state.filename
-
-    def is_disabled(self):
-        return self.state.disabled
-
-    def is_tracking(self):
-        return self.state.track
-
-    def set_tracking(self, track=True):
-        msg = 'Tracking: {0}'
-        if track:
-            filename = self.getPlayingFile()
-            self.state.filename = filename
-            msg = msg.format('enabled - %s' % filename)
-        else:
-            msg = msg.format('disabled')
-        self.log(msg, 2)
-        self.state.track = track
-
-    def reset_queue(self):
-        if self.state.queued:
-            self.state.queued = self.api.reset_queue()
-
-    def get_popup_time(self):
-        return self.state.popup_time
 
     def track_playback(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
@@ -87,7 +51,7 @@ class UpNextPlayer(Player):
             return
         self.state.starting = 0
 
-        is_playlist_item = self.api.get_playlist_position()
+        is_playlist_item = get_playlist_position()
         has_addon_data = bool(data)
         is_episode = getCondVisibility('videoplayer.content(episodes)')
 
@@ -98,27 +62,27 @@ class UpNextPlayer(Player):
 
         # Use new addon data if provided
         if data:
-            self.api.addon_data_received(data, encoding)
+            self.state.set_addon_data(data, encoding)
         # Ensure that old addon data is not used. Note this may cause played in
         # a row count to reset incorrectly if playlist of mixed non-addon and
         # addon content is used
         else:
-            self.api.reset_addon_data()
+            self.state.reset_addon_data()
             has_addon_data = False
 
         # Start tracking if Up Next can handle the currently playing file
         if is_playlist_item or has_addon_data or is_episode:
-            self.set_tracking()
-            self.reset_queue()
+            self.state.set_tracking(self.getPlayingFile())
+            self.state.reset_queue()
 
             # Get details of currently playing file to save playcount
             if has_addon_data:
-                self.play_item.handle_addon_now_playing()
+                self.state.handle_addon_now_playing()
             else:
-                self.play_item.handle_library_now_playing()
+                self.state.handle_library_now_playing()
 
             # Store popup time and check if cue point was provided
-            popup_time, cue = self.api.calc_popup_time(total_time)
+            popup_time, cue = get_popup_time(self.state.data, total_time)
             self.state.popup_time = popup_time
             self.state.popup_cue = cue
 
@@ -139,22 +103,22 @@ class UpNextPlayer(Player):
 
     def onPlayBackStopped(self):  # pylint: disable=invalid-name
         """Will be called when user stops playing a file"""
-        self.reset_queue()
-        self.api.reset_addon_data()
-        self.state = State()  # Reset state
+        self.state.reset_queue()
+        self.state.reset_addon_data()
+        self.state = State(reset=True)  # Reset state
 
     def onPlayBackEnded(self):  # pylint: disable=invalid-name
         """Will be called when Kodi has ended playing a file"""
-        self.reset_queue()
-        self.set_tracking(False)
+        self.state.reset_queue()
+        self.state.set_tracking(False)
         # Event can occur before or after the next file has started playing
         # Only reset state if Up Next has not requested the next file to play
         if not self.state.playing_next:
-            self.api.reset_addon_data()
-            self.state = State()  # Reset state
+            self.state.reset_addon_data()
+            self.state = State(reset=True)  # Reset state
 
     def onPlayBackError(self):  # pylint: disable=invalid-name
         """Will be called when when playback stops due to an error"""
-        self.reset_queue()
-        self.api.reset_addon_data()
-        self.state = State()  # Reset state
+        self.state.reset_queue()
+        self.state.reset_addon_data()
+        self.state = State(reset=True)  # Reset state
