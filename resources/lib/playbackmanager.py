@@ -8,9 +8,7 @@ from api import (
     queue_next_item
 )
 from dialog import UpNextPopup
-from utils import (
-    addon_path, clear_property, event, get_int, log as ulog, set_property
-)
+from utils import clear_property, event, get_int, log as ulog, set_property
 
 
 class PlaybackManager:
@@ -75,10 +73,7 @@ class PlaybackManager:
             '-simple' if self.state.simple_mode else ''
         )
         # Create Kodi dialog to show Up Next or Still Watching? popup
-        dialog = UpNextPopup(filename, addon_path(), 'default', '1080i')
-
-        # Send episode info to popup
-        dialog.set_item(episode)
+        dialog = UpNextPopup(xmlFilename=filename, item=episode)
 
         # Show popup and check that it has not been terminated early
         abort_popup = not self.show_popup_and_wait(dialog, auto_play)

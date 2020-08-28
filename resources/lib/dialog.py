@@ -5,34 +5,40 @@ from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from platform import machine
 from xbmc import Player
-from xbmcgui import WindowXMLDialog
+from xbmcgui import WindowXMLDialog, ACTION_NAV_BACK, ACTION_STOP
 from statichelper import from_unicode
 from utils import (
-    calculate_progress_steps, get_int, get_setting_bool, localize,
+    addon_path, calculate_progress_steps, get_int, get_setting_bool, localize,
     localize_time, log as ulog
 )
 
-ACTION_PLAYER_STOP = 13
-ACTION_NAV_BACK = 92
 OS_MACHINE = machine()
 
 
 class UpNextPopup(WindowXMLDialog):
-    item = None
-    cancel = False
-    playnow = False
-    progress_step_size = 0
-    current_progress_percent = 100
-    progress_control = None
 
-    def __init__(self, *args, **kwargs):
-        self.action_exitkeys_id = [10, 13]
+    def __init__(
+        self,
+        xmlFilename,
+        item,
+        scriptPath=addon_path(),
+        defaultSkin='default',
+        defaultRes='1080i'
+    ):
+        self.item = item
+        self.cancel = False
+        self.playnow = False
+        self.progress_step_size = 0
+        self.current_progress_percent = 100
         self.progress_control = None
+
         if OS_MACHINE[0:5] == 'armv7':
             WindowXMLDialog.__init__(self)
         else:
-            WindowXMLDialog.__init__(self, *args, **kwargs)
-        self.log('Init: {0}'.format(*args), 2)
+            WindowXMLDialog.__init__(
+                self, xmlFilename, scriptPath, defaultSkin, defaultRes
+            )
+        self.log('Init: %s' % xmlFilename, 2)
 
     @classmethod
     def log(cls, msg, level=2):
@@ -139,7 +145,7 @@ class UpNextPopup(WindowXMLDialog):
             self.close()
 
     def onAction(self, action):  # pylint: disable=invalid-name
-        if action == ACTION_PLAYER_STOP:
+        if action == ACTION_STOP:
             self.close()
         elif action == ACTION_NAV_BACK:
             self.set_cancel(True)
