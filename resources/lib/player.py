@@ -72,6 +72,7 @@ class PlayerMonitor(Player):
         if start_num != self.state.starting:
             return
         self.state.starting = 0
+        self.state.ended = 0
 
         is_playlist_item = get_playlist_position()
         has_addon_data = bool(data)

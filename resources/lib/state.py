@@ -43,8 +43,10 @@ class State:
         self.track = False
         self.queued = False
         self.playing_next = False
-        self.starting = 0
         self.played_in_a_row = 1
+        # Player state
+        self.starting = 0
+        self.ended = 1
 
         if not State._shared_state['init']:
             self.log('Init', 2)

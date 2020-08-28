@@ -201,7 +201,12 @@ class PlaybackManager:
         while not monitor.abortRequested():
             # Current file can stop, or next file can start, while in loop
             # Abort popup update
-            if not self.player.isPlaying() or self.state.starting:
+            popup_exit = (
+                not self.player.isPlaying()
+                or self.state.starting
+                or self.state.ended
+            )
+            if popup_exit:
                 popup_done = False
                 return popup_done
 
