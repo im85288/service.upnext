@@ -20,26 +20,26 @@ class PlayerMonitor(Player):
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
 
-    def isPlaying(self, *args, **kwargs):  # pylint: disable=invalid-name
-        return getattr(Player, 'isPlaying')(self, *args, **kwargs)
+    def isPlaying(self):  # pylint: disable=invalid-name
+        return getattr(Player, 'isPlaying')(self)
 
-    def getTotalTime(self, *args, **kwargs):  # pylint: disable=invalid-name
-        return getattr(Player, 'getTotalTime')(self, *args, **kwargs)
+    def getTotalTime(self):  # pylint: disable=invalid-name
+        return getattr(Player, 'getTotalTime')(self)
 
-    def getPlayingFile(self, *args, **kwargs):  # pylint: disable=invalid-name
-        return getattr(Player, 'getPlayingFile')(self, *args, **kwargs)
+    def getPlayingFile(self):  # pylint: disable=invalid-name
+        return getattr(Player, 'getPlayingFile')(self)
 
-    def stop(self, *args, **kwargs):
-        return getattr(Player, 'stop')(self, *args, **kwargs)
+    def stop(self):
+        return getattr(Player, 'stop')(self)
 
-    def isExternalPlayer(self, *args, **kwargs):  # pylint: disable=invalid-name
-        return getattr(Player, 'isExternalPlayer')(self, *args, **kwargs)
+    def isExternalPlayer(self):  # pylint: disable=invalid-name
+        return getattr(Player, 'isExternalPlayer')(self)
 
-    def getTime(self, *args, **kwargs):  # pylint: disable=invalid-name
-        return getattr(Player, 'getTime')(self, *args, **kwargs)
+    def getTime(self):  # pylint: disable=invalid-name
+        return getattr(Player, 'getTime')(self)
 
-    def playnext(self, *args, **kwargs):
-        return getattr(Player, 'playnext')(self, *args, **kwargs)
+    def playnext(self):
+        return getattr(Player, 'playnext')(self)
 
     def track_playback(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
