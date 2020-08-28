@@ -62,6 +62,8 @@ class PlaybackManager:
 
         # Only use Still Watching? popup if played limit has been reached
         show_upnext = self.state.played_in_a_row < self.state.played_limit
+        # Allow auto play if enabled in settings and showing Up Next popup
+        auto_play = self.state.auto_play and show_upnext
 
         self.log('Played in a row setting: %s' % self.state.played_limit, 2)
         self.log('Played in a row: {0}, showing {1} page'.format(
@@ -81,7 +83,7 @@ class PlaybackManager:
         dialog.set_item(episode)
 
         # Show popup and check that it has not been terminated early
-        abort_popup = not self.show_popup_and_wait(dialog, show_upnext)
+        abort_popup = not self.show_popup_and_wait(dialog, auto_play)
 
         # Close dialog once we are done with it
         dialog.close()
@@ -93,8 +95,15 @@ class PlaybackManager:
             keep_playing = True
             return play_next, keep_playing
 
-        # Generate new playback state details
-        auto_play, play_now = self.extract_play_info(dialog, show_upnext)
+        # Update new playback state details
+        auto_play = auto_play and not dialog.is_cancel()
+        play_now = dialog.is_playnow()
+
+        # Update played in a row count
+        if play_now:
+            self.state.played_in_a_row = 1
+        elif auto_play:
+            self.state.played_in_a_row += 1
 
         if not auto_play and not play_now:
             self.log('Exit launch_popup early: no playback option selected', 2)
@@ -170,7 +179,7 @@ class PlaybackManager:
         keep_playing = True
         return play_next, keep_playing
 
-    def show_popup_and_wait(self, dialog, show_upnext):
+    def show_popup_and_wait(self, dialog, auto_play):
         if not self.player.isPlaying():
             popup_done = False
             return popup_done
@@ -179,7 +188,7 @@ class PlaybackManager:
         play_time = self.player.getTime()
         # If cue point was provided then Up Next will auto play after a fixed
         # delay time, rather than waiting for the end of the file
-        if show_upnext and self.state.popup_cue:
+        if auto_play and self.state.popup_cue:
             popup_start = max(play_time, self.state.get_popup_time())
             popup_duration = self.state.auto_play_delay
             total_time = min(popup_start + popup_duration, total_time)
@@ -210,17 +219,3 @@ class PlaybackManager:
 
         popup_done = True
         return popup_done
-
-    def extract_play_info(self, dialog, show_upnext):
-        if show_upnext:
-            auto_play = not dialog.is_cancel() and self.state.auto_play
-        else:
-            auto_play = False
-        play_now = dialog.is_playnow()
-
-        if play_now:
-            self.state.played_in_a_row = 1
-        else:
-            self.state.played_in_a_row += 1
-
-        return auto_play, play_now
