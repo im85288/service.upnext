@@ -41,7 +41,6 @@ class State:
         self.last_file = None
         # Internal state variables
         self.track = False
-        self.pause = False
         self.queued = False
         self.playing_next = False
         self.starting = 0

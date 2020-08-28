@@ -117,12 +117,6 @@ class PlayerMonitor(Player):
             """Will be called when kodi starts playing a file"""
             self.track_playback()
 
-    def onPlayBackPaused(self):  # pylint: disable=invalid-name
-        self.state.pause = True
-
-    def onPlayBackResumed(self):  # pylint: disable=invalid-name
-        self.state.pause = False
-
     def onPlayBackStopped(self):  # pylint: disable=invalid-name
         """Will be called when user stops playing a file"""
         self.state.reset_queue()
