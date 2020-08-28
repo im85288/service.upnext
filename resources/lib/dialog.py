@@ -88,7 +88,7 @@ class UpNextPopup(WindowXMLDialog):
     def set_progress_step_size(self, remaining, delta):
         self.progress_step_size = calculate_progress_steps(remaining, delta)
 
-    def update_progress_control(self, remaining=None):
+    def update_progress_control(self, remaining):
         self.current_progress_percent -= self.progress_step_size
         try:
             self.progress_control = self.getControl(3014)
@@ -98,8 +98,7 @@ class UpNextPopup(WindowXMLDialog):
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
-        if remaining:
-            self.setProperty('remaining', from_unicode('%02d' % remaining))
+        self.setProperty('remaining', from_unicode('%02d' % remaining))
 
         runtime = get_int(self.item, 'runtime', 0)
         if runtime:

@@ -206,13 +206,11 @@ class PlaybackManager:
                 return popup_done
 
             remaining = total_time - self.player.getTime()
+            dialog.update_progress_control(remaining)
+
+            wait_time = min(wait_time, remaining - 1)
             if remaining <= 1 or dialog.is_cancel() or dialog.is_playnow():
                 break
-
-            if not self.state.pause:
-                dialog.update_progress_control(remaining)
-
-            wait_time = min(0.5, remaining - 1)
             monitor.waitForAbort(wait_time)
 
         popup_done = True
