@@ -4,7 +4,8 @@
 from __future__ import absolute_import, division, unicode_literals
 from api import (
     get_episodeid, get_next_from_library, get_next_in_playlist,
-    get_now_playing, get_playlist_position, get_tvshowid, reset_queue
+    get_now_playing, get_playlist_position, get_popup_time, get_tvshowid,
+    reset_queue
 )
 from utils import get_int, get_setting_bool, get_setting_int, log as ulog
 
@@ -118,6 +119,9 @@ class State:
                 self.played_in_a_row = self.played_limit
 
         return episode, position
+
+    def set_popup_time(self, total_time):
+        self.popup_time, self.cue = get_popup_time(self.data, total_time)
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode')

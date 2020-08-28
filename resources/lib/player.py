@@ -3,7 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import getCondVisibility, Monitor, Player
-from api import get_playlist_position, get_popup_time
+from api import get_playlist_position
 from state import State
 from utils import log as ulog
 
@@ -105,9 +105,7 @@ class PlayerMonitor(Player):
                 self.state.handle_library_now_playing()
 
             # Store popup time and check if cue point was provided
-            popup_time, cue = get_popup_time(self.state.data, total_time)
-            self.state.popup_time = popup_time
-            self.state.popup_cue = cue
+            self.state.set_popup_time(total_time)
 
     if callable(getattr(Player, 'onAVStarted', None)):
         def onAVStarted(self):  # pylint: disable=invalid-name
