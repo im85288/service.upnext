@@ -121,7 +121,7 @@ class State:
         return episode, position
 
     def set_popup_time(self, total_time):
-        self.popup_time, self.cue = get_popup_time(self.data, total_time)
+        self.popup_time, self.popup_cue = get_popup_time(self.data, total_time)
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode')
