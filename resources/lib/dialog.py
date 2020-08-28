@@ -18,12 +18,12 @@ OS_MACHINE = machine()
 class UpNextPopup(WindowXMLDialog):
 
     def __init__(
-        self,
-        xmlFilename,
-        item,
-        scriptPath=addon_path(),
-        defaultSkin='default',
-        defaultRes='1080i'
+            self,
+            xmlFilename,
+            item,
+            scriptPath=addon_path(),
+            defaultSkin='default',
+            defaultRes='1080i'
     ):
         self.item = item
         self.cancel = False
