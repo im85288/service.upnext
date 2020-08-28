@@ -18,10 +18,6 @@ class State:
         # Do not re-init unless state needs to be reset
         if State._shared_state['init'] and not reset:
             return
-        if not State._shared_state['init']:
-            self.log('Init', 2)
-        if reset:
-            self.log('Reset', 2)
 
         # Settings state variables
         self.disabled = get_setting_bool('disableNextUp')
@@ -51,6 +47,10 @@ class State:
         self.starting = 0
         self.played_in_a_row = 1
 
+        if not State._shared_state['init']:
+            self.log('Init', 2)
+        if reset:
+            self.log('Reset', 2)
         # State has been initialised, save init status to prevent loss of state
         State._shared_state['init'] = True
 

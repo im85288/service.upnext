@@ -18,6 +18,7 @@ class PlaybackManager:
     def __init__(self, player, state):
         self.player = player
         self.state = state
+        self.log('Init', 2)
 
     @classmethod
     def log(cls, msg, level=2):
@@ -66,10 +67,7 @@ class PlaybackManager:
         auto_play = self.state.auto_play and show_upnext
 
         self.log('Played in a row setting: %s' % self.state.played_limit, 2)
-        self.log('Played in a row: {0}, showing {1} page'.format(
-            self.state.played_in_a_row,
-            'next up' if show_upnext else 'still watching'
-        ), 2)
+        self.log('Played in a row: %s' % self.state.played_in_a_row, 2)
 
         # Filename for dialog XML
         filename = 'script-upnext{0}{1}.xml'.format(

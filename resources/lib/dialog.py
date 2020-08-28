@@ -9,7 +9,7 @@ from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
 from utils import (
     calculate_progress_steps, get_int, get_setting_bool, localize,
-    localize_time
+    localize_time, log as ulog
 )
 
 ACTION_PLAYER_STOP = 13
@@ -32,6 +32,11 @@ class UpNextPopup(WindowXMLDialog):
             WindowXMLDialog.__init__(self)
         else:
             WindowXMLDialog.__init__(self, *args, **kwargs)
+        self.log('Init: {0}'.format(*args), 2)
+
+    @classmethod
+    def log(cls, msg, level=2):
+        ulog(msg, name=cls.__name__, level=level)
 
     def onInit(self):  # pylint: disable=invalid-name
         self.set_info()

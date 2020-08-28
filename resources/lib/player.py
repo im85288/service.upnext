@@ -14,6 +14,7 @@ class PlayerMonitor(Player):
     def __init__(self, state):
         self.state = state
         Player.__init__(self)
+        self.log('Init', 2)
 
     @classmethod
     def log(cls, msg, level=2):
