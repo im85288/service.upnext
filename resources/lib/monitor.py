@@ -47,7 +47,7 @@ class UpNextMonitor(Monitor):
                 continue
 
             if not self.player.isPlaying():
-                self.log('Tracking: error - no file is playing', 1)
+                self.log('Tracking: stopped - no file is playing', 2)
                 self.state.set_tracking(False)
                 continue
 
