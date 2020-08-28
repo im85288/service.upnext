@@ -19,6 +19,27 @@ class PlayerMonitor(Player):
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
 
+    def isPlaying(self, *args, **kwargs):  # pylint: disable=invalid-name
+        return getattr(Player, 'isPlaying')(self, *args, **kwargs)
+
+    def getTotalTime(self, *args, **kwargs):  # pylint: disable=invalid-name
+        return getattr(Player, 'getTotalTime')(self, *args, **kwargs)
+
+    def getPlayingFile(self, *args, **kwargs):  # pylint: disable=invalid-name
+        return getattr(Player, 'getPlayingFile')(self, *args, **kwargs)
+
+    def stop(self, *args, **kwargs):
+        return getattr(Player, 'stop')(self, *args, **kwargs)
+
+    def isExternalPlayer(self, *args, **kwargs):  # pylint: disable=invalid-name
+        return getattr(Player, 'isExternalPlayer')(self, *args, **kwargs)
+
+    def getTime(self, *args, **kwargs):  # pylint: disable=invalid-name
+        return getattr(Player, 'getTime')(self, *args, **kwargs)
+
+    def playnext(self, *args, **kwargs):
+        return getattr(Player, 'playnext')(self, *args, **kwargs)
+
     def track_playback(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
