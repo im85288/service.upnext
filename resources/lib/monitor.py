@@ -12,6 +12,8 @@ from utils import decode_json, get_property, log as ulog
 
 class UpNextMonitor(Monitor):
     """Service monitor for Kodi"""
+    state = State()
+    player = PlayerMonitor(state=state)
 
     @classmethod
     def log(cls, msg, level=2):
@@ -20,8 +22,6 @@ class UpNextMonitor(Monitor):
     def run(self):
         """Main service loop"""
         self.log('Service started', 0)
-        self.state = State()
-        self.player = PlayerMonitor(state=self.state)
 
         while not self.abortRequested():
             # check every 1 sec
