@@ -8,7 +8,7 @@ from xbmc import Player
 from xbmcgui import WindowXMLDialog, ACTION_NAV_BACK, ACTION_STOP
 from statichelper import from_unicode
 from utils import (
-    addon_path, calculate_progress_steps, get_int, get_setting_bool, localize,
+    calculate_progress_steps, get_int, get_setting_bool, localize,
     localize_time, log as ulog
 )
 
@@ -17,28 +17,19 @@ OS_MACHINE = machine()
 
 class UpNextPopup(WindowXMLDialog):
 
-    def __init__(
-            self,
-            xmlFilename,
-            item,
-            scriptPath=addon_path(),
-            defaultSkin='default',
-            defaultRes='1080i'
-    ):
-        self.item = item
+    def __init__(self, *args, **kwargs):
+        self.item = kwargs.get('item')
         self.cancel = False
         self.playnow = False
         self.progress_step_size = 0
         self.current_progress_percent = 100
         self.progress_control = None
 
-        if OS_MACHINE[0:5] == 'armv7':
+        if False and OS_MACHINE[0:5] == 'armv7':
             WindowXMLDialog.__init__(self)
         else:
-            WindowXMLDialog.__init__(
-                self, xmlFilename, scriptPath, defaultSkin, defaultRes
-            )
-        self.log('Init: %s' % xmlFilename, 2)
+            WindowXMLDialog.__init__(self, *args)
+        self.log('Init: %s' % args[0], 2)
 
     @classmethod
     def log(cls, msg, level=2):
