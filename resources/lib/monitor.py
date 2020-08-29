@@ -12,8 +12,12 @@ from utils import decode_json, get_property, log as ulog
 
 class UpNextMonitor(Monitor):
     """Service monitor for Kodi"""
-    state = State()
-    player = PlayerMonitor(state=state)
+
+    def __init__(self):
+        self.state = State()
+        self.player = PlayerMonitor(state=self.state)
+        Monitor.__init__(self)
+        self.log('Init', 2)
 
     @classmethod
     def log(cls, msg, level=2):
