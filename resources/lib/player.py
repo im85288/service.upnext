@@ -13,6 +13,16 @@ class PlayerMonitor(Player):
 
     def __init__(self, state):
         self.state = state
+        # Used to override player state for testing
+        self.__player_state = dict(
+            override=False,
+            external_player=False,
+            playing=False,
+            playing_file='',
+            time=0,
+            total_time=0,
+            next_file=''
+        )
         Player.__init__(self)
         self.log('Init', 2)
 
@@ -20,26 +30,50 @@ class PlayerMonitor(Player):
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
 
-    def isPlaying(self):  # pylint: disable=invalid-name
-        return getattr(Player, 'isPlaying')(self)
+    def isExternalPlayer(self):  # pylint: disable=invalid-name
+        if not self.__player_state.get('override'):
+            actual = getattr(Player, 'isExternalPlayer')(self)
+            self.__player_state['external_player'] = actual
+        return self.__player_state.get('external_player')
 
-    def getTotalTime(self):  # pylint: disable=invalid-name
-        return getattr(Player, 'getTotalTime')(self)
+    def isPlaying(self):  # pylint: disable=invalid-name
+        if not self.__player_state.get('override'):
+            actual = getattr(Player, 'isPlaying')(self)
+            self.__player_state['playing'] = actual
+        return self.__player_state.get('playing')
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
-        return getattr(Player, 'getPlayingFile')(self)
-
-    def stop(self):
-        return getattr(Player, 'stop')(self)
-
-    def isExternalPlayer(self):  # pylint: disable=invalid-name
-        return getattr(Player, 'isExternalPlayer')(self)
+        if not self.__player_state.get('override'):
+            actual = getattr(Player, 'getPlayingFile')(self)
+            self.__player_state['playing_file'] = actual
+        return self.__player_state.get('playing_file')
 
     def getTime(self):  # pylint: disable=invalid-name
-        return getattr(Player, 'getTime')(self)
+        if not self.__player_state.get('override'):
+            actual = getattr(Player, 'getTime')(self)
+            self.__player_state['time'] = actual
+        return self.__player_state.get('time')
+
+    def getTotalTime(self):  # pylint: disable=invalid-name
+        if not self.__player_state.get('override'):
+            actual = getattr(Player, 'getTotalTime')(self)
+            self.__player_state['total_time'] = actual
+        return self.__player_state.get('total_time')
 
     def playnext(self):
+        if self.__player_state.get('override'):
+            next_file = self.__player_state.get('next_file')
+            self.__player_state['playing_file'] = next_file
+            self.__player_state['next_file'] = ''
+            self.__player_state['playing'] = bool(next_file)
+            return None
         return getattr(Player, 'playnext')(self)
+
+    def stop(self):
+        if self.__player_state.get('override'):
+            self.__player_state['playing'] = False
+            return None
+        return getattr(Player, 'stop')(self)
 
     def track_playback(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
