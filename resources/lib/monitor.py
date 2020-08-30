@@ -99,7 +99,8 @@ class UpNextMonitor(Monitor):
             self.playbackmanager = PlaybackManager(
                 player=self.player,
                 state=self.state
-            ).launch_up_next()
+            )
+            self.playbackmanager.launch_up_next()
             del self.playbackmanager
 
         self.log('Service stopped', 0)
