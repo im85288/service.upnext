@@ -85,10 +85,14 @@ def play_kodi_item(episode):
 
 def queue_next_item(data, episode):
     next_item = {}
-    if not data:
-        next_item.update(episodeid=get_int(episode, 'episodeid'))
-    elif data.get('play_url'):
-        next_item.update(file=data.get('play_url'))
+    play_url = data.get('play_url')
+    episodeid = get_int(episode, 'episodeid')
+
+    if play_url:
+        next_item.update(file=play_url)
+
+    elif episodeid != -1:
+        next_item.update(episodeid=episodeid)
 
     if next_item:
         log('Queue: adding - {0}'.format(next_item), 2)
