@@ -181,6 +181,20 @@ class UpNextMonitor(Monitor):
         elif method == 'Player.OnAVStart':
             self.track_playback()
 
+        elif method == 'Player.OnPause':
+            if not (
+                self.player.state['force']
+                or self.player.state['paused']['force']
+            ):
+                self.player.state['paused']['value'] = True
+
+        elif method == 'Player.OnResume':
+            if not (
+                self.player.state['force']
+                or self.player.state['paused']['force']
+            ):
+                self.player.state['paused']['value'] = False
+
         elif method == 'Player.OnStop':
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing

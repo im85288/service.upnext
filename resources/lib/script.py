@@ -54,7 +54,7 @@ def test_popup(popup_type, simple_style=False):
         # playnext={'force': False},
         stop={'force': True}
     )
-    player.player_state.update(player_state)
+    player.state.update(player_state)
     PlaybackManager(
         player=player,
         state=state
