@@ -172,8 +172,10 @@ def log(msg, name=None, level=1):
         return
     if debug_logging:
         level = LOGDEBUG
+    # Kodi v19+ uses LOGINFO (=2) as default log level. LOGNOTICE is deprecated
     elif get_kodi_version() >= 19:
         level = LOGINFO
+    # Kodi v18 and below uses LOGNOTICE (=3) as default log level. 
     else:
         level = LOGINFO + 1
     xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)
