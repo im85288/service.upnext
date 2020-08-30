@@ -43,7 +43,6 @@ def test_popup(popup_type, simple_style=False):
 
     player = UpNextPlayer()
     player_state = dict(
-        # force=False,
         # external_player={'value': False, 'force': False},
         playing={'value': True, 'force': True},
         # paused={'value': False, 'force': False},

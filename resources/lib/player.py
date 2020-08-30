@@ -13,7 +13,6 @@ class UpNextPlayer(Player):
     def __init__(self):
         # Used to override player state for testing
         self.state = dict(
-            force=False,
             external_player={'value': False, 'force': False},
             playing={'value': False, 'force': False},
             paused={'value': False, 'force': False},
@@ -32,25 +31,25 @@ class UpNextPlayer(Player):
         ulog(msg, name=cls.__name__, level=level)
 
     def isExternalPlayer(self):  # pylint: disable=invalid-name
-        if not (self.state['force'] or self.state['external_player']['force']):
+        if not self.state['external_player']['force']:
             actual = getattr(Player, 'isExternalPlayer')(self)
             self.state['external_player']['value'] = actual
         return self.state['external_player']['value']
 
     def isPlaying(self):  # pylint: disable=invalid-name
-        if not (self.state['force'] or self.state['playing']['force']):
+        if not self.state['playing']['force']:
             actual = getattr(Player, 'isPlaying')(self)
             self.state['playing']['value'] = actual
         return self.state['playing']['value']
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
-        if not (self.state['force'] or self.state['playing_file']['force']):
+        if not self.state['playing_file']['force']:
             actual = getattr(Player, 'getPlayingFile')(self)
             self.state['playing_file']['value'] = actual
         return self.state['playing_file']['value']
 
     def getTime(self):  # pylint: disable=invalid-name
-        if not (self.state['force'] or self.state['time']['force']):
+        if not self.state['time']['force']:
             actual = getattr(Player, 'getTime')(self)
             self.state['time']['value'] = actual
         elif self.state['paused']['value']:
@@ -58,19 +57,20 @@ class UpNextPlayer(Player):
         elif isinstance(self.state['time']['force'], datetime):
             now = datetime.now()
             delta = self.state['time']['force'] - now
-            return self.state['time']['value'] - delta.total_seconds()
+            self.state['time']['force'] = now
+            self.state['time']['value'] -= delta.total_seconds()
         else:
             self.state['time']['force'] = datetime.now()
         return self.state['time']['value']
 
     def getTotalTime(self):  # pylint: disable=invalid-name
-        if not (self.state['force'] or self.state['total_time']['force']):
+        if not self.state['total_time']['force']:
             actual = getattr(Player, 'getTotalTime')(self)
             self.state['total_time']['value'] = actual
         return self.state['total_time']['value']
 
     def playnext(self):
-        if (self.state['force'] or self.state['playnext']['force']):
+        if self.state['playnext']['force']:
             next_file = self.state['next_file']['value']
             self.state['playing_file']['value'] = next_file
             self.state['next_file']['value'] = ''
@@ -79,7 +79,7 @@ class UpNextPlayer(Player):
             getattr(Player, 'playnext')(self)
 
     def stop(self):
-        if (self.state['force'] or self.state['stop']['force']):
+        if self.state['stop']['force']:
             self.state['playing']['value'] = False
         else:
             getattr(Player, 'stop')(self)

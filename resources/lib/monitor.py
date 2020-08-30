@@ -174,20 +174,17 @@ class UpNextMonitor(Monitor):
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
 
-        if get_kodi_version() < 18 and method == 'Player.OnPlay':
+        if (get_kodi_version() < 18 and method == 'Player.OnPlay'
+                or method == 'Player.OnAVStart'):
             self.track_playback()
-
-        elif method == 'Player.OnAVStart':
-            self.track_playback()
+            self.player.state['time']['force'] = False
 
         elif method == 'Player.OnPause':
-            if not (self.player.state['force']
-                    or self.player.state['paused']['force']):
+            if not self.player.state['paused']['force']:
                 self.player.state['paused']['value'] = True
 
         elif method == 'Player.OnResume':
-            if not (self.player.state['force']
-                    or self.player.state['paused']['force']):
+            if not self.player.state['paused']['force']:
                 self.player.state['paused']['value'] = False
 
         elif method == 'Player.OnStop':
