@@ -18,7 +18,7 @@ class PlaybackManager:
     def __init__(self, player, state):
         self.player = player
         self.state = state
-        self.popop = None
+        self.popup = None
         self.popup_abort = False
         self.log('Init', 2)
 
