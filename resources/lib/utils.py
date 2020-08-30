@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from base64 import b64decode, b64encode
-from binascii import Error, hexlify, unhexlify
+from binascii import Error as BinASCIIError, hexlify, unhexlify
 import sys
 import json
 from xbmc import (
@@ -126,22 +126,26 @@ def encode_data(data, encoding='base64'):
     return encoded_data
 
 
-def decode_data(data):
+def decode_data(encoded):
     """Decode data coming from a notification event"""
-    encoded = json.loads(data)
-    if not encoded:
-        return None, None
-
     try:
-        json_data = unhexlify(encoded[0])
+        json_data = unhexlify(encoded)
         encoding = 'hex'
-    except (TypeError, Error):
-        json_data = b64decode(encoded[0])
+    except (TypeError, BinASCIIError):
+        json_data = b64decode(encoded)
         encoding = 'base64'
 
     # NOTE: With Python 3.5 and older json.loads() does not support bytes
     # or bytearray, so we convert to unicode
     return json.loads(to_unicode(json_data)), encoding
+
+
+def decode_json(data):
+    """Decode JSON data coming from a notification event"""
+    encoded = json.loads(data)
+    if not encoded:
+        return None, None
+    return decode_data(encoded[0])
 
 
 def event(message, data=None, sender=None, encoding='base64'):
@@ -175,7 +179,7 @@ def log(msg, name=None, level=1):
     # Kodi v19+ uses LOGINFO (=2) as default log level. LOGNOTICE is deprecated
     elif get_kodi_version() >= 19:
         level = LOGINFO
-    # Kodi v18 and below uses LOGNOTICE (=3) as default log level. 
+    # Kodi v18 and below uses LOGNOTICE (=3) as default log level.
     else:
         level = LOGINFO + 1
     xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)

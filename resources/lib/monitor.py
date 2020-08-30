@@ -7,7 +7,7 @@ from api import get_playlist_position
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
 from utils import (
-    decode_data, from_unicode, get_kodi_version, get_property, log as ulog
+    decode_json, from_unicode, get_kodi_version, get_property, log as ulog
 )
 from state import UpNextState
 
@@ -182,17 +182,13 @@ class UpNextMonitor(Monitor):
             self.track_playback()
 
         elif method == 'Player.OnPause':
-            if not (
-                self.player.state['force']
-                or self.player.state['paused']['force']
-            ):
+            if not (self.player.state['force']
+                    or self.player.state['paused']['force']):
                 self.player.state['paused']['value'] = True
 
         elif method == 'Player.OnResume':
-            if not (
-                self.player.state['force']
-                or self.player.state['paused']['force']
-            ):
+            if not (self.player.state['force']
+                    or self.player.state['paused']['force']):
                 self.player.state['paused']['value'] = False
 
         elif method == 'Player.OnStop':
@@ -206,7 +202,7 @@ class UpNextMonitor(Monitor):
 
         # Data transfer from addons
         elif method.endswith('upnext_data'):
-            decoded_data, encoding = decode_data(data)
+            decoded_data, encoding = decode_json(data)
             sender = sender.replace('.SIGNAL', '')
             if decoded_data is None:
                 msg = 'Addon: data error - {0} sent {1}'.format(sender, data)
