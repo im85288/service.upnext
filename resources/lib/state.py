@@ -14,7 +14,7 @@ from utils import (
 # keeps track of the state parameters
 class UpNextState():
 
-    def __init__(self, reset=False):
+    def __init__(self, reset=None):
         # Settings state variables
         self.disabled = get_setting_bool('disableNextUp')
         self.auto_play = get_setting_int('autoPlayMode') == 0
@@ -51,7 +51,7 @@ class UpNextState():
         ulog(msg, name=cls.__name__, level=level)
 
     def reset(self):
-        self.__init__(self, reset=True)
+        self.__init__(reset=True)
 
     def set_last_file(self, filename):
         self.last_file = filename
