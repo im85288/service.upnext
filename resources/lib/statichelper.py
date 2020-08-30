@@ -3,6 +3,7 @@
 """Implements static helper functions used elsewhere in the add-on"""
 
 from __future__ import absolute_import, division, unicode_literals
+import sys
 
 
 def to_unicode(text, encoding='utf-8', errors='strict'):
