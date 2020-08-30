@@ -29,7 +29,7 @@ class PlaybackManager:
 
         # No episode get out of here
         if not episode:
-            self.log('Error: no episode to play next...exiting', 1)
+            self.log('Exit: no next episode', 2)
             return
 
         # Shouldn't get here if playlist setting is disabled, but just in case
