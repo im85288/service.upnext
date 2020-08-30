@@ -17,6 +17,7 @@ class UpNextMonitor(Monitor):
     def __init__(self):
         self.state = UpNextState()
         self.player = UpNextPlayer()
+        self.playbackmanager = None
         Monitor.__init__(self)
         self.log('Init', 2)
 
@@ -95,10 +96,11 @@ class UpNextMonitor(Monitor):
             msg = 'Popup: launch - episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
-            PlaybackManager(
+            self.playbackmanager = PlaybackManager(
                 player=self.player,
                 state=self.state
             ).launch_up_next()
+            del self.playbackmanager
 
         self.log('Service stopped', 0)
 
@@ -178,6 +180,9 @@ class UpNextMonitor(Monitor):
                 or method == 'Player.OnAVStart'):
             self.track_playback()
             self.player.state['time']['force'] = False
+            if hasattr(self, 'playbackmanager') and self.playbackmanager:
+                self.playbackmanager.remove_popup()
+                del self.playbackmanager
 
         elif method == 'Player.OnPause':
             if not self.player.state['paused']['force']:

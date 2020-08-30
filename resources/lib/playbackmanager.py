@@ -18,6 +18,8 @@ class PlaybackManager:
     def __init__(self, player, state):
         self.player = player
         self.state = state
+        self.popop = None
+        self.popup_abort = False
         self.log('Init', 2)
 
     @classmethod
@@ -77,7 +79,7 @@ class PlaybackManager:
             '-simple' if self.state.simple_mode else ''
         )
         # Create Kodi dialog to show Up Next or Still Watching? popup
-        dialog = UpNextPopup(
+        self.popup = UpNextPopup(
             filename,
             addon_path(),
             'default',
@@ -86,10 +88,10 @@ class PlaybackManager:
         )
 
         # Show popup and check that it has not been terminated early
-        abort_popup = not self.show_popup_and_wait(dialog, auto_play)
+        abort_popup = not self.show_popup_and_wait(auto_play)
 
         # Close dialog once we are done with it
-        dialog.close()
+        self.popup.close()
         clear_property('service.upnext.dialog')
 
         if abort_popup:
@@ -99,8 +101,8 @@ class PlaybackManager:
             return play_next, keep_playing
 
         # Update new playback state details
-        auto_play = auto_play and not dialog.is_cancel()
-        play_now = dialog.is_playnow()
+        auto_play = auto_play and not self.popup.is_cancel()
+        play_now = self.popup.is_playnow()
 
         # Update played in a row count
         if play_now:
@@ -113,7 +115,7 @@ class PlaybackManager:
             play_next = False
             # Keep playing if Cancel button was clicked on popup
             # Stop After Close functionality is handled by dialog
-            keep_playing = dialog.is_cancel()
+            keep_playing = self.popup.is_cancel()
             return play_next, keep_playing
 
         # Request playback of next file
@@ -182,7 +184,7 @@ class PlaybackManager:
         keep_playing = True
         return play_next, keep_playing
 
-    def show_popup_and_wait(self, dialog, auto_play):
+    def show_popup_and_wait(self, auto_play):
         if not self.player.isPlaying():
             popup_done = False
             return popup_done
@@ -198,30 +200,36 @@ class PlaybackManager:
         remaining = total_time - play_time
 
         wait_time = 0.5
-        dialog.set_progress_step_size(remaining, wait_time)
-        dialog.show()
+        self.popup.set_progress_step_size(remaining, wait_time)
+        self.popup.show()
         set_property('service.upnext.dialog', 'true')
 
         monitor = Monitor()
         while not monitor.abortRequested():
             # Current file can stop, or next file can start, while in loop
             # Abort popup update
-            popup_exit = (
-                not self.player.isPlaying()
-                or self.state.starting
-                or self.state.ended
-            )
-            if popup_exit:
+            if (not self.player.isPlaying()
+                    or self.state.starting
+                    or self.state.ended
+                    or self.popup_abort):
                 popup_done = False
                 return popup_done
 
             remaining = total_time - self.player.getTime()
-            dialog.update_progress_control(remaining)
+            self.popup.update_progress_control(remaining)
 
             wait_time = min(wait_time, remaining - 1)
-            if remaining <= 1 or dialog.is_cancel() or dialog.is_playnow():
+            if (remaining <= 1
+                    or self.popup.is_cancel()
+                    or self.popup.is_playnow()):
                 break
             monitor.waitForAbort(wait_time)
 
         popup_done = True
         return popup_done
+
+    def remove_popup(self):
+        if hasattr(self, 'popup'):
+            self.popup_abort = True
+            self.popup.close()
+            del self.popup
