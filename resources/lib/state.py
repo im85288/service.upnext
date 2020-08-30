@@ -12,15 +12,9 @@ from utils import (
 
 
 # keeps track of the state parameters
-class State:
-    _shared_state = {'init': False}
+class UpNextState():
 
-    def __init__(self, reset=None):
-        self.__dict__ = self._shared_state
-        # Do not re-init unless state needs to be reset
-        if State._shared_state['init'] and not reset:
-            return
-
+    def __init__(self, reset=False):
         # Settings state variables
         self.disabled = get_setting_bool('disableNextUp')
         self.auto_play = get_setting_int('autoPlayMode') == 0
@@ -50,16 +44,14 @@ class State:
         self.starting = 0
         self.ended = 1
 
-        if not State._shared_state['init']:
-            self.log('Init', 2)
-        if reset:
-            self.log('Reset', 2)
-        # State has been initialised, save init status to prevent loss of state
-        State._shared_state['init'] = True
+        self.log('Reset' if reset else 'Init', 2)
 
     @classmethod
     def log(cls, msg, level=2):
         ulog(msg, name=cls.__name__, level=level)
+
+    def reset(self):
+        self.__init__(self, reset=True)
 
     def set_last_file(self, filename):
         self.last_file = filename

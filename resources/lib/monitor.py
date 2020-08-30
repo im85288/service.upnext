@@ -5,18 +5,18 @@ from __future__ import absolute_import, division, unicode_literals
 from xbmc import getCondVisibility, Monitor
 from api import get_playlist_position
 from playbackmanager import PlaybackManager
-from state import State
 from player import UpNextPlayer
 from utils import (
     decode_data, from_unicode, get_kodi_version, get_property, log as ulog
 )
+from state import UpNextState
 
 
 class UpNextMonitor(Monitor):
     """Service monitor for Kodi"""
 
     def __init__(self):
-        self.state = State()
+        self.state = UpNextState()
         self.player = UpNextPlayer()
         Monitor.__init__(self)
         self.log('Init', 2)
