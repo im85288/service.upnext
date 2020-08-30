@@ -4,9 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import os.path
 from xbmc import PlayList, PLAYLIST_VIDEO
-from utils import (
-    event, get_setting_bool, get_setting_int, get_int, jsonrpc, log as ulog
-)
+from utils import event, get_int, jsonrpc, log as ulog
 
 
 EPISODE_PROPERTIES = [
@@ -186,40 +184,6 @@ def play_addon_item(data, encoding):
             sender='upnextprovider',
             encoding=encoding
         )
-
-
-def get_popup_time(data, total_time):
-    # Alway use metadata, when available
-    popup_duration = get_int(data, 'notification_time')
-    if 0 < popup_duration < total_time:
-        cue = True
-        return total_time - popup_duration, cue
-
-    # Some consumers send the offset when the credits start (e.g. Netflix)
-    popup_time = get_int(data, 'notification_offset')
-    if 0 < popup_time < total_time:
-        cue = True
-        return popup_time, cue
-
-    # Use a customized notification time, when configured
-    if get_setting_bool('customAutoPlayTime'):
-        if total_time > 60 * 60:
-            duration_setting = 'autoPlayTimeXL'
-        elif total_time > 40 * 60:
-            duration_setting = 'autoPlayTimeL'
-        elif total_time > 20 * 60:
-            duration_setting = 'autoPlayTimeM'
-        elif total_time > 10 * 60:
-            duration_setting = 'autoPlayTimeS'
-        else:
-            duration_setting = 'autoPlayTimeXS'
-
-    # Use one global default, regardless of episode length
-    else:
-        duration_setting = 'autoPlaySeasonTime'
-
-    cue = False
-    return total_time - get_setting_int(duration_setting), cue
 
 
 def get_now_playing():

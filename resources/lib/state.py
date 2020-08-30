@@ -4,10 +4,11 @@
 from __future__ import absolute_import, division, unicode_literals
 from api import (
     get_episodeid, get_next_from_library, get_next_in_playlist,
-    get_now_playing, get_playlist_position, get_popup_time, get_tvshowid,
-    reset_queue
+    get_now_playing, get_playlist_position, get_tvshowid, reset_queue
 )
-from utils import get_int, get_setting_bool, get_setting_int, log as ulog
+from utils import (
+    get_int, get_setting_bool, get_setting_int, log as ulog
+)
 
 
 # keeps track of the state parameters
@@ -90,9 +91,6 @@ class State:
         if self.queued:
             self.queued = reset_queue()
 
-    def get_popup_time(self):
-        return self.popup_time
-
     def get_next(self):
         episode = None
         position = get_playlist_position()
@@ -120,8 +118,43 @@ class State:
 
         return episode, position
 
+    def get_popup_time(self):
+        return self.popup_time
+
     def set_popup_time(self, total_time):
-        self.popup_time, self.popup_cue = get_popup_time(self.data, total_time)
+        # Alway use metadata, when available
+        popup_duration = get_int(self.data, 'notification_time')
+        if 0 < popup_duration < total_time:
+            self.popup_cue = True
+            self.popup_time = total_time - popup_duration
+            return
+
+        # Some consumers send the offset when the credits start (e.g. Netflix)
+        popup_time = get_int(self.data, 'notification_offset')
+        if 0 < popup_time < total_time:
+            self.popup_cue = True
+            self.popup_time = popup_time
+            return
+
+        # Use a customized notification time, when configured
+        if get_setting_bool('customAutoPlayTime'):
+            if total_time > 60 * 60:
+                duration_setting = 'autoPlayTimeXL'
+            elif total_time > 40 * 60:
+                duration_setting = 'autoPlayTimeL'
+            elif total_time > 20 * 60:
+                duration_setting = 'autoPlayTimeM'
+            elif total_time > 10 * 60:
+                duration_setting = 'autoPlayTimeS'
+            else:
+                duration_setting = 'autoPlayTimeXS'
+
+        # Use one global default, regardless of episode length
+        else:
+            duration_setting = 'autoPlaySeasonTime'
+
+        self.popup_cue = False
+        self.popup_time = total_time - get_setting_int(duration_setting)
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode')
