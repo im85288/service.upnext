@@ -107,7 +107,6 @@ class UpNextMonitor(Monitor):
         if not method.endswith('upnext_data'):
             return
 
-        decoded_data, encoding = decode_json(data)
         sender = sender.replace('.SIGNAL', '')
         if decoded_data is None:
             msg = 'Addon: data error - {0} sent {1}'.format(sender, data)
@@ -116,3 +115,4 @@ class UpNextMonitor(Monitor):
         decoded_data.update(id='%s_play_action' % sender)
 
         self.player.track_playback(decoded_data, encoding)
+            decoded_data, encoding = decode_data(data)

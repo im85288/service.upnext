@@ -1,7 +1,10 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+"""Implements helper functions used elsewhere in the add-on"""
 
 from __future__ import absolute_import, division, unicode_literals
+from base64 import b64decode, b64encode
+from binascii import Error, hexlify, unhexlify
 import sys
 import json
 from xbmc import (
@@ -113,10 +116,8 @@ def encode_data(data, encoding='base64'):
     """Encode data for a notification event"""
     json_data = json.dumps(data).encode()
     if encoding == 'base64':
-        from base64 import b64encode
         encoded_data = b64encode(json_data)
     elif encoding == 'hex':
-        from binascii import hexlify
         encoded_data = hexlify(json_data)
     else:
         log("Unknown payload encoding type '%s'" % encoding, level=0)
@@ -126,27 +127,22 @@ def encode_data(data, encoding='base64'):
     return encoded_data
 
 
-def decode_data(encoded):
+def decode_data(data):
     """Decode data coming from a notification event"""
-    encoding = 'base64'
-    from binascii import Error, unhexlify
-    try:
-        json_data = unhexlify(encoded)
-    except (TypeError, Error):
-        from base64 import b64decode
-        json_data = b64decode(encoded)
-    else:
-        encoding = 'hex'
-    # NOTE: With Python 3.5 and older json.loads() does not support bytes
-    # or bytearray, so we convert to unicode
-    return json.loads(to_unicode(json_data)), encoding
-
-
-def decode_json(data):
     encoded = json.loads(data)
     if not encoded:
         return None, None
-    return decode_data(encoded[0])
+
+    try:
+        json_data = unhexlify(encoded[0])
+        encoding = 'hex'
+    except (TypeError, Error):
+        json_data = b64decode(encoded[0])
+        encoding = 'base64'
+
+    # NOTE: With Python 3.5 and older json.loads() does not support bytes
+    # or bytearray, so we convert to unicode
+    return json.loads(to_unicode(json_data)), encoding
 
 
 def event(message, data=None, sender=None, encoding='base64'):
