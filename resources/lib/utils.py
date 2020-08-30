@@ -4,7 +4,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 from base64 import b64decode, b64encode
-from binascii import Error as BinASCIIError, hexlify, unhexlify
+from binascii import Error as binasciiError, hexlify, unhexlify
 import sys
 import json
 from xbmc import (
@@ -12,6 +12,7 @@ from xbmc import (
 )
 from xbmcaddon import Addon
 from xbmcgui import Window
+from statichelper import from_unicode, to_unicode
 
 
 ADDON = Addon()
@@ -131,7 +132,7 @@ def decode_data(encoded):
     try:
         json_data = unhexlify(encoded)
         encoding = 'hex'
-    except (TypeError, BinASCIIError):
+    except (TypeError, binasciiError):
         json_data = b64decode(encoded)
         encoding = 'base64'
 
@@ -227,17 +228,3 @@ def localize_time(time):
     time_format = time_format.replace(':%S', '')
 
     return time.strftime(time_format)
-
-
-def to_unicode(text, encoding='utf-8', errors='strict'):
-    """Force text to unicode"""
-    if isinstance(text, bytes):
-        return text.decode(encoding, errors)
-    return text
-
-
-def from_unicode(text, encoding='utf-8', errors='strict'):
-    """Force unicode to text"""
-    if sys.version_info.major == 2 and isinstance(text, unicode):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
-        return text.encode(encoding, errors)
-    return text

@@ -6,10 +6,9 @@ from xbmc import getCondVisibility, Monitor
 from api import get_playlist_position
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
-from utils import (
-    decode_json, from_unicode, get_kodi_version, get_property, log as ulog
-)
 from state import UpNextState
+from statichelper import from_unicode
+from utils import decode_json, get_kodi_version, get_property, log as ulog
 
 
 class UpNextMonitor(Monitor):
