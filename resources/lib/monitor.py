@@ -2,10 +2,11 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import Monitor
+from xbmc import getCondVisibility, Monitor
+from api import get_playlist_position
 from playbackmanager import PlaybackManager
-from player import PlayerMonitor
 from state import State
+from player import UpNextPlayer
 from utils import (
     decode_data, from_unicode, get_kodi_version, get_property, log as ulog
 )
@@ -16,7 +17,7 @@ class UpNextMonitor(Monitor):
 
     def __init__(self):
         self.state = State()
-        self.player = PlayerMonitor(state=self.state)
+        self.player = UpNextPlayer()
         Monitor.__init__(self)
         self.log('Init', 2)
 
@@ -88,7 +89,7 @@ class UpNextMonitor(Monitor):
             # after next file has been requested but has not yet loaded
             self.state.set_tracking(False)
 
-            # Store current file and reset playing_next state
+            # Store current file as last file played
             self.state.set_last_file(from_unicode(current_file))
 
             # Start Up Next to handle playback of next file
@@ -102,18 +103,101 @@ class UpNextMonitor(Monitor):
 
         self.log('Service stopped', 0)
 
+    def track_playback(self, data=None, encoding=None):
+        # Only process one start at a time unless addon data has been received
+        if self.state.starting and not data:
+            return
+        # Increment starting counter
+        self.state.starting += 1
+        start_num = self.state.starting
+
+        # onPlayBackEnded for current file can trigger after next file starts
+        # Wait additional 5s after onPlayBackEnded or last start
+        monitor = Monitor()
+        wait_limit = 5 * start_num
+        wait_count = 0
+        while not monitor.abortRequested() and wait_count < wait_limit:
+            # Exit if starting state has been reset by playback error/end/stop
+            if not self.state.starting:
+                self.log('Tracking: failed - starting state reset', 1)
+                return
+
+            monitor.waitForAbort(1)
+            wait_count += 1
+
+        # Exit if no file playing
+        total_time = self.player.isPlaying() and self.player.getTotalTime()
+        if not total_time:
+            return
+
+        # Exit if starting counter has been reset or new start detected
+        if start_num != self.state.starting:
+            return
+        self.state.starting = 0
+        self.state.ended = 0
+
+        is_playlist_item = get_playlist_position()
+        has_addon_data = bool(data)
+        is_episode = getCondVisibility('videoplayer.content(episodes)')
+
+        # Exit if Up Next playlist handling has not been enabled
+        if is_playlist_item and not self.state.enable_playlist:
+            self.log('Tracking: disabled - playlist handling not enabled', 2)
+            return
+
+        # Use new addon data if provided
+        if data:
+            self.state.set_addon_data(data, encoding)
+        # Ensure that old addon data is not used. Note this may cause played in
+        # a row count to reset incorrectly if playlist of mixed non-addon and
+        # addon content is used
+        else:
+            self.state.reset_addon_data()
+            has_addon_data = False
+
+        # Start tracking if Up Next can handle the currently playing file
+        if is_playlist_item or has_addon_data or is_episode:
+            self.state.set_tracking(self.player.getPlayingFile())
+            self.state.reset_queue()
+
+            # Get details of currently playing file to save playcount
+            if has_addon_data:
+                self.state.handle_addon_now_playing()
+            else:
+                self.state.handle_library_now_playing()
+
+            # Store popup time and check if cue point was provided
+            self.state.set_popup_time(total_time)
+
+        else:
+            self.state.reset()
+
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
-        """Notification event handler for accepting data from add-ons"""
-        # Ignore notifications not targeting Up Next
-        if not method.endswith('upnext_data'):
-            return
+        """Handler for Kodi state change and data transfer from addons"""
 
-        sender = sender.replace('.SIGNAL', '')
-        if decoded_data is None:
-            msg = 'Addon: data error - {0} sent {1}'.format(sender, data)
-            self.log(msg, 1)
-            return
-        decoded_data.update(id='%s_play_action' % sender)
+        if get_kodi_version() < 18 and method == 'Player.OnPlay':
+            self.track_playback()
 
-        self.player.track_playback(decoded_data, encoding)
+        elif method == 'Player.OnAVStart':
+            self.track_playback()
+
+        elif method == 'Player.OnStop':
+            self.state.reset_queue()
+            # OnStop can occur before/after the next file has started playing
+            if self.state.playing_next:
+                self.state.playing_next = False
+            # Reset state if Up Next has not requested the next file to play
+            else:
+                self.state.reset()
+
+        # Data transfer from addons
+        elif method.endswith('upnext_data'):
             decoded_data, encoding = decode_data(data)
+            sender = sender.replace('.SIGNAL', '')
+            if decoded_data is None:
+                msg = 'Addon: data error - {0} sent {1}'.format(sender, data)
+                self.log(msg, 1)
+                return
+            decoded_data.update(id='%s_play_action' % sender)
+
+            self.track_playback(decoded_data, encoding)

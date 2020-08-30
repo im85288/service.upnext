@@ -63,7 +63,6 @@ class State:
 
     def set_last_file(self, filename):
         self.last_file = filename
-        self.playing_next = False
 
     def get_last_file(self):
         return self.last_file
