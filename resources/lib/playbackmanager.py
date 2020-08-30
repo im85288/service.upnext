@@ -34,7 +34,7 @@ class PlaybackManager:
 
         # Shouldn't get here if playlist setting is disabled, but just in case
         if playlist_item and not self.state.enable_playlist:
-            self.log('Playlist handling disabled', 2)
+            self.log('Exit: playlist handling disabled', 2)
             return
 
         # Show popup and get new playback state
@@ -47,6 +47,8 @@ class PlaybackManager:
         if not keep_playing:
             self.log('Stopping playback', 2)
             self.player.stop()
+
+        self.log('Exit', 2)
 
     def launch_popup(self, episode, playlist_item):
         episodeid = get_int(episode, 'episodeid')
