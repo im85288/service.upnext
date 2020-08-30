@@ -6,8 +6,9 @@ from xbmc import Monitor
 from playbackmanager import PlaybackManager
 from player import PlayerMonitor
 from state import State
-from statichelper import from_unicode
-from utils import decode_json, get_property, log as ulog
+from utils import (
+    decode_data, from_unicode, get_kodi_version, get_property, log as ulog
+)
 
 
 class UpNextMonitor(Monitor):
