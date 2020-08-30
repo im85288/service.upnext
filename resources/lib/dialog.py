@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from platform import machine
 from xbmc import Player
 from xbmcgui import WindowXMLDialog, ACTION_NAV_BACK, ACTION_STOP
-from static_helper import from_unicode
+from statichelper import from_unicode
 from utils import (
     calculate_progress_steps, get_int, get_setting_bool, localize,
     localize_time, log as ulog

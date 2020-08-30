@@ -11,7 +11,7 @@ import os
 import json
 import time
 from xbmcextra import global_settings, import_language
-from utils import to_unicode
+from statichelper import to_unicode
 
 LOGFATAL = 'Fatal'
 LOGERROR = 'Error'
