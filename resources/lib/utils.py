@@ -4,7 +4,9 @@
 from __future__ import absolute_import, division, unicode_literals
 import sys
 import json
-from xbmc import executeJSONRPC, getRegion, log as xlog, LOGDEBUG, LOGNOTICE
+from xbmc import (
+    executeJSONRPC, getInfoLabel, getRegion, log as xlog, LOGDEBUG, LOGINFO
+)
 from xbmcaddon import Addon
 from xbmcgui import Window
 from statichelper import from_unicode, to_unicode
@@ -26,6 +28,12 @@ def addon_id():
 def addon_path():
     """Return add-on path"""
     return get_addon_info('path')
+
+
+def get_kodi_version():
+    """Return Kodi version number as float"""
+    build = getInfoLabel("System.BuildVersion")
+    return float(build[:4])
 
 
 def get_property(key, window_id=10000):
@@ -167,7 +175,12 @@ def log(msg, name=None, level=1):
     set_property('logLevel', log_level)
     if not debug_logging and log_level < level:
         return
-    level = LOGDEBUG if debug_logging else LOGNOTICE
+    if debug_logging:
+        level = LOGDEBUG
+    elif get_kodi_version() >= 19:
+        level = LOGINFO
+    else:
+        level = LOGINFO + 1
     xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)
 
 
