@@ -2,27 +2,22 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from api import (
-    get_episodeid, get_next_from_library, get_next_in_playlist,
-    get_now_playing, get_playlist_position, get_tvshowid, reset_queue
-)
-from utils import (
-    get_int, get_setting_bool, get_setting_int, log as ulog
-)
+import api
+import utils
 
 
-# keeps track of the state parameters
 class UpNextState():
+    """Class encapsulating all state variables and methods"""
 
     def __init__(self, reset=None):
         # Settings state variables
-        self.disabled = get_setting_bool('disableNextUp')
-        self.auto_play = get_setting_int('autoPlayMode') == 0
-        self.auto_play_delay = get_setting_int('autoPlayCountdown')
-        self.unwatched_only = not get_setting_bool('includeWatched')
-        self.enable_playlist = get_setting_bool('enablePlaylist')
-        self.played_limit = get_setting_int('playedInARow')
-        self.simple_mode = get_setting_int('simpleMode') == 0
+        self.disabled = utils.get_setting_bool('disableNextUp')
+        self.auto_play = utils.get_setting_int('autoPlayMode') == 0
+        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
+        self.unwatched_only = not utils.get_setting_bool('includeWatched')
+        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
+        self.played_limit = utils.get_setting_int('playedInARow')
+        self.simple_mode = utils.get_setting_int('simpleMode') == 0
         # Addon data
         self.data = {}
         self.encoding = 'base64'
@@ -48,7 +43,7 @@ class UpNextState():
 
     @classmethod
     def log(cls, msg, level=2):
-        ulog(msg, name=cls.__name__, level=level)
+        utils.log(msg, name=cls.__name__, level=level)
 
     def reset(self):
         self.__init__(reset=True)
@@ -80,16 +75,16 @@ class UpNextState():
 
     def reset_queue(self):
         if self.queued:
-            self.queued = reset_queue()
+            self.queued = api.reset_queue()
 
     def get_next(self):
         episode = None
-        position = get_playlist_position()
+        position = api.get_playlist_position()
         has_addon_data = self.has_addon_data()
 
         # File from non addon playlist
         if position and not has_addon_data:
-            episode = get_next_in_playlist(position)
+            episode = api.get_next_in_playlist(position)
 
         # File from addon
         elif has_addon_data:
@@ -98,7 +93,7 @@ class UpNextState():
 
         # File from Kodi library
         else:
-            episode, new_season = get_next_from_library(
+            episode, new_season = api.get_next_from_library(
                 self.tvshowid,
                 self.episodeid,
                 self.unwatched_only
@@ -114,21 +109,21 @@ class UpNextState():
 
     def set_popup_time(self, total_time):
         # Alway use metadata, when available
-        popup_duration = get_int(self.data, 'notification_time')
+        popup_duration = utils.get_int(self.data, 'notification_time')
         if 0 < popup_duration < total_time:
             self.popup_cue = True
             self.popup_time = total_time - popup_duration
             return
 
         # Some consumers send the offset when the credits start (e.g. Netflix)
-        popup_time = get_int(self.data, 'notification_offset')
+        popup_time = utils.get_int(self.data, 'notification_offset')
         if 0 < popup_time < total_time:
             self.popup_cue = True
             self.popup_time = popup_time
             return
 
         # Use a customized notification time, when configured
-        if get_setting_bool('customAutoPlayTime'):
+        if utils.get_setting_bool('customAutoPlayTime'):
             if total_time > 60 * 60:
                 duration_setting = 'autoPlayTimeXL'
             elif total_time > 40 * 60:
@@ -145,7 +140,7 @@ class UpNextState():
             duration_setting = 'autoPlaySeasonTime'
 
         self.popup_cue = False
-        self.popup_time = total_time - get_setting_int(duration_setting)
+        self.popup_time = total_time - utils.get_setting_int(duration_setting)
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode')
@@ -153,7 +148,7 @@ class UpNextState():
         if not item:
             return None
 
-        tvshowid = get_int(item, 'tvshowid')
+        tvshowid = utils.get_int(item, 'tvshowid')
 
         # Reset play count if new show playing
         if self.tvshowid != tvshowid:
@@ -166,22 +161,22 @@ class UpNextState():
             self.tvshowid = tvshowid
             self.played_in_a_row = 1
 
-        self.episodeid = get_int(item, 'episodeid')
+        self.episodeid = utils.get_int(item, 'episodeid')
 
-        self.playcount = get_int(item, 'playcount', 0)
+        self.playcount = utils.get_int(item, 'playcount', 0)
 
         return item
 
     def handle_library_now_playing(self):
-        item = get_now_playing()
+        item = api.get_now_playing()
         if not item or item.get('type') != 'episode':
             return None
 
         # Get current tvshowid or search in library if detail missing
-        tvshowid = get_int(item, 'tvshowid')
+        tvshowid = utils.get_int(item, 'tvshowid')
         if tvshowid == -1:
             title = item.get('showtitle').encode('utf-8')
-            self.tvshowid = get_tvshowid(title)
+            self.tvshowid = api.get_tvshowid(title)
             self.log('Fetched tvshowid: %s' % self.tvshowid, 2)
 
         # Reset play count if new show playing
@@ -196,16 +191,16 @@ class UpNextState():
             self.played_in_a_row = 1
 
         # Get current episodeid or search in library if detail missing
-        self.episodeid = get_int(item, 'id')
+        self.episodeid = utils.get_int(item, 'id')
         if self.episodeid == -1:
-            self.episodeid = get_episodeid(
+            self.episodeid = api.get_episodeid(
                 tvshowid,
                 item.get('season'),
                 item.get('episode')
             )
             self.log('Fetched episodeid: %s' % self.episodeid, 2)
 
-        self.playcount = get_int(item, 'playcount', 0)
+        self.playcount = utils.get_int(item, 'playcount', 0)
 
         return item
 

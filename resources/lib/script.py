@@ -1,12 +1,13 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-"""This is the actual Up Next API script"""
+"""This is the actual Up Next script"""
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmcaddon import Addon
-from playbackmanager import PlaybackManager
-from player import UpNextPlayer
-from state import UpNextState
+import xbmcaddon
+import playbackmanager
+import player
+import state
+import utils
 
 
 def test_popup(popup_type, simple_style=False):
@@ -34,14 +35,14 @@ def test_popup(popup_type, simple_style=False):
         runtime=3000,
     )
 
-    state = UpNextState()
-    state.starting = 0
-    state.ended = 0
-    state.simple_mode = bool(simple_style)
+    test_state = state.UpNextState()
+    test_state.starting = 0
+    test_state.ended = 0
+    test_state.simple_mode = bool(simple_style)
     if popup_type == 'stillwatching':
-        state.played_in_a_row = state.played_limit
+        test_state.played_in_a_row = test_state.played_limit
 
-    player = UpNextPlayer()
+    test_player = player.UpNextPlayer()
     player_state = dict(
         # external_player={'value': False, 'force': False},
         playing={'value': True, 'force': True},
@@ -53,10 +54,10 @@ def test_popup(popup_type, simple_style=False):
         # playnext={'force': False},
         stop={'force': True}
     )
-    player.state.update(player_state)
-    PlaybackManager(
-        player=player,
-        state=state
+    test_player.state.update(player_state)
+    playbackmanager.PlaybackManager(
+        player=test_player,
+        state=test_state
     ).launch_popup(
         episode=episode,
         playlist_item=False
@@ -64,7 +65,7 @@ def test_popup(popup_type, simple_style=False):
 
 
 def open_settings():
-    Addon().openSettings()
+    xbmcaddon.Addon().openSettings()
 
 
 def run(argv):

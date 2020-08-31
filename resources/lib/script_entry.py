@@ -3,8 +3,8 @@
 """This is the Up Next script entry point"""
 
 from __future__ import absolute_import, division, unicode_literals
-from sys import argv
-from script import run
+import sys
+import script
 
 
-run(argv)
+script.run(sys.argv)

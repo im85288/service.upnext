@@ -5,22 +5,20 @@
 from __future__ import absolute_import, division, unicode_literals
 from base64 import b64decode, b64encode
 from binascii import Error as binasciiError, hexlify, unhexlify
-import sys
 import json
-from xbmc import (
-    executeJSONRPC, getInfoLabel, getRegion, log as xlog, LOGDEBUG, LOGINFO
-)
-from xbmcaddon import Addon
-from xbmcgui import Window
-from statichelper import from_unicode, to_unicode
+import sys
+import xbmc
+import xbmcaddon
+import xbmcgui
+import statichelper
 
 
-ADDON = Addon()
+ADDON = xbmcaddon.Addon()
 
 
 def get_addon_info(key):
     """Return add-on information"""
-    return to_unicode(ADDON.getAddonInfo(key))
+    return statichelper.to_unicode(ADDON.getAddonInfo(key))
 
 
 def addon_id():
@@ -35,30 +33,31 @@ def addon_path():
 
 def get_kodi_version():
     """Return Kodi version number as float"""
-    build = getInfoLabel("System.BuildVersion")
+    build = xbmc.getInfoLabel("System.BuildVersion")
     return float(build[:4])
 
 
 def get_property(key, window_id=10000):
     """Get a Window property"""
-    return to_unicode(Window(window_id).getProperty(key))
+    return statichelper.to_unicode(xbmcgui.Window(window_id).getProperty(key))
 
 
 def set_property(key, value, window_id=10000):
     """Set a Window property"""
-    return Window(window_id).setProperty(key, from_unicode(str(value)))
+    value = statichelper.from_unicode(str(value))
+    return xbmcgui.Window(window_id).setProperty(key, value)
 
 
 def clear_property(key, window_id=10000):
     """Clear a Window property"""
-    return Window(window_id).clearProperty(key)
+    return xbmcgui.Window(window_id).clearProperty(key)
 
 
 def get_setting(key, default=None):
     """Get an add-on setting as string"""
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
-        value = to_unicode(Addon().getSetting(key))
+        value = statichelper.to_unicode(xbmcaddon.Addon().getSetting(key))
     # Occurs when the add-on is disabled
     except RuntimeError:
         return default
@@ -70,7 +69,7 @@ def get_setting(key, default=None):
 def get_setting_bool(key, default=None):
     """Get an add-on setting as boolean"""
     try:
-        return Addon().getSettingBool(key)
+        return xbmcaddon.Addon().getSettingBool(key)
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
         value = get_setting(key, default)
@@ -85,7 +84,7 @@ def get_setting_bool(key, default=None):
 def get_setting_int(key, default=None):
     """Get an add-on setting as integer"""
     try:
-        return Addon().getSettingInt(key)
+        return xbmcaddon.Addon().getSettingInt(key)
     # On Krypton or older, or when not an integer
     except (AttributeError, TypeError):
         value = get_setting(key, default)
@@ -138,7 +137,7 @@ def decode_data(encoded):
 
     # NOTE: With Python 3.5 and older json.loads() does not support bytes
     # or bytearray, so we convert to unicode
-    return json.loads(to_unicode(json_data)), encoding
+    return json.loads(statichelper.to_unicode(json_data)), encoding
 
 
 def decode_json(data):
@@ -176,15 +175,16 @@ def log(msg, name=None, level=1):
     if not debug_logging and log_level < level:
         return
     if debug_logging:
-        level = LOGDEBUG
+        level = xbmc.LOGDEBUG
     # Kodi v19+ uses LOGINFO (=2) as default log level. LOGNOTICE is deprecated
     elif get_kodi_version() >= 19:
-        level = LOGINFO
+        level = xbmc.LOGINFO
     # Kodi v18 and below uses LOGNOTICE (=3) as default log level.
     else:
-        level = LOGINFO + 1
-    xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)
+        level = xbmc.LOGINFO + 1
 
+    msg = statichelper.from_unicode(msg)
+    xbmc.log('[{0}] {1} -> {2}'.format(addon_id(), name, msg), level=level)
 
 
 def jsonrpc(**kwargs):
@@ -193,7 +193,7 @@ def jsonrpc(**kwargs):
         kwargs.update(id=0)
     if 'jsonrpc' not in kwargs:
         kwargs.update(jsonrpc='2.0')
-    return json.loads(executeJSONRPC(json.dumps(kwargs)))
+    return json.loads(xbmc.executeJSONRPC(json.dumps(kwargs)))
 
 
 def get_global_setting(setting):
@@ -212,7 +212,7 @@ def localize(string_id):
 
 def localize_time(time):
     """Localize time format"""
-    time_format = getRegion('time')
+    time_format = xbmc.getRegion('time')
 
     # Fix a bug in Kodi v18.5 and older causing double hours
     # https://github.com/xbmc/xbmc/pull/17380

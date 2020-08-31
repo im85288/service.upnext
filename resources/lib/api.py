@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+"""Implements helper functions to interact with Kodi library, player and playlist"""
 
 from __future__ import absolute_import, division, unicode_literals
 import os.path
-from xbmc import PlayList, PLAYLIST_VIDEO
-from utils import event, get_int, jsonrpc, log as ulog
+import xbmc
+import utils
 
 
 EPISODE_PROPERTIES = [
@@ -63,16 +64,16 @@ TVSHOW_PROPERTIES = [
 
 def log(msg, level=2):
     """Log wrapper"""
-    ulog(msg, name=__name__, level=level)
+    utils.log(msg, name=__name__, level=level)
 
 
 def play_kodi_item(episode):
     log('Library: playing - {0}'.format(episode), 2)
-    jsonrpc(
+    utils.jsonrpc(
         method='Player.Open',
         params=dict(
             item=dict(
-                episodeid=get_int(episode, 'episodeid')
+                episodeid=utils.get_int(episode, 'episodeid')
             )
         ),
         # Disable resuming, playback from start
@@ -86,7 +87,7 @@ def play_kodi_item(episode):
 def queue_next_item(data, episode):
     next_item = {}
     play_url = data.get('play_url')
-    episodeid = get_int(episode, 'episodeid')
+    episodeid = utils.get_int(episode, 'episodeid')
 
     if play_url:
         next_item.update(file=play_url)
@@ -96,9 +97,9 @@ def queue_next_item(data, episode):
 
     if next_item:
         log('Queue: adding - {0}'.format(next_item), 2)
-        jsonrpc(
+        utils.jsonrpc(
             method='Playlist.Add',
-            params=dict(playlistid=PLAYLIST_VIDEO, item=next_item)
+            params=dict(playlistid=xbmc.PLAYLIST_VIDEO, item=next_item)
         )
     else:
         log('Queue: nothing added', 2)
@@ -108,24 +109,24 @@ def queue_next_item(data, episode):
 
 def reset_queue():
     log('Queue: removing previously played item', 2)
-    jsonrpc(
+    utils.jsonrpc(
         method='Playlist.Remove',
-        params=dict(playlistid=PLAYLIST_VIDEO, position=0)
+        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=0)
     )
     return False
 
 
 def dequeue_next_item():
     log('Queue: removing unplayed next item', 2)
-    jsonrpc(
+    utils.jsonrpc(
         method='Playlist.Remove',
-        params=dict(playlistid=PLAYLIST_VIDEO, position=1)
+        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=1)
     )
     return False
 
 
 def get_playlist_position():
-    playlist = PlayList(PLAYLIST_VIDEO)
+    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     position = playlist.getposition()
     # A playlist with only one element has no next item
     # PlayList().getposition() starts counting from zero
@@ -136,10 +137,10 @@ def get_playlist_position():
 
 
 def get_next_in_playlist(position):
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='Playlist.GetItems',
         params=dict(
-            playlistid=PLAYLIST_VIDEO,
+            playlistid=xbmc.PLAYLIST_VIDEO,
             # limits are zero indexed, position is one indexed
             limits=dict(start=position, end=position + 1),
             properties=EPISODE_PROPERTIES
@@ -157,13 +158,13 @@ def get_next_in_playlist(position):
     # Try and populate required details if missing
     if not item.get('title'):
         item['title'] = item.get('label', '')
-    item['episodeid'] = get_int(item, 'id')
-    item['tvshowid'] = get_int(item, 'tvshowid')
+    item['episodeid'] = utils.get_int(item, 'id')
+    item['tvshowid'] = utils.get_int(item, 'tvshowid')
     # If missing season/episode, change to empty string to avoid episode
     # formatting issues ("S-1E-1") in Up Next popup
-    if get_int(item, 'season') == -1:
+    if utils.get_int(item, 'season') == -1:
         item['season'] = ''
-    if get_int(item, 'episode') == -1:
+    if utils.get_int(item, 'episode') == -1:
         item['episode'] = ''
 
     log('Playlist: next item - %s' % item, 2)
@@ -174,7 +175,7 @@ def play_addon_item(data, encoding):
     data = data.get('play_url')
     if data:
         log('Addon: playing - {0}'.format(data), 2)
-        jsonrpc(
+        utils.jsonrpc(
             method='Player.Open',
             params=dict(item=dict(file=data))
         )
@@ -182,7 +183,7 @@ def play_addon_item(data, encoding):
         msg = 'Addon: sending - ({encoding}) {play_info}'
         msg = msg.format(dict(encoding=encoding, **data))
         log(msg, 2)
-        event(
+        utils.event(
             message=data.get('id'),
             data=data.get('play_info'),
             sender='upnextprovider',
@@ -191,10 +192,10 @@ def play_addon_item(data, encoding):
 
 
 def get_now_playing():
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='Player.GetItem',
         params=dict(
-            playerid=PLAYLIST_VIDEO,
+            playerid=xbmc.PLAYLIST_VIDEO,
             properties=EPISODE_PROPERTIES,
         )
     )
@@ -267,7 +268,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
         })
     filters = {'and': filters}
 
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
         params=dict(
             tvshowid=tvshowid,
@@ -293,7 +294,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
 
 
 def get_from_library(tvshowid, episodeid):
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='VideoLibrary.GetTVShowDetails',
         params=dict(
             tvshowid=tvshowid,
@@ -307,7 +308,7 @@ def get_from_library(tvshowid, episodeid):
         return None
     episode = result
 
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
         params=dict(
             episodeid=episodeid,
@@ -326,7 +327,7 @@ def get_from_library(tvshowid, episodeid):
 
 
 def get_tvshowid(title):
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
         params=dict(
             properties=['title'],
@@ -344,7 +345,7 @@ def get_tvshowid(title):
         log('Library: error - tvshowid not found', 1)
         return -1
 
-    return get_int(result[0], 'tvshowid')
+    return utils.get_int(result[0], 'tvshowid')
 
 
 def get_episodeid(tvshowid, season, episode):
@@ -363,7 +364,7 @@ def get_episodeid(tvshowid, season, episode):
     ]
     filters = {'and': filters}
 
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
         params=dict(
             tvshowid=tvshowid,
@@ -378,11 +379,11 @@ def get_episodeid(tvshowid, season, episode):
         log('Library: error - episodeid not found', 1)
         return -1
 
-    return get_int(result[0], 'episodeid')
+    return utils.get_int(result[0], 'episodeid')
 
 
 def handle_just_watched(episodeid, playcount=0, reset_resume=True):
-    result = jsonrpc(
+    result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
         params=dict(
             episodeid=episodeid,
@@ -392,7 +393,7 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     result = result.get('result', {}).get('episodedetails')
 
     if result:
-        current_playcount = get_int(result, 'playcount', 0)
+        current_playcount = utils.get_int(result, 'playcount', 0)
     else:
         return
     if current_playcount <= playcount:
@@ -408,4 +409,4 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     msg = 'Library: update - id: {0}, playcount change from {1} to {2}'
     msg = msg.format(episodeid, current_playcount, playcount)
     log(msg, 2)
-    jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)
+    utils.jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)

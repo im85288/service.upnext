@@ -2,28 +2,28 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import getCondVisibility, Monitor
-from api import get_playlist_position
-from playbackmanager import PlaybackManager
-from player import UpNextPlayer
-from state import UpNextState
-from statichelper import from_unicode
-from utils import decode_json, get_kodi_version, get_property, log as ulog
+import xbmc
+import api
+import playbackmanager
+import player
+import state
+import statichelper
+import utils
 
 
-class UpNextMonitor(Monitor):
-    """Service monitor for Kodi"""
+class UpNextMonitor(xbmc.Monitor):
+    """Service and player monitor for Kodi"""
 
     def __init__(self):
-        self.state = UpNextState()
-        self.player = UpNextPlayer()
+        self.state = state.UpNextState()
+        self.player = player.UpNextPlayer()
         self.playbackmanager = None
-        Monitor.__init__(self)
+        xbmc.Monitor.__init__(self)
         self.log('Init', 2)
 
     @classmethod
     def log(cls, msg, level=2):
-        ulog(msg, name=cls.__name__, level=level)
+        utils.log(msg, name=cls.__name__, level=level)
 
     def run(self):
         """Main service loop"""
@@ -38,7 +38,7 @@ class UpNextMonitor(Monitor):
             if not self.state.is_tracking():
                 continue
 
-            if bool(get_property('PseudoTVRunning') == 'True'):
+            if bool(utils.get_property('PseudoTVRunning') == 'True'):
                 self.state.set_tracking(False)
                 continue
 
@@ -90,13 +90,13 @@ class UpNextMonitor(Monitor):
             self.state.set_tracking(False)
 
             # Store current file as last file played
-            self.state.set_last_file(from_unicode(current_file))
+            self.state.set_last_file(statichelper.from_unicode(current_file))
 
             # Start Up Next to handle playback of next file
             msg = 'Popup: launch - episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
-            self.playbackmanager = PlaybackManager(
+            self.playbackmanager = playbackmanager.PlaybackManager(
                 player=self.player,
                 state=self.state
             )
@@ -115,16 +115,15 @@ class UpNextMonitor(Monitor):
 
         # onPlayBackEnded for current file can trigger after next file starts
         # Wait additional 5s after onPlayBackEnded or last start
-        monitor = Monitor()
         wait_limit = 5 * start_num
         wait_count = 0
-        while not monitor.abortRequested() and wait_count < wait_limit:
+        while not self.abortRequested() and wait_count < wait_limit:
             # Exit if starting state has been reset by playback error/end/stop
             if not self.state.starting:
                 self.log('Tracking: failed - starting state reset', 1)
                 return
 
-            monitor.waitForAbort(1)
+            self.waitForAbort(1)
             wait_count += 1
 
         # Exit if no file playing
@@ -138,9 +137,9 @@ class UpNextMonitor(Monitor):
         self.state.starting = 0
         self.state.ended = 0
 
-        is_playlist_item = get_playlist_position()
+        is_playlist_item = api.get_playlist_position()
         has_addon_data = bool(data)
-        is_episode = getCondVisibility('videoplayer.content(episodes)')
+        is_episode = xbmc.getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
@@ -177,7 +176,7 @@ class UpNextMonitor(Monitor):
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
 
-        if (get_kodi_version() < 18 and method == 'Player.OnPlay'
+        if (utils.get_kodi_version() < 18 and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
             self.track_playback()
             self.player.state['time']['force'] = False
@@ -204,7 +203,7 @@ class UpNextMonitor(Monitor):
 
         # Data transfer from addons
         elif method.endswith('upnext_data'):
-            decoded_data, encoding = decode_json(data)
+            decoded_data, encoding = utils.decode_json(data)
             sender = sender.replace('.SIGNAL', '')
             if decoded_data is None:
                 msg = 'Addon: data error - {0} sent {1}'.format(sender, data)

@@ -2,18 +2,14 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import Monitor
-from api import (
-    dequeue_next_item, handle_just_watched, play_addon_item, play_kodi_item,
-    queue_next_item
-)
-from dialog import UpNextPopup
-from utils import (
-    addon_path, clear_property, event, get_int, log as ulog, set_property
-)
+import xbmc
+import api
+import dialog
+import utils
 
 
 class PlaybackManager:
+    """Controller for Up Next popup and playback of next episode""" 
 
     def __init__(self, player, state):
         self.player = player
@@ -24,7 +20,7 @@ class PlaybackManager:
 
     @classmethod
     def log(cls, msg, level=2):
-        ulog(msg, name=cls.__name__, level=level)
+        utils.log(msg, name=cls.__name__, level=level)
 
     def launch_up_next(self):
         episode, playlist_item = self.state.get_next()
@@ -45,7 +41,7 @@ class PlaybackManager:
 
         # Dequeue and stop playback if not playing next file
         if not play_next and self.state.queued:
-            self.state.queued = dequeue_next_item()
+            self.state.queued = api.dequeue_next_item()
         if not keep_playing:
             self.log('Stopping playback', 2)
             self.player.stop()
@@ -53,7 +49,7 @@ class PlaybackManager:
         self.log('Exit', 2)
 
     def launch_popup(self, episode, playlist_item):
-        episodeid = get_int(episode, 'episodeid')
+        episodeid = utils.get_int(episode, 'episodeid')
         watched = self.state.unwatched_only and self.state.playcount
         if (episodeid != -1 and self.state.episodeid == episodeid or watched):
             self.log('Exit launch_popup early: already watched file', 2)
@@ -63,7 +59,7 @@ class PlaybackManager:
 
         # Add next file to playlist if existing playlist is not being used
         if not playlist_item:
-            self.state.queued = queue_next_item(self.state.data, episode)
+            self.state.queued = api.queue_next_item(self.state.data, episode)
 
         # Only use Still Watching? popup if played limit has been reached
         show_upnext = self.state.played_in_a_row < self.state.played_limit
@@ -79,9 +75,9 @@ class PlaybackManager:
             '-simple' if self.state.simple_mode else ''
         )
         # Create Kodi dialog to show Up Next or Still Watching? popup
-        self.popup = UpNextPopup(
+        self.popup = dialog.UpNextPopup(
             filename,
-            addon_path(),
+            utils.addon_path(),
             'default',
             '1080i',
             item=episode
@@ -92,7 +88,7 @@ class PlaybackManager:
 
         # Close dialog once we are done with it
         self.popup.close()
-        clear_property('service.upnext.dialog')
+        utils.clear_property('service.upnext.dialog')
 
         if abort_popup:
             self.log('Exit launch_popup early: current file not playing', 2)
@@ -142,14 +138,14 @@ class PlaybackManager:
 
         # Fallback addon playback option, used if addon provides play_info
         elif self.state.has_addon_data():
-            play_addon_item(self.state.data, self.state.encoding)
+            api.play_addon_item(self.state.data, self.state.encoding)
 
         # Fallback library playback option, not normally used
         else:
-            play_kodi_item(episode)
+            api.play_kodi_item(episode)
 
         # Signal to trakt previous episode watched
-        event(
+        utils.event(
             message='NEXTUPWATCHEDSIGNAL',
             data=dict(episodeid=self.state.episodeid),
             encoding='base64'
@@ -158,7 +154,7 @@ class PlaybackManager:
         # Increase playcount and reset resume point
         # TODO: Add settings to control whether file is marked as watched and
         #       resume point is reset when next file is played
-        handle_just_watched(
+        api.handle_just_watched(
             episodeid=self.state.episodeid,
             playcount=self.state.playcount,
             reset_resume=True
@@ -202,9 +198,9 @@ class PlaybackManager:
         wait_time = 0.5
         self.popup.set_progress_step_size(remaining, wait_time)
         self.popup.show()
-        set_property('service.upnext.dialog', 'true')
+        utils.set_property('service.upnext.dialog', 'true')
 
-        monitor = Monitor()
+        monitor = xbmc.Monitor()
         while not monitor.abortRequested():
             # Current file can stop, or next file can start, while in loop
             # Abort popup update

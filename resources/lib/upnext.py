@@ -1,18 +1,19 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
+"""Implements helper functions for addons to interact with Up Next"""
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import InfoTagVideo
-from xbmcgui import ListItem
-from utils import event, log as ulog
+import xbmc
+import xbmcgui
+import utils
 
 
 def log(msg, level=2):
-    ulog(msg, name=__name__, level=level)
+    utils.log(msg, name=__name__, level=level)
 
 
 def send_signal(sender, upnext_info):
-    """Helper function for plugins to send up next data to Up Next"""
+    """Helper function for addons to send data to Up Next"""
     # Exit if not enough addon information provided
     if (upnext_info.get('current_episode')
             and (upnext_info.get('play_url') or upnext_info.get('play_info'))):
@@ -23,12 +24,12 @@ def send_signal(sender, upnext_info):
     for key, val in upnext_info.items():
         thumb = ''
         fanart = ''
-        if isinstance(val, ListItem):
+        if isinstance(val, xbmcgui.ListItem):
             thumb = val.getArt('thumb')
             fanart = val.getArt('fanart')
             val = val.getVideoInfoTag()
 
-        if isinstance(val, InfoTagVideo):
+        if isinstance(val, xbmc.InfoTagVideo):
             upnext_info[key] = dict(
                 episodeid=val.getDbId(),
                 # Use show title as substitute for missing ListItem tvshowid
@@ -75,7 +76,7 @@ def send_signal(sender, upnext_info):
         episode['runtime'] = 0
         upnext_info['next_episode'] = episode
 
-    event(
+    utils.event(
         sender=sender,
         message='upnext_data',
         data=upnext_info,

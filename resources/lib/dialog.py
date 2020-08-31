@@ -2,19 +2,17 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from datetime import datetime, timedelta
-from platform import machine
-from xbmcgui import WindowXMLDialog, ACTION_NAV_BACK, ACTION_STOP
-from statichelper import from_unicode
-from utils import (
-    calculate_progress_steps, get_int, get_setting_bool, localize,
-    localize_time, log as ulog
-)
+import datetime
+import platform
+import xbmcgui
+import statichelper
+import utils
 
-OS_MACHINE = machine()
+OS_MACHINE = platform.machine()
 
 
-class UpNextPopup(WindowXMLDialog):
+class UpNextPopup(xbmcgui.WindowXMLDialog):
+    """Class for Up Next popup state variables and methods"""
 
     def __init__(self, *args, **kwargs):
         self.item = kwargs.get('item')
@@ -26,23 +24,23 @@ class UpNextPopup(WindowXMLDialog):
         self.progress_control = None
 
         if False and OS_MACHINE[0:5] == 'armv7':
-            WindowXMLDialog.__init__(self)
+            xbmcgui.WindowXMLDialog.__init__(self)
         else:
-            WindowXMLDialog.__init__(self, *args)
+            xbmcgui.WindowXMLDialog.__init__(self, *args)
         self.log('Init: %s' % args[0], 2)
 
     @classmethod
     def log(cls, msg, level=2):
-        ulog(msg, name=cls.__name__, level=level)
+        utils.log(msg, name=cls.__name__, level=level)
 
     def onInit(self):  # pylint: disable=invalid-name
         self.set_info()
         self.prepare_progress_control()
 
-        if get_setting_bool('stopAfterClose'):
-            self.getControl(3013).setLabel(localize(30033))  # Stop
+        if utils.get_setting_bool('stopAfterClose'):
+            self.getControl(3013).setLabel(utils.localize(30033))  # Stop
         else:
-            self.getControl(3013).setLabel(localize(30034))  # Close
+            self.getControl(3013).setLabel(utils.localize(30034))  # Close
 
     def set_info(self):
         episode_info = '%(season)sx%(episode)s.' % self.item
@@ -98,12 +96,16 @@ class UpNextPopup(WindowXMLDialog):
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
-        self.setProperty('remaining', from_unicode('%02d' % remaining))
+        remaining = statichelper.from_unicode('%02d' % remaining)
+        self.setProperty('remaining', remaining)
 
-        runtime = get_int(self.item, 'runtime', 0)
+        # Run time and end time for next episode
+        runtime = utils.get_int(self.item, 'runtime', 0)
         if runtime:
-            endtime = datetime.now() + timedelta(seconds=runtime)
-            self.setProperty('endtime', from_unicode(localize_time(endtime)))
+            runtime = datetime.timedelta(seconds=runtime)
+            endtime = datetime.datetime.now() + runtime
+            endtime = statichelper.from_unicode(utils.localize_time(endtime))
+            self.setProperty('endtime', endtime)
 
     def set_cancel(self, cancel):
         self.cancel = cancel
@@ -140,13 +142,13 @@ class UpNextPopup(WindowXMLDialog):
         # Cancel - Close / Stop
         elif controlId == 3013:
             self.set_cancel(True)
-            if get_setting_bool('stopAfterClose'):
+            if utils.get_setting_bool('stopAfterClose'):
                 self.set_stop(True)
             self.close()
 
     def onAction(self, action):  # pylint: disable=invalid-name
-        if action == ACTION_STOP:
+        if action == xbmcgui.ACTION_STOP:
             self.close()
-        elif action == ACTION_NAV_BACK:
+        elif action == xbmcgui.ACTION_NAV_BACK:
             self.set_cancel(True)
             self.close()
