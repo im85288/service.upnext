@@ -26,29 +26,28 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def run(self):
+    def run(self):  # pylint: disable=too-many-branches
         """Main service loop"""
         self.log('Service started', 0)
         interval = 1
         while not self.abortRequested():
 
-            if self.state.is_disabled():
-                if interval == 1:
-                    self.log('Disabled', 0)
-                    if self.playbackmanager:
-                        self.playbackmanager.remove_popup()
-                    self.playbackmanager = None
-                    self.state.reset()
+            if interval == 1 and self.state.is_disabled():
+                self.log('Disabled', 0)
+                if self.playbackmanager:
+                    self.playbackmanager.remove_popup()
+                self.playbackmanager = None
+                self.state.reset()
                 interval = 10
 
-            elif self.screensaver:
-                if interval == 1:
-                    self.log('Idling', 2)
+            elif interval == 1 and self.screensaver:
+                self.log('Idling', 2)
                 interval = 10
 
-            else:
-                if interval == 10:
-                    self.log('Active', 2)
+            elif (interval == 10
+                    and not self.state.is_disabled()
+                    and not self.screensaver):
+                self.log('Active', 2)
                 interval = 1
 
             if self.waitForAbort(interval):
