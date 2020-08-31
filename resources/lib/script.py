@@ -7,11 +7,10 @@ import xbmcaddon
 import playbackmanager
 import player
 import state
-import utils
 
 
 def test_popup(popup_type, simple_style=False):
-    episode = dict(
+    test_episode = dict(
         episodeid=-1,
         tvshowid=-1,
         title='Garden of Bones',
@@ -48,8 +47,8 @@ def test_popup(popup_type, simple_style=False):
         playing={'value': True, 'force': True},
         # paused={'value': False, 'force': False},
         # playing_file={'value': '', 'force': False},
-        time={'value': episode['runtime'] - 60, 'force': True},
-        total_time={'value': episode['runtime'], 'force': True},
+        time={'value': test_episode['runtime'] - 60, 'force': True},
+        total_time={'value': test_episode['runtime'], 'force': True},
         # next_file={'value': '', 'force': False},
         # playnext={'force': False},
         stop={'force': True}
@@ -59,7 +58,7 @@ def test_popup(popup_type, simple_style=False):
         player=test_player,
         state=test_state
     ).launch_popup(
-        episode=episode,
+        episode=test_episode,
         playlist_item=False
     )
 

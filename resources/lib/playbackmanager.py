@@ -9,7 +9,7 @@ import utils
 
 
 class PlaybackManager:
-    """Controller for Up Next popup and playback of next episode""" 
+    """Controller for Up Next popup and playback of next episode"""
 
     def __init__(self, player, state):
         self.player = player
