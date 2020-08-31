@@ -113,9 +113,9 @@ class PlaybackManager:
         if not auto_play and not play_now:
             self.log('Exit launch_popup early: no playback option selected', 2)
             play_next = False
-            # Keep playing if Cancel button was clicked on popup
-            # Stop After Close functionality is handled by dialog
-            keep_playing = self.popup.is_cancel()
+            # Keep playing if NAV_BACK or Cancel button was clicked on popup
+            # Stop playing if Stop button was clicked on popup
+            keep_playing = self.popup.is_cancel() and not self.popup.is_stop()
             return play_next, keep_playing
 
         # Request playback of next file

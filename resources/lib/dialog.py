@@ -20,6 +20,7 @@ class UpNextPopup(WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self.item = kwargs.get('item')
         self.cancel = False
+        self.stop = False
         self.playnow = False
         self.progress_step_size = 0
         self.current_progress_percent = 100
@@ -111,6 +112,12 @@ class UpNextPopup(WindowXMLDialog):
     def is_cancel(self):
         return self.cancel
 
+    def set_stop(self, stop):
+        self.stop = stop
+
+    def is_stop(self):
+        return self.stop
+
     def set_playnow(self, playnow):
         self.playnow = playnow
 
@@ -135,7 +142,7 @@ class UpNextPopup(WindowXMLDialog):
         elif controlId == 3013:
             self.set_cancel(True)
             if get_setting_bool('stopAfterClose'):
-                Player().stop()
+                self.set_stop(True)
             self.close()
 
     def onAction(self, action):  # pylint: disable=invalid-name
