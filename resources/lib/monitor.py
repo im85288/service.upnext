@@ -18,6 +18,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.state = state.UpNextState()
         self.player = player.UpNextPlayer()
         self.playbackmanager = None
+        self.screensaver = False
         xbmc.Monitor.__init__(self)
         self.log('Init', 2)
 
@@ -28,22 +29,37 @@ class UpNextMonitor(xbmc.Monitor):
     def run(self):
         """Main service loop"""
         self.log('Service started', 0)
-
+        interval = 1
         while not self.abortRequested():
-            # check every 1 sec
-            if self.waitForAbort(1):
-                # Abort was requested while waiting. We should exit
+
+            if self.state.is_disabled():
+                if interval == 1:
+                    self.log('Disabled', 0)
+                    if self.playbackmanager:
+                        self.playbackmanager.remove_popup()
+                    self.playbackmanager = None
+                    self.state.reset()
+                interval = 10
+
+            elif self.screensaver:
+                if interval == 1:
+                    self.log('Idling', 2)
+                interval = 10
+
+            else:
+                if interval == 10:
+                    self.log('Active', 2)
+                interval = 1
+
+            if self.waitForAbort(interval):
                 break
 
-            if not self.state.is_tracking():
+            if (self.state.is_disabled()
+                    or self.screensaver
+                    or not self.state.is_tracking()):
                 continue
 
             if bool(utils.get_property('PseudoTVRunning') == 'True'):
-                self.state.set_tracking(False)
-                continue
-
-            # Next Up is disabled
-            if self.state.is_disabled():
                 self.state.set_tracking(False)
                 continue
 
@@ -101,7 +117,7 @@ class UpNextMonitor(xbmc.Monitor):
                 state=self.state
             )
             self.playbackmanager.launch_up_next()
-            del self.playbackmanager
+            self.playbackmanager = None
 
         self.log('Service stopped', 0)
 
@@ -173,6 +189,16 @@ class UpNextMonitor(xbmc.Monitor):
         else:
             self.state.reset()
 
+    def onSettingsChanged(self):  # pylint: disable=invalid-name
+        self.log('Settings changed', 2)
+        self.state.update_settings()
+
+    def onScreensaverActivated(self):  # pylint: disable=invalid-name
+        self.screensaver = True
+
+    def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
+        self.screensaver = False
+
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
 
@@ -180,9 +206,8 @@ class UpNextMonitor(xbmc.Monitor):
                 or method == 'Player.OnAVStart'):
             self.track_playback()
             self.player.state['time']['force'] = False
-            if hasattr(self, 'playbackmanager') and self.playbackmanager:
+            if self.playbackmanager:
                 self.playbackmanager.remove_popup()
-                del self.playbackmanager
 
         elif method == 'Player.OnPause':
             if not self.player.state['paused']['force']:
