@@ -48,6 +48,15 @@ class UpNextState():
     def reset(self):
         self.__init__(reset=True)
 
+    def update_settings(self):
+        self.disabled = utils.get_setting_bool('disableNextUp')
+        self.auto_play = utils.get_setting_int('autoPlayMode') == 0
+        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
+        self.unwatched_only = not utils.get_setting_bool('includeWatched')
+        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
+        self.played_limit = utils.get_setting_int('playedInARow')
+        self.simple_mode = utils.get_setting_int('simpleMode') == 0
+
     def set_last_file(self, filename):
         self.last_file = filename
 
