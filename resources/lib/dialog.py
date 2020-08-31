@@ -4,7 +4,6 @@
 from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from platform import machine
-from xbmc import Player
 from xbmcgui import WindowXMLDialog, ACTION_NAV_BACK, ACTION_STOP
 from statichelper import from_unicode
 from utils import (
