@@ -83,7 +83,10 @@ class UpNextPopup(WindowXMLDialog):
         self.item = item
 
     def set_progress_step_size(self, remaining, delta):
-        self.progress_step_size = calculate_progress_steps(remaining, delta)
+        """Calculate a progress step"""
+        if int(remaining) == 0:  # Avoid division by zero
+            self.progress_step_size = 10.0
+        self.progress_step_size = delta * 100.0 / int(remaining)
 
     def update_progress_control(self, remaining):
         self.current_progress_percent -= self.progress_step_size
