@@ -89,10 +89,10 @@ class UpNextMonitor(xbmc.Monitor):
             # Check that video stream has actually loaded and started playing
             # TODO: This check should no longer be required. Test and remove
             total_time = self.player.getTotalTime()
-            if total_time == 0:
-                self.log('Tracking: error - zero length file', 1)
-                self.state.set_tracking(False)
-                continue
+            # if total_time == 0:
+            #     self.log('Tracking: error - zero length file', 1)
+            #     self.state.set_tracking(False)
+            #     continue
 
             play_time = self.player.getTime()
             popup_time = self.state.get_popup_time()
