@@ -181,7 +181,7 @@ class UpNextMonitor(xbmc.Monitor):
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
 
-        else:
+        elif self.state.is_tracking():
             self.state.reset()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
