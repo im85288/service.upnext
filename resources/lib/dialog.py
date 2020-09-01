@@ -23,7 +23,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.current_progress_percent = 100
         self.progress_control = None
 
-        if False and OS_MACHINE[0:5] == 'armv7':
+        if OS_MACHINE[0:5] == 'armv7':
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args)
