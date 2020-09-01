@@ -10,13 +10,13 @@ import utils
 
 class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
     """Controller for Up Next popup and playback of next episode"""
-    __slots__ = ('player', 'state', 'popup', 'popup_abort')
+    __slots__ = ('player', 'state', 'popup', 'popup_enable')
 
     def __init__(self, player, state):
         self.player = player
         self.state = state
         self.popup = None
-        self.popup_abort = False
+        self.popup_enable = False
         self.log('Init', 2)
 
     @classmethod
@@ -87,14 +87,11 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # Show popup and check that it has not been terminated early
         abort_popup = not self.show_popup_and_wait(auto_play)
 
-        # Close dialog once we are done with it
-        self.popup.close()
-        utils.clear_property('service.upnext.dialog')
-
         if abort_popup:
             self.log('Exit launch_popup early: current file not playing', 2)
             play_next = False
             keep_playing = True
+            self.remove_popup()
             return play_next, keep_playing
 
         # Update new playback state details
@@ -113,9 +110,10 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             # Keep playing if NAV_BACK or Cancel button was clicked on popup
             # Stop playing if Stop button was clicked on popup
             keep_playing = self.popup.is_cancel() and not self.popup.is_stop()
+            self.remove_popup()
             return play_next, keep_playing
 
-        # Release dialog reference
+        # Close dialog once we are done with it
         self.remove_popup()
 
         # Request playback of next file
@@ -185,7 +183,6 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         return play_next, keep_playing
 
     def show_popup_and_wait(self, auto_play):
-        self.popup_abort = False
         if not self.player.isPlaying():
             popup_done = False
             return popup_done
@@ -202,8 +199,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         wait_time = 0.5
         self.popup.set_progress_step_size(remaining, wait_time)
-        self.popup.show()
-        utils.set_property('service.upnext.dialog', 'true')
+        self.show_popup()
 
         monitor = xbmc.Monitor()
         while not monitor.abortRequested():
@@ -212,7 +208,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             if (not self.player.isPlaying()
                     or self.state.starting
                     or self.state.ended
-                    or self.popup_abort):
+                    or not self.popup_enable):
                 popup_done = False
                 return popup_done
 
@@ -229,8 +225,14 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         popup_done = True
         return popup_done
 
+    def show_popup(self):
+        self.popup.show()
+        self.popup_enable = True
+        utils.set_property('service.upnext.dialog', 'true')
+
     def remove_popup(self):
-        if hasattr(self, 'popup') and self.popup:
-            self.popup_abort = True
+        if self.popup_enable:
             self.popup.close()
+            self.popup_enable = False
+            utils.clear_property('service.upnext.dialog')
             del self.popup
