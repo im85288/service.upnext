@@ -15,7 +15,7 @@ def log(msg, level=2):
 def send_signal(sender, upnext_info):
     """Helper function for addons to send data to Up Next"""
     # Exit if not enough addon information provided
-    if (upnext_info.get('current_episode')
+    if not (upnext_info.get('current_episode')
             and (upnext_info.get('play_url') or upnext_info.get('play_info'))):
         log('Sending invalid Up Next info: %s' % upnext_info, 1)
         return
