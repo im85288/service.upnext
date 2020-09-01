@@ -115,6 +115,9 @@ class PlaybackManager:
             keep_playing = self.popup.is_cancel() and not self.popup.is_stop()
             return play_next, keep_playing
 
+        # Release dialog reference
+        self.remove_popup()
+
         # Request playback of next file
         # Primary method is to play next playlist item
         if playlist_item or self.state.queued:
@@ -182,6 +185,7 @@ class PlaybackManager:
         return play_next, keep_playing
 
     def show_popup_and_wait(self, auto_play):
+        self.popup_abort = False
         if not self.player.isPlaying():
             popup_done = False
             return popup_done
@@ -226,7 +230,7 @@ class PlaybackManager:
         return popup_done
 
     def remove_popup(self):
-        if hasattr(self, 'popup'):
+        if hasattr(self, 'popup') and self.popup:
             self.popup_abort = True
             self.popup.close()
             del self.popup
