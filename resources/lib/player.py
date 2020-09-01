@@ -68,7 +68,7 @@ class UpNextPlayer(xbmc.Player):
                 # Change in time from previously forced to now
                 delta = self.state['time']['force'] - now
                 self.state['time']['value'] -= delta.total_seconds()
-            
+
             # Set timestamp for when forced time value was updated
             self.state['time']['force'] = now
 
