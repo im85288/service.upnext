@@ -21,7 +21,7 @@ class UpNextMonitor(xbmc.Monitor):
             player=self.player,
             state=self.state
         )
-        self.screensaver = False
+        self.idle = False
         xbmc.Monitor.__init__(self)
         self.log('Init', 2)
 
@@ -32,12 +32,12 @@ class UpNextMonitor(xbmc.Monitor):
     def run(self):
         """Main service loop"""
         self.log('Service started', 0)
-        interval = 1
+        interval = 10
         while not self.abortRequested():
 
             if (interval == 10
                     and not self.state.is_disabled()
-                    and not self.screensaver):
+                    and not self.idle):
                 self.log('Active', 2)
                 interval = 1
 
@@ -46,8 +46,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.playbackmanager.remove_popup()
                 self.state.reset()
                 interval = 10
-
-            elif interval == 1 and self.screensaver:
+            elif interval == 1 and self.idle:
                 self.log('Idling', 2)
                 interval = 10
 
@@ -55,7 +54,7 @@ class UpNextMonitor(xbmc.Monitor):
                 break
 
             if (self.state.is_disabled()
-                    or self.screensaver
+                    or self.idle
                     or not self.state.is_tracking()):
                 continue
 
@@ -189,10 +188,10 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.update_settings()
 
     def onScreensaverActivated(self):  # pylint: disable=invalid-name
-        self.screensaver = True
+        self.idle = True
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
-        self.screensaver = False
+        self.idle = False
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
