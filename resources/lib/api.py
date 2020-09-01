@@ -68,6 +68,7 @@ def log(msg, level=2):
 
 
 def play_kodi_item(episode):
+    """Function to directly play a file from the Kodi library"""
     log('Library: playing - {0}'.format(episode), 2)
     utils.jsonrpc(
         method='Player.Open',
@@ -85,6 +86,7 @@ def play_kodi_item(episode):
 
 
 def queue_next_item(data, episode):
+    """Function to add next episode to the Up Next queue"""
     next_item = {}
     play_url = data.get('play_url')
     episodeid = utils.get_int(episode, 'episodeid')
@@ -108,6 +110,7 @@ def queue_next_item(data, episode):
 
 
 def reset_queue():
+    """Function to remove the 1st item from the playlist, used by Up Next queue"""
     log('Queue: removing previously played item', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -117,6 +120,7 @@ def reset_queue():
 
 
 def dequeue_next_item():
+    """Function to remove the 2nd item from the playlist, used by Up Next queue"""
     log('Queue: removing unplayed next item', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -126,6 +130,7 @@ def dequeue_next_item():
 
 
 def get_playlist_position():
+    """Function to get current playlist playback position"""
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     position = playlist.getposition()
     # A playlist with only one element has no next item
@@ -137,6 +142,7 @@ def get_playlist_position():
 
 
 def get_next_in_playlist(position):
+    """Function to get details of next episode in playlist"""
     result = utils.jsonrpc(
         method='Playlist.GetItems',
         params=dict(
@@ -172,6 +178,7 @@ def get_next_in_playlist(position):
 
 
 def play_addon_item(data, encoding):
+    """Function to play next addon item, either directly or by passthrough to addon"""
     data = data.get('play_url')
     if data:
         log('Addon: playing - {0}'.format(data), 2)
@@ -192,6 +199,7 @@ def play_addon_item(data, encoding):
 
 
 def get_now_playing():
+    """Function to get detail of currently playing item"""
     result = utils.jsonrpc(
         method='Player.GetItem',
         params=dict(
@@ -210,6 +218,7 @@ def get_now_playing():
 
 
 def get_next_from_library(tvshowid, episodeid, unwatched_only):
+    """Function to get show and next episode details from Kodi library"""
     episode = get_from_library(tvshowid, episodeid)
     if not episode:
         log('Library: error - next episode info not found', 1)
@@ -294,6 +303,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
 
 
 def get_from_library(tvshowid, episodeid):
+    """Function to get show and episode details from Kodi library"""
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShowDetails',
         params=dict(
@@ -304,7 +314,7 @@ def get_from_library(tvshowid, episodeid):
     result = result.get('result', {}).get('tvshowdetails')
 
     if not result:
-        log('Library: error - episode info not found', 1)
+        log('Library: error - show info not found', 1)
         return None
     episode = result
 
@@ -327,6 +337,7 @@ def get_from_library(tvshowid, episodeid):
 
 
 def get_tvshowid(title):
+    """Function to search Kodi library for tshowid by title"""
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
         params=dict(
@@ -349,7 +360,7 @@ def get_tvshowid(title):
 
 
 def get_episodeid(tvshowid, season, episode):
-    """Search Kodi library for episodeid by tvshowid, season, and episode"""
+    """Function to search Kodi library for episodeid by tvshowid, season, and episode"""
     filters = [
         {
             'field': 'season',

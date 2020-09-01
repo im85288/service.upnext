@@ -34,18 +34,19 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Service started', 0)
         interval = 10
         while not self.abortRequested():
-
+            # Service monitor loop runs every 1s unless disabled or idle
             if (interval == 10
                     and not self.state.is_disabled()
                     and not self.idle):
                 self.log('Active', 2)
                 interval = 1
-
+            # If disabled in settings increase loop interval to 10s and cleanup
             elif interval == 1 and self.state.is_disabled():
                 self.log('Disabled', 0)
                 self.playbackmanager.remove_popup()
                 self.state.reset()
                 interval = 10
+            # If screensaver is active increase loop interval to 10s
             elif interval == 1 and self.idle:
                 self.log('Idling', 2)
                 interval = 10
@@ -180,6 +181,7 @@ class UpNextMonitor(xbmc.Monitor):
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
 
+        # Reset state if required
         elif self.state.is_tracking():
             self.state.reset()
 
@@ -198,15 +200,20 @@ class UpNextMonitor(xbmc.Monitor):
 
         if (utils.get_kodi_version() < 18 and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
+            # Check whether Up Next can start tracking
             self.track_playback()
+
+            # Disable any forces and remove any existing popups
             self.player.state['time']['force'] = False
             self.playbackmanager.remove_popup()
 
         elif method == 'Player.OnPause':
+            # Update paused state if not forced
             if not self.player.state['paused']['force']:
                 self.player.state['paused']['value'] = True
 
         elif method == 'Player.OnResume':
+            # Update paused state if not forced
             if not self.player.state['paused']['force']:
                 self.player.state['paused']['value'] = False
 
@@ -229,4 +236,5 @@ class UpNextMonitor(xbmc.Monitor):
                 return
             decoded_data.update(id='%s_play_action' % sender)
 
+            # Initial processing of data to start tracking
             self.track_playback(decoded_data, encoding)

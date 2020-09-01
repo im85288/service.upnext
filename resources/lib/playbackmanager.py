@@ -51,6 +51,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
     def launch_popup(self, episode, playlist_item):
         episodeid = utils.get_int(episode, 'episodeid')
+
+        # Checked if next episode has been watched and if it should be skipped
         watched = self.state.unwatched_only and self.state.playcount
         if (episodeid != -1 and self.state.episodeid == episodeid or watched):
             self.log('Exit launch_popup early: already watched file', 2)

@@ -10,6 +10,7 @@ import state
 
 
 def test_popup(popup_type, simple_style=False):
+    # Create dummy episode to show in popup
     test_episode = dict(
         episodeid=-1,
         tvshowid=-1,
@@ -34,26 +35,39 @@ def test_popup(popup_type, simple_style=False):
         runtime=3000,
     )
 
+    # Create test state object
     test_state = state.UpNextState()
+    # Simulate after file has started
     test_state.starting = 0
+    # But before it has ended
     test_state.ended = 0
+
+    # Choose popup style
     test_state.simple_mode = bool(simple_style)
+    # Choose popup type
     if popup_type == 'stillwatching':
         test_state.played_in_a_row = test_state.played_limit
 
+    # Create test player object
     test_player = player.UpNextPlayer()
-    player_state = dict(
+    # Simulate player state
+    test_player.state.update(dict(
         # external_player={'value': False, 'force': False},
+        # Simulate file is playing
         playing={'value': True, 'force': True},
         # paused={'value': False, 'force': False},
         # playing_file={'value': '', 'force': False},
+        # Simulate runtime of endtime minus 60s
         time={'value': test_episode['runtime'] - 60, 'force': True},
+        # Simulate endtime based on dummy episode
         total_time={'value': test_episode['runtime'], 'force': True},
         # next_file={'value': '', 'force': False},
         # playnext={'force': False},
+        # Simulate stop to ensure actual playback doesnt stop when popup closes
         stop={'force': True}
-    )
-    test_player.state.update(player_state)
+    ))
+
+    # Create a test playbackmanager and create an actual popup for testing
     playbackmanager.PlaybackManager(
         player=test_player,
         state=test_state
@@ -70,8 +84,10 @@ def open_settings():
 def run(argv):
     """Route to API method"""
     if len(argv) > 2 and argv[1] == 'test_window':
+        # Fancy style popup
         if len(argv) == 3:
             test_popup(argv[2])
+        # Simple style popup
         elif len(argv) == 4:
             test_popup(argv[2], argv[3])
     else:
