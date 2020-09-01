@@ -6,8 +6,38 @@ import api
 import utils
 
 
-class UpNextState():
+class UpNextState:
     """Class encapsulating all state variables and methods"""
+    __slots__ = (
+        # Settings state variables
+        'disabled',
+        'auto_play',
+        'auto_play_delay',
+        'unwatched_only',
+        'enable_playlist',
+        'played_limit',
+        'simple_mode',
+        # Addon data
+        'data',
+        'encoding',
+        # Current file details
+        'filename',
+        'tvshowid',
+        'episodeid',
+        'playcount',
+        'popup_time',
+        'popup_cue',
+        # Previous file details
+        'last_file',
+        # Internal state variables
+        'track',
+        'queued',
+        'playing_next',
+        'played_in_a_row',
+        # Player state
+        'starting',
+        'ended',
+    )
 
     def __init__(self, reset=None):
         # Settings state variables

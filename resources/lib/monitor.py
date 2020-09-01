@@ -17,7 +17,10 @@ class UpNextMonitor(xbmc.Monitor):
     def __init__(self):
         self.state = state.UpNextState()
         self.player = player.UpNextPlayer()
-        self.playbackmanager = None
+        self.playbackmanager = playbackmanager.PlaybackManager(
+            player=self.player,
+            state=self.state
+        )
         self.screensaver = False
         xbmc.Monitor.__init__(self)
         self.log('Init', 2)
@@ -26,29 +29,27 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def run(self):  # pylint: disable=too-many-branches
+    def run(self):
         """Main service loop"""
         self.log('Service started', 0)
         interval = 1
         while not self.abortRequested():
 
-            if interval == 1 and self.state.is_disabled():
+            if (interval == 10
+                    and not self.state.is_disabled()
+                    and not self.screensaver):
+                self.log('Active', 2)
+                interval = 1
+
+            elif interval == 1 and self.state.is_disabled():
                 self.log('Disabled', 0)
-                if self.playbackmanager:
-                    self.playbackmanager.remove_popup()
-                self.playbackmanager = None
+                self.playbackmanager.remove_popup()
                 self.state.reset()
                 interval = 10
 
             elif interval == 1 and self.screensaver:
                 self.log('Idling', 2)
                 interval = 10
-
-            elif (interval == 10
-                    and not self.state.is_disabled()
-                    and not self.screensaver):
-                self.log('Active', 2)
-                interval = 1
 
             if self.waitForAbort(interval):
                 break
@@ -111,12 +112,7 @@ class UpNextMonitor(xbmc.Monitor):
             msg = 'Popup: launch - episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
-            self.playbackmanager = playbackmanager.PlaybackManager(
-                player=self.player,
-                state=self.state
-            )
             self.playbackmanager.launch_up_next()
-            self.playbackmanager = None
 
         self.log('Service stopped', 0)
 
@@ -205,8 +201,7 @@ class UpNextMonitor(xbmc.Monitor):
                 or method == 'Player.OnAVStart'):
             self.track_playback()
             self.player.state['time']['force'] = False
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup()
+            self.playbackmanager.remove_popup()
 
         elif method == 'Player.OnPause':
             if not self.player.state['paused']['force']:
