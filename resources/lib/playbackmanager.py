@@ -8,7 +8,7 @@ import dialog
 import utils
 
 
-class PlaybackManager:
+class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
     """Controller for Up Next popup and playback of next episode"""
     __slots__ = ('player', 'state', 'popup', 'popup_abort')
 
