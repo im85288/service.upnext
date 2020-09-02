@@ -183,8 +183,11 @@ def log(msg, name=None, level=1):
     else:
         level = xbmc.LOGINFO + 1
 
-    msg = statichelper.from_unicode(msg)
-    xbmc.log('[{0}] {1} -> {2}'.format(addon_id(), name, msg), level=level)
+    # Convert to unicode for string formatting with Unicode literal
+    msg = statichelper.to_unicode(msg)
+    msg = '[{0}] {1} -> {2}'.format(addon_id(), name, msg)
+    # Convert back for older Kodi versions
+    xbmc.log(statichelper.from_unicode(msg), level=level)
 
 
 def jsonrpc(**kwargs):

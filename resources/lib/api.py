@@ -226,7 +226,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
         new_season = False
         return episode, new_season
 
-    (path, filename) = os.path.split(str(episode['file']))
+    (path, filename) = os.path.split(episode['file'])
     filters = [
         {'or': [
             # Next episode in current season
@@ -346,7 +346,7 @@ def get_tvshowid(title):
             filter={
                 'field': 'title',
                 'operator': 'is',
-                'value': str(title)
+                'value': title
             }
         )
     )

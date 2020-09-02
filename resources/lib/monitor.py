@@ -7,7 +7,6 @@ import api
 import playbackmanager
 import player
 import state
-import statichelper
 import utils
 
 
@@ -106,7 +105,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.set_tracking(False)
 
             # Store current file as last file played
-            self.state.set_last_file(statichelper.from_unicode(current_file))
+            self.state.set_last_file(current_file)
 
             # Start Up Next to handle playback of next file
             msg = 'Popup: launch - episode ({0}s runtime) ends in {1}s'

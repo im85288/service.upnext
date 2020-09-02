@@ -214,7 +214,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Get current tvshowid or search in library if detail missing
         tvshowid = utils.get_int(item, 'tvshowid')
         if tvshowid == -1:
-            title = item.get('showtitle').encode('utf-8')
+            title = item.get('showtitle')
             self.tvshowid = api.get_tvshowid(title)
             self.log('Fetched tvshowid: %s' % self.tvshowid, 2)
 

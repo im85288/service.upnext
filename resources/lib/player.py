@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import datetime
 import xbmc
+import statichelper
 import utils
 
 
@@ -50,6 +51,7 @@ class UpNextPlayer(xbmc.Player):
         # Use inbuilt method if not forced
         if not self.state['playing_file']['force']:
             actual = getattr(xbmc.Player, 'getPlayingFile')(self)
+            actual = statichelper.to_unicode(actual)
             self.state['playing_file']['value'] = actual
 
         return self.state['playing_file']['value']
