@@ -8,6 +8,7 @@ disable=
     missing-docstring,
     old-style-class,
     super-on-old-class,
+    super-with-arguments,
     too-few-public-methods,
     too-many-arguments,
     too-many-function-args,
