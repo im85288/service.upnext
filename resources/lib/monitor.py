@@ -32,6 +32,8 @@ class UpNextMonitor(xbmc.Monitor):
         """Main service loop"""
         self.log('Service started', 0)
         interval = 10
+        idle_intervals = 0
+        idle_timeout = 10
         while not self.abortRequested():
             # Service monitor loop runs every 1s unless disabled or idle
             if (interval == 10
@@ -39,6 +41,7 @@ class UpNextMonitor(xbmc.Monitor):
                     and not self.idle):
                 self.log('Active', 2)
                 interval = 1
+                idle_intervals = 0
             # If disabled in settings increase loop interval to 10s and cleanup
             elif interval == 1 and self.state.is_disabled():
                 self.log('Disabled', 0)
@@ -56,6 +59,8 @@ class UpNextMonitor(xbmc.Monitor):
             if (self.state.is_disabled()
                     or self.idle
                     or not self.state.is_tracking()):
+                idle_intervals = 0 if self.idle else idle_intervals + 1
+                self.idle = self.idle or idle_intervals >= idle_timeout
                 continue
 
             if bool(utils.get_property('PseudoTVRunning') == 'True'):
@@ -168,6 +173,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Start tracking if Up Next can handle the currently playing file
         if is_playlist_item or has_addon_data or is_episode:
+            self.idle = False
             self.state.set_tracking(self.player.getPlayingFile())
             self.state.reset_queue()
 
@@ -207,11 +213,13 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.remove_popup()
 
         elif method == 'Player.OnPause':
+            self.idle = True
             # Update paused state if not forced
             if not self.player.state['paused']['force']:
                 self.player.state['paused']['value'] = True
 
         elif method == 'Player.OnResume':
+            self.idle = False
             # Update paused state if not forced
             if not self.player.state['paused']['force']:
                 self.player.state['paused']['value'] = False
