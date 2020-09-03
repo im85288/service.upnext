@@ -6,5 +6,5 @@ from __future__ import absolute_import, division, unicode_literals
 import monitor
 
 
-# Start the monitor
-monitor.UpNextMonitor().run()
+# Start the monitor and wait indefinitely for abort
+monitor.UpNextMonitor().waitForAbort()
