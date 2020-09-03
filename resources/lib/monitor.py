@@ -2,8 +2,8 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
 import threading
+import xbmc
 import api
 import playbackmanager
 import player
@@ -23,8 +23,8 @@ class UpNextMonitor(xbmc.Monitor):
             state=self.state
         )
         self.running = False
-        self.SIGSTOP = False
-        self.SIGTERM = False
+        self.sigstop = False
+        self.sigterm = False
         xbmc.Monitor.__init__(self)
         self.log('Init', 2)
 
@@ -32,24 +32,24 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def run_service(self):
-        if not self.running:
-            new_service = threading.Thread(target=self.service)
-            new_service.start()
+    def track_playback(self):
+        if self.running or self.state.is_disabled():
+            return
+        new_tracker = threading.Thread(target=self.tracker)
+        new_tracker.start()
 
-    def service(self):
-        """Main service loop"""
-        self.log('Service started', 2)
+    def tracker(self):
+        self.log('Tracker started', 2)
         self.running = True
 
         while not self.abortRequested():
             # Exit loop if abort requested
-            if self.waitForAbort(1) or self.SIGTERM:
-                self.log('Service shutting down', 1)
+            if self.waitForAbort(1) or self.sigterm:
+                self.log('Tracker shutting down', 1)
                 break
 
-            if self.SIGSTOP or not self.state.is_tracking():
-                self.log('Service exiting', 2)
+            if self.sigstop or not self.state.is_tracking():
+                self.log('Tracker exiting', 2)
                 break
 
             if bool(utils.get_property('PseudoTVRunning') == 'True'):
@@ -96,7 +96,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Stop thread to ensure second popup can't trigger after next file
             # has been requested but has not yet loaded
-            self.SIGSTOP = True
+            self.sigstop = True
 
             # Store current file as last file played
             self.state.set_last_file(current_file)
@@ -108,15 +108,15 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.launch_up_next()
 
         # Clean up popup and state if thread was terminated rather than stopped
-        if not self.SIGSTOP:
+        if not self.sigstop:
             self.playbackmanager.remove_popup()
             self.state.reset()
 
         # Reset running state and thread signals
-        self.log('Service stopped', 2)
+        self.log('Tracker stopped', 2)
         self.running = False
-        self.SIGSTOP = False
-        self.SIGTERM = False
+        self.sigstop = False
+        self.sigterm = False
 
     def check_video(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
@@ -184,8 +184,8 @@ class UpNextMonitor(xbmc.Monitor):
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
 
-            # Start service loop to begin tracking playback
-            self.run_service()
+            # Start tracking loop to begin tracking playback
+            self.track_playback()
 
         # Reset state if required
         elif self.state.is_tracking():
@@ -195,18 +195,18 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Settings changed', 2)
         self.state.update_settings()
 
-        # Shutdown service loop if disabled
+        # Shutdown tracking loop if disabled
         if self.state.is_disabled():
-            self.log('Service disabled', 0)
-            self.SIGTERM = self.running
+            self.log('Up Next disabled', 0)
+            self.sigterm = self.running
 
     def onScreensaverActivated(self):  # pylint: disable=invalid-name
-        # Stop service loop if tracking was enabled e.g. when video is paused
-        self.SIGSTOP = self.state.is_tracking()
+        # Stop tracking loop if tracking was enabled e.g. when video is paused
+        self.sigstop = self.state.is_tracking()
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         if self.state.is_tracking():
-            self.run_service()
+            self.track_playback()
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
@@ -224,7 +224,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.remove_popup()
 
         elif method == 'Player.OnPause':
-            self.SIGSTOP = self.state.is_tracking()
+            self.sigstop = self.state.is_tracking()
 
             # Update paused state if not forced
             if not self.player.state['paused']['force']:
@@ -232,7 +232,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         elif method == 'Player.OnResume':
             if self.state.is_tracking():
-                self.run_service()
+                self.track_playback()
 
             # Update paused state if not forced
             if not self.player.state['paused']['force']:
