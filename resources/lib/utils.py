@@ -3,8 +3,8 @@
 """Implements helper functions used elsewhere in the add-on"""
 
 from __future__ import absolute_import, division, unicode_literals
-from base64 import b64decode, b64encode
-from binascii import Error as binasciiError, hexlify, unhexlify
+import base64
+import binascii
 import json
 import sys
 import xbmc
@@ -115,9 +115,9 @@ def encode_data(data, encoding='base64'):
     """Encode data for a notification event"""
     json_data = json.dumps(data).encode()
     if encoding == 'base64':
-        encoded_data = b64encode(json_data)
+        encoded_data = base64.b64encode(json_data)
     elif encoding == 'hex':
-        encoded_data = hexlify(json_data)
+        encoded_data = binascii.hexlify(json_data)
     else:
         log("Unknown payload encoding type '%s'" % encoding, level=0)
         return None
@@ -129,10 +129,10 @@ def encode_data(data, encoding='base64'):
 def decode_data(encoded):
     """Decode data coming from a notification event"""
     try:
-        json_data = unhexlify(encoded)
+        json_data = binascii.unhexlify(encoded)
         encoding = 'hex'
-    except (TypeError, binasciiError):
-        json_data = b64decode(encoded)
+    except (TypeError, binascii.Error):
+        json_data = base64.b64decode(encoded)
         encoding = 'base64'
 
     # NOTE: With Python 3.5 and older json.loads() does not support bytes
