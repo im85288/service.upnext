@@ -21,6 +21,8 @@ class UpNextMonitor(xbmc.Monitor):
             state=self.state
         )
         self.idle = False
+        self.running = False
+        self.sigterm = False
         xbmc.Monitor.__init__(self)
         self.log('Init', 2)
 
@@ -31,34 +33,29 @@ class UpNextMonitor(xbmc.Monitor):
     def run(self):
         """Main service loop"""
         self.log('Service started', 0)
+        self.running = True
+
         interval = 10
         idle_intervals = 0
         idle_timeout = 10
         while not self.abortRequested():
-            # Service monitor loop runs every 1s unless disabled or idle
-            if (interval == 10
-                    and not self.state.is_disabled()
-                    and not self.idle):
-                self.log('Active', 2)
+            # Service monitor loop runs every 1s unless idle
+            if interval == 10 and not self.idle:
+                self.log('Service active', 2)
                 interval = 1
                 idle_intervals = 0
-            # If disabled in settings increase loop interval to 10s and cleanup
-            elif interval == 1 and self.state.is_disabled():
-                self.log('Disabled', 0)
-                self.playbackmanager.remove_popup()
-                self.state.reset()
-                interval = 10
             # If screensaver is active increase loop interval to 10s
             elif interval == 1 and self.idle:
-                self.log('Idling', 2)
+                self.log('Service idling', 2)
                 interval = 10
 
-            if self.waitForAbort(interval):
+            # Wait for loop interval, exit loop if abort requested
+            if self.waitForAbort(interval) or self.sigterm:
                 break
 
-            if (self.state.is_disabled()
-                    or self.idle
-                    or not self.state.is_tracking()):
+            # Short circuit service loop if Up Next is not doing anything
+            # Enable idle mode if not doing anything for atleast 10s
+            if self.idle or not self.state.is_tracking():
                 idle_intervals = 0 if self.idle else idle_intervals + 1
                 self.idle = self.idle or idle_intervals >= idle_timeout
                 continue
@@ -118,7 +115,14 @@ class UpNextMonitor(xbmc.Monitor):
             self.log(msg, 2)
             self.playbackmanager.launch_up_next()
 
+        # Clean up popup and state
+        self.playbackmanager.remove_popup()
+        self.state.reset()
+
+        # Reset abort signal and running status
         self.log('Service stopped', 0)
+        self.sigterm = False
+        self.running = False
 
     def track_playback(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
@@ -152,6 +156,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.starting = 0
         self.state.ended = 0
 
+        # Check what type of video is being played
         is_playlist_item = api.get_playlist_position()
         has_addon_data = bool(data)
         is_episode = xbmc.getCondVisibility('videoplayer.content(episodes)')
@@ -171,13 +176,13 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset_addon_data()
             has_addon_data = False
 
-        # Start tracking if Up Next can handle the currently playing file
+        # Start tracking if Up Next can handle the currently playing video
         if is_playlist_item or has_addon_data or is_episode:
             self.idle = False
             self.state.set_tracking(self.player.getPlayingFile())
             self.state.reset_queue()
 
-            # Get details of currently playing file to save playcount
+            # Get details of currently playing video to save playcount
             if has_addon_data:
                 self.state.handle_addon_now_playing()
             else:
@@ -194,11 +199,30 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Settings changed', 2)
         self.state.update_settings()
 
+        # Shutdown service loop if disabled
+        if self.state.is_disabled():
+            self.log('Service disabled', 0)
+            self.sigterm = self.running
+
+        # Restart if enabled
+        elif not self.running:
+            self.run()
+
     def onScreensaverActivated(self):  # pylint: disable=invalid-name
-        self.idle = True
+        # Enable idle mode if tracking was enabled e.g. when video is paused
+        if self.state.is_tracking():
+            self.idle = True
+
+        # Otherwise shutdown service loop
+        else:
+            self.log('Service shutdown', 0)
+            self.sigterm = True
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         self.idle = False
+        # Restart service loop if enabled
+        if not self.running and not self.state.is_disabled():
+            self.run()
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
@@ -213,6 +237,8 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.remove_popup()
 
         elif method == 'Player.OnPause':
+            # This could cause popup to be displayed too late, or skipped if
+            # using a <10s popup time. Consider removing idle on pause
             self.idle = True
             # Update paused state if not forced
             if not self.player.state['paused']['force']:
