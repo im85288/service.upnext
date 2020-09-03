@@ -23,6 +23,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.current_progress_percent = 100
         self.progress_control = None
 
+        # TODO: Figure out why this is required. Issues with iOS?
         if OS_MACHINE[0:5] == 'armv7':
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
