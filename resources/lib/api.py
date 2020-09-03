@@ -69,7 +69,7 @@ def log(msg, level=2):
 
 def play_kodi_item(episode):
     """Function to directly play a file from the Kodi library"""
-    log('Library: playing - {0}'.format(episode), 2)
+    log('Playing from library - {0}'.format(episode), 2)
     utils.jsonrpc(
         method='Player.Open',
         params=dict(
@@ -98,20 +98,20 @@ def queue_next_item(data, episode):
         next_item.update(episodeid=episodeid)
 
     if next_item:
-        log('Queue: adding - {0}'.format(next_item), 2)
+        log('Adding to queue - {0}'.format(next_item), 2)
         utils.jsonrpc(
             method='Playlist.Add',
             params=dict(playlistid=xbmc.PLAYLIST_VIDEO, item=next_item)
         )
     else:
-        log('Queue: nothing added', 2)
+        log('Nothing added to queue', 2)
 
     return bool(next_item)
 
 
 def reset_queue():
     """Function to remove the 1st item from the playlist, used by Up Next queue"""
-    log('Queue: removing previously played item', 2)
+    log('Removing previously played item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
         params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=0)
@@ -121,7 +121,7 @@ def reset_queue():
 
 def dequeue_next_item():
     """Function to remove the 2nd item from the playlist, used by Up Next queue"""
-    log('Queue: removing unplayed next item', 2)
+    log('Removing unplayed next item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
         params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=1)
@@ -156,7 +156,7 @@ def get_next_in_playlist(position):
 
     # Don't check if next item is an episode, just use it if it is there
     if not item:  # item.get('type') != 'episode':
-        log('Playlist: error - next item not found', 1)
+        log('Error - no next item found in playlist', 1)
         return None
     item = item[0]
 
@@ -173,7 +173,7 @@ def get_next_in_playlist(position):
     if utils.get_int(item, 'episode') == -1:
         item['episode'] = ''
 
-    log('Playlist: next item - %s' % item, 2)
+    log('Next item in playlist - %s' % item, 2)
     return item
 
 
@@ -181,13 +181,13 @@ def play_addon_item(data, encoding):
     """Function to play next addon item, either directly or by passthrough to addon"""
     data = data.get('play_url')
     if data:
-        log('Addon: playing - {0}'.format(data), 2)
+        log('Playing from addon - {0}'.format(data), 2)
         utils.jsonrpc(
             method='Player.Open',
             params=dict(item=dict(file=data))
         )
     else:
-        msg = 'Addon: sending - ({encoding}) {play_info}'
+        msg = 'Sending to addon - ({encoding}) {play_info}'
         msg = msg.format(dict(encoding=encoding, **data))
         log(msg, 2)
         utils.event(
@@ -210,10 +210,10 @@ def get_now_playing():
     result = result.get('result', {}).get('item')
 
     if not result:
-        log('Player: error - now playing item info not found', 1)
+        log('Error - now playing item info not found', 1)
         return None
 
-    log('Player: now playing - %s' % result, 2)
+    log('Now playing - %s' % result, 2)
     return result
 
 
@@ -221,7 +221,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
     """Function to get show and next episode details from Kodi library"""
     episode = get_from_library(tvshowid, episodeid)
     if not episode:
-        log('Library: error - next episode info not found', 1)
+        log('Error - next episode info not found in library', 1)
         episode = None
         new_season = False
         return episode, new_season
@@ -290,7 +290,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Library: error - next episode info not found', 1)
+        log('Error - next episode info not found in library', 1)
         episode = None
         new_season = False
         return episode, new_season
@@ -298,7 +298,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
     new_season = episode.get('season') != result[0].get('season')
     episode.update(result[0])
 
-    log('Library: next episode - %s' % episode, 2)
+    log('Next episode from library - %s' % episode, 2)
     return episode, new_season
 
 
@@ -314,7 +314,7 @@ def get_from_library(tvshowid, episodeid):
     result = result.get('result', {}).get('tvshowdetails')
 
     if not result:
-        log('Library: error - show info not found', 1)
+        log('Error - show info not found in library', 1)
         return None
     episode = result
 
@@ -328,11 +328,11 @@ def get_from_library(tvshowid, episodeid):
     result = result.get('result', {}).get('episodedetails')
 
     if not result:
-        log('Library: error - episode info not found', 1)
+        log('Error - episode info not found in library', 1)
         return None
     episode.update(result)
 
-    log('Library: episode - %s' % episode, 2)
+    log('Episode from library - %s' % episode, 2)
     return episode
 
 
@@ -353,7 +353,7 @@ def get_tvshowid(title):
     result = result.get('result', {}).get('tvshows')
 
     if not result:
-        log('Library: error - tvshowid not found', 1)
+        log('Error - tvshowid not found in library', 1)
         return -1
 
     return utils.get_int(result[0], 'tvshowid')
@@ -387,7 +387,7 @@ def get_episodeid(tvshowid, season, episode):
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Library: error - episodeid not found', 1)
+        log('Error - episodeid not found in library', 1)
         return -1
 
     return utils.get_int(result[0], 'episodeid')
@@ -417,7 +417,7 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     if reset_resume:
         params['resume'] = dict(position=0)
 
-    msg = 'Library: update - id: {0}, playcount change from {1} to {2}'
+    msg = 'Library update - id: {0}, playcount change from {1} to {2}'
     msg = msg.format(episodeid, current_playcount, playcount)
     log(msg, 2)
     utils.jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)

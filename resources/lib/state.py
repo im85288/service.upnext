@@ -103,7 +103,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return self.track
 
     def set_tracking(self, filename):
-        msg = 'Tracking: {0}'
+        msg = 'Tracking {0}'
         if filename:
             self.filename = filename
             msg = msg.format('enabled - %s' % filename)
@@ -128,7 +128,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # File from addon
         elif has_addon_data:
             episode = self.data.get('next_episode')
-            self.log('Addon: next_episode - {0}'.format(episode), 2)
+            self.log('Addon next_episode - {0}'.format(episode), 2)
 
         # File from Kodi library
         else:
@@ -183,7 +183,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode')
-        self.log('Addon: current_episode - {0}'.format(item), 2)
+        self.log('Addon current_episode - {0}'.format(item), 2)
         if not item:
             return None
 
@@ -191,7 +191,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         # Reset play count if new show playing
         if self.tvshowid != tvshowid:
-            msg = 'Reset played count: tvshowid change from {0} to {1}'
+            msg = 'Reset played count - tvshowid change from {0} to {1}'
             msg = msg.format(
                 self.tvshowid,
                 tvshowid
@@ -216,11 +216,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if tvshowid == -1:
             title = item.get('showtitle')
             self.tvshowid = api.get_tvshowid(title)
-            self.log('Fetched tvshowid: %s' % self.tvshowid, 2)
+            self.log('Fetched tvshowid - %s' % self.tvshowid, 2)
 
         # Reset play count if new show playing
         if self.tvshowid != tvshowid:
-            msg = 'Reset played count: tvshowid change from {0} to {1}'
+            msg = 'Reset played count - tvshowid change from {0} to {1}'
             msg = msg.format(
                 self.tvshowid,
                 tvshowid
@@ -237,7 +237,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 item.get('season'),
                 item.get('episode')
             )
-            self.log('Fetched episodeid: %s' % self.episodeid, 2)
+            self.log('Fetched episodeid - %s' % self.episodeid, 2)
 
         self.playcount = utils.get_int(item, 'playcount', 0)
 
@@ -254,6 +254,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.data = {}
 
     def set_addon_data(self, data, encoding='base64'):
-        self.log('set_addon_data: %s' % data, 2)
+        self.log('Addon data - %s' % data, 2)
         self.data = data
         self.encoding = encoding

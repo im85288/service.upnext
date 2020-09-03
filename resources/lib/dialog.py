@@ -28,7 +28,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args)
-        self.log('Init: %s' % args[0], 2)
+        self.log('Init - %s' % args[0], 2)
 
     @classmethod
     def log(cls, msg, level=2):

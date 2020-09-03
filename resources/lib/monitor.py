@@ -26,6 +26,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.SIGSTOP = False
         self.SIGTERM = False
         xbmc.Monitor.__init__(self)
+        self.log('Init', 2)
 
     @classmethod
     def log(cls, msg, level=2):
