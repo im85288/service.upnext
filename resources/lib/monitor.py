@@ -7,6 +7,7 @@ import api
 import playbackmanager
 import player
 import state
+import statichelper
 import utils
 
 
@@ -226,6 +227,9 @@ class UpNextMonitor(xbmc.Monitor):
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
         """Handler for Kodi state change and data transfer from addons"""
+        sender = statichelper.to_unicode(sender)
+        method = statichelper.to_unicode(method)
+        data = statichelper.to_unicode(data)
 
         if (utils.get_kodi_version() < 18 and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
@@ -263,9 +267,9 @@ class UpNextMonitor(xbmc.Monitor):
         elif method.endswith('upnext_data'):
             decoded_data, encoding = utils.decode_json(data)
             sender = sender.replace('.SIGNAL', '')
-            if decoded_data is None:
-                msg = 'Addon: data error - {0} sent {1}'.format(sender, data)
-                self.log(msg, 1)
+            if not isinstance(decoded_data, dict) or not decoded_data:
+                msg = 'Addon data error - {0} sent {1} as {2}'
+                self.log(msg.format(sender, decoded_data, data), 1)
                 return
             decoded_data.update(id='%s_play_action' % sender)
 
