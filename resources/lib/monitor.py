@@ -13,16 +13,13 @@ import utils
 
 
 class UpNextMonitor(xbmc.Monitor):
-    """Service and player monitor for Kodi"""
+    """Service and player monitor/tracker for Kodi"""
 
     def __init__(self):
         self.state = state.UpNextState()
         self.player = player.UpNextPlayer()
-        self.playbackmanager = playbackmanager.PlaybackManager(
-            player=self.player,
-            state=self.state
-        )
-        self.running = False
+        self.playbackmanager = None
+        self.tracker = None
         self.sigstop = False
         self.sigterm = False
         xbmc.Monitor.__init__(self)
@@ -32,15 +29,16 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def track_playback(self):
-        if self.running or self.state.is_disabled():
+    def start_tracking(self):
+        # Only spawn a new tracker if old tracker is not running
+        if self.tracker and self.tracker.isAlive():
             return
-        new_tracker = threading.Thread(target=self.tracker)
-        new_tracker.start()
+        self.tracker = threading.Thread(target=self.track_playback)
+        self.tracker.deamon = True
+        self.tracker.start()
 
-    def tracker(self):
+    def track_playback(self):
         self.log('Tracker started', 2)
-        self.running = True
 
         while not self.abortRequested():
             # Exit loop if abort requested
@@ -48,6 +46,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.log('Tracker shutting down', 1)
                 break
 
+            # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
                 self.log('Tracker exiting', 2)
                 break
@@ -105,16 +104,20 @@ class UpNextMonitor(xbmc.Monitor):
             msg = 'Popup requested - episode ({0}s runtime) ends in {1}s'
             msg = msg.format(total_time, total_time - play_time)
             self.log(msg, 2)
+            self.playbackmanager = playbackmanager.PlaybackManager(
+                player=self.player,
+                state=self.state
+            )
             self.playbackmanager.launch_up_next()
 
         # Clean up popup and state if thread was terminated rather than stopped
         if not self.sigstop:
-            self.playbackmanager.remove_popup()
+            if self.playbackmanager:
+                self.playbackmanager.remove_popup()
             self.state.reset()
 
-        # Reset running state and thread signals
+        # Reset thread signals
         self.log('Tracker stopped', 2)
-        self.running = False
         self.sigstop = False
         self.sigterm = False
 
@@ -184,8 +187,8 @@ class UpNextMonitor(xbmc.Monitor):
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
 
-            # Start tracking loop to begin tracking playback
-            self.track_playback()
+            # Start tracking playback in order to launch popup at required time
+            self.start_tracking()
 
         # Reset state if required
         elif self.state.is_tracking():
@@ -198,18 +201,23 @@ class UpNextMonitor(xbmc.Monitor):
         # Shutdown tracking loop if disabled
         if self.state.is_disabled():
             self.log('Up Next disabled', 0)
-            self.sigterm = self.running
+            self.sigterm = self.tracker and self.tracker.isAlive()
 
     def onScreensaverActivated(self):  # pylint: disable=invalid-name
         # Stop tracking loop if tracking was enabled e.g. when video is paused
         self.sigstop = self.state.is_tracking()
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
+        # Restart tracking if previously tracking
         if self.state.is_tracking():
-            self.track_playback()
+            self.start_tracking()
 
     def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
-        """Handler for Kodi state change and data transfer from addons"""
+        """Handler for Kodi events and data transfer from addons"""
+
+        if self.state.is_disabled():
+            return
+
         sender = statichelper.to_unicode(sender)
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data)
@@ -221,7 +229,8 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Disable any forces and remove any existing popups
             self.player.state['time']['force'] = False
-            self.playbackmanager.remove_popup()
+            if self.playbackmanager:
+                self.playbackmanager.remove_popup()
 
         elif method == 'Player.OnPause':
             self.sigstop = self.state.is_tracking()
@@ -231,8 +240,9 @@ class UpNextMonitor(xbmc.Monitor):
                 self.player.state['paused']['value'] = True
 
         elif method == 'Player.OnResume':
+            # Restart tracking if previously tracking
             if self.state.is_tracking():
-                self.track_playback()
+                self.start_tracking()
 
             # Update paused state if not forced
             if not self.player.state['paused']['force']:
