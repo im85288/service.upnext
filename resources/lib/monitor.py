@@ -53,6 +53,9 @@ class UpNextMonitor(xbmc.Monitor):
             if self.running:
                 return
             self.tracker = threading.Thread(target=self.track_playback)
+            self.tracker.deamon = True
+            self.tracker.start()
+
     def stop_tracking(self, terminate=False):
         if terminate:
             self.sigterm = self.running
@@ -60,6 +63,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.sigstop = self.running
 
         if UpNextMonitor.use_timer and self.tracker:
+            self.tracker.cancel()
             del self.tracker
             self.tracker = None
 
@@ -259,7 +263,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.check_video()
 
         elif method == 'Player.OnPause':
-            self.self.stop_tracking()
+            self.stop_tracking()
             # Update player state
             self.player.getSpeed(data)
 
