@@ -135,12 +135,12 @@ class UpNextMonitor(xbmc.Monitor):
             wait_count += 1
 
         # Exit if no file playing
-        file = self.player.isPlaying() and self.player.getPlayingFile()
-        total_time = self.player.getTotalTime() if file else 0
-        if not file or not total_time:
+        playing_file = self.player.isPlaying() and self.player.getPlayingFile()
+        total_time = self.player.getTotalTime() if playing_file else 0
+        if not playing_file or not total_time:
             self.log('Video check error - nothing playing', 1)
             return
-        self.log('Playing - %s' % file, 2)
+        self.log('Playing - %s' % playing_file, 2)
 
         # Exit if starting counter has been reset or new start detected
         if start_num != self.state.starting:
