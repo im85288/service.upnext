@@ -13,7 +13,7 @@ class UpNextPlayerState(dict):
         try:
             return self[name]['value']
         except KeyError as error:
-            raise AttributeError(error)
+            raise AttributeError(error)  # pylint: disable=raise-missing-from
 
     def __setattr__(self, name, value):
         self.set(name, value)
