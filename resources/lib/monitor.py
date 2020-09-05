@@ -225,7 +225,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.check_video()
 
             # Disable any forces and remove any existing popups
-            self.player.state['time']['force'] = False
+            self.player.state.set('time', force=False)
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
 
@@ -233,8 +233,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.sigstop = self.state.is_tracking()
 
             # Update paused state if not forced
-            if not self.player.state['paused']['force']:
-                self.player.state['paused']['value'] = True
+            self.player.state.paused = True
 
         elif method == 'Player.OnResume':
             # Restart tracking if previously tracking
@@ -242,8 +241,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.start_tracking()
 
             # Update paused state if not forced
-            if not self.player.state['paused']['force']:
-                self.player.state['paused']['value'] = False
+            self.player.state.paused = False
 
         elif method == 'Player.OnStop':
             self.state.reset_queue()

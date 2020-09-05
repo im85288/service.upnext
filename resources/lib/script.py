@@ -56,16 +56,21 @@ def test_popup(popup_type, simple_style=False):
         # Simulate file is playing
         playing={'value': True, 'force': True},
         # paused={'value': False, 'force': False},
-        # playing_file={'value': '', 'force': False},
+        # playing_file={'value': None, 'force': False},
         # Simulate runtime of endtime minus 60s
         time={'value': test_episode['runtime'] - 60, 'force': True},
         # Simulate endtime based on dummy episode
         total_time={'value': test_episode['runtime'], 'force': True},
-        # next_file={'value': '', 'force': False},
+        # next_file={'value': None, 'force': False},
         # playnext={'force': False},
         # Simulate stop to ensure actual playback doesnt stop when popup closes
         stop={'force': True}
     ))
+    # Simulate player state could also be done using the following
+    test_player.state.set('playing', True, force=True)
+    test_player.state.set('time', (test_episode['runtime'] - 60), force=True)
+    test_player.state.set('total_time', test_episode['runtime'], force=True)
+    test_player.state.set('stop', force=True)
 
     # Create a test playbackmanager and create an actual popup for testing
     playbackmanager.PlaybackManager(
