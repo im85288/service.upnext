@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import datetime
+import json
 import xbmc
 import statichelper
 import utils
@@ -58,6 +59,7 @@ class UpNextPlayer(xbmc.Player):
         self.state.playing = False
         self.state.paused = False
         self.state.playing_file = None
+        self.state.speed = 0
         self.state.time = 0
         self.state.total_time = 0
         self.state.next_file = None
@@ -85,6 +87,9 @@ class UpNextPlayer(xbmc.Player):
         # Return actual value or forced value if forced
         return self.state.playing
 
+    def isPaused(self):  # pylint: disable=invalid-name
+        return self.state.paused
+
     def getPlayingFile(self):  # pylint: disable=invalid-name
         # Use inbuilt method to store actual value
         actual = getattr(xbmc.Player, 'getPlayingFile')(self)
@@ -92,6 +97,13 @@ class UpNextPlayer(xbmc.Player):
         self.state.playing_file = actual
         # Return actual value or forced value if forced
         return self.state.playing_file
+
+    def getSpeed(self, data=None):  # pylint: disable=invalid-name
+        if data:
+            data = json.loads(data)
+            self.state.speed = data['player']['speed']
+            self.state.paused = not bool(self.state.speed)
+        return self.state.speed
 
     def getTime(self):  # pylint: disable=invalid-name
         # Use inbuilt method to store actual value
@@ -103,7 +115,7 @@ class UpNextPlayer(xbmc.Player):
             now = datetime.datetime.now()
 
             # Don't update if paused
-            if self.state.paused:
+            if self.isPaused():
                 delta = 0
             # Change in time from previously forced time to now
             elif isinstance(self.state.forced('time'), datetime.datetime):

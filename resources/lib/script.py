@@ -57,6 +57,7 @@ def test_popup(popup_type, simple_style=False):
         playing={'value': True, 'force': True},
         # paused={'value': False, 'force': False},
         # playing_file={'value': None, 'force': False},
+        # speed={'value': 0, 'force': False},
         # Simulate runtime of endtime minus 60s
         time={'value': test_episode['runtime'] - 60, 'force': True},
         # Simulate endtime based on dummy episode

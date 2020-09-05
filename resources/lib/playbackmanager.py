@@ -238,3 +238,4 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.popup_enable = False
             utils.clear_property('service.upnext.dialog')
             del self.popup
+            self.popup = None
