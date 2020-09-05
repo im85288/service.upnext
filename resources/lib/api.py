@@ -85,16 +85,16 @@ def play_kodi_item(episode):
     )
 
 
-def queue_next_item(data, episode):
+def queue_next_item(data=None, episode=None):
     """Function to add next episode to the Up Next queue"""
     next_item = {}
-    play_url = data.get('play_url')
-    episodeid = utils.get_int(episode, 'episodeid')
+    play_url = data.get('play_url') if data else None
+    episodeid = utils.get_int(episode, 'episodeid') if episode else None
 
     if play_url:
         next_item.update(file=play_url)
 
-    elif episodeid != -1:
+    elif episode and episodeid != -1:
         next_item.update(episodeid=episodeid)
 
     if next_item:

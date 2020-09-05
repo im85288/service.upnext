@@ -49,7 +49,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.played_limit = utils.get_setting_int('playedInARow')
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
         # Addon data
-        self.data = {}
+        self.data = None
         self.encoding = 'base64'
         # Current file details
         self.filename = None
@@ -147,19 +147,21 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return self.popup_time
 
     def set_popup_time(self, total_time):
-        # Alway use metadata, when available
-        popup_duration = utils.get_int(self.data, 'notification_time')
-        if 0 < popup_duration < total_time:
-            self.popup_cue = True
-            self.popup_time = total_time - popup_duration
-            return
+        # Alway use addon data, when available
+        if self.has_addon_data():
+            # Some addons send the time from video end
+            popup_duration = utils.get_int(self.data, 'notification_time')
+            if 0 < popup_duration < total_time:
+                self.popup_cue = True
+                self.popup_time = total_time - popup_duration
+                return
 
-        # Some consumers send the offset when the credits start (e.g. Netflix)
-        popup_time = utils.get_int(self.data, 'notification_offset')
-        if 0 < popup_time < total_time:
-            self.popup_cue = True
-            self.popup_time = popup_time
-            return
+            # Some addons send the time from video start (e.g. Netflix)
+            popup_time = utils.get_int(self.data, 'notification_offset')
+            if 0 < popup_time < total_time:
+                self.popup_cue = True
+                self.popup_time = popup_time
+                return
 
         # Use a customized notification time, when configured
         if utils.get_setting_bool('customAutoPlayTime'):
@@ -182,7 +184,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.popup_time = total_time - utils.get_setting_int(duration_setting)
 
     def handle_addon_now_playing(self):
-        item = self.data.get('current_episode')
+        item = self.data.get('current_episode') if self.data else None
         self.log('Addon current_episode - {0}'.format(item), 2)
         if not item:
             return None
@@ -250,10 +252,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             return 1
         return 0
 
-    def reset_addon_data(self):
-        self.data = {}
-
     def set_addon_data(self, data, encoding='base64'):
-        self.log('Addon data - %s' % data, 2)
+        if data:
+            self.log('Addon data - %s' % data, 2)
         self.data = data
         self.encoding = encoding

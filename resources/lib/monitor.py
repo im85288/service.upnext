@@ -155,23 +155,16 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Check what type of video is being played
         is_playlist_item = api.get_playlist_position()
-        has_addon_data = bool(data)
+        # Use new addon data if provided or erase old addon data.
+        # Note this may cause played in a row count to reset incorrectly if
+        # playlist of mixed non-addon and addon content is used
+        has_addon_data = self.state.set_addon_data(data)
         is_episode = xbmc.getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
             self.log('Playlist handling not enabled', 2)
             return
-
-        # Use new addon data if provided
-        if data:
-            self.state.set_addon_data(data, encoding)
-        # Ensure that old addon data is not used. Note this may cause played in
-        # a row count to reset incorrectly if playlist of mixed non-addon and
-        # addon content is used
-        else:
-            self.state.reset_addon_data()
-            has_addon_data = False
 
         # Start tracking if Up Next can handle the currently playing video
         if is_playlist_item or has_addon_data or is_episode:
