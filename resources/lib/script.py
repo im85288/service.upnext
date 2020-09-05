@@ -39,8 +39,8 @@ def test_popup(popup_type, simple_style=False):
     test_state = state.UpNextState()
     # Simulate after file has started
     test_state.starting = 0
-    # But before it has ended
-    test_state.ended = 0
+    # And while it is playing
+    test_state.playing = 1
 
     # Choose popup style
     test_state.simple_mode = bool(simple_style)

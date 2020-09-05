@@ -51,15 +51,6 @@ class UpNextMonitor(xbmc.Monitor):
                 self.log('Tracker exiting', 2)
                 break
 
-            if bool(utils.get_property('PseudoTVRunning') == 'True'):
-                self.state.set_tracking(False)
-                continue
-
-            if self.player.isExternalPlayer():
-                self.log('External player used', 2)
-                self.state.set_tracking(False)
-                continue
-
             if not self.player.isPlaying():
                 self.log('No file is playing', 2)
                 self.state.set_tracking(False)
@@ -125,9 +116,10 @@ class UpNextMonitor(xbmc.Monitor):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
             return
+        self.log('Starting video check', 2)
         # Increment starting counter
         self.state.starting += 1
-        start_num = self.state.starting
+        start_num = max(1, self.state.starting)
 
         # onPlayBackEnded for current file can trigger after next file starts
         # Wait additional 5s after onPlayBackEnded or last start
@@ -136,39 +128,51 @@ class UpNextMonitor(xbmc.Monitor):
         while not self.abortRequested() and wait_count < wait_limit:
             # Exit if starting state has been reset by playback error/end/stop
             if not self.state.starting:
-                self.log('Error - starting state reset', 1)
+                self.log('Video check error - starting state reset', 1)
                 return
 
             self.waitForAbort(1)
             wait_count += 1
 
         # Exit if no file playing
-        total_time = self.player.isPlaying() and self.player.getTotalTime()
-        if not total_time:
+        file = self.player.isPlaying() and self.player.getPlayingFile()
+        total_time = self.player.getTotalTime() if file else 0
+        if not file or not total_time:
+            self.log('Video check error - nothing playing', 1)
             return
+        self.log('Playing - %s' % file, 2)
 
         # Exit if starting counter has been reset or new start detected
         if start_num != self.state.starting:
+            self.log('Skip video check - stream not fully loaded', 2)
             return
         self.state.starting = 0
-        self.state.ended = 0
+        self.state.playing = 1
+
+        if utils.get_property('PseudoTVRunning') == 'True':
+            self.log('Skip video check - PsuedoTV detected', 2)
+            return
+
+        if self.player.isExternalPlayer():
+            self.log('Skip video check - external player detected', 2)
+            return
 
         # Check what type of video is being played
         is_playlist_item = api.get_playlist_position()
         # Use new addon data if provided or erase old addon data.
         # Note this may cause played in a row count to reset incorrectly if
         # playlist of mixed non-addon and addon content is used
-        has_addon_data = self.state.set_addon_data(data)
+        has_addon_data = self.state.set_addon_data(data, encoding)
         is_episode = xbmc.getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
-            self.log('Playlist handling not enabled', 2)
+            self.log('Skip video check - playlist handling not enabled', 2)
             return
 
         # Start tracking if Up Next can handle the currently playing video
         if is_playlist_item or has_addon_data or is_episode:
-            self.state.set_tracking(self.player.getPlayingFile())
+            self.state.set_tracking()
             self.state.reset_queue()
 
             # Get details of currently playing video to save playcount
@@ -244,11 +248,10 @@ class UpNextMonitor(xbmc.Monitor):
         elif method == 'Player.OnStop':
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing
-            if self.state.playing_next:
-                self.state.playing_next = False
             # Reset state if Up Next has not requested the next file to play
-            else:
+            if not self.state.playing_next:
                 self.state.reset()
+            self.state.playing_next = False
 
         # Data transfer from addons
         elif method.endswith('upnext_data'):

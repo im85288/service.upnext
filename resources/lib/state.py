@@ -29,14 +29,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'popup_cue',
         # Previous file details
         'last_file',
-        # Internal state variables
+        # Tracking player state variables
+        'starting',
+        'playing',
         'track',
+        'played_in_a_row',
         'queued',
         'playing_next',
-        'played_in_a_row',
-        # Player state
-        'starting',
-        'ended',
     )
 
     def __init__(self, reset=None):
@@ -60,14 +59,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.popup_cue = False
         # Previous file details
         self.last_file = None
-        # Internal state variables
+        # Tracking player state variables
+        self.starting = 0
+        self.playing = False
         self.track = False
+        self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
-        self.played_in_a_row = 1
-        # Player state
-        self.starting = 0
-        self.ended = 1
 
         self.log('Reset' if reset else 'Init', 2)
 
@@ -102,15 +100,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
     def is_tracking(self):
         return self.track
 
-    def set_tracking(self, filename):
-        msg = 'Tracking {0}'
-        if filename:
-            self.filename = filename
-            msg = msg.format('enabled - %s' % filename)
-        else:
-            msg = msg.format('disabled')
+    def set_tracking(self, track=True):
+        msg = 'Tracking %s' % ('enabled' if track else 'disabled')
         self.log(msg, 2)
-        self.track = bool(filename)
+        self.track = track
 
     def reset_queue(self):
         if self.queued:
@@ -257,3 +250,4 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.log('Addon data - %s' % data, 2)
         self.data = data
         self.encoding = encoding
+        return self.has_addon_data()

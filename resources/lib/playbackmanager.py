@@ -107,7 +107,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.state.played_in_a_row += 1
 
         if not auto_play and not play_now:
-            self.log('Exit launch_popup early - no playback option selected', 2)
+            self.log('Exit launch_popup early - playback not selected ', 2)
             play_next = False
             # Keep playing if NAV_BACK or Cancel button was clicked on popup
             # Stop playing if Stop button was clicked on popup
@@ -205,11 +205,11 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         monitor = xbmc.Monitor()
         while not monitor.abortRequested():
-            # Current file can stop, or next file can start, while in loop
-            # Abort popup update
+            # Current file can stop, or next file can start, while update loop
+            # is running. Check and abort popup update.
             if (not self.player.isPlaying()
                     or self.state.starting
-                    or self.state.ended
+                    or not self.state.playing
                     or not self.popup_enable):
                 popup_done = False
                 return popup_done
