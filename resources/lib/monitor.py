@@ -14,7 +14,7 @@ import utils
 
 class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
-    use_timer = True
+    use_timer = False
 
     def __init__(self):
         self.state = state.UpNextState()
@@ -37,6 +37,11 @@ class UpNextMonitor(xbmc.Monitor):
         if not self.state.is_tracking():
             return
 
+        # There are 2 problems with using threading.Timer:
+        # 1. Seeking to chapter incorrectly indicates play speed is 1, even if
+        # currently fast forwarding or rewinding
+        # 2. No easy way to cancel and cleanup an already started Timer when
+        # external abort (Kodi shutdown, addon disabled, etc.) is requested
         if UpNextMonitor.use_timer:
             if not self.player.isPlaying() or self.player.isPaused():
                 return
@@ -48,17 +53,22 @@ class UpNextMonitor(xbmc.Monitor):
             self.tracker = threading.Timer(delay, self.track_playback)
             self.tracker.start()
 
+        # Use while not abortRequested() loop in a separate thread to allow for
+        # continued monitoring in main thread
         else:
             # Only spawn a new tracker if old tracker is not running
             if self.running:
                 return
             self.tracker = threading.Thread(target=self.track_playback)
-            self.tracker.deamon = True
+            # Daemon threads may not work in Kodi, but enable it anyway
+            self.tracker.daemon = True
             self.tracker.start()
 
     def stop_tracking(self, terminate=False):
         if terminate:
             self.sigterm = self.running
+            if self.playbackmanager:
+                self.playbackmanager.remove_popup()
         else:
             self.sigstop = self.running
 
@@ -132,6 +142,7 @@ class UpNextMonitor(xbmc.Monitor):
                 state=self.state
             )
             self.playbackmanager.launch_up_next()
+            break
 
         # Clean up popup and state if thread was terminated rather than stopped
         if not self.sigstop:
@@ -280,6 +291,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.start_tracking()
 
         elif method == 'Player.OnStop':
+            self.stop_tracking()
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing
             # Reset state if Up Next has not requested the next file to play
