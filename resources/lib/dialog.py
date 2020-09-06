@@ -19,7 +19,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.cancel = False
         self.stop = False
         self.playnow = False
-        self.progress_step_size = 0
+        self.countdown_total_time = None
         self.current_progress_percent = 100
         self.progress_control = None
 
@@ -81,14 +81,23 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     def set_item(self, item):
         self.item = item
 
-    def set_progress_step_size(self, remaining, delta):
-        """Calculate a progress step"""
-        if int(remaining) == 0:  # Avoid division by zero
-            self.progress_step_size = 10.0
-        self.progress_step_size = delta * 100.0 / int(remaining)
-
     def update_progress_control(self, remaining):
-        self.current_progress_percent -= self.progress_step_size
+        # Run time and end time for next episode
+        runtime = utils.get_int(self.item, 'runtime', 0)
+        if runtime:
+            runtime = datetime.timedelta(seconds=runtime)
+            endtime = datetime.datetime.now() + runtime
+            endtime = statichelper.from_unicode(utils.localize_time(endtime))
+            self.setProperty('endtime', endtime)
+
+        # Set total countdown time on initial progress update
+        if remaining and self.countdown_total_time is None:
+            self.countdown_total_time = remaining
+        # Calculate countdown progress on subsequent updates
+        elif remaining:
+            percent = 100 * remaining / self.countdown_total_time
+            self.current_progress_percent = min(100, max(0, percent))
+
         try:
             self.progress_control = self.getControl(3014)
         # Occurs when skin does not include progress control
@@ -97,16 +106,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
+        # Remaining countdown for current episode
         remaining = statichelper.from_unicode('%02d' % remaining)
         self.setProperty('remaining', remaining)
-
-        # Run time and end time for next episode
-        runtime = utils.get_int(self.item, 'runtime', 0)
-        if runtime:
-            runtime = datetime.timedelta(seconds=runtime)
-            endtime = datetime.datetime.now() + runtime
-            endtime = statichelper.from_unicode(utils.localize_time(endtime))
-            self.setProperty('endtime', endtime)
 
     def set_cancel(self, cancel):
         self.cancel = cancel

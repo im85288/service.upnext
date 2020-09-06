@@ -92,7 +92,9 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         if abort_popup:
             self.log('Exit launch_popup early - tracked video not playing', 2)
             play_next = False
-            keep_playing = True
+            # Stop if Still Watching? popup was shown to prevent unwanted
+            # playback that can occur if fast forwarding through popup
+            keep_playing = show_upnext
             self.remove_popup()
             return play_next, keep_playing
 
@@ -197,10 +199,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             popup_start = max(play_time, self.state.get_popup_time())
             popup_duration = self.state.auto_play_delay
             total_time = min(popup_start + popup_duration, total_time)
-        remaining = total_time - play_time
 
-        wait_time = 0.5
-        self.popup.set_progress_step_size(remaining, wait_time)
         self.show_popup()
 
         monitor = xbmc.Monitor()
@@ -217,11 +216,17 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             remaining = total_time - self.player.getTime()
             self.popup.update_progress_control(remaining)
 
-            wait_time = min(wait_time, remaining - 1)
+            # If end of file or popup has been closed then exit update loop
             if (remaining <= 1
                     or self.popup.is_cancel()
                     or self.popup.is_playnow()):
                 break
+
+            # Decrease wait time and increase loop speed to try and avoid
+            # missing the end of video when fast forwarding
+            speed = self.player.state.speed
+            speed = speed if speed > 0 else 1
+            wait_time = min(0.1 / speed, remaining - 1)
             monitor.waitForAbort(wait_time)
 
         popup_done = True
