@@ -27,8 +27,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'playcount',
         'popup_time',
         'popup_cue',
-        # Previous file details
-        'last_file',
         # Tracking player state variables
         'starting',
         'playing',
@@ -57,8 +55,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.playcount = 0
         self.popup_time = 0
         self.popup_cue = False
-        # Previous file details
-        self.last_file = None
         # Tracking player state variables
         self.starting = 0
         self.playing = False
@@ -85,12 +81,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.played_limit = utils.get_setting_int('playedInARow')
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
 
-    def set_last_file(self, filename):
-        self.last_file = filename
-
-    def get_last_file(self):
-        return self.last_file
-
     def get_tracked_file(self):
         return self.filename
 
@@ -102,7 +92,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def set_tracking(self, filename):
         if filename:
-            msg = 'Tracking enabled - {0}.format(filename)
+            msg = 'Tracking enabled - {0}'.format(filename)
         else:
             msg = 'Tracking disabled'
         self.log(msg, 2)
