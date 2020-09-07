@@ -65,7 +65,12 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.state.queued = api.queue_next_item(self.state.data, episode)
 
         # Only use Still Watching? popup if played limit has been reached
-        show_upnext = self.state.played_in_a_row < self.state.played_limit
+        if self.state.played_limit:
+            show_upnext = self.state.played_limit > self.state.played_in_a_row
+        # Don't show Still Watching? popup if played limit is zero, unless
+        # played in a row count has been set to zero for testing
+        else:
+            show_upnext = self.state.played_limit != self.state.played_in_a_row
         # Allow auto play if enabled in settings and showing Up Next popup
         auto_play = self.state.auto_play and show_upnext
 
@@ -196,9 +201,10 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # If cue point was provided then Up Next will auto play after a fixed
         # delay time, rather than waiting for the end of the file
         if auto_play and self.state.popup_cue:
-            popup_start = max(play_time, self.state.get_popup_time())
             popup_duration = self.state.auto_play_delay
-            total_time = min(popup_start + popup_duration, total_time)
+            if popup_duration:
+                popup_start = max(play_time, self.state.get_popup_time())
+                total_time = min(popup_start + popup_duration, total_time)
 
         self.show_popup()
 
