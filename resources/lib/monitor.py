@@ -212,11 +212,11 @@ class UpNextMonitor(xbmc.Monitor):
     # Override waitForAbort to ensure thread and popup cleanup is always done
     def waitForAbort(self, timeout=None): # pylint: disable=invalid-name
         if xbmc.Monitor.waitForAbort(self, timeout):
+            # Cleanup if abort requested
             self.stop_tracking(terminate=True)
             return True
-        else:
-            return False
-        
+        return False
+
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', 2)
         self.state.update_settings()
