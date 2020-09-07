@@ -87,7 +87,7 @@ class UpNextPlayer(xbmc.Player):
         # Return actual value or forced value if forced
         return self.state.playing
 
-    def isPaused(self):  # pylint: disable=invalid-name
+    def is_paused(self):
         return self.state.paused
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
@@ -98,7 +98,7 @@ class UpNextPlayer(xbmc.Player):
         # Return actual value or forced value if forced
         return self.state.playing_file
 
-    def getSpeed(self, data=None):  # pylint: disable=invalid-name
+    def get_speed(self, data=None):
         if data:
             data = json.loads(data)
             self.state.speed = data['player']['speed']
@@ -115,7 +115,7 @@ class UpNextPlayer(xbmc.Player):
             now = datetime.datetime.now()
 
             # Don't update if paused
-            if self.isPaused():
+            if self.is_paused():
                 delta = 0
             # Change in time from previously forced time to now
             elif isinstance(self.state.forced('time'), datetime.datetime):

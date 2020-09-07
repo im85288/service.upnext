@@ -40,11 +40,11 @@ class UpNextMonitor(xbmc.Monitor):
 
         # threading.Timer method not used by default. More testing required
         if UpNextMonitor.use_timer:
-            if not self.player.isPlaying() or self.player.isPaused():
+            if not self.player.isPlaying() or self.player.is_paused():
                 return
 
             delay = self.state.get_popup_time() - self.player.getTime()
-            delay = max(0, int(delay / self.player.getSpeed()) - 10)
+            delay = max(0, int(delay / self.player.get_speed()) - 10)
             self.log('Tracker scheduled to start in {0}s'.format(delay), 2)
 
             self.tracker = threading.Timer(delay, self.track_playback)
@@ -248,7 +248,7 @@ class UpNextMonitor(xbmc.Monitor):
                 or method == 'Player.OnAVStart'):
             # Update player state and remove any existing popups
             self.player.state.set('time', force=False)
-            self.player.getSpeed(data)
+            self.player.get_speed(data)
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
 
@@ -258,17 +258,17 @@ class UpNextMonitor(xbmc.Monitor):
         elif method == 'Player.OnPause':
             self.stop_tracking()
             # Update player state
-            self.player.getSpeed(data)
+            self.player.get_speed(data)
 
         elif method == 'Player.OnResume':
             # Update player state
-            self.player.getSpeed(data)
+            self.player.get_speed(data)
             # Restart tracking if previously tracking
             self.start_tracking()
 
         elif method == 'Player.OnSpeedChanged':
             # Update player state
-            self.player.getSpeed(data)
+            self.player.get_speed(data)
             # Restart tracking if previously tracking
             self.start_tracking()
 
@@ -284,7 +284,7 @@ class UpNextMonitor(xbmc.Monitor):
         elif method == 'Player.OnAVChange':
             # Do not update player state as speed value is always equal to 1
             # in OnAVChange event
-            # self.player.getSpeed(data)
+            # self.player.get_speed(data)
             # Restart tracking if previously tracking
             self.start_tracking()
 
