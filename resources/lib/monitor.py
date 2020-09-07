@@ -81,12 +81,8 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Tracker started', 2)
         self.running = True
 
-        while not self.abortRequested():
-            # Exit loop if abort requested
-            if self.waitForAbort(1) or self.sigterm:
-                self.log('Tracker shutting down', 1)
-                break
-
+        # Loop unless abort requested
+        while not self.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
                 self.log('Tracker exiting', 2)
@@ -97,41 +93,26 @@ class UpNextMonitor(xbmc.Monitor):
                 self.state.set_tracking(False)
                 continue
 
-            last_file = self.state.get_last_file()
             tracked_file = self.state.get_tracked_file()
             current_file = self.player.getPlayingFile()
-            # Already processed this playback before
-            if last_file and last_file == current_file:
-                self.log('Previous video is still playing', 2)
-                continue
-
             # New stream started without tracking being updated
             if tracked_file and tracked_file != current_file:
                 self.log('Error - unknown file playing', 1)
                 self.state.set_tracking(False)
                 continue
 
-            # Check that video stream has actually loaded and started playing
-            # TODO: This check should no longer be required. Test and remove
             total_time = self.player.getTotalTime()
-            # if total_time == 0:
-            #     self.log('Error - zero length file', 1)
-            #     self.state.set_tracking(False)
-            #     continue
-
             play_time = self.player.getTime()
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
             if play_time < popup_time:
+                self.waitForAbort(min(1, popup_time - play_time))
                 continue
 
-            # Stop thread to ensure second popup can't trigger after next file
-            # has been requested but has not yet loaded
+            # Stop second thread and popup from being created after next file
+            # has been requested but not yet loaded
             self.state.set_tracking(False)
             self.sigstop = True
-
-            # Store current file as last file played
-            self.state.set_last_file(current_file)
 
             # Start Up Next to handle playback of next file
             msg = 'Popup requested - episode ({0}s runtime) ends in {1}s'
@@ -143,6 +124,8 @@ class UpNextMonitor(xbmc.Monitor):
             )
             self.playbackmanager.launch_up_next()
             break
+        else:
+            self.log('Tracker shutting down', 1)
 
         # Clean up popup and state if thread was terminated rather than stopped
         if not self.sigstop:
@@ -216,7 +199,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Start tracking if Up Next can handle the currently playing video
         if is_playlist_item or has_addon_data or is_episode:
-            self.state.set_tracking()
+            self.state.set_tracking(playing_file)
             self.state.reset_queue()
 
             # Get details of currently playing video to save playcount
