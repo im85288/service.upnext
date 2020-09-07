@@ -14,6 +14,7 @@ import utils
 
 class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
+    # Disable threading.Timer method by default
     use_timer = False
 
     def __init__(self):
@@ -37,11 +38,7 @@ class UpNextMonitor(xbmc.Monitor):
         if not self.state.is_tracking():
             return
 
-        # There are 2 problems with using threading.Timer:
-        # 1. Seeking to chapter incorrectly indicates play speed is 1, even if
-        # currently fast forwarding or rewinding
-        # 2. No easy way to cancel and cleanup an already started Timer when
-        # external abort (Kodi shutdown, addon disabled, etc.) is requested
+        # threading.Timer method not used by default. More testing required
         if UpNextMonitor.use_timer:
             if not self.player.isPlaying() or self.player.isPaused():
                 return
@@ -85,7 +82,7 @@ class UpNextMonitor(xbmc.Monitor):
         while not self.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
-                self.log('Tracker exiting', 2)
+                self.log('Tracker exit', 2)
                 break
 
             if not self.player.isPlaying():
@@ -125,13 +122,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.launch_up_next()
             break
         else:
-            self.log('Tracker shutting down', 1)
-
-        # Clean up popup and state if thread was terminated rather than stopped
-        if not self.sigstop:
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup()
-            self.state.reset()
+            self.log('Tracker abort', 1)
 
         # Reset thread signals
         self.log('Tracker stopped', 2)
@@ -218,6 +209,14 @@ class UpNextMonitor(xbmc.Monitor):
         elif self.state.is_tracking():
             self.state.reset()
 
+    # Override waitForAbort to ensure thread and popup cleanup is always done
+    def waitForAbort(self, timeout=None): # pylint: disable=invalid-name
+        if xbmc.Monitor.waitForAbort(self, timeout):
+            self.stop_tracking(terminate=True)
+            return True
+        else:
+            return False
+        
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', 2)
         self.state.update_settings()
@@ -283,8 +282,9 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.playing_next = False
 
         elif method == 'Player.OnAVChange':
-            # Update player state
-            self.player.getSpeed(data)
+            # Do not update player state as speed value is always equal to 1
+            # in OnAVChange event
+            # self.player.getSpeed(data)
             # Restart tracking if previously tracking
             self.start_tracking()
 
