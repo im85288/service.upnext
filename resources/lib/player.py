@@ -22,6 +22,9 @@ class UpNextPlayerState(dict):
     def forced(self, name):
         return self[name].get('force')
 
+    def actual(self, name):
+        return self[name].get('actual')
+
     def set(self, name, *args, **kwargs):
         if name not in self:
             self[name] = dict(
@@ -91,8 +94,12 @@ class UpNextPlayer(xbmc.Player):
         return self.state.paused
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
-        # Use inbuilt method to store actual value
-        actual = getattr(xbmc.Player, 'getPlayingFile')(self)
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.playing_file
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = getattr(xbmc.Player, 'getPlayingFile')(self)
         actual = statichelper.to_unicode(actual)
         self.state.playing_file = actual
         # Return actual value or forced value if forced
@@ -106,8 +113,12 @@ class UpNextPlayer(xbmc.Player):
         return self.state.speed
 
     def getTime(self):  # pylint: disable=invalid-name
-        # Use inbuilt method to store actual value
-        actual = getattr(xbmc.Player, 'getTime')(self)
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.time
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = getattr(xbmc.Player, 'getTime')(self)
         self.state.time = actual
 
         # Simulate time progression if forced
@@ -132,8 +143,12 @@ class UpNextPlayer(xbmc.Player):
         return self.state.time
 
     def getTotalTime(self):  # pylint: disable=invalid-name
-        # Use inbuilt method to store actual value
-        actual = getattr(xbmc.Player, 'getTotalTime')(self)
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.total_time
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = getattr(xbmc.Player, 'getTotalTime')(self)
         self.state.total_time = actual
         # Return actual value or forced value if forced
         return self.state.total_time
