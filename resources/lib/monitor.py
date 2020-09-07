@@ -221,8 +221,8 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset()
 
     # Override waitForAbort to ensure thread and popup cleanup is always done
-    def waitForAbort(self, timeout=None): # pylint: disable=invalid-name
-        if xbmc.Monitor.waitForAbort(self, timeout):
+    def waitForAbort(self, *args, **kwargs):  # pylint: disable=invalid-name
+        if xbmc.Monitor.waitForAbort(self, *args, **kwargs):
             # Cleanup if abort requested
             self.stop_tracking(terminate=True)
             return True
