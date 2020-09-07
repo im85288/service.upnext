@@ -163,7 +163,8 @@ def event(message, data=None, sender=None, encoding='base64'):
             sender='%s.SIGNAL' % sender,
             message=message,
             data=[encoded],
-        )
+        ),
+        no_response=True
     )
 
 
@@ -192,11 +193,14 @@ def log(msg, name=None, level=1):
 
 def jsonrpc(**kwargs):
     """Perform JSONRPC calls"""
-    if 'id' not in kwargs:
+    response = not kwargs.pop('no_response', False)
+    if response and 'id' not in kwargs:
         kwargs.update(id=0)
     if 'jsonrpc' not in kwargs:
         kwargs.update(jsonrpc='2.0')
-    return json.loads(xbmc.executeJSONRPC(json.dumps(kwargs)))
+    result = xbmc.executeJSONRPC(json.dumps(kwargs))
+    if response:
+        return json.loads(result)
 
 
 def get_global_setting(setting):

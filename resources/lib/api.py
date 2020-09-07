@@ -81,7 +81,8 @@ def play_kodi_item(episode):
         # TODO: Add setting to control playback from start or resume point
         options=dict(
             resume=False
-        )
+        ),
+        no_response=True
     )
 
 
@@ -101,7 +102,8 @@ def queue_next_item(data=None, episode=None):
         log('Adding to queue - {0}'.format(next_item), 2)
         utils.jsonrpc(
             method='Playlist.Add',
-            params=dict(playlistid=xbmc.PLAYLIST_VIDEO, item=next_item)
+            params=dict(playlistid=xbmc.PLAYLIST_VIDEO, item=next_item),
+            no_response=True
         )
     else:
         log('Nothing added to queue', 2)
@@ -114,7 +116,8 @@ def reset_queue():
     log('Removing previously played item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
-        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=0)
+        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=0),
+        no_response=True
     )
     return False
 
@@ -124,7 +127,8 @@ def dequeue_next_item():
     log('Removing unplayed next item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
-        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=1)
+        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=1),
+        no_response=True
     )
     return False
 
@@ -184,7 +188,8 @@ def play_addon_item(data, encoding):
         log('Playing from addon - {0}'.format(data), 2)
         utils.jsonrpc(
             method='Player.Open',
-            params=dict(item=dict(file=data))
+            params=dict(item=dict(file=data)),
+            no_response=True
         )
     else:
         msg = 'Sending to addon - ({encoding}) {play_info}'
