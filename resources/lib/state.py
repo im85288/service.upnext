@@ -100,10 +100,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
     def is_tracking(self):
         return self.track
 
-    def set_tracking(self, track=True):
-        msg = 'Tracking %s' % ('enabled' if track else 'disabled')
+    def set_tracking(self, filename):
+        if filename:
+            msg = 'Tracking enabled - {0}.format(filename)
+        else:
+            msg = 'Tracking disabled'
         self.log(msg, 2)
-        self.track = track
+        self.track = bool(filename)
+        self.filename = filename if filename else None
 
     def reset_queue(self):
         if self.queued:
