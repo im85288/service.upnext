@@ -131,6 +131,17 @@ class UpNextMonitor(xbmc.Monitor):
         self.sigterm = False
 
     def check_video(self, data=None, encoding=None):
+        if self.state.playing_next:
+            self.state.playing_next = False
+            # Increase playcount and reset resume point of previous file
+            # TODO: Add settings to control whether file is marked as watched
+            #       and resume point is reset when next file is played
+            api.handle_just_watched(
+                episodeid=self.state.episodeid,
+                playcount=self.state.playcount,
+                reset_resume=True
+            )
+
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
             return
@@ -279,7 +290,6 @@ class UpNextMonitor(xbmc.Monitor):
             # Reset state if Up Next has not requested the next file to play
             if not self.state.playing_next:
                 self.state.reset()
-            self.state.playing_next = False
 
         elif method == 'Player.OnAVChange':
             # Do not update player state as speed value is always equal to 1

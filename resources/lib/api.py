@@ -410,19 +410,39 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
 
     if result:
         current_playcount = utils.get_int(result, 'playcount', 0)
+        current_resume = result.get('resume', {}).get('position')
     else:
         return
-    if current_playcount <= playcount:
+
+    params = dict(episodeid=episodeid)
+    msg = 'Library update - id: {0}'
+
+    # If Kodi has not increased playcount then Up Next will
+    if current_playcount == playcount:
         playcount += 1
+        params['playcount'] = playcount
+        msg += ', playcount: {1} to {2}'
 
-    params = dict(
-        episodeid=episodeid,
-        playcount=playcount
-    )
-    if reset_resume:
+    # If resume point has been saved then reset it
+    if current_resume and reset_resume:
         params['resume'] = dict(position=0)
+        msg += ', resume: {3} to {4}'
 
-    msg = 'Library update - id: {0}, playcount change from {1} to {2}'
-    msg = msg.format(episodeid, current_playcount, playcount)
+    # Only update library if playcount or resume point needs to change
+    if len(params) == 1:
+        msg += ', no change'
+    else:
+        utils.jsonrpc(
+            method='VideoLibrary.SetEpisodeDetails',
+            params=params,
+            no_response=True
+        )
+
+    msg = msg.format(
+        episodeid,
+        current_playcount,
+        playcount,
+        current_resume,
+        0 if reset_resume else current_resume
+    )
     log(msg, 2)
-    utils.jsonrpc(method='VideoLibrary.SetEpisodeDetails', params=params)

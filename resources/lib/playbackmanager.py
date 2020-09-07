@@ -162,15 +162,6 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             encoding='base64'
         )
 
-        # Increase playcount and reset resume point
-        # TODO: Add settings to control whether file is marked as watched and
-        #       resume point is reset when next file is played
-        api.handle_just_watched(
-            episodeid=self.state.episodeid,
-            playcount=self.state.playcount,
-            reset_resume=True
-        )
-
         # Determine playback method. Used for logging purposes
         msg = 'Playback requested - using{0}{1}{2} method'
         msg = msg.format(
