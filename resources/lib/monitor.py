@@ -14,8 +14,14 @@ import utils
 
 class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
-    # Disable threading.Timer method by default
+    # Set True to enable threading.Timer method for triggering a popup
+    # Set False to continuously poll play time in a threading.Thread
+    # Default False
     use_timer = False
+    # Set True to force a playback event on addon start. Used for testing.
+    # Set False for normal addon start
+    # Default False
+    test_trigger = False
     player_monitor_events = [
         'Player.OnPause',
         'Player.OnResume',
@@ -41,6 +47,15 @@ class UpNextMonitor(xbmc.Monitor):
         utils.log(msg, name=cls.__name__, level=level)
 
     def run(self):
+        # Re-trigger player event if addon started mid playback
+        if self.test_trigger and self.player.isPlaying():
+            self.player.seekTime(max(0, self.player.getTime() - 1))
+            if utils.get_kodi_version() < 18:
+                method = 'Player.OnPlay'
+            else:
+                method = 'Player.OnAVStart'
+            self.onNotification('UpNext', method)
+
         # Wait indefinitely until addon is terminated
         self.waitForAbort()
 
@@ -260,15 +275,15 @@ class UpNextMonitor(xbmc.Monitor):
         # Restart tracking if previously tracking
         self.start_tracking()
 
-    def onNotification(self, sender, method, data):  # pylint: disable=invalid-name
-        """Handler for Kodi events and data transfer from addons"""
 
+    def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
+        """Handler for Kodi events and data transfer from addons"""
         if self.state.is_disabled():
             return
 
         sender = statichelper.to_unicode(sender)
         method = statichelper.to_unicode(method)
-        data = statichelper.to_unicode(data)
+        data = statichelper.to_unicode(data) if data else ''
 
         if (utils.get_kodi_version() < 18 and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
