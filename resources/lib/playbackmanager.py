@@ -200,31 +200,32 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         self.show_popup()
 
         monitor = xbmc.Monitor()
-        while not monitor.abortRequested():
-            # Current file can stop, or next file can start, while update loop
-            # is running. Check and abort popup update.
-            if (not self.player.isPlaying()
-                    or self.state.starting
-                    or not self.state.playing
-                    or not self.popup_enable):
-                popup_done = False
-                return popup_done
-
+        # Current file can stop, or next file can start, while update loop is
+        # running. Check state and abort popup update if required
+        while (not monitor.abortRequested()
+               and self.player.isPlaying()
+               and isinstance(self.popup, dialog.UpNextPopup)
+               and not self.state.starting
+               and self.state.playing
+               and self.popup_enable):
             remaining = total_time - self.player.getTime()
-            self.popup.update_progress_control(remaining)
+            self.popup.update_progress_control(round(remaining, 0))
 
-            # If end of file or popup has been closed then exit update loop
-            if (remaining <= 1
+            # Decrease wait time and increase loop speed to try and avoid
+            # missing the end of video when fast forwarding
+            wait_time = 0.5 / max(1, self.player.get_speed())
+            remaining -= wait_time
+
+            # If end of file or user has closed popup then exit update loop
+            if (remaining <= 0
                     or self.popup.is_cancel()
                     or self.popup.is_playnow()):
                 break
 
-            # Decrease wait time and increase loop speed to try and avoid
-            # missing the end of video when fast forwarding
-            speed = self.player.state.speed
-            speed = speed if speed > 0 else 1
-            wait_time = min(0.1 / speed, remaining - 1)
-            monitor.waitForAbort(wait_time)
+            monitor.waitForAbort(min(wait_time, remaining))
+        else:
+            popup_done = False
+            return popup_done
 
         popup_done = True
         return popup_done
