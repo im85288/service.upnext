@@ -94,7 +94,7 @@ class UpNextMonitor(xbmc.Monitor):
         while not self.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
-                self.log('Tracker exit', 2)
+                self.log('Tracker - exit', 2)
                 break
 
             if not self.player.isPlaying():
@@ -124,8 +124,8 @@ class UpNextMonitor(xbmc.Monitor):
             self.sigstop = True
 
             # Start Up Next to handle playback of next file
-            msg = 'Popup requested - episode ({0}s runtime) ends in {1}s'
-            msg = msg.format(total_time, total_time - play_time)
+            msg = 'Popup - due at {0}s - file ({1}s runtime) ends in {2}s'
+            msg = msg.format(popup_time, total_time, total_time - play_time)
             self.log(msg, 2)
             self.playbackmanager = playbackmanager.PlaybackManager(
                 player=self.player,
@@ -134,10 +134,10 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.launch_up_next()
             break
         else:
-            self.log('Tracker abort', 1)
+            self.log('Tracker - abort', 1)
 
         # Reset thread signals
-        self.log('Tracker stopped', 2)
+        self.log('Tracker - stopped', 2)
         self.running = False
         self.sigstop = False
         self.sigterm = False
