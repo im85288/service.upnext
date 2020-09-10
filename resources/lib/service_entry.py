@@ -7,4 +7,4 @@ import monitor
 
 
 # Start the monitor and wait indefinitely for abort
-monitor.UpNextMonitor().waitForAbort()
+monitor.UpNextMonitor().run()

@@ -40,6 +40,21 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
+    def run(self):
+        # Wait indefinitely until addon is terminated
+        self.waitForAbort()
+
+        # Cleanup when abort requested
+        self.stop_tracking(terminate=True)
+        del self.state
+        self.state = None
+        del self.player
+        self.player = None
+        del self.playbackmanager
+        self.playbackmanager = None
+        del self.tracker
+        self.tracker = None
+
     def start_tracking(self):
         if not self.state.is_tracking():
             return
@@ -227,14 +242,6 @@ class UpNextMonitor(xbmc.Monitor):
         # Reset state if required
         elif self.state.is_tracking():
             self.state.reset()
-
-    # Override waitForAbort to ensure thread and popup cleanup is always done
-    def waitForAbort(self, *args, **kwargs):  # pylint: disable=invalid-name
-        if xbmc.Monitor.waitForAbort(self, *args, **kwargs):
-            # Cleanup if abort requested
-            self.stop_tracking(terminate=True)
-            return True
-        return False
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', 2)
