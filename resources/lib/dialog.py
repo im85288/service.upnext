@@ -98,6 +98,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             percent = 100 * remaining / self.countdown_total_time
             self.current_progress_percent = min(100, max(0, percent))
 
+        # Update progress control
         try:
             self.progress_control = self.getControl(3014)
         # Occurs when skin does not include progress control
@@ -106,7 +107,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
-        # Remaining countdown for current episode
+        # Remaining time countdown for current episode
         remaining = statichelper.from_unicode('%02d' % remaining)
         self.setProperty('remaining', remaining)
 
@@ -128,15 +129,6 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     def is_playnow(self):
         return self.playnow
 
-    def onFocus(self, controlId):  # pylint: disable=invalid-name
-        pass
-
-    def doAction(self):  # pylint: disable=invalid-name
-        pass
-
-    def closeDialog(self):  # pylint: disable=invalid-name
-        self.close()
-
     def onClick(self, controlId):  # pylint: disable=invalid-name
         # Play now - Watch now / Still Watching
         if controlId == 3012:
@@ -151,6 +143,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):  # pylint: disable=invalid-name
         if action == xbmcgui.ACTION_STOP:
+            self.set_stop(True)
             self.close()
         elif action == xbmcgui.ACTION_NAV_BACK:
             self.set_cancel(True)
