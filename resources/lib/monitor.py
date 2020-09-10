@@ -34,9 +34,9 @@ class UpNextMonitor(xbmc.Monitor):
         utils.log(msg, name=cls.__name__, level=level)
 
     def start_tracking(self):
-        self.stop_tracking()
         if not self.state.is_tracking():
             return
+        self.stop_tracking()
 
         # threading.Timer method not used by default. More testing required
         if UpNextMonitor.use_timer:
