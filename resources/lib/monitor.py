@@ -16,6 +16,13 @@ class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
     # Disable threading.Timer method by default
     use_timer = False
+    player_monitor_events = [
+        'Player.OnPause',
+        'Player.OnResume',
+        'Player.OnSpeedChanged',
+        'Player.OnAVChange',
+        'Player.OnSeek',
+    ]
 
     def __init__(self):
         self.state = state.UpNextState()
@@ -278,23 +285,6 @@ class UpNextMonitor(xbmc.Monitor):
             # Check whether Up Next can start tracking
             self.check_video()
 
-        elif method == 'Player.OnPause':
-            self.stop_tracking()
-            # Update player state
-            self.player.get_speed(data)
-
-        elif method == 'Player.OnResume':
-            # Update player state
-            self.player.get_speed(data)
-            # Restart tracking if previously tracking
-            self.start_tracking()
-
-        elif method == 'Player.OnSpeedChanged':
-            # Update player state
-            self.player.get_speed(data)
-            # Restart tracking if previously tracking
-            self.start_tracking()
-
         elif method == 'Player.OnStop':
             self.stop_tracking()
             self.state.reset_queue()
@@ -303,10 +293,11 @@ class UpNextMonitor(xbmc.Monitor):
             if not self.state.playing_next:
                 self.state.reset()
 
-        elif method == 'Player.OnAVChange':
-            # Do not update player state as speed value is always equal to 1
-            # in OnAVChange event
-            # self.player.get_speed(data)
+        elif method in self.player_monitor_events:
+            # Update player state except during OnAVChange event as speed value
+            # is always equal to 1
+            if method != 'Player.OnAVChange':
+                self.player.get_speed(data)
             # Restart tracking if previously tracking
             self.start_tracking()
 
