@@ -65,17 +65,26 @@ class UpNextMonitor(xbmc.Monitor):
             self.tracker.start()
 
     def stop_tracking(self, terminate=False):
+        # Clean up any old popups
+        if self.playbackmanager:
+            self.playbackmanager.remove_popup(abort=True)
+
+        # Set terminate or stop signals if tracker is running
         if terminate:
             self.sigterm = self.running
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup()
         else:
             self.sigstop = self.running
 
-        if UpNextMonitor.use_timer and self.tracker:
+        # If tracker has not yet started on timer then cancel old timer
+        if UpNextMonitor.use_timer and self.tracker and not self.running:
             self.tracker.cancel()
-            del self.tracker
-            self.tracker = None
+        # Wait for thread to complete
+        if self.tracker and self.running:
+            self.tracker.join()
+
+        # Free resources
+        del self.tracker
+        self.tracker = None
 
     def track_playback(self):
         self.log('Tracker started', 2)
