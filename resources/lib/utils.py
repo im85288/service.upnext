@@ -199,8 +199,7 @@ def jsonrpc(**kwargs):
     if 'jsonrpc' not in kwargs:
         kwargs.update(jsonrpc='2.0')
     result = xbmc.executeJSONRPC(json.dumps(kwargs))
-    if response:
-        return json.loads(result)
+    return json.loads(result) if response else result
 
 
 def get_global_setting(setting):
