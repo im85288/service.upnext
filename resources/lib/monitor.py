@@ -40,13 +40,16 @@ class UpNextMonitor(xbmc.Monitor):
 
         # threading.Timer method not used by default. More testing required
         if UpNextMonitor.use_timer:
-            if not self.player.isPlaying() or self.player.is_paused():
+            if not self.player.isPlaying() or self.player.get_speed() < 1:
                 return
 
+            # Determine play time left until popup is required
             delay = self.state.get_popup_time() - self.player.getTime()
-            delay = max(0, int(delay / self.player.get_speed()) - 10)
-            self.log('Tracker scheduled to start in {0}s'.format(delay), 2)
+            # Scale play time to real time minus a 1s offset
+            delay = max(0, int(delay / self.player.get_speed()) - 1)
+            self.log('Tracker - starting in {0}s'.format(delay), 2)
 
+            # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.track_playback)
             self.tracker.start()
 
