@@ -12,6 +12,15 @@ import statichelper
 import utils
 
 
+PLAYER_MONITOR_EVENTS = [
+    'Player.OnPause',
+    'Player.OnResume',
+    'Player.OnSpeedChanged',
+    # 'Player.OnSeek',
+    'Player.OnAVChange'
+]
+
+
 class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
     # Set True to enable threading.Timer method for triggering a popup
@@ -21,14 +30,7 @@ class UpNextMonitor(xbmc.Monitor):
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
-    test_trigger = False
-    player_monitor_events = [
-        'Player.OnPause',
-        'Player.OnResume',
-        'Player.OnSpeedChanged',
-        'Player.OnAVChange',
-        'Player.OnSeek',
-    ]
+    test_trigger = True
 
     def __init__(self):
         self.state = state.UpNextState()
@@ -49,7 +51,6 @@ class UpNextMonitor(xbmc.Monitor):
     def run(self):
         # Re-trigger player event if addon started mid playback
         if self.test_trigger and self.player.isPlaying():
-            self.player.seekTime(max(0, self.player.getTime() - 1))
             if utils.get_kodi_version() < 18:
                 method = 'Player.OnPlay'
             else:
@@ -81,10 +82,12 @@ class UpNextMonitor(xbmc.Monitor):
                 return
 
             # Determine play time left until popup is required
-            delay = self.state.get_popup_time() - self.player.getTime()
-            # Scale play time to real time minus a 1s offset
-            delay = max(0, int(delay / self.player.get_speed()) - 1)
-            self.log('Tracker - starting in {0}s'.format(delay), 2)
+            popup_time = self.state.get_popup_time()
+            delay = popup_time - self.player.getTime()
+            # Scale play time to real time minus a 10s offset
+            delay = max(0, int(delay / self.player.get_speed()) - 10)
+            msg = 'Tracker - starting at {0}s in {1}s'
+            self.log(msg.format(popup_time, delay), 2)
 
             # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.track_playback)
@@ -267,10 +270,6 @@ class UpNextMonitor(xbmc.Monitor):
             self.log('Up Next disabled', 0)
             self.stop_tracking(terminate=True)
 
-    def onScreensaverActivated(self):  # pylint: disable=invalid-name
-        # Stop tracking loop if tracking was enabled e.g. when video is paused
-        self.stop_tracking()
-
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         # Restart tracking if previously tracking
         self.start_tracking()
@@ -289,7 +288,6 @@ class UpNextMonitor(xbmc.Monitor):
                 or method == 'Player.OnAVStart'):
             # Update player state and remove any existing popups
             self.player.state.set('time', force=False)
-            self.player.get_speed(data)
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
 
@@ -315,11 +313,7 @@ class UpNextMonitor(xbmc.Monitor):
             if not self.state.playing_next:
                 self.state.reset()
 
-        elif method in self.player_monitor_events:
-            # Update player state except during OnAVChange event as speed value
-            # is always equal to 1
-            if method != 'Player.OnAVChange':
-                self.player.get_speed(data)
+        elif method in PLAYER_MONITOR_EVENTS:
             # Restart tracking if previously tracking
             self.start_tracking()
 

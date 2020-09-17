@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import datetime
-import json
 import xbmc
 import statichelper
 import utils
@@ -91,6 +90,10 @@ class UpNextPlayer(xbmc.Player):
         return self.state.playing
 
     def is_paused(self):
+        # Use inbuilt method to store actual value
+        actual = xbmc.getCondVisibility('Player.Paused')
+        self.state.paused = actual
+        # Return actual value or forced value if forced
         return self.state.paused
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
@@ -106,10 +109,32 @@ class UpNextPlayer(xbmc.Player):
         return self.state.playing_file
 
     def get_speed(self, data=None):
-        if data:
-            data = json.loads(data)
-            self.state.speed = data['player']['speed']
-            self.state.paused = not bool(self.state.speed)
+        if xbmc.getCondVisibility('Player.Playing'):
+            self.state.speed = float(xbmc.getInfoLabel('Player.PlaySpeed'))
+        elif xbmc.getCondVisibility('Player.Forwarding'):
+            if xbmc.getCondVisibility('Player.Forwarding2x'):
+                self.state.speed = 2
+            elif xbmc.getCondVisibility('Player.Forwarding4x'):
+                self.state.speed = 4
+            elif xbmc.getCondVisibility('Player.Forwarding8x'):
+                self.state.speed = 8
+            elif xbmc.getCondVisibility('Player.Forwarding16x'):
+                self.state.speed = 16
+            elif xbmc.getCondVisibility('Player.Forwarding32x'):
+                self.state.speed = 32
+        elif xbmc.getCondVisibility('Player.Rewinding'):
+            if xbmc.getCondVisibility('Player.Rewinding2x'):
+                self.state.speed = -2
+            elif xbmc.getCondVisibility('Player.Rewinding4x'):
+                self.state.speed = -4
+            elif xbmc.getCondVisibility('Player.Rewinding8x'):
+                self.state.speed = -8
+            elif xbmc.getCondVisibility('Player.Rewinding16x'):
+                self.state.speed = -16
+            elif xbmc.getCondVisibility('Player.Rewinding32x'):
+                self.state.speed = -32
+        else:
+            self.state.speed = 0
         return self.state.speed
 
     def getTime(self):  # pylint: disable=invalid-name
@@ -131,6 +156,8 @@ class UpNextPlayer(xbmc.Player):
             # Change in time from previously forced time to now
             elif isinstance(self.state.forced('time'), datetime.datetime):
                 delta = (self.state.forced('time') - now).total_seconds()
+                # No need to check actual speed, just use forced speed value
+                delta = delta * self.state.speed
             # Don't update if not previously forced
             else:
                 delta = 0

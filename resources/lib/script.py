@@ -57,9 +57,9 @@ def test_popup(popup_type, simple_style=False):
         playing={'value': True, 'force': True},
         # paused={'value': False, 'force': False},
         # playing_file={'value': None, 'force': False},
-        # speed={'value': 0, 'force': False},
+        speed={'value': 1, 'force': True},
         # Simulate runtime of endtime minus 60s
-        time={'value': test_episode['runtime'] - 60, 'force': True},
+        time={'value': test_episode['runtime'] - 10, 'force': True},
         # Simulate endtime based on dummy episode
         total_time={'value': test_episode['runtime'], 'force': True},
         # next_file={'value': None, 'force': False},
@@ -69,7 +69,8 @@ def test_popup(popup_type, simple_style=False):
     ))
     # Simulate player state could also be done using the following
     test_player.state.set('playing', True, force=True)
-    test_player.state.set('time', (test_episode['runtime'] - 60), force=True)
+    test_player.state.set('speed', 1, force=True)
+    test_player.state.set('time', (test_episode['runtime'] - 10), force=True)
     test_player.state.set('total_time', test_episode['runtime'], force=True)
     test_player.state.set('stop', force=True)
 
