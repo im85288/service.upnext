@@ -23,14 +23,18 @@ PLAYER_MONITOR_EVENTS = [
 
 class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
+    # Set True to enable threading.Thread method for triggering a popup
+    # Will continuously poll playtime in a threading.Thread to track popup time
+    # Default True
+    use_thread = True
     # Set True to enable threading.Timer method for triggering a popup
-    # Set False to continuously poll play time in a threading.Thread
+    # Will schedule a threading.Timer to start tracking when popup is required
     # Default False
     use_timer = False
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
-    test_trigger = True
+    test_trigger = False
 
     def __init__(self):
         self.state = state.UpNextState()
@@ -77,7 +81,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.stop_tracking()
 
         # threading.Timer method not used by default. More testing required
-        if UpNextMonitor.use_timer:
+        if self.use_timer:
             if not self.player.isPlaying() or self.player.get_speed() < 1:
                 return
 
@@ -95,38 +99,45 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Use while not abortRequested() loop in a separate thread to allow for
         # continued monitoring in main thread
-        else:
-            # Only spawn a new tracker if old tracker is not running
-            if self.running:
-                return
+        elif self.use_thread:
             self.tracker = threading.Thread(target=self.track_playback)
             # Daemon threads may not work in Kodi, but enable it anyway
             self.tracker.daemon = True
             self.tracker.start()
 
-    def stop_tracking(self, terminate=False):
-        # Clean up any old popups
-        if self.playbackmanager:
-            self.playbackmanager.remove_popup(abort=True)
+        else:
+            if self.running:
+                self.sigstop = False
+            else:
+                self.track_playback()
 
+    def stop_tracking(self, terminate=False):
         # Set terminate or stop signals if tracker is running
         if terminate:
             self.sigterm = self.running
+            if self.playbackmanager:
+                self.playbackmanager.remove_popup(terminate=True)
         else:
             self.sigstop = self.running
 
-        # If tracker has not yet started on timer then cancel old timer
-        if UpNextMonitor.use_timer and self.tracker and not self.running:
-            self.tracker.cancel()
+        if not self.tracker:
+            return
+
         # Wait for thread to complete
-        if self.tracker and self.running:
+        if self.running:
             self.tracker.join()
+        # Or if tracker has not yet started on timer then cancel old timer
+        elif self.use_timer:
+            self.tracker.cancel()
 
         # Free resources
         del self.tracker
         self.tracker = None
 
     def track_playback(self):
+        # Only track playback if old tracker is not running
+        if self.running:
+            return
         self.log('Tracker started', 2)
         self.running = True
 
