@@ -108,7 +108,7 @@ class UpNextPlayer(xbmc.Player):
         # Return actual value or forced value if forced
         return self.state.playing_file
 
-    def get_speed(self, data=None):
+    def get_speed(self):  # pylint: disable=too-many-branches
         if xbmc.getCondVisibility('Player.Playing'):
             self.state.speed = float(xbmc.getInfoLabel('Player.PlaySpeed'))
         elif xbmc.getCondVisibility('Player.Forwarding'):
