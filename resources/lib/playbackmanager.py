@@ -10,13 +10,13 @@ import utils
 
 class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
     """Controller for Up Next popup and playback of next episode"""
-    __slots__ = ('player', 'state', 'popup', 'popup_enable')
+    __slots__ = ('player', 'state', 'popup', 'sigterm')
 
     def __init__(self, player, state):
         self.player = player
         self.state = state
         self.popup = None
-        self.popup_enable = False
+        self.sigterm = False
         self.log('Init', 2)
 
     @classmethod
@@ -47,6 +47,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.log('Stopping playback', 2)
             self.player.stop()
 
+        self.sigterm = False
         self.log('Exit', 2)
 
     def launch_popup(self, episode, playlist_item):
@@ -207,17 +208,17 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
                and isinstance(self.popup, dialog.UpNextPopup)
                and not self.state.starting
                and self.state.playing
-               and self.popup_enable):
+               and not self.sigterm):
             remaining = total_time - self.player.getTime()
             self.popup.update_progress(round(remaining))
 
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
-            wait_time = 0.5 / max(1, self.player.get_speed())
+            wait_time = 0.1 / max(1, self.player.get_speed())
             remaining -= wait_time
 
             # If end of file or user has closed popup then exit update loop
-            if (remaining <= 0
+            if (remaining <= 1
                     or self.popup.is_cancel()
                     or self.popup.is_playnow()):
                 break
@@ -233,17 +234,16 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
     def show_popup(self):
         if not isinstance(self.popup, dialog.UpNextPopup):
             return
-        self.popup.show()
-        self.popup_enable = True
         utils.set_property('service.upnext.dialog', 'true')
+        self.popup.show()
 
-    def remove_popup(self, abort=False):
+    def remove_popup(self, terminate=False):
         if not isinstance(self.popup, dialog.UpNextPopup):
             return
-        if abort:
-            self.popup_enable = False
+        if terminate or self.sigterm:
+            self.sigterm = True
         else:
-            self.popup.close()
             utils.clear_property('service.upnext.dialog')
+            self.popup.close()
             del self.popup
             self.popup = None
