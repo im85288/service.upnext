@@ -209,7 +209,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
                and self.state.playing
                and self.popup_enable):
             remaining = total_time - self.player.getTime()
-            self.popup.update_progress_control(round(remaining, 0))
+            self.popup.update_progress(round(remaining))
 
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding

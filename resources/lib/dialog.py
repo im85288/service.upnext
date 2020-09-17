@@ -15,7 +15,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     """Class for Up Next popup state variables and methods"""
 
     def __init__(self, *args, **kwargs):
+        # Set info here rather than onInit to avoid dialog update flash
         self.item = kwargs.get('item')
+        self.set_info()
         self.cancel = False
         self.stop = False
         self.playnow = False
@@ -35,8 +37,13 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         utils.log(msg, name=cls.__name__, level=level)
 
     def onInit(self):  # pylint: disable=invalid-name
-        self.set_info()
-        self.prepare_progress_control()
+        try:
+            self.progress_control = self.getControl(3014)
+        # Occurs when skin does not include progress control
+        except RuntimeError:
+            self.progress_control = None
+        else:
+            self.update_progress_control()
 
         if utils.get_setting_bool('stopAfterClose'):
             self.getControl(3013).setLabel(utils.localize(30033))  # Stop
@@ -69,19 +76,10 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.setProperty('playcount', str(self.item.get('playcount', 0)))
             self.setProperty('runtime', str(self.item.get('runtime', '')))
 
-    def prepare_progress_control(self):
-        try:
-            self.progress_control = self.getControl(3014)
-        # Occurs when skin does not include progress control
-        except RuntimeError:
-            pass
-        else:
-            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
-
     def set_item(self, item):
         self.item = item
 
-    def update_progress_control(self, remaining):
+    def update_progress(self, remaining):
         # Run time and end time for next episode
         runtime = utils.get_int(self.item, 'runtime', 0)
         if runtime:
@@ -89,6 +87,13 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             endtime = datetime.datetime.now() + runtime
             endtime = statichelper.from_unicode(utils.localize_time(endtime))
             self.setProperty('endtime', endtime)
+
+        # Remaining time countdown for current episode
+        remaining_str = statichelper.from_unicode('%02d' % remaining)
+        self.setProperty('remaining', remaining_str)
+
+        if not self.progress_control:
+            return
 
         # Set total countdown time on initial progress update
         if remaining and self.countdown_total_time is None:
@@ -98,18 +103,10 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             percent = 100 * remaining / self.countdown_total_time
             self.current_progress_percent = min(100, max(0, percent))
 
-        # Update progress control
-        try:
-            self.progress_control = self.getControl(3014)
-        # Occurs when skin does not include progress control
-        except RuntimeError:
-            pass
-        else:
-            self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
+        self.update_progress_control()
 
-        # Remaining time countdown for current episode
-        remaining = statichelper.from_unicode('%02d' % remaining)
-        self.setProperty('remaining', remaining)
+    def update_progress_control(self):
+        self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
     def set_cancel(self, cancel):
         self.cancel = cancel
