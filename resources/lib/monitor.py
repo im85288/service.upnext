@@ -65,15 +65,22 @@ class UpNextMonitor(xbmc.Monitor):
         self.waitForAbort()
 
         # Cleanup when abort requested
+        if self.playbackmanager:
+            self.playbackmanager.remove_popup(terminate=True)
+            self.log('Cleanup popup', 2)
         self.stop_tracking(terminate=True)
-        del self.state
-        self.state = None
-        del self.player
-        self.player = None
-        del self.playbackmanager
-        self.playbackmanager = None
         del self.tracker
         self.tracker = None
+        self.log('Cleanup tracker', 2)
+        del self.state
+        self.state = None
+        self.log('Cleanup state', 2)
+        del self.player
+        self.player = None
+        self.log('Cleanup player', 2)
+        del self.playbackmanager
+        self.playbackmanager = None
+        self.log('Cleanup playbackmanager', 2)
 
     def start_tracking(self):
         if not self.state.is_tracking():
@@ -82,14 +89,18 @@ class UpNextMonitor(xbmc.Monitor):
 
         # threading.Timer method not used by default. More testing required
         if self.use_timer:
-            if not self.player.isPlaying() or self.player.get_speed() < 1:
+            with self.player as check_fail:
+                play_time = self.player.getTime()
+                speed = self.player.get_speed()
+                check_fail = False
+            if check_fail or speed < 1:
                 return
 
             # Determine play time left until popup is required
             popup_time = self.state.get_popup_time()
             delay = popup_time - self.player.getTime()
             # Scale play time to real time minus a 10s offset
-            delay = max(0, int(delay / self.player.get_speed()) - 10)
+            delay = max(0, int(delay / speed) - 10)
             msg = 'Tracker - starting at {0}s in {1}s'
             self.log(msg.format(popup_time, delay), 2)
 
@@ -148,21 +159,22 @@ class UpNextMonitor(xbmc.Monitor):
                 self.log('Tracker - exit', 2)
                 break
 
-            if not self.player.isPlaying():
+            tracked_file = self.state.get_tracked_file()
+            with self.player as check_fail:
+                current_file = self.player.getPlayingFile()
+                total_time = self.player.getTotalTime()
+                play_time = self.player.getTime()
+                check_fail = False
+            if check_fail:
                 self.log('No file is playing', 2)
                 self.state.set_tracking(False)
                 continue
-
-            tracked_file = self.state.get_tracked_file()
-            current_file = self.player.getPlayingFile()
             # New stream started without tracking being updated
             if tracked_file and tracked_file != current_file:
                 self.log('Error - unknown file playing', 1)
                 self.state.set_tracking(False)
                 continue
 
-            total_time = self.player.getTotalTime()
-            play_time = self.player.getTime()
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
             if play_time < popup_time:
@@ -216,10 +228,12 @@ class UpNextMonitor(xbmc.Monitor):
             wait_count += 1
 
         # Exit if no file playing
-        playing_file = self.player.isPlaying() and self.player.getPlayingFile()
-        total_time = self.player.getTotalTime() if playing_file else 0
-        if not playing_file or not total_time:
-            self.log('Video check error - nothing playing', 1)
+        with self.player as check_fail:
+            playing_file = self.player.getPlayingFile()
+            total_time = self.player.getTotalTime()
+            check_fail = False
+        if check_fail:
+            self.log('Skip video check - stream not playing', 2)
             return
         self.log('Playing - %s' % playing_file, 2)
 
@@ -268,9 +282,10 @@ class UpNextMonitor(xbmc.Monitor):
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
 
-        # Reset state if required
-        elif self.state.is_tracking():
-            self.state.reset()
+        else:
+            self.log('Skip video check - Up Next unable to handle video', 2)
+            if self.state.is_tracking():
+                self.state.reset()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', 2)
@@ -279,6 +294,8 @@ class UpNextMonitor(xbmc.Monitor):
         # Shutdown tracking loop if disabled
         if self.state.is_disabled():
             self.log('Up Next disabled', 0)
+            if self.playbackmanager:
+                self.playbackmanager.remove_popup(terminate=True)
             self.stop_tracking(terminate=True)
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
@@ -317,6 +334,8 @@ class UpNextMonitor(xbmc.Monitor):
             self.check_video()
 
         elif method == 'Player.OnStop':
+            if self.playbackmanager:
+                self.playbackmanager.remove_popup()
             self.stop_tracking()
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing

@@ -184,12 +184,14 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         return play_next, keep_playing
 
     def show_popup_and_wait(self, auto_play):
-        if not self.player.isPlaying():
+        with self.player as check_fail:
+            total_time = self.player.getTotalTime()
+            play_time = self.player.getTime()
+            check_fail = False
+        if check_fail:
             popup_done = False
             return popup_done
 
-        total_time = self.player.getTotalTime()
-        play_time = self.player.getTime()
         # If cue point was provided then Up Next will auto play after a fixed
         # delay time, rather than waiting for the end of the file
         if auto_play and self.state.popup_cue:
@@ -198,7 +200,9 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
                 popup_start = max(play_time, self.state.get_popup_time())
                 total_time = min(popup_start + popup_duration, total_time)
 
-        self.show_popup()
+        if not self.show_popup():
+            popup_done = False
+            return popup_done
 
         monitor = xbmc.Monitor()
         # Current file can stop, or next file can start, while update loop is
@@ -232,18 +236,22 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         return popup_done
 
     def show_popup(self):
-        if not isinstance(self.popup, dialog.UpNextPopup):
-            return
-        utils.set_property('service.upnext.dialog', 'true')
-        self.popup.show()
+        if not self.popup:
+            return False
+
+        with self.popup:
+            self.popup.show()
+            utils.set_property('service.upnext.dialog', 'true')
+            return True
 
     def remove_popup(self, terminate=False):
-        if not isinstance(self.popup, dialog.UpNextPopup):
+        if not self.popup:
             return
+
         if terminate or self.sigterm:
             self.sigterm = True
-        else:
-            utils.clear_property('service.upnext.dialog')
+            return
+
+        with self.popup:
             self.popup.close()
-            del self.popup
-            self.popup = None
+            utils.clear_property('service.upnext.dialog')
