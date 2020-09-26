@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import threading
 import xbmc
 import api
+import detector
 import playbackmanager
 import player
 import state
@@ -41,6 +42,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.player = player.UpNextPlayer()
         self.playbackmanager = None
         self.tracker = None
+        self.detector = None
         self.running = False
         self.sigstop = False
         self.sigterm = False
@@ -98,11 +100,16 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Determine play time left until popup is required
             popup_time = self.state.get_popup_time()
-            delay = popup_time - play_time
-            # Scale play time to real time minus a 10s offset
+            detect_time = self.state.get_detect_time()
+
+            # Convert to delay and scale to real time minus a 10s offset
+            delay = (detect_time if detect_time else popup_time) - play_time
             delay = max(0, int(delay / speed) - 10)
             msg = 'Tracker - starting at {0}s in {1}s'
-            self.log(msg.format(popup_time, delay), 2)
+            self.log(msg.format(
+                detect_time if detect_time else popup_time,
+                delay
+            ), 2)
 
             # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.track_playback)
@@ -152,6 +159,9 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Tracker started', 2)
         self.running = True
 
+        if self.detector:
+            self.detector.reset()
+
         # Loop unless abort requested
         while not self.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
@@ -175,11 +185,25 @@ class UpNextMonitor(xbmc.Monitor):
                 self.state.set_tracking(False)
                 continue
 
+            detect_time = self.state.get_detect_time()
+            if detect_time and play_time >= detect_time:
+                if not self.detector:
+                    self.detector = detector.Detector()
+                    self.detector.run()
+                elif self.detector.detected():
+                    self.log('Credits detected', 2)
+                    self.state.set_popup_time(cue=True, time=play_time)
+
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
             if play_time < popup_time:
                 self.waitForAbort(min(1, popup_time - play_time))
                 continue
+
+            if self.detector:
+                self.detector.stop()
+                del self.detector
+                self.detector = None
 
             # Stop second thread and popup from being created after next file
             # has been requested but not yet loaded
@@ -195,6 +219,8 @@ class UpNextMonitor(xbmc.Monitor):
                 state=self.state
             )
             self.playbackmanager.launch_up_next()
+            del self.playbackmanager
+            self.playbackmanager = None
             break
         else:
             self.log('Tracker - abort', 1)
@@ -273,6 +299,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
+            self.state.set_detect_time()
 
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
@@ -296,7 +323,6 @@ class UpNextMonitor(xbmc.Monitor):
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         # Restart tracking if previously tracking
         self.start_tracking()
-
 
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
@@ -331,6 +357,10 @@ class UpNextMonitor(xbmc.Monitor):
         elif method == 'Player.OnStop':
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
+            if self.detector:
+                self.detector.stop()
+                del self.detector
+                self.detector = None
             self.stop_tracking()
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing

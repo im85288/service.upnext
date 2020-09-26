@@ -13,6 +13,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'disabled',
         'auto_play',
         'auto_play_delay',
+        'detect_enabled',
         'unwatched_only',
         'enable_playlist',
         'played_limit',
@@ -27,6 +28,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'playcount',
         'popup_time',
         'popup_cue',
+        'detect_time',
         # Tracking player state variables
         'starting',
         'playing',
@@ -41,6 +43,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
+        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
         self.unwatched_only = not utils.get_setting_bool('includeWatched')
         self.enable_playlist = utils.get_setting_bool('enablePlaylist')
         self.played_limit = utils.get_setting_int('playedInARow')
@@ -55,6 +58,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.playcount = 0
         self.popup_time = 0
         self.popup_cue = False
+        self.detect_time = 0
         # Tracking player state variables
         self.starting = 0
         self.playing = False
@@ -76,6 +80,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
+        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
         self.unwatched_only = not utils.get_setting_bool('includeWatched')
         self.enable_playlist = utils.get_setting_bool('enablePlaylist')
         self.played_limit = utils.get_setting_int('playedInARow')
@@ -130,10 +135,26 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         return episode, position
 
+    def get_detect_time(self):
+        if self.popup_cue or not self.detect_enabled:
+            return None
+        return self.detect_time
+
+    def set_detect_time(self):
+        self.detect_time = max(
+            0,
+            self.popup_time - utils.get_setting_int('detectPeriod')
+        )
+
     def get_popup_time(self):
         return self.popup_time
 
-    def set_popup_time(self, total_time):
+    def set_popup_time(self, total_time=None, cue=None, time=None):
+        if cue is not None and time is not None:
+            self.popup_cue = cue
+            self.popup_time = time
+            return
+
         # Alway use addon data, when available
         if self.has_addon_data():
             # Some addons send the time from video end
@@ -167,8 +188,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         else:
             duration_setting = 'autoPlaySeasonTime'
 
+        popup_duration = utils.get_setting_int(duration_setting)
         self.popup_cue = False
-        self.popup_time = total_time - utils.get_setting_int(duration_setting)
+        if 0 < popup_duration < total_time:
+            self.popup_time = total_time - popup_duration
+        else:
+            self.popup_time = 0
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
