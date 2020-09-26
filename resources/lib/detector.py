@@ -38,17 +38,14 @@ def local_minmax(idx, pixel, pixels, delta, size=None, num_pixels=None):
     if not size:
         size = int(num_pixels ** 0.5)
 
-    offset = 1 - size
-    max_x_position = size - 1
     pixel_hi = pixel + delta
     pixel_lo = pixel - delta
 
+    offset = 1 - size
     x_position = idx % size
-    left_offset = 1 if x_position else offset
-    right_offset = 1 if x_position < max_x_position else offset
 
-    right_idx = idx + right_offset
-    left_idx = idx - left_offset
+    right_idx = idx + (1 if x_position < size - 1 else offset)
+    left_idx = idx - (1 if x_position else offset)
 
     above_idx = idx - size
     below_idx = (idx + size) - num_pixels
@@ -86,10 +83,10 @@ def calc_local_hash(pixels, size=None, num_pixels=None):
     )
 
 
-def calc_pixel_luma(R, G, B):
+def calc_pixel_luma(red, green, blue):
     # Approximation of REC. 601 luma coefficients for RGB values scaled
     # from 0-255 to 0-1
-    return 0.001173 * R + 0.002302 * G + 0.000447 * B
+    return 0.001173 * red + 0.002302 * green + 0.000447 * blue
 
 
 def convert_greyscale(pixels):
@@ -198,23 +195,22 @@ def print_hash(pixels_1, pixels_2, size=None, num_pixels=None):
 
 class Detector:
 
-    def __init__(self, method=None):
+    def __init__(self, test_mode=None):
         self.size = 16
         self.num_pixels = self.size * self.size
-        if not method:
-            self.hash_method = calc_median_hash
 
         self.capturer = xbmc.RenderCapture()
         self.capturer.capture(self.size, self.size)
 
-        self.hashes = [None, None]
-        self.detect_threshold = utils.get_setting_int('detectThreshold') / 100
-        self.detect_count = utils.get_setting_int('detectCount')
-        self.similarities = [None] * self.detect_count
+        if not test_mode:
+            self.hash_method = calc_median_hash
+            self.hashes = [None, None]
+            self.detect_threshold = utils.get_setting_int('detectThreshold') / 100
+            self.detect_count = utils.get_setting_int('detectCount')
+            self.similarities = [None] * self.detect_count
+            self.show_output = False
+            self.player = player.UpNextPlayer()
 
-        self.show_output = False
-
-        self.player = player.UpNextPlayer()
         self.detector = None
         self.running = False
         self.sigterm = False
@@ -243,9 +239,9 @@ class Detector:
                 continue
 
             greyscale = convert_greyscale(raw)
-            hash = self.hash_method(greyscale)
+            image_hash = self.hash_method(greyscale)
             del self.hashes[0]
-            self.hashes.append(hash)
+            self.hashes.append(image_hash)
 
             similarity = calc_similarity(
                 self.hashes[0],
@@ -282,12 +278,6 @@ class Detector:
 class DetectorBenchmark(Detector):
 
     def __init__(self):
-        self.size = 16
-        self.num_pixels = self.size * self.size
-
-        self.capturer = xbmc.RenderCapture()
-        self.capturer.capture(self.size, self.size)
-
         self.raw_data = [None, None]
         self.greyscale_data = [None, None]
         self.average_hashes = [None, None]
@@ -295,12 +285,10 @@ class DetectorBenchmark(Detector):
         self.difference_hashes = [None, None]
         self.local_hashes = [None, None]
 
-        self.show_output = False
-        self.num_runs = 1
+        self.show_output = True
+        self.num_runs = 1000
 
-        self.detector = None
-        self.running = False
-        self.sigterm = False
+        Detector.__init__(self, test_mode=True)
 
     def test(self):
         if self.running:
@@ -317,22 +305,22 @@ class DetectorBenchmark(Detector):
             greyscale = convert_greyscale(raw)
 
             now = datetime.datetime.now()
-            for i in range(self.num_runs):
+            for _ in range(self.num_runs):
                 average_hash = calc_average_hash(greyscale)
             a_delta = (datetime.datetime.now() - now).total_seconds()
 
             now = datetime.datetime.now()
-            for i in range(self.num_runs):
+            for _ in range(self.num_runs):
                 median_hash = calc_median_hash(greyscale)
             m_delta = (datetime.datetime.now() - now).total_seconds()
 
             now = datetime.datetime.now()
-            for i in range(self.num_runs):
+            for _ in range(self.num_runs):
                 difference_hash = calc_xy_diff_hash(greyscale)
             d_delta = (datetime.datetime.now() - now).total_seconds()
 
             now = datetime.datetime.now()
-            for i in range(self.num_runs):
+            for _ in range(self.num_runs):
                 local_hash = calc_local_hash(greyscale)
             l_delta = (datetime.datetime.now() - now).total_seconds()
 
