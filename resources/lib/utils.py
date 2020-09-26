@@ -4,9 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import sys
 import json
-from xbmc import (
-    executeJSONRPC, getInfoLabel, getRegion, log as xlog, LOGDEBUG, LOGINFO
-)
+from xbmc import executeJSONRPC, getInfoLabel, getRegion, log as xlog, LOGDEBUG, LOGINFO
 from xbmcaddon import Addon
 from xbmcgui import Window
 from statichelper import from_unicode, to_unicode
@@ -200,3 +198,13 @@ def localize_time(time):
     time_format = time_format.replace(':%S', '')
 
     return time.strftime(time_format)
+
+
+def kodi_version():
+    """Returns full Kodi version as string"""
+    return getInfoLabel('System.BuildVersion').split(' ')[0]
+
+
+def kodi_version_major():
+    """Returns major Kodi version as integer"""
+    return int(kodi_version().split('.')[0])

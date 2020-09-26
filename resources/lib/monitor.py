@@ -7,7 +7,7 @@ from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
 from statichelper import from_unicode
-from utils import decode_json, get_property, get_setting_bool, log as ulog
+from utils import decode_json, get_property, get_setting_bool, kodi_version_major, log as ulog
 
 
 class UpNextMonitor(Monitor):
@@ -46,7 +46,8 @@ class UpNextMonitor(Monitor):
                 self.player.disable_tracking()
                 continue
 
-            if self.player.isExternalPlayer():
+            # Method isExternalPlayer() was added in Kodi v18 onward
+            if kodi_version_major() >= 18 and self.player.isExternalPlayer():
                 self.log('Up Next tracking stopped, external player detected', 2)
                 self.player.disable_tracking()
                 continue
