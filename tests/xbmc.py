@@ -183,13 +183,14 @@ class RenderCapture:
         ''' A stub implementation for the xbmc RenderCapture class capture() method '''
         self._width = width
         self._height = height
-    
+
     def getImage(self):
         ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
         return [
             random.randint(0, 255)
-            for i in range(self._width * self._height * 4)
+            for _ in range(self._width * self._height * 4)
         ]
+
 
 def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
     ''' A stub implementation of the xbmc executebuiltin() function '''
