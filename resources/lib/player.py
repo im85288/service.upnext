@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import datetime
-import exceptions
 import xbmc
 import statichelper
 import utils
@@ -76,8 +75,7 @@ class UpNextPlayer(xbmc.Player):
         return True
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if exc_type == exceptions.RuntimeError:
-            return True
+        return exc_type == RuntimeError
 
     @classmethod
     def log(cls, msg, level=2):

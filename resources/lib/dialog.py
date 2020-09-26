@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import datetime
-import exceptions
 import platform
 import xbmcgui
 import statichelper
@@ -37,8 +36,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         return True
 
     def __exit__(self, exc_type, exc_value, traceback):
-        if exc_type == exceptions.AttributeError:
-            return True
+        return exc_type == AttributeError
 
     @classmethod
     def log(cls, msg, level=2):
