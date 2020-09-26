@@ -192,7 +192,7 @@ class UpNextMonitor(xbmc.Monitor):
                     self.detector.run()
                 elif self.detector.detected():
                     self.log('Credits detected', 2)
-                    self.state.set_popup_time(cue=True, time=play_time)
+                    self.state.set_detected_popup_time(play_time)
 
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer

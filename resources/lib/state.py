@@ -149,12 +149,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
     def get_popup_time(self):
         return self.popup_time
 
-    def set_popup_time(self, total_time=None, cue=None, time=None):
-        if cue is not None and time is not None:
-            self.popup_cue = cue
-            self.popup_time = time
-            return
-
+    def set_popup_time(self, total_time):
         # Alway use addon data, when available
         if self.has_addon_data():
             # Some addons send the time from video end
@@ -194,6 +189,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.popup_time = total_time - popup_duration
         else:
             self.popup_time = 0
+
+    def set_detected_popup_time(time):
+        self.popup_cue = True
+        self.popup_time = time
 
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
