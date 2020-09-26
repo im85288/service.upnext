@@ -190,7 +190,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         else:
             self.popup_time = 0
 
-    def set_detected_popup_time(time):
+    def set_detected_popup_time(self, time):
         self.popup_cue = True
         self.popup_time = time
 
