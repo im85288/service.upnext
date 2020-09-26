@@ -98,7 +98,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Determine play time left until popup is required
             popup_time = self.state.get_popup_time()
-            delay = popup_time - self.player.getTime()
+            delay = popup_time - play_time
             # Scale play time to real time minus a 10s offset
             delay = max(0, int(delay / speed) - 10)
             msg = 'Tracker - starting at {0}s in {1}s'
@@ -216,16 +216,10 @@ class UpNextMonitor(xbmc.Monitor):
 
         # onPlayBackEnded for current file can trigger after next file starts
         # Wait additional 5s after onPlayBackEnded or last start
-        wait_limit = 5 * start_num
-        wait_count = 0
-        while not self.abortRequested() and wait_count < wait_limit:
-            # Exit if starting state has been reset by playback error/end/stop
-            if not self.state.starting:
-                self.log('Video check error - starting state reset', 1)
-                return
-
+        wait_count = 5 * start_num
+        while not self.abortRequested() and wait_count:
             self.waitForAbort(1)
-            wait_count += 1
+            wait_count -= 1
 
         # Exit if no file playing
         with self.player as check_fail:
@@ -237,8 +231,9 @@ class UpNextMonitor(xbmc.Monitor):
             return
         self.log('Playing - %s' % playing_file, 2)
 
-        # Exit if starting counter has been reset or new start detected
-        if start_num != self.state.starting:
+        # Exit if starting counter has been reset or new start detected or
+        # starting state has been reset by playback error/end/stop
+        if not self.state.starting or start_num != self.state.starting:
             self.log('Skip video check - stream not fully loaded', 2)
             return
         self.state.starting = 0
