@@ -163,8 +163,7 @@ def event(message, data=None, sender=None, encoding='base64'):
             sender='%s.SIGNAL' % sender,
             message=message,
             data=[encoded],
-        ),
-        no_response=True
+        )
     )
 
 
