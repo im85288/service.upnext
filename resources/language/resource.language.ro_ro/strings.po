@@ -134,34 +134,42 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr "Număr de episoade înainte de a întreba <Mai sunteți aici?>"
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
-msgstr "Durata de afișare a notificării (în secunde)"
+msgid "When credits offset is known (e.g. Netflix)"
+msgstr ""
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
-msgstr "Personalizare durată auto-redare în funcție de durata episodului"
+msgid "Duration for automatic default action"
+msgstr ""
 
 msgctxt "#30613"
+msgid "When credits offset is unknown (e.g. local media, other)"
+msgstr ""
+
+msgctxt "#30615"
+msgid "Customize notification time by episode length"
+msgstr ""
+
+msgctxt "#30617"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
 msgstr "Toate episoadele  [COLOR gray]any length[/COLOR]"
 
-msgctxt "#30615"
+msgctxt "#30619"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
 msgstr "Episoade foarte scurte  [COLOR gray]< 10 mins[/COLOR]"
 
-msgctxt "#30617"
+msgctxt "#30621"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
 msgstr "Episoade scurte  [COLOR gray]> 10 mins[/COLOR]"
 
-msgctxt "#30619"
+msgctxt "#30623"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
 msgstr "Episoade medii  [COLOR gray]> 20 mins[/COLOR]"
 
-msgctxt "#30621"
+msgctxt "#30625"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
 msgstr "Episoade lungi  [COLOR gray]> 40 mins[/COLOR]"
 
-msgctxt "#30623"
+msgctxt "#30627"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
 msgstr "Episoade foarte lungi  [COLOR gray]> 60 mins[/COLOR]"
 

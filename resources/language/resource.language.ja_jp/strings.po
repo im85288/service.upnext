@@ -133,34 +133,42 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr "何個のエピソードを観てから\"続いて観る?\"と聞きましょうか。"
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
-msgstr "通知を表示する時間(秒)"
+msgid "When credits offset is known (e.g. Netflix)"
+msgstr ""
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
-msgstr "カスタマイズ"
+msgid "Duration for automatic default action"
+msgstr ""
 
 msgctxt "#30613"
+msgid "When credits offset is unknown (e.g. local media, other)"
+msgstr ""
+
+msgctxt "#30615"
+msgid "Customize notification time by episode length"
+msgstr ""
+
+msgctxt "#30617"
 msgid "All episodes  [COLOR gray]any length[/COLOR]"
 msgstr "[COLOR gray]上映時間に関係なく[/COLOR]全てのエピソード"
 
-msgctxt "#30615"
+msgctxt "#30619"
 msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
 msgstr "[COLOR gray]10分以下[/COLOR]の超短いエピソード"
 
-msgctxt "#30617"
+msgctxt "#30621"
 msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
 msgstr "[COLOR gray]10分以上[/COLOR]の短いエピソード"
 
-msgctxt "#30619"
+msgctxt "#30623"
 msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
 msgstr "[COLOR gray]20分以上[/COLOR]の丁度良いエピソード"
 
-msgctxt "#30621"
+msgctxt "#30625"
 msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
 msgstr "[COLOR gray]40分以上[/COLOR]の長いエピソード"
 
-msgctxt "#30623"
+msgctxt "#30627"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
 msgstr "[COLOR gray]60分以上[/COLOR]の超長いエピソード"
 

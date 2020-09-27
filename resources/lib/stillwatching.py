@@ -87,14 +87,16 @@ class StillWatching(WindowXMLDialog):
         if runtime:
             self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
 
-    def set_cancel(self, cancel):
-        self.cancel = cancel
+    def do_cancel(self):
+        self.cancel = True
+        self.close()
 
     def is_cancel(self):
         return self.cancel
 
-    def set_still_watching(self, stillwatching):
-        self.stillwatching = stillwatching
+    def do_still_watching(self):
+        self.stillwatching = True
+        self.close()
 
     def is_still_watching(self):
         return self.stillwatching
@@ -110,15 +112,12 @@ class StillWatching(WindowXMLDialog):
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
         if controlId == 3012:  # Still watching
-            self.set_still_watching(True)
-            self.close()
+            self.do_still_watching()
         elif controlId == 3013:  # Cancel
-            self.set_cancel(True)
-            self.close()
+            self.do_cancel()
 
     def onAction(self, action):  # pylint: disable=invalid-name
         if action == ACTION_PLAYER_STOP:
             self.close()
         elif action == ACTION_NAV_BACK:
-            self.set_cancel(True)
-            self.close()
+            self.do_cancel()
