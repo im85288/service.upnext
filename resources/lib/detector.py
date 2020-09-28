@@ -205,9 +205,10 @@ class Detector:
         if not test_mode:
             self.hash_method = calc_median_hash
             self.hashes = [None, None]
-            self.detect_threshold = utils.get_setting_int('detectThreshold') / 100
-            self.detect_count = utils.get_setting_int('detectCount')
-            self.similarities = [None] * self.detect_count
+            self.detect_level = utils.get_setting_int('detectLevel') / 100
+            self.detect_period = utils.get_setting_int('detectPeriod')
+            self.match_count = 2 * utils.get_setting_int('detectCount')
+            self.similarities = [None] * self.match_count
             self.show_output = False
             self.player = player.UpNextPlayer()
 
@@ -230,11 +231,17 @@ class Detector:
             return
         self.running = True
 
+        detect_period = self.detect_period
         monitor = xbmc.Monitor()
         while not monitor.abortRequested() and not self.sigterm:
             speed = self.player.get_speed()
             raw = self.capturer.getImage() if speed == 1 else None
             monitor.waitForAbort(1)
+            detect_period -= 1
+            if not detect_period:
+                detect_period = self.detect_period
+                self.match_count -= 2
+                self.match_count = max(1, self.match_count)
             if not raw:
                 continue
 
@@ -258,7 +265,7 @@ class Detector:
                 log('Hash compare:  {0:1.2f}'.format(similarity), 2)
 
             del self.similarities[0]
-            self.similarities.append(similarity >= self.detect_threshold)
+            self.similarities.append(similarity >= self.detect_level)
 
         del self.player
         del monitor
@@ -269,10 +276,10 @@ class Detector:
     def detected(self):
         if None in self.similarities:
             return False
-        return sum(self.similarities) == self.detect_count
+        return sum(self.similarities[-self.match_count:]) == self.match_count
 
     def reset(self):
-        self.similarities = [None] * self.detect_count
+        self.similarities = [None] * self.match_count
 
 
 class DetectorBenchmark(Detector):

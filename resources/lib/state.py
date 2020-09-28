@@ -141,9 +141,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return self.detect_time
 
     def set_detect_time(self):
+        period_total = (
+            utils.get_setting_int('detectPeriod')
+            * utils.get_setting_int('detectCount')
+        )
         self.detect_time = max(
             0,
-            self.popup_time - utils.get_setting_int('detectPeriod')
+            self.popup_time - period_total
         )
 
     def get_popup_time(self):
