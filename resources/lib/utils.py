@@ -14,6 +14,7 @@ import statichelper
 
 
 ADDON = xbmcaddon.Addon()
+KODI_VERSION = float(xbmc.getInfoLabel("System.BuildVersion")[:4])
 
 
 def get_addon_info(key):
@@ -31,10 +32,9 @@ def addon_path():
     return get_addon_info('path')
 
 
-def get_kodi_version():
-    """Return Kodi version number as float"""
-    build = xbmc.getInfoLabel("System.BuildVersion")
-    return float(build[:4])
+def supports_python_api(version):
+    """Return True if Kodi supports target Python API version"""
+    return KODI_VERSION >= version
 
 
 def get_property(key, window_id=10000):
@@ -177,7 +177,7 @@ def log(msg, name=None, level=1):
     if debug_logging:
         level = xbmc.LOGDEBUG
     # Kodi v19+ uses LOGINFO (=2) as default log level. LOGNOTICE is deprecated
-    elif get_kodi_version() >= 19:
+    elif supports_python_api(19):
         level = xbmc.LOGINFO
     # Kodi v18 and below uses LOGNOTICE (=3) as default log level.
     else:

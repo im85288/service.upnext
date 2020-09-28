@@ -57,10 +57,10 @@ class UpNextMonitor(xbmc.Monitor):
     def run(self):
         # Re-trigger player event if addon started mid playback
         if self.test_trigger and self.player.isPlaying():
-            if utils.get_kodi_version() < 18:
-                method = 'Player.OnPlay'
-            else:
+            if utils.supports_python_api(18):
                 method = 'Player.OnAVStart'
+            else:
+                method = 'Player.OnPlay'
             self.onNotification('UpNext', method)
 
         # Wait indefinitely until addon is terminated
@@ -269,7 +269,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.log('Skip video check - PsuedoTV detected', 2)
             return
 
-        if self.player.isExternalPlayer():
+        if utils.supports_python_api(18) and self.player.isExternalPlayer():
             self.log('Skip video check - external player detected', 2)
             return
 
@@ -333,7 +333,7 @@ class UpNextMonitor(xbmc.Monitor):
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
 
-        if (utils.get_kodi_version() < 18 and method == 'Player.OnPlay'
+        if (not utils.supports_python_api(18) and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
             # Update player state and remove any existing popups
             self.player.state.set('time', force=False)
