@@ -71,6 +71,11 @@ class UpNextMonitor(xbmc.Monitor):
         if self.playbackmanager:
             self.playbackmanager.remove_popup(terminate=True)
             self.log('Cleanup popup', 2)
+        if self.detector:
+            self.detector.stop()
+            del self.detector
+            self.detector = None
+            self.log('Cleanup detector', 2)
         self.stop_tracking(terminate=True)
         del self.tracker
         self.tracker = None
@@ -304,15 +309,11 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
+            return
 
-        else:
-            if self.detector:
-                self.detector.stop()
-                del self.detector
-                self.detector = None
-            self.log('Skip video check - Up Next unable to handle video', 2)
-            if self.state.is_tracking():
-                self.state.reset()
+        self.log('Skip video check - Up Next unable to handle video', 2)
+        if self.state.is_tracking():
+            self.state.reset()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', 2)
@@ -344,6 +345,10 @@ class UpNextMonitor(xbmc.Monitor):
             self.player.state.set('time', force=False)
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
+            if self.detector:
+                self.detector.stop()
+                del self.detector
+                self.detector = None
 
             # Increase playcount and reset resume point of previous file
             if self.state.playing_next:
