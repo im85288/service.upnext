@@ -136,18 +136,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return episode, position
 
     def get_detect_time(self):
-        if self.popup_cue or not self.detect_enabled:
+        if self.popup_cue or not self.detect_enabled or utils.is_amlogic():
             return None
         return self.detect_time
 
     def set_detect_time(self):
-        period_total = (
-            utils.get_setting_int('detectPeriod')
-            * utils.get_setting_int('detectCount')
-        )
         self.detect_time = max(
             0,
-            self.popup_time - period_total
+            self.popup_time - utils.get_setting_int('detectPeriod')
         )
 
     def get_popup_time(self):

@@ -14,7 +14,7 @@ import statichelper
 
 
 ADDON = xbmcaddon.Addon()
-KODI_VERSION = float(xbmc.getInfoLabel("System.BuildVersion")[:4])
+KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion')[:4])
 
 
 def get_addon_info(key):
@@ -227,3 +227,7 @@ def localize_time(time):
     time_format = time_format.replace(':%S', '')
 
     return time.strftime(time_format)
+
+
+def is_amlogic():
+    return xbmc.getInfoLabel('Player.Process(VideoDecoder)')[:3] == 'am-'

@@ -30,6 +30,7 @@ class UpNextMonitor(xbmc.Monitor):
     use_thread = True
     # Set True to enable threading.Timer method for triggering a popup
     # Will schedule a threading.Timer to start tracking when popup is required
+    # Overrides use_thread if set True
     # Default False
     use_timer = False
     # Set True to force a playback event on addon start. Used for testing.
@@ -305,6 +306,10 @@ class UpNextMonitor(xbmc.Monitor):
             self.start_tracking()
 
         else:
+            if self.detector:
+                self.detector.stop()
+                del self.detector
+                self.detector = None
             self.log('Skip video check - Up Next unable to handle video', 2)
             if self.state.is_tracking():
                 self.state.reset()
