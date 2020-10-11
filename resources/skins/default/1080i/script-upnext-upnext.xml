@@ -98,7 +98,7 @@
                         <textcolor>eeffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
                         <label>$ADDON[service.upnext 30036]</label>
-                        <visible>!Integer.IsGreater(Player.TimeRemaining,59)</visible>
+                        <visible>!Integer.IsGreater(Window.Property(remaining),59)</visible>
                     </control>
                     <control type="label">
                         <width>auto</width>
@@ -108,7 +108,7 @@
                         <textcolor>eeffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
                         <label>$ADDON[service.upnext 30008]</label>
-                        <visible>Integer.IsGreater(Player.TimeRemaining,59)</visible>
+                        <visible>Integer.IsGreater(Window.Property(remaining),59)</visible>
                     </control>
                     <!-- Details -->
                     <control type="grouplist">
