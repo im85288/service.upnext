@@ -9,7 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 from xbmcextra import kodi_to_ansi
 
 
-class Control:
+class Control:  # pylint: disable=too-few-public-methods
     ''' A reimplementation of the xbmcgui Control class '''
 
     def __init__(self):
@@ -230,7 +230,7 @@ class WindowXML(Window):
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXML class '''
-        super(WindowXML, self).__init__()
+        super(WindowXML, self).__init__()  # pylint: disable=super-with-arguments
 
 
 class WindowXMLDialog(WindowXML):
@@ -238,4 +238,4 @@ class WindowXMLDialog(WindowXML):
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
-        super(WindowXMLDialog, self).__init__()
+        super(WindowXMLDialog, self).__init__()  # pylint: disable=super-with-arguments
