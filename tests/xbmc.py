@@ -126,7 +126,7 @@ class Player:
 
     def getVideoInfoTag(self):
         ''' A stub implementation for the xbmc Player class getVideoInfoTag() method '''
-        return VideoInfoTag()
+        return InfoTagVideo()
 
 
 class PlayList:
@@ -143,30 +143,30 @@ class PlayList:
         ''' A stub implementation for the xbmc PlayList class size() method '''
 
 
-class VideoInfoTag:
-    ''' A stub implementation of the xbmc VideoInfoTag class '''
+class InfoTagVideo:
+    ''' A stub implementation of the xbmc InfoTagVideo class '''
 
     def __init__(self):
-        ''' A stub constructor for the xbmc VideoInfoTag class '''
+        ''' A stub constructor for the xbmc InfoTagVideo class '''
 
     def getSeason(self):
-        ''' A stub implementation for the xbmc VideoInfoTag class getSeason() method '''
+        ''' A stub implementation for the xbmc InfoTagVideo class getSeason() method '''
         return 0
 
     def getEpisode(self):
-        ''' A stub implementation for the xbmc VideoInfoTag class getEpisode() method '''
+        ''' A stub implementation for the xbmc InfoTagVideo class getEpisode() method '''
         return 0
 
     def getTVShowTitle(self):
-        ''' A stub implementation for the xbmc VideoInfoTag class getTVShowTitle() method '''
+        ''' A stub implementation for the xbmc InfoTagVideo class getTVShowTitle() method '''
         return ''
 
     def getPlayCount(self):
-        ''' A stub implementation for the xbmc VideoInfoTag class getPlayCount() method '''
+        ''' A stub implementation for the xbmc InfoTagVideo class getPlayCount() method '''
         return 0
 
     def getRating(self):
-        ''' A stub implementation for the xbmc VideoInfoTag class getRating() method '''
+        ''' A stub implementation for the xbmc InfoTagVideo class getRating() method '''
         return 0
 
 
