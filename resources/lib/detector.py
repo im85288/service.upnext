@@ -61,7 +61,8 @@ class Detector:
         return width, height
 
     def detected(self):
-        return self.matches == self.match_count
+        self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
+        return self.matches >= self.match_count
 
     def reset(self):
         self.matches = 0
