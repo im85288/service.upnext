@@ -80,16 +80,8 @@ class PlaybackManager:
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if playlist_item or self.state.queued:
-            # Play playlist media, only seek/skip if media has not already played through
-            if should_play_non_default:
-                try:
-                    total_time = self.player.getTotalTime()
-                    if self.player.getTime() <= total_time * 95 / 100:
-                        #  Seek to near-end to avoid issues with inexact seeking in Kodi Player
-                        self.player.seekTime((total_time - 1) * 59 / 60)
-                except RuntimeError:
-                    pass
-                self.player.playnext()
+            # Play playlist media
+            self.player.playnext()
         elif self.api.has_addon_data():
             # Play add-on media
             self.api.play_addon_item()
