@@ -19,7 +19,7 @@ class Control:  # pylint: disable=too-few-public-methods
 class ControlLabel(Control):
     ''' A reimplementation of the xbmcgui ControlLabel class '''
 
-    def __init__(self):  # pylint: disable=super-init-not-called
+    def __init__(self, x, y, width, height, label='Foo bar', font=None, textColor=None, disabledColor=None, alignment=0, hasPath=False, angle=0):  # pylint: disable=super-init-not-called
         ''' A stub constructor for the xbmcgui ControlLabel class '''
 
     @staticmethod
@@ -200,6 +200,9 @@ class Window:
         ''' A stub constructor for the xbmcgui Window class '''
         return None
 
+    def addControl(self, pControl):
+        ''' A stub implementation for the xbmcgui Window class addControl() method '''
+
     def clearProperty(self):
         ''' A stub implementation for the xbmcgui Window class clearProperty() method '''
 
@@ -209,12 +212,15 @@ class Window:
     @staticmethod
     def getControl():
         ''' A stub implementation for the xbmcgui Window class getControl() method '''
-        return ControlLabel()
+        return ControlLabel(0, 0, 1920, 1080, 'StubLabel')
 
     @staticmethod
     def getProperty():
         ''' A stub implementation for the xbmcgui Window class getProperty() method '''
         return ''
+
+    def removeControl(self, pControl):
+        ''' A stub implementation for the xbmcgui Window class removeControl() method '''
 
     @staticmethod
     def setProperty(key, value):
@@ -239,3 +245,13 @@ class WindowXMLDialog(WindowXML):
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
         super(WindowXMLDialog, self).__init__()  # pylint: disable=super-with-arguments
+
+
+def getScreenHeight():
+    ''' A reimplementation of the xbmcgui getScreenHeight() function '''
+    return 1080
+
+
+def getScreenWidth():
+    ''' A reimplementation of the xbmcgui getScreenWidth() function '''
+    return 1920
