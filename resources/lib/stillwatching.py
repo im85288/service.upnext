@@ -34,7 +34,7 @@ class StillWatching(WindowXMLDialog):
         self.prepare_progress_control()
 
     def set_info(self):
-        episode_info = '{season:0d}x{episode:0d}.'.format(**self.item)
+        episode_info = '{season}x{episode}.'.format(**self.item)
         if self.item.get('rating') is None:
             rating = ''
         else:
