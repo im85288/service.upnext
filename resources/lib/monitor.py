@@ -110,7 +110,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Convert to delay and scale to real time minus a 10s offset
             delay = (detect_time if detect_time else popup_time) - play_time
-            delay = max(0, int(delay / speed) - 10)
+            delay = max(0, delay // speed - 10)
             msg = 'Tracker - starting at {0}s in {1}s'
             self.log(msg.format(
                 detect_time if detect_time else popup_time,

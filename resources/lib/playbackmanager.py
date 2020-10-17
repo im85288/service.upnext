@@ -218,7 +218,7 @@ class PlaybackManager:
 
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
-            wait_time = 0.1 / max(1, self.player.get_speed())
+            wait_time = 0.1 // max(1, self.player.get_speed())
             remaining -= wait_time
 
             # If end of file or user has closed popup then exit update loop
