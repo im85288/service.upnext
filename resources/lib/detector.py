@@ -10,7 +10,7 @@ import player
 import utils
 
 
-class Detector:
+class Detector(object):  # pylint: disable=useless-object-inheritance
     __slots__ = (
         # Instances
         'detector',
