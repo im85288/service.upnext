@@ -181,10 +181,6 @@ msgid "Detection window [COLOR gray](seconds prior to notification appearing by 
 msgstr ""
 
 msgctxt "#30632"
-msgid "Detection count [COLOR gray](maximum number of matches required for detection)[/COLOR]"
-msgstr ""
-
-msgctxt "#30633"
 msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
 msgstr ""
 

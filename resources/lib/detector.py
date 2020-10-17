@@ -39,13 +39,12 @@ class Detector:
 
         self.detect_level = utils.get_setting_int('detectLevel') / 100
         self.detect_period = utils.get_setting_int('detectPeriod')
-        self.detect_count = utils.get_setting_int('detectCount')
 
         self.hash_size = (16, 16)
         self.num_pixels = self.hash_size[0] * self.hash_size[1]
         self.hashes = [None, None]
         self.capture_size = self.capture_resolution()
-        self.match_count = self.detect_count
+        self.match_count = self.detect_period // 10
         self.matches = 0
 
         self.running = False
@@ -86,6 +85,7 @@ class Detector:
 
     def reset(self):
         self.matches = 0
+        self.match_count = self.detect_period // 10
 
     def run(self):
         self.detector = threading.Thread(target=self.test)
@@ -110,8 +110,7 @@ class Detector:
             detect_period -= 1
             if not detect_period:
                 detect_period = 10
-                self.match_count -= 1
-                self.match_count = max(3, self.match_count)
+                self.match_count = max(3, self.match_count - 1)
             if not raw:
                 continue
 
