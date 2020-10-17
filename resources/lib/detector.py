@@ -11,27 +11,47 @@ import utils
 
 
 class Detector:
+    __slots__ = (
+        # Instances
+        'detector',
+        'player',
+        'capturer',
+        # Settings
+        'detect_level',
+        'detect_period',
+        # Variables
+        'hash_size',
+        'num_pixels',
+        'hashes',
+        'capture_size',
+        'match_count',
+        'matches',
+        'hashes',
+        # Signals
+        'running',
+        'sigterm'
+    )
 
-    def __init__(self, test_mode=None):
+    def __init__(self):
+        self.detector = None
+        self.player = player.UpNextPlayer()
+        self.capturer = xbmc.RenderCapture()
+
+        self.detect_level = utils.get_setting_int('detectLevel') / 100
+        self.detect_period = utils.get_setting_int('detectPeriod')
+        self.detect_count = utils.get_setting_int('detectCount')
+
         self.hash_size = (16, 16)
         self.num_pixels = self.hash_size[0] * self.hash_size[1]
+        self.hashes = [None, None]
         self.capture_size = self.capture_resolution()
+        self.match_count = self.detect_count
+        self.matches = 0
 
-        self.capturer = xbmc.RenderCapture()
-        self.capturer.capture(*self.capture_size)
-
-        if not test_mode:
-            self.hashes = [None, None]
-            self.detect_level = utils.get_setting_int('detectLevel') / 100
-            self.detect_period = utils.get_setting_int('detectPeriod')
-            self.detect_count = utils.get_setting_int('detectCount')
-            self.match_count = self.detect_count
-            self.matches = 0
-            self.player = player.UpNextPlayer()
-
-        self.detector = None
         self.running = False
         self.sigterm = False
+
+        self.capturer.capture(*self.capture_size)
         self.log('Init', 2)
 
     @classmethod

@@ -6,7 +6,7 @@ import api
 import utils
 
 
-class UpNextState(object):  # pylint: disable=useless-object-inheritance
+class UpNextState:
     """Class encapsulating all state variables and methods"""
     __slots__ = (
         # Settings state variables
