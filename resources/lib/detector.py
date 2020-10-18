@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import operator
 import threading
 from PIL import Image, ImageStat
+import timeit
 import xbmc
 import player
 import utils
@@ -19,6 +20,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Settings
         'detect_level',
         'detect_period',
+        'debug_output',
         # Variables
         'hash_size',
         'num_pixels',
@@ -39,6 +41,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         self.detect_level = utils.get_setting_int('detectLevel') / 100
         self.detect_period = utils.get_setting_int('detectPeriod')
+        self.debug_output = False
 
         self.hash_size = (16, 16)
         self.num_pixels = self.hash_size[0] * self.hash_size[1]
@@ -79,6 +82,27 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         height = 16
         return width, height
 
+    @classmethod
+    def print_hash(cls, hash_1, hash_2, size=None, num_pixels=None):
+        if not num_pixels:
+            num_pixels = len(hash_1)
+        if num_pixels != len(hash_1):
+            return
+        if not size:
+            size = int(num_pixels ** 0.5)
+            size = (size, size)
+
+        for row in range(0, num_pixels, size[0]):
+            cls.log('{0:>3} |{1}|{2}|'.format(
+                row,
+                ' '.join(
+                    ['*' if bit else ' ' for bit in hash_1[row:row + size[1]]]
+                ),
+                ' '.join(
+                    ['*' if bit else ' ' for bit in hash_2[row:row + size[1]]]
+                )
+            ), 2)
+
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
         return self.matches >= self.match_count
@@ -114,6 +138,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if not raw:
                 continue
 
+            now = timeit.default_timer()
             # Convert from BGRA to RGBA
             raw[0::4], raw[2::4] = raw[2::4], raw[0::4]
             image = Image.frombuffer(
@@ -132,11 +157,24 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.hashes[0],
                 self.hashes[1]
             )
+            delta = timeit.default_timer() - now
 
             if similarity >= self.detect_level:
                 self.matches += 1
             else:
                 self.matches = 0
+
+            if self.debug_output and similarity is not None:
+                self.print_hash(
+                    self.hashes[0],
+                    self.hashes[1],
+                    self.hash_size,
+                    self.num_pixels
+                )
+                self.log('Hash compare:  {0:1.2f} in {1:1.4f}s'.format(
+                    similarity,
+                    delta
+                ), 2)
 
             monitor.waitForAbort(1)
 
