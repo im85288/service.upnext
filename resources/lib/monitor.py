@@ -257,6 +257,7 @@ class UpNextMonitor(xbmc.Monitor):
         with self.player as check_fail:
             playing_file = self.player.getPlayingFile()
             total_time = self.player.getTotalTime()
+            media_type = self.player.get_media_type()
             check_fail = False
         if check_fail:
             self.log('Skip video check - stream not playing', 2)
@@ -285,7 +286,6 @@ class UpNextMonitor(xbmc.Monitor):
         # Note this may cause played in a row count to reset incorrectly if
         # playlist of mixed non-addon and addon content is used
         has_addon_data = self.state.set_addon_data(data, encoding)
-        is_episode = xbmc.getCondVisibility('videoplayer.content(episodes)')
 
         # Exit if Up Next playlist handling has not been enabled
         if is_playlist_item and not self.state.enable_playlist:
@@ -293,7 +293,7 @@ class UpNextMonitor(xbmc.Monitor):
             return
 
         # Start tracking if Up Next can handle the currently playing video
-        if is_playlist_item or has_addon_data or is_episode:
+        if is_playlist_item or has_addon_data or media_type == 'episode':
             self.state.set_tracking(playing_file)
             self.state.reset_queue()
 

@@ -65,6 +65,7 @@ class UpNextPlayer(xbmc.Player):
         self.state.time = 0
         self.state.total_time = 0
         self.state.next_file = None
+        self.state.media_type = None
         self.state.playnext = None
         self.state.stop = None
 
@@ -101,6 +102,18 @@ class UpNextPlayer(xbmc.Player):
         self.state.paused = actual
         # Return actual value or forced value if forced
         return self.state.paused
+
+    def get_media_type(self):
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.media_type
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = self.getVideoInfoTag().getMediaType()
+        actual = statichelper.to_unicode(actual)
+        self.state.media_type = actual
+        # Return actual value or forced value if forced
+        return self.state.media_type
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
         # Use current stored value if playing forced
