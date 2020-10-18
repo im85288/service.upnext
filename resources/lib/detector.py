@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import operator
 import threading
 import timeit
-from PIL import Image
+from PIL import Image, ImageStat
 import xbmc
 import player
 import utils
@@ -104,24 +104,23 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             ), 2)
 
     @classmethod
-    def calc_median(cls, vals, num_vals=None):
+    def calc_2x_median(cls, vals, num_vals=None):
         if not num_vals:
             num_vals = len(vals)
 
         pivot = int(num_vals / 2)
         if num_vals % 2:
-            return sorted(vals)[pivot]
-        else:
-            return sum(sorted(vals)[pivot - 1:pivot])
+            return 2 * sorted(vals)[pivot]
+        return sum(sorted(vals)[pivot - 1:pivot])
 
     @classmethod
     def calc_median_hash(cls, pixels, num_pixels=None):
         if not num_pixels:
             num_pixels = len(pixels)
 
-        med_pixel = cls.calc_median(pixels, num_vals=num_pixels)
+        threshold = cls.calc_2x_median(pixels, num_vals=num_pixels)
         return tuple(
-            int(pixel > med_pixel)
+            int(pixel >= threshold)
             for pixel in pixels
         )
 
@@ -168,10 +167,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             image = image.convert('L')
             image = image.resize(self.hash_size, resample=Image.BOX)
-            image_hash = self.calc_median_hash(
-                image.getdata(),
-                self.num_pixels
-            )
+            threshold = 2 * ImageStat.Stat(image).median[0]
+            lut = [i >= threshold for i in range(256)]
+            image_hash = list(image.point(lut).getdata())
+            # image_hash = self.calc_median_hash(image.getdata())
 
             del self.hashes[0]
             self.hashes.append(image_hash)
