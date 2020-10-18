@@ -90,13 +90,15 @@ class UpNextMonitor(xbmc.Monitor):
         self.playbackmanager = None
         self.log('Cleanup playbackmanager', 2)
 
-    def start_tracking(self):
-        if not self.state.is_tracking():
+    def start_tracking(self, called=[False]):
+        if not self.state.is_tracking() or called[0]:
             return
         self.stop_tracking()
 
         # threading.Timer method not used by default. More testing required
         if self.use_timer:
+            called[0] = True
+            self.waitForAbort(1)
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 speed = self.player.get_speed()
@@ -120,6 +122,7 @@ class UpNextMonitor(xbmc.Monitor):
             # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.track_playback)
             self.tracker.start()
+            called[0] = False
 
         # Use while not abortRequested() loop in a separate thread to allow for
         # continued monitoring in main thread
