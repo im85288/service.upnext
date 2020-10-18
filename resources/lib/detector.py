@@ -4,8 +4,8 @@
 from __future__ import absolute_import, division, unicode_literals
 import operator
 import threading
-from PIL import Image, ImageStat
 import timeit
+from PIL import Image
 import xbmc
 import player
 import utils
@@ -76,10 +76,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     @classmethod
     def capture_resolution(cls):
-        # width = int(xbmc.getInfoLabel('System.ScreenWidth')) // 4
-        # height = int(xbmc.getInfoLabel('System.ScreenHeight')) // 4
-        width = 16
-        height = 16
+        width = int(xbmc.getInfoLabel('System.ScreenWidth')) // 4
+        height = int(xbmc.getInfoLabel('System.ScreenHeight')) // 4
+        # width = 16
+        # height = 16
         return width, height
 
     @classmethod
@@ -102,6 +102,28 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     ['*' if bit else ' ' for bit in hash_2[row:row + size[1]]]
                 )
             ), 2)
+
+    @classmethod
+    def calc_median(cls, vals, num_vals=None):
+        if not num_vals:
+            num_vals = len(vals)
+
+        pivot = int(num_vals / 2)
+        if num_vals % 2:
+            return sorted(vals)[pivot]
+        else:
+            return sum(sorted(vals)[pivot - 1:pivot])
+
+    @classmethod
+    def calc_median_hash(cls, pixels, num_pixels=None):
+        if not num_pixels:
+            num_pixels = len(pixels)
+
+        med_pixel = cls.calc_median(pixels, num_vals=num_pixels)
+        return tuple(
+            int(pixel > med_pixel)
+            for pixel in pixels
+        )
 
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
@@ -146,9 +168,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             image = image.convert('L')
             image = image.resize(self.hash_size, resample=Image.BOX)
-            threshold = ImageStat.Stat(image).median[0]
-            lut = [i >= threshold for i in range(256)]
-            image_hash = list(image.point(lut).getdata())
+            image_hash = self.calc_median_hash(
+                image.getdata(),
+                self.num_pixels
+            )
 
             del self.hashes[0]
             self.hashes.append(image_hash)
