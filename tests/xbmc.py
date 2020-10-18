@@ -170,6 +170,9 @@ class InfoTagVideo:
         ''' A stub implementation for the xbmc InfoTagVideo class getRating() method '''
         return 0
 
+    def getMediaType(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getMediaType() method '''
+        return ''
 
 class RenderCapture:
     ''' A stub implementation of the xbmc RenderCapture class '''
