@@ -97,11 +97,11 @@ msgstr "Nächste Episode"
 
 msgctxt "#30060"
 msgid "[B]UP NEXT DEMO MODE ENABLED[/B]"
-msgstr ""
+msgstr "[B]UP NEXT DEMOMODUS AKTIVIERT[/B]"
 
 msgctxt "#30061"
 msgid "[I]Episodes automatically skip to end.[/I]"
-msgstr ""
+msgstr "[I]Episoden springen automatisch zum Ende.[/I]"
 
 
 ### SETTINGS
@@ -119,7 +119,7 @@ msgstr "Anzeigemodus der Benachrichtigung"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "Wiedergabe nach dem Schließen des Dialogs stoppen"
+msgstr "\"Stopp\"-Button statt \"Schließen\"-Button anzeigen"
 
 msgctxt "#30600"
 msgid "Behaviour"
@@ -195,20 +195,20 @@ msgstr "Testen, wie die Benutzeroberfläche aussieht"
 
 msgctxt "#30803"
 msgid "Enable DEMO mode"
-msgstr ""
+msgstr "DEMO-Modus aktivieren"
 
 msgctxt "#30805"
 msgid "Show an UpNext pop-up…"
-msgstr "UpNext-Popup anzeigen"
+msgstr "UpNext-Popup anzeigen…"
 
 msgctxt "#30807"
 msgid "Show an UpNextSimple pop-up…"
-msgstr "UpNextSimple-Popup anzeigen"
+msgstr "UpNextSimple-Popup anzeigen…"
 
 msgctxt "#30809"
 msgid "Show a StillWatching pop-up…"
-msgstr "StillWatching-Popup anzeigen"
+msgstr "StillWatching-Popup anzeigen…"
 
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
-msgstr "StillWatchingSimple-Popup anzeigen"
+msgstr "StillWatchingSimple-Popup anzeigen…"
