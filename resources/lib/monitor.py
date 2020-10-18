@@ -260,14 +260,14 @@ class UpNextMonitor(xbmc.Monitor):
             media_type = self.player.get_media_type()
             check_fail = False
         if check_fail:
-            self.log('Skip video check - stream not playing', 2)
+            self.log('Skip video check - video stream not playing', 2)
             return
-        self.log('Playing - %s' % playing_file, 2)
+        self.log('Playing %s - %s' % (media_type, playing_file), 2)
 
         # Exit if starting counter has been reset or new start detected or
         # starting state has been reset by playback error/end/stop
         if not self.state.starting or start_num != self.state.starting:
-            self.log('Skip video check - stream not fully loaded', 2)
+            self.log('Skip video check - video stream not fully loaded', 2)
             return
         self.state.starting = 0
         self.state.playing = 1
