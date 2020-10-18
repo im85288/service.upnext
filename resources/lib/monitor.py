@@ -32,7 +32,7 @@ class UpNextMonitor(xbmc.Monitor):
     # Will schedule a threading.Timer to start tracking when popup is required
     # Overrides use_thread if set True
     # Default False
-    use_timer = False
+    use_timer = True
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
@@ -95,10 +95,10 @@ class UpNextMonitor(xbmc.Monitor):
             return
         self.stop_tracking()
 
-        # threading.Timer method not used by default. More testing required
+        # threading.Timer method used by default
         if self.use_timer:
             called[0] = True
-            self.waitForAbort(1)
+            self.waitForAbort(0.1)
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 speed = self.player.get_speed()
@@ -125,13 +125,14 @@ class UpNextMonitor(xbmc.Monitor):
             called[0] = False
 
         # Use while not abortRequested() loop in a separate thread to allow for
-        # continued monitoring in main thread
+        # continued monitoring in main service thread
         elif self.use_thread:
             self.tracker = threading.Thread(target=self.track_playback)
             # Daemon threads may not work in Kodi, but enable it anyway
             self.tracker.daemon = True
             self.tracker.start()
 
+        # Use while not abortRequested() loop in main service thread
         else:
             if self.running:
                 self.sigstop = False
