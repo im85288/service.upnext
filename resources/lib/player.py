@@ -9,18 +9,6 @@ import utils
 
 
 class UpNextPlayerState(dict):
-    def __init__(self):
-        self.external_player = False
-        self.playing = False
-        self.paused = False
-        self.playing_file = None
-        self.speed = 0
-        self.time = 0
-        self.total_time = 0
-        self.next_file = None
-        self.playnext = None
-        self.stop = None
-
     def __getattr__(self, name):
         try:
             return self[name]['value']
@@ -69,6 +57,16 @@ class UpNextPlayer(xbmc.Player):
     def __init__(self):
         # Used to override player state for testing
         self.state = UpNextPlayerState()
+        self.state.external_player = False
+        self.state.playing = False
+        self.state.paused = False
+        self.state.playing_file = None
+        self.state.speed = 0
+        self.state.time = 0
+        self.state.total_time = 0
+        self.state.next_file = None
+        self.state.playnext = None
+        self.state.stop = None
 
         xbmc.Player.__init__(self)
         self.log('Init', 2)
