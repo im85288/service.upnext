@@ -268,4 +268,3 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.log('Addon data - %s' % data, 2)
         self.data = data
         self.encoding = encoding
-        return self.has_addon_data()
