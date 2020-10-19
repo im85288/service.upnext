@@ -32,7 +32,7 @@ class UpNextMonitor(xbmc.Monitor):
     # Will schedule a threading.Timer to start tracking when popup is required
     # Overrides use_thread if set True
     # Default False
-    use_timer = True
+    use_timer = False
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
@@ -90,15 +90,15 @@ class UpNextMonitor(xbmc.Monitor):
         self.playbackmanager = None
         self.log('Cleanup playbackmanager', 2)
 
-    def start_tracking(self, called=[False]):
+    def start_tracking(self, called=[False]):  # pylint: disable=dangerous-default-value
         if not self.state.is_tracking() or called[0]:
             return
         self.stop_tracking()
 
-        # threading.Timer method used by default
+        # threading.Timer method not used by default. More testing required
         if self.use_timer:
             called[0] = True
-            self.waitForAbort(0.1)
+            self.waitForAbort(1)
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 speed = self.player.get_speed()
