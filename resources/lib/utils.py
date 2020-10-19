@@ -73,7 +73,7 @@ def get_setting_bool(key, default=None):
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
         value = get_setting(key, default)
-        if value not in ('false', 'true'):
+        if value not in {'false', 'true'}:
             return default
         return bool(value == 'true')
     # Occurs when the add-on is disabled

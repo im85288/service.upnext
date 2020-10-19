@@ -13,13 +13,13 @@ import statichelper
 import utils
 
 
-PLAYER_MONITOR_EVENTS = [
+PLAYER_MONITOR_EVENTS = {
     'Player.OnPause',
     'Player.OnResume',
     'Player.OnSpeedChanged',
     # 'Player.OnSeek',
     'Player.OnAVChange'
-]
+}
 
 
 class UpNextMonitor(xbmc.Monitor):
