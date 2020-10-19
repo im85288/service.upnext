@@ -146,6 +146,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
 
     def onAction(self, action):  # pylint: disable=invalid-name
         if action == xbmcgui.ACTION_STOP:
+            self.set_cancel(True)
             self.set_stop(True)
             self.close()
         elif action == xbmcgui.ACTION_NAV_BACK:
