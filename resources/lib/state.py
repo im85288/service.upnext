@@ -110,30 +110,34 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def get_next(self):
         episode = None
+        source = None
         position = api.get_playlist_position()
         has_addon_data = self.has_addon_data()
 
-        # File from non addon playlist
         if position and not has_addon_data:
+        # Next video from non addon playlist
             episode = api.get_next_in_playlist(position)
+            source = 'playlist'
 
-        # File from addon
+        # Next video from addon data
         elif has_addon_data:
             episode = self.data.get('next_episode')
+            source = 'addon'
             self.log('Addon next_episode - {0}'.format(episode), 2)
 
-        # File from Kodi library
+        # Next video from Kodi library
         else:
             episode, new_season = api.get_next_from_library(
                 self.tvshowid,
                 self.episodeid,
                 self.unwatched_only
             )
+            source = 'library'
             # Show Still Watching? popup if next episode is from next season
             if new_season:
                 self.played_in_a_row = self.played_limit
 
-        return episode, position
+        return episode, source
 
     def get_detect_time(self):
         if self.popup_cue or not self.detect_enabled or utils.is_amlogic():
