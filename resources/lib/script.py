@@ -81,7 +81,7 @@ def test_popup(popup_type, simple_style=False):
         state=test_state
     ).launch_popup(
         episode=test_episode,
-        source=None
+        source='library'
     )
 
 

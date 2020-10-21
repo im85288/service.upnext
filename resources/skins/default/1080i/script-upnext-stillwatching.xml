@@ -214,6 +214,16 @@
                             <alttexturenofocus border="10" colordiffuse="FF212121">button.png</alttexturenofocus>
                             <pulseonselect>no</pulseonselect>
                         </control>
+						<control type="togglebutton" id="3015">
+							<visible>String.IsEqual(Window.Property(shuffle_enable),True)</visible>
+							<selected>String.IsEqual(Window.Property(shuffle_on),True)</selected>
+							<texturenofocus colordiffuse="FF303030">shuffle.png</texturenofocus>
+							<texturefocus colordiffuse="FF172A91">shuffle.png</texturefocus>
+							<alttexturenofocus>shuffle.png</alttexturenofocus>
+							<alttexturefocus colordiffuse="FF172A91">shuffle.png</alttexturefocus>
+							<width>56</width>
+							<height>56</height>
+						</control>
                     </control>
                     <control type="image">
                         <bottom>20</bottom>

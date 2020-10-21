@@ -33,6 +33,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'starting',
         'playing',
         'track',
+        'shuffle',
         'played_in_a_row',
         'queued',
         'playing_next',
@@ -63,6 +64,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.starting = 0
         self.playing = False
         self.track = False
+        self.shuffle = False
         self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
@@ -114,8 +116,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         position = api.get_playlist_position()
         has_addon_data = self.has_addon_data()
 
-        if position and not has_addon_data:
         # Next video from non addon playlist
+        if position and not has_addon_data and not self.shuffle:
             episode = api.get_next_in_playlist(position)
             source = 'playlist'
 
@@ -130,7 +132,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             episode, new_season = api.get_next_from_library(
                 self.tvshowid,
                 self.episodeid,
-                self.unwatched_only
+                self.unwatched_only,
+                self.shuffle
             )
             source = 'library'
             # Show Still Watching? popup if next episode is from next season

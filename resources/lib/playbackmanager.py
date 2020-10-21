@@ -41,6 +41,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         if not keep_playing:
             self.log('Stopping playback', 2)
             self.player.stop()
+        elif self.state.shuffle and not play_next:
+            return self.launch_up_next()
 
         self.sigterm = False
         self.log('Exit', 2)
@@ -84,7 +86,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             utils.addon_path(),
             'default',
             '1080i',
-            item=episode
+            item=episode,
+            shuffle=self.state.shuffle if source == 'library' else None
         )
 
         # Show popup and check that it has not been terminated early
@@ -100,17 +103,26 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             return play_next, keep_playing
 
         # Update new playback state details
+        shuffle_start = not self.state.shuffle and self.popup.is_shuffle()
+        self.state.shuffle = self.popup.is_shuffle()
         auto_play = auto_play and not self.popup.is_cancel()
         play_now = self.popup.is_playnow()
 
         # Update played in a row count
-        if play_now:
+        if play_now or shuffle_start:
             self.state.played_in_a_row = 1
         elif auto_play:
             self.state.played_in_a_row += 1
 
-        if not auto_play and not play_now:
-            self.log('Exit launch_popup early - playback not selected ', 2)
+        if shuffle_start:
+            self.log('Exit launch_popup early - shuffle requested', 2)
+            play_next = False
+            keep_playing = True
+            self.remove_popup()
+            return play_next, keep_playing
+
+        elif not auto_play and not play_now:
+            self.log('Exit launch_popup early - playback not selected', 2)
             play_next = False
             # Keep playing if NAV_BACK or Cancel button was clicked on popup
             # Stop playing if Stop button was clicked on popup

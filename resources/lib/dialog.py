@@ -24,6 +24,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.countdown_total_time = None
         self.current_progress_percent = 100
         self.progress_control = None
+        self.shuffle = kwargs.get('shuffle')
+        self.setProperty('shuffle_enable', str(self.shuffle is not None))
+        self.setProperty('shuffle_on', str(self.shuffle))
 
         # TODO: Figure out why this is required. Issues with iOS?
         if OS_MACHINE[0:5] == 'armv7':
@@ -132,6 +135,13 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     def is_playnow(self):
         return self.playnow
 
+    def set_shuffle(self, shuffle):
+        self.shuffle = shuffle
+        self.setProperty('shuffle_on', str(shuffle))
+
+    def is_shuffle(self):
+        return self.shuffle
+
     def onClick(self, controlId):  # pylint: disable=invalid-name
         # Play now - Watch now / Still Watching
         if controlId == 3012:
@@ -143,6 +153,14 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             if utils.get_setting_bool('stopAfterClose'):
                 self.set_stop(True)
             self.close()
+        # Shuffle play
+        elif controlId == 3015:
+            if self.is_shuffle():
+                self.set_shuffle(False)
+            else:
+                self.set_shuffle(True)
+                self.set_cancel(True)
+                self.close()
 
     def onAction(self, action):  # pylint: disable=invalid-name
         if action == xbmcgui.ACTION_STOP:

@@ -222,7 +222,7 @@ def get_now_playing():
     return result
 
 
-def get_next_from_library(tvshowid, episodeid, unwatched_only):
+def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
     """Function to get show and next episode details from Kodi library"""
     episode = get_from_library(tvshowid, episodeid)
     if not episode:
@@ -233,28 +233,6 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
 
     (path, filename) = os.path.split(episode['file'])
     filters = [
-        {'or': [
-            # Next episode in current season
-            {'and': [
-                {
-                    'field': 'season',
-                    'operator': 'is',
-                    'value': str(episode['season'])
-                },
-                {
-                    'field': 'episode',
-                    'operator': 'greaterthan',
-                    'value': str(episode['episode'])
-                }
-            ]},
-            # Next episode in next season
-            # TODO: Make next season search optional
-            {
-                'field': 'season',
-                'operator': 'greaterthan',
-                'value': str(episode['season'])
-            }
-        ]},
         # Check that both next filename and path are different to current
         # to deal with different file naming schemes e.g.
         # Season 1/Episode 1.mkv
@@ -280,6 +258,31 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
             'operator': 'lessthan',
             'value': '1'
         })
+    if not random:
+        filters.append(
+            {'or': [
+                # Next episode in current season
+                {'and': [
+                    {
+                        'field': 'season',
+                        'operator': 'is',
+                        'value': str(episode['season'])
+                    },
+                    {
+                        'field': 'episode',
+                        'operator': 'greaterthan',
+                        'value': str(episode['episode'])
+                    }
+                ]},
+                # Next episode in next season
+                # TODO: Make next season search optional
+                {
+                    'field': 'season',
+                    'operator': 'greaterthan',
+                    'value': str(episode['season'])
+                }
+            ]}
+        )
     filters = {'and': filters}
 
     result = utils.jsonrpc(
@@ -287,7 +290,10 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
         params=dict(
             tvshowid=tvshowid,
             properties=EPISODE_PROPERTIES,
-            sort=dict(order='ascending', method='episode'),
+            sort=(
+                dict(method='random') if random
+                else dict(order='ascending', method='episode')
+            ),
             limits={'start': 0, 'end': 1},
             filter=filters
         )
@@ -300,7 +306,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only):
         new_season = False
         return episode, new_season
 
-    new_season = episode.get('season') != result[0].get('season')
+    new_season = not random and episode['season'] != result[0]['season']
     episode.update(result[0])
 
     log('Next episode from library - %s' % episode, 2)
