@@ -74,10 +74,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     @classmethod
     def calc_similarity(
-        cls, hash1, hash2,
-        function=operator.eq,
-        do_zip=False,
-        all_pixels=True
+            cls, hash1, hash2,
+            function=operator.eq,
+            do_zip=False,
+            all_pixels=True
     ):
         if not hash1 or not hash2:
             return None
@@ -204,12 +204,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image = image.resize(self.hash_size, resample=Image.BOX)
             median = self.calc_median_factor(image.getdata())
             # Lookup table for absolute deviation from image median
-            adm_lut = [abs(i - median) for i in range(256)]
-            image_adm = image.point(adm_lut)
+            lut = [abs(i - median) for i in range(256)]
+            image = image.point(lut)
             # Calculate median absolute deviation from the median, but only
             # consider top quartile of deviations as significant for hashing
-            madm = self.calc_median_factor(image_adm.getdata(), factor=1.5)
-            lut = [int(i > madm) for i in range(256)]
+            median = self.calc_median_factor(image.getdata(), factor=1.5)
+            lut = [i > median for i in range(256)]
             image_hash = list(image.point(lut).getdata())
 
             del self.hashes[0]
