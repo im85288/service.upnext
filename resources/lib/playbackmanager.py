@@ -42,7 +42,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.log('Stopping playback', 2)
             self.player.stop()
         elif self.state.shuffle and not play_next:
-            return self.launch_up_next()
+            self.launch_up_next()
+            return
 
         self.sigterm = False
         self.log('Exit', 2)
