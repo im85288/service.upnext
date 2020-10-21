@@ -171,11 +171,11 @@ def log(msg, name=None, level=1):
     xlog('[%s] %s -> %s' % (addon_id(), name, from_unicode(msg)), level=level)
 
 
-def calculate_progress_steps(period):
+def calculate_progress_steps(total_time, time_delta):
     """Calculate a progress step"""
-    if int(period) == 0:  # Avoid division by zero
+    if int(total_time) == 0:  # Avoid division by zero
         return 10.0
-    return (100.0 / int(period)) / 10
+    return time_delta * 100.0 / int(total_time)
 
 
 def jsonrpc(**kwargs):

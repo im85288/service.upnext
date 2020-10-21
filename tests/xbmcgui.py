@@ -8,6 +8,9 @@
 from __future__ import absolute_import, division, print_function, unicode_literals
 from xbmcextra import kodi_to_ansi
 
+ACTION_NAV_BACK = 92
+ACTION_STOP = 13
+
 
 class Control:  # pylint: disable=too-few-public-methods
     ''' A reimplementation of the xbmcgui Control class '''
