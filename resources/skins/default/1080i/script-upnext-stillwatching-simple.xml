@@ -41,7 +41,7 @@
                         <control type="button" id="10">
                             <label>    $ADDON[service.upnext 30010]</label>
                             <onclick>SendClick(3012)</onclick>
-                            <visible>Integer.IsGreater(Window.Property(remaining),59)</visible>
+                            <visible>Integer.IsGreater(Window.Property(remaining),60)</visible>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
@@ -61,7 +61,7 @@
                         <control type="button" id="11">
                             <label>    $ADDON[service.upnext 30035]</label>
                             <onclick>SendClick(3012)</onclick>
-                            <visible>!Integer.IsGreater(Window.Property(remaining),59)</visible>
+                            <visible>Integer.IsLessOrEqual(Window.Property(remaining),60)</visible>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>

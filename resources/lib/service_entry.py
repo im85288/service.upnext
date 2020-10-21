@@ -3,8 +3,8 @@
 """This is the Up Next service entry point"""
 
 from __future__ import absolute_import, division, unicode_literals
-from monitor import UpNextMonitor
+import monitor
 
 
-# Start the monitor
-UpNextMonitor().run()
+# Start the monitor and wait indefinitely for abort
+monitor.UpNextMonitor().run()

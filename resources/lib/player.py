@@ -2,172 +2,207 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import getCondVisibility, Monitor, Player
-from api import get_playlist_position
-from state import State
-from utils import log as ulog
+import datetime
+import xbmc
+import statichelper
+import utils
 
 
-class PlayerMonitor(Player):
-    """Service class for playback monitoring"""
+class UpNextPlayerState(dict):
+    def __getattr__(self, name):
+        try:
+            return self[name]['value']
+        except KeyError as error:
+            raise AttributeError(error)  # pylint: disable=raise-missing-from
 
-    def __init__(self, state):
-        self.state = state
+    def __setattr__(self, name, value):
+        self.set(name, value)
+
+    def forced(self, name):
+        return self[name].get('force')
+
+    def actual(self, name):
+        return self[name].get('actual')
+
+    def set(self, name, *args, **kwargs):
+        if name not in self:
+            self[name] = dict(
+                value=None,
+                force=False,
+                actual=None
+            )
+
+        has_force = 'force' in kwargs
+        has_value = bool(args)
+
+        if has_force and has_value:
+            self[name]['value'] = args[0]
+            self[name]['force'] = kwargs['force']
+
+        elif has_force and not has_value:
+            self[name]['value'] = self[name].get('actual')
+            self[name]['force'] = kwargs['force']
+
+        elif self.forced(name) and not has_force and has_value:
+            self[name]['actual'] = args[0]
+
+        elif has_value:
+            self[name]['value'] = args[0]
+            self[name]['actual'] = args[0]
+
+
+class UpNextPlayer(xbmc.Player):
+    """Inbuilt player function overrides"""
+
+    def __init__(self):
         # Used to override player state for testing
-        self.__player_state = dict(
-            override=False,
-            external_player=False,
-            playing=False,
-            playing_file='',
-            time=0,
-            total_time=0,
-            next_file=''
-        )
-        Player.__init__(self)
+        self.state = UpNextPlayerState()
+        self.state.external_player = False
+        self.state.playing = False
+        self.state.paused = False
+        self.state.playing_file = None
+        self.state.speed = 0
+        self.state.time = 0
+        self.state.total_time = 0
+        self.state.next_file = None
+        self.state.playnext = None
+        self.state.stop = None
+
+        xbmc.Player.__init__(self)
         self.log('Init', 2)
+
+    def __enter__(self):
+        return True
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        return exc_type == RuntimeError
 
     @classmethod
     def log(cls, msg, level=2):
-        ulog(msg, name=cls.__name__, level=level)
+        utils.log(msg, name=cls.__name__, level=level)
 
     def isExternalPlayer(self):  # pylint: disable=invalid-name
-        if not self.__player_state.get('override'):
-            actual = getattr(Player, 'isExternalPlayer')(self)
-            self.__player_state['external_player'] = actual
-        return self.__player_state.get('external_player')
+        # Use inbuilt method to store actual value
+        actual = getattr(xbmc.Player, 'isExternalPlayer')(self)
+        self.state.external_player = actual
+        # Return actual value or forced value if forced
+        return self.state.external_player
 
     def isPlaying(self):  # pylint: disable=invalid-name
-        if not self.__player_state.get('override'):
-            actual = getattr(Player, 'isPlaying')(self)
-            self.__player_state['playing'] = actual
-        return self.__player_state.get('playing')
+        # Use inbuilt method to store actual value
+        actual = getattr(xbmc.Player, 'isPlaying')(self)
+        self.state.playing = actual
+        # Return actual value or forced value if forced
+        return self.state.playing
+
+    def is_paused(self):
+        # Use inbuilt method to store actual value
+        actual = xbmc.getCondVisibility('Player.Paused')
+        self.state.paused = actual
+        # Return actual value or forced value if forced
+        return self.state.paused
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
-        if not self.__player_state.get('override'):
-            actual = getattr(Player, 'getPlayingFile')(self)
-            self.__player_state['playing_file'] = actual
-        return self.__player_state.get('playing_file')
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.playing_file
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = getattr(xbmc.Player, 'getPlayingFile')(self)
+        actual = statichelper.to_unicode(actual)
+        self.state.playing_file = actual
+        # Return actual value or forced value if forced
+        return self.state.playing_file
+
+    def get_speed(self):  # pylint: disable=too-many-branches
+        if xbmc.getCondVisibility('Player.Playing'):
+            self.state.speed = float(xbmc.getInfoLabel('Player.PlaySpeed'))
+        elif xbmc.getCondVisibility('Player.Forwarding'):
+            if xbmc.getCondVisibility('Player.Forwarding2x'):
+                self.state.speed = 2
+            elif xbmc.getCondVisibility('Player.Forwarding4x'):
+                self.state.speed = 4
+            elif xbmc.getCondVisibility('Player.Forwarding8x'):
+                self.state.speed = 8
+            elif xbmc.getCondVisibility('Player.Forwarding16x'):
+                self.state.speed = 16
+            elif xbmc.getCondVisibility('Player.Forwarding32x'):
+                self.state.speed = 32
+        elif xbmc.getCondVisibility('Player.Rewinding'):
+            if xbmc.getCondVisibility('Player.Rewinding2x'):
+                self.state.speed = -2
+            elif xbmc.getCondVisibility('Player.Rewinding4x'):
+                self.state.speed = -4
+            elif xbmc.getCondVisibility('Player.Rewinding8x'):
+                self.state.speed = -8
+            elif xbmc.getCondVisibility('Player.Rewinding16x'):
+                self.state.speed = -16
+            elif xbmc.getCondVisibility('Player.Rewinding32x'):
+                self.state.speed = -32
+        else:
+            self.state.speed = 0
+        return self.state.speed
 
     def getTime(self):  # pylint: disable=invalid-name
-        if not self.__player_state.get('override'):
-            actual = getattr(Player, 'getTime')(self)
-            self.__player_state['time'] = actual
-        return self.__player_state.get('time')
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.time
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = getattr(xbmc.Player, 'getTime')(self)
+        self.state.time = actual
+
+        # Simulate time progression if forced
+        if self.state.forced('time'):
+            now = datetime.datetime.now()
+
+            # Don't update if paused
+            if self.is_paused():
+                delta = 0
+            # Change in time from previously forced time to now
+            elif isinstance(self.state.forced('time'), datetime.datetime):
+                delta = (self.state.forced('time') - now).total_seconds()
+                # No need to check actual speed, just use forced speed value
+                delta = delta * self.state.speed
+            # Don't update if not previously forced
+            else:
+                delta = 0
+
+            # Set new forced time
+            new_time = self.state.time - delta
+            self.state.set('time', new_time, force=now)
+
+        # Return actual value or forced value if forced
+        return self.state.time
 
     def getTotalTime(self):  # pylint: disable=invalid-name
-        if not self.__player_state.get('override'):
-            actual = getattr(Player, 'getTotalTime')(self)
-            self.__player_state['total_time'] = actual
-        return self.__player_state.get('total_time')
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.total_time
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = getattr(xbmc.Player, 'getTotalTime')(self)
+        self.state.total_time = actual
+        # Return actual value or forced value if forced
+        return self.state.total_time
 
     def playnext(self):
-        if self.__player_state.get('override'):
-            next_file = self.__player_state.get('next_file')
-            self.__player_state['playing_file'] = next_file
-            self.__player_state['next_file'] = ''
-            self.__player_state['playing'] = bool(next_file)
-            return None
-        return getattr(Player, 'playnext')(self)
+        # Simulate playing next file if forced
+        if self.state.forced('playnext'):
+            next_file = self.state.next_file
+            self.state.set('next_file', None, force=True)
+            self.state.set('playing_file', next_file, force=True)
+            self.state.set('playing', bool(next_file), force=True)
+
+        # Use inbuilt method if not forced
+        else:
+            getattr(xbmc.Player, 'playnext')(self)
 
     def stop(self):
-        if self.__player_state.get('override'):
-            self.__player_state['playing'] = False
-            return None
-        return getattr(Player, 'stop')(self)
+        # Set fake value if forced
+        if self.state.forced('stop'):
+            self.state.set('playing', False, force=True)
 
-    def track_playback(self, data=None, encoding=None):
-        # Only process one start at a time unless addon data has been received
-        if self.state.starting and not data:
-            return
-        # Increment starting counter
-        self.state.starting += 1
-        start_num = self.state.starting
-
-        # onPlayBackEnded for current file can trigger after next file starts
-        # Wait additional 5s after onPlayBackEnded or last start
-        monitor = Monitor()
-        wait_limit = 5 * start_num
-        wait_count = 0
-        while not monitor.abortRequested() and wait_count < wait_limit:
-            # Exit if starting state has been reset by playback error/end/stop
-            if not self.state.starting:
-                self.log('Tracking: failed - starting state reset', 1)
-                return
-
-            monitor.waitForAbort(1)
-            wait_count += 1
-
-        # Exit if no file playing
-        total_time = self.isPlaying() and self.getTotalTime()
-        if not total_time:
-            return
-
-        # Exit if starting counter has been reset or new start detected
-        if start_num != self.state.starting:
-            return
-        self.state.starting = 0
-        self.state.ended = 0
-
-        is_playlist_item = get_playlist_position()
-        has_addon_data = bool(data)
-        is_episode = getCondVisibility('videoplayer.content(episodes)')
-
-        # Exit if Up Next playlist handling has not been enabled
-        if is_playlist_item and not self.state.enable_playlist:
-            self.log('Tracking: disabled - playlist handling not enabled', 2)
-            return
-
-        # Use new addon data if provided
-        if data:
-            self.state.set_addon_data(data, encoding)
-        # Ensure that old addon data is not used. Note this may cause played in
-        # a row count to reset incorrectly if playlist of mixed non-addon and
-        # addon content is used
+        # Use inbuilt method if not forced
         else:
-            self.state.reset_addon_data()
-            has_addon_data = False
-
-        # Start tracking if Up Next can handle the currently playing file
-        if is_playlist_item or has_addon_data or is_episode:
-            self.state.set_tracking(self.getPlayingFile())
-            self.state.reset_queue()
-
-            # Get details of currently playing file to save playcount
-            if has_addon_data:
-                self.state.handle_addon_now_playing()
-            else:
-                self.state.handle_library_now_playing()
-
-            # Store popup time and check if cue point was provided
-            self.state.set_popup_time(total_time)
-
-    if callable(getattr(Player, 'onAVStarted', None)):
-        def onAVStarted(self):  # pylint: disable=invalid-name
-            """Will be called when Kodi has a video or audiostream"""
-            self.track_playback()
-    else:
-        def onPlayBackStarted(self):  # pylint: disable=invalid-name
-            """Will be called when kodi starts playing a file"""
-            self.track_playback()
-
-    def onPlayBackStopped(self):  # pylint: disable=invalid-name
-        """Will be called when user stops playing a file"""
-        self.state.reset_queue()
-        self.state.reset_addon_data()
-        self.state = State(reset=True)  # Reset state
-
-    def onPlayBackEnded(self):  # pylint: disable=invalid-name
-        """Will be called when Kodi has ended playing a file"""
-        self.state.reset_queue()
-        self.state.set_tracking(False)
-        # Event can occur before or after the next file has started playing
-        # Only reset state if Up Next has not requested the next file to play
-        if not self.state.playing_next:
-            self.state.reset_addon_data()
-            self.state = State(reset=True)  # Reset state
-
-    def onPlayBackError(self):  # pylint: disable=invalid-name
-        """Will be called when when playback stops due to an error"""
-        self.state.reset_queue()
-        self.state.reset_addon_data()
-        self.state = State(reset=True)  # Reset state
+            getattr(xbmc.Player, 'stop')(self)
