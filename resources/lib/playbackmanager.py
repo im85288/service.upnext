@@ -110,10 +110,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         play_now = self.popup.is_playnow()
 
         # Update played in a row count
-        if play_now or shuffle_start:
-            self.state.played_in_a_row = 1
-        elif auto_play:
-            self.state.played_in_a_row += 1
+        self.state.played_in_a_row =
+            self.state.played_in_a_row + 1 if auto_play else 1
 
         if shuffle_start:
             self.log('Exit launch_popup early - shuffle requested', 2)
