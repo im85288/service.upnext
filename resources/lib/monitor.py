@@ -104,6 +104,7 @@ class UpNextMonitor(xbmc.Monitor):
                 speed = self.player.get_speed()
                 check_fail = False
             if check_fail or speed < 1:
+                called[0] = False
                 return
 
             # Determine play time left until popup is required
