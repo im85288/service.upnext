@@ -94,10 +94,10 @@ class UpNextMonitor(xbmc.Monitor):
         if not self.state.is_tracking() or called[0]:
             return
         self.stop_tracking()
+        called[0] = True
 
         # threading.Timer method not used by default. More testing required
         if self.use_timer:
-            called[0] = True
             self.waitForAbort(1)
             with self.player as check_fail:
                 play_time = self.player.getTime()
@@ -123,7 +123,6 @@ class UpNextMonitor(xbmc.Monitor):
             # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.track_playback)
             self.tracker.start()
-            called[0] = False
 
         # Use while not abortRequested() loop in a separate thread to allow for
         # continued monitoring in main service thread
@@ -139,6 +138,8 @@ class UpNextMonitor(xbmc.Monitor):
                 self.sigstop = False
             else:
                 self.track_playback()
+
+        called[0] = False
 
     def stop_tracking(self, terminate=False):
         # Set terminate or stop signals if tracker is running
