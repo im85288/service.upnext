@@ -91,18 +91,23 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Cleanup playbackmanager', 2)
 
     def start_tracking(self, called=[False]):  # pylint: disable=dangerous-default-value
+        # Exit if tracking disabled or start tracking previously requested
         if not self.state.is_tracking() or called[0]:
             return
+        # Stop any existing tracker loop/thread/timer
         self.stop_tracking()
         called[0] = True
 
         # threading.Timer method not used by default. More testing required
         if self.use_timer:
+            # getTime() needs some time to update correctly after seek/skip
+            # Wait 1s, but this may not be enough to properly update play_time
             self.waitForAbort(1)
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 speed = self.player.get_speed()
                 check_fail = False
+            # Exit if not playing, paused, or rewinding
             if check_fail or speed < 1:
                 called[0] = False
                 return
@@ -171,6 +176,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Tracker started', 2)
         self.running = True
 
+        # If tracker was (re)started, ensure detector is also reset
         if self.detector:
             self.detector.reset()
 
@@ -181,6 +187,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.log('Tracker - exit', 2)
                 break
 
+            # Get video details, exit if nothing playing
             tracked_file = self.state.get_tracked_file()
             with self.player as check_fail:
                 current_file = self.player.getPlayingFile()
@@ -197,11 +204,14 @@ class UpNextMonitor(xbmc.Monitor):
                 self.state.set_tracking(False)
                 continue
 
+            # Detector start before normal popup request time
             detect_time = self.state.get_detect_time()
             if detect_time and play_time >= detect_time:
+                # Start detector is not already started
                 if not self.detector:
                     self.detector = detector.Detector()
                     self.detector.run()
+                # Otherwise check whether credit have been detected
                 elif self.detector.detected():
                     self.log('Credits detected', 2)
                     self.state.set_detected_popup_time(play_time)
@@ -263,7 +273,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.waitForAbort(1)
             wait_count -= 1
 
-        # Exit if no file playing
+        # Get video details, exit if no video playing
         with self.player as check_fail:
             playing_file = self.player.getPlayingFile()
             total_time = self.player.getTotalTime()
@@ -355,7 +365,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         if (not utils.supports_python_api(18) and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
-            # Update player state and remove any existing popups
+            # Update player state and remove remnants from previous operations
             self.player.state.set('time', force=False)
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
@@ -379,6 +389,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.check_video()
 
         elif method == 'Player.OnStop':
+            # Remove remnants from previous operations
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
             if self.detector:

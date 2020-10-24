@@ -230,4 +230,5 @@ def localize_time(time):
 
 
 def is_amlogic():
+    """Check whether AMLogic hardware video decoder is being used"""
     return xbmc.getInfoLabel('Player.Process(VideoDecoder)')[:3] == 'am-'

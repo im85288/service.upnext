@@ -41,6 +41,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         if not keep_playing:
             self.log('Stopping playback', 2)
             self.player.stop()
+        # Relauch popup if shuffle enabled to get new random episode
         elif self.state.shuffle and not play_next:
             self.launch_up_next()
             return
@@ -192,6 +193,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         return play_next, keep_playing
 
     def show_popup_and_wait(self, auto_play):
+        # Get video details, exit if no video playing
         with self.player as check_fail:
             total_time = self.player.getTotalTime()
             play_time = self.player.getTime()

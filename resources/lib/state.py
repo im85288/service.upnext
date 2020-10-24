@@ -111,6 +111,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.queued = api.reset_queue()
 
     def get_next(self):
+        """Get next episode to play, based on current video source"""
         episode = None
         source = None
         position = api.get_playlist_position()
@@ -143,11 +144,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return episode, source
 
     def get_detect_time(self):
+        # Dont use detection time period if an addon cue point was provided,
+        # or end credits detection is disabled, or AML HW decoder is in use
         if self.popup_cue or not self.detect_enabled or utils.is_amlogic():
             return None
         return self.detect_time
 
     def set_detect_time(self):
+        # Detection time period starts before normal popup time
         self.detect_time = max(
             0,
             self.popup_time - utils.get_setting_int('detectPeriod')
@@ -190,6 +194,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         else:
             duration_setting = 'autoPlaySeasonTime'
 
+        # Use addon settings, no cue point provided
         popup_duration = utils.get_setting_int(duration_setting)
         self.popup_cue = False
         if 0 < popup_duration < total_time:
@@ -198,6 +203,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.popup_time = 0
 
     def set_detected_popup_time(self, time):
+        # Force popup time to specified time and use as a cue point
         self.popup_cue = True
         self.popup_time = time
 

@@ -62,6 +62,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
 
 class Detector(object):  # pylint: disable=useless-object-inheritance
+    """Detector class used to detect end credits in playing video"""
     __slots__ = (
         # Instances
         'detector',
@@ -142,21 +143,29 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             do_zip=False,
             target='all'
     ):
+        """Method to compare the similarity between two image hashes.
+           By default checks whether each bit in the first hash is equal to the
+           corresponding bit in the second hash"""
+        # Check that hashes are not empty and that dimensions are equal
         if not hash1 or not hash2:
             return 0
         num_pixels = len(hash1)
         if num_pixels != len(hash2):
             return 0
 
+        # Use zip if comparison function requires an iterator as an argument
         if do_zip:
             bit_compare = sum(map(function, zip(hash1, hash2)))
         else:
             bit_compare = sum(map(function, hash1, hash2))
 
+        # Evaluate similarity as a percentage of all pixels in the hash
         if target == 'all':
             similarity = bit_compare / num_pixels
+        # Or similarity as a percentage of all non-zero pixels in both hashes
         elif target == 'both':
             similarity = bit_compare / sum(map(any, zip(hash1, hash2)))
+        # Or similarity as count of matching pixels
         elif target == 'none':
             similarity = bit_compare
 
@@ -243,6 +252,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.match_count = 5
 
     def run(self):
+        """Method to run actual detection test loop in a separate thread"""
         self.detector = threading.Thread(target=self.test)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
@@ -284,7 +294,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image = Image.frombuffer(
                 'RGBA', self.capture_size, raw, 'raw', 'RGBA', 0, 1
             )
-            # Convert to greyscale and calculate median pixel luma
+            # Convert to greyscale and resize to manageable size for hashing
             image = image.convert('L')
             if self.hashes.hash_size != self.capture_size:
                 image = image.resize(self.hashes.hash_size, resample=Image.BOX)

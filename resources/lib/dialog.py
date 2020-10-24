@@ -35,6 +35,8 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             xbmcgui.WindowXMLDialog.__init__(self, *args)
         self.log('Init - %s' % args[0], 2)
 
+    # __enter__ and __exit__ allows UpNextPopup to be used as a contextmanager
+    # to check whether popup is still open before accessing attributes
     def __enter__(self):
         return True
 
@@ -54,6 +56,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         else:
             self.update_progress_control()
 
+        # TODO: Fix button text update flash
         if utils.get_setting_bool('stopAfterClose'):
             self.getControl(3013).setLabel(utils.localize(30033))  # Stop
         else:

@@ -72,6 +72,8 @@ class UpNextPlayer(xbmc.Player):
         xbmc.Player.__init__(self)
         self.log('Init', 2)
 
+    # __enter__ and __exit__ allow UpNextPlayer to be used as a contextmanager
+    # to check whether video is actually playing when getting video details
     def __enter__(self):
         return True
 
@@ -128,6 +130,7 @@ class UpNextPlayer(xbmc.Player):
         return self.state.playing_file
 
     def get_speed(self):  # pylint: disable=too-many-branches
+        # There must be a better way to do this...
         if xbmc.getCondVisibility('Player.Playing'):
             self.state.speed = float(xbmc.getInfoLabel('Player.PlaySpeed'))
         elif xbmc.getCondVisibility('Player.Forwarding'):
