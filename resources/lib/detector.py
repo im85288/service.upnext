@@ -140,7 +140,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             cls, hash1, hash2,
             function=operator.eq,
             do_zip=False,
-            all_pixels=True
+            target='all'
     ):
         if not hash1 or not hash2:
             return 0
@@ -153,10 +153,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         else:
             bit_compare = sum(map(function, hash1, hash2))
 
-        if all_pixels:
+        if target == 'all':
             similarity = bit_compare / num_pixels
-        else:
+        elif target == 'both':
             similarity = bit_compare / sum(map(any, zip(hash1, hash2)))
+        elif target == 'none':
+            similarity = bit_compare
 
         return similarity
 
