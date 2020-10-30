@@ -23,6 +23,13 @@ The add-on has various settings to fine-tune the experience, however the default
 For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
 
 ## Releases
+### v1.1.3 (2020-10-14)
+- Enable customPlayTime by default (@dagwieers)
+- Do not seek to the end before playing next episode (@dagwieers)
+- Add Kodi v17 compatibility (@dagwieers)
+- Fix logging on Kodi v19 (Matrix) after recent breakage (@MoojMidge)
+- Enqueue the next episode in the playlist (@MoojMidge)
+
 ### v1.1.2 (2020-06-22)
 - Small bugfix release (@im85288)
 
