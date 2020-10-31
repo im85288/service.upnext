@@ -219,3 +219,15 @@ msgstr ""
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
 msgstr ""
+
+msgctxt "#30820"
+msgid "Detector developer settings"
+msgstr ""
+
+msgctxt "#30821"
+msgid "Verbose output logging"
+msgstr ""
+
+msgctxt "#30822"
+msgid "Enable detector for all content"
+msgstr ""

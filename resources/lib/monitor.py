@@ -211,7 +211,8 @@ class UpNextMonitor(xbmc.Monitor):
                 self.waitForAbort(min(1, popup_time - play_time))
                 continue
 
-            if self.detector:
+            # Stop detector once popup is requested
+            if self.detector and not utils.get_setting_bool('detectAlways'):
                 self.detector.stop()
                 del self.detector
                 self.detector = None
@@ -296,6 +297,10 @@ class UpNextMonitor(xbmc.Monitor):
         # playlist of mixed non-addon and addon content is used
         self.state.set_addon_data(data, encoding)
         has_addon_data = self.state.has_addon_data()
+
+        if utils.get_setting_bool('detectAlways'):
+            self.detector = detector.Detector()
+            self.detector.run()
 
         # Start tracking if Up Next can handle the currently playing video
         if is_playlist_item or has_addon_data or media_type == 'episode':

@@ -33,5 +33,8 @@
         <setting label="30807" type="action" action="RunScript(service.upnext,test_window,upnext,simple)"/>
         <setting label="30809" type="action" action="RunScript(service.upnext,test_window,stillwatching)"/>
         <setting label="30811" type="action" action="RunScript(service.upnext,test_window,stillwatching,simple)"/>
+		<setting label="30820" type="lsep"/> <!-- Detector debug settings -->
+		<setting label="30821" type="bool" id="detectDebugLogging" default="False"/>
+		<setting label="30822" type="bool" id="detectAlways" default="False"/>
     </category>
 </settings>
