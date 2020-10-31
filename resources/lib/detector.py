@@ -25,8 +25,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
     def update_default(self):
         new_default = [0] * self.hash_size[0] * self.hash_size[1]
-        for hash in self.data[1::]:
-            for idx, pixel in enumerate(hash):
+        for image_hash in self.data[1::]:
+            for idx, pixel in enumerate(image_hash):
                 new_default[idx] += pixel
         self.data[0] = Detector.calc_threshold_hash(new_default, 0.5)
 
@@ -158,10 +158,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         height = int(
             xbmc.getInfoLabel('Player.Process(VideoHeight)').replace(',', '')
         ) // 8
-        ar = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
+        aspect_ratio = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
         # width = 14
         # height = 8
-        return (width, height), ar
+        return (width, height), aspect_ratio
 
     @classmethod
     def print_hash(cls, hash_1, hash_2, size=None):
@@ -223,7 +223,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def reset(self):
         self.matches = 0
-        self.match_count = self.detect_period // 10
+        self.match_count = 5
 
     def run(self):
         self.detector = threading.Thread(target=self.test)
@@ -302,8 +302,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
-            elif (similarity < self.detect_level - 0.2
-                    or default_similarities > 0.25):
+            else:
                 mismatch_count += 1
             # If 3 mismatches in a row (to account for bad frame capture), then
             # reset match count
