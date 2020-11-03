@@ -78,9 +78,10 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         self.log('Played in a row - %s' % self.state.played_in_a_row, 2)
 
         # Filename for dialog XML
-        filename = 'script-upnext{0}{1}.xml'.format(
+        filename = 'script-upnext{0}{1}{2}.xml'.format(
             '-upnext' if show_upnext else '-stillwatching',
-            '-simple' if self.state.simple_mode else ''
+            '-simple' if self.state.simple_mode else '',
+            '' if utils.get_setting_bool('enablePopupSkin') else '-original'
         )
         # Create Kodi dialog to show Up Next or Still Watching? popup
         self.popup = dialog.UpNextPopup(

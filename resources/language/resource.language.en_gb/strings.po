@@ -204,6 +204,10 @@ msgctxt "#30801"
 msgid "Test how the user interface looks"
 msgstr ""
 
+msgctxt "#30803"
+msgid "Use skinned pop-up if available"
+msgstr ""
+
 msgctxt "#30805"
 msgid "Show an UpNext pop-up…"
 msgstr ""

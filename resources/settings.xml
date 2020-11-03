@@ -29,6 +29,7 @@
     </category>
     <category label="30800"> <!-- Developer -->
         <setting label="30801" type="lsep"/> <!-- Test the GUI -->
+		<setting label="30803" type="bool" id="enablePopupSkin" default="True"/>
         <setting label="30805" type="action" action="RunScript(service.upnext,test_window,upnext)"/>
         <setting label="30807" type="action" action="RunScript(service.upnext,test_window,upnext,simple)"/>
         <setting label="30809" type="action" action="RunScript(service.upnext,test_window,stillwatching)"/>
