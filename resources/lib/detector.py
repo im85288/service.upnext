@@ -13,6 +13,9 @@ import statichelper
 import utils
 
 
+STORED_HASHES = None
+
+
 class HashStore(object):  # pylint: disable=useless-object-inheritance
     def __init__(self, init_data=None, **kwargs):
         if init_data:
@@ -22,6 +25,10 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (16, 16))
         self.data = kwargs.get('data', [])
+
+    @classmethod
+    def log(cls, msg, level=2):
+        utils.log(msg, name=cls.__name__, level=level)
 
     def update_default(self):
         new_default = [0] * self.hash_size[0] * self.hash_size[1]
@@ -39,7 +46,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         return int(''.join(map(str, image_hash)), 2)
 
     def load(self, data):
-        data = json.loads(statichelper.to_unicode(data))
+        data = json.loads(data)
         for key, val in data.items():
             if key == 'data':
                 val = map(self.int_to_hash, val)
@@ -51,8 +58,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             hash_size=self.hash_size,
             data=map(self.hash_to_int, self.data)
         )
-        json.dumps(str(output))
-        return output
+        return json.dumps(output)
 
 
 class Detector(object):  # pylint: disable=useless-object-inheritance
@@ -68,6 +74,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'capture_size',
         'capture_ar',
         'hashes',
+        'past_hashes',
         'match_count',
         'matches',
         # Signals
@@ -83,7 +90,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.debug = utils.get_setting_bool('detectDebugLogging')
         self.detect_level = utils.get_setting_int('detectLevel') / 100
 
-        self.capture_size, self.capture_ar = self.capture_resolution()
+        self.capture_size, self.capture_ar = self.capture_resolution(
+            scale_down=8
+        )
 
         # Hash size as (width, height)
         hash_size = [8 * self.capture_ar, 8]
@@ -100,6 +109,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 + [0] * (1 + hash_size[0] // 4)
             ) * hash_size[1]]
         )
+        global STORED_HASHES
+        if STORED_HASHES:
+            self.past_hashes = HashStore(init_data=STORED_HASHES)
 
         self.match_count = 5
         self.matches = 0
@@ -131,10 +143,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             all_pixels=True
     ):
         if not hash1 or not hash2:
-            return None
+            return 0
         num_pixels = len(hash1)
         if num_pixels != len(hash2):
-            return None
+            return 0
 
         if do_zip:
             bit_compare = sum(map(function, zip(hash1, hash2)))
@@ -149,15 +161,18 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return similarity
 
     @classmethod
-    def capture_resolution(cls):
+    def capture_resolution(cls, scale_down=1):
+        """Method to detect playing video resolution and aspect ratio and
+           return a scaled down resolution tuple and aspect ratio for use in
+           capturing the video frame buffer at a specific size/resolution"""
         # Capturing render buffer at higher resolution captures more detail
         # depending on Kodi scaling function used, but slows down processing
         width = int(
             xbmc.getInfoLabel('Player.Process(VideoWidth)').replace(',', '')
-        ) // 8
+        ) // scale_down
         height = int(
             xbmc.getInfoLabel('Player.Process(VideoHeight)').replace(',', '')
-        ) // 8
+        ) // scale_down
         aspect_ratio = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
         # width = 14
         # height = 8
@@ -245,6 +260,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return
         self.running = True
 
+        hash_index = 0
         mismatch_count = 0
         monitor = xbmc.Monitor()
         while not monitor.abortRequested() and not self.sigterm:
@@ -285,20 +301,30 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Store transformed image as a hash of current video frame
             image_hash_madm = list(image_hash_madm.getdata())
             self.hashes.data.append(image_hash_madm)
+            hash_index += 1
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
-                self.hashes.data[-2], self.hashes.data[-1]
+                self.hashes.data[hash_index - 1], self.hashes.data[hash_index]
             )
             # Calculate percentage of significant deviations
-            default_similarities = (
-                sum(self.hashes.data[-1]) / len(self.hashes.data[-1])
+            significance = (
+                sum(self.hashes.data[hash_index])
+                / len(self.hashes.data[hash_index])
             )
+            # Calculate similarity to hash from previous episode
+            season_similarity = self.calc_similarity(
+                self.past_hashes.data[hash_index],
+                self.hashes.data[hash_index]
+            ) if (
+                hasattr(self, 'past_hashes')
+                and len(self.past_hashes.data) > hash_index
+            ) else 0
 
             # If current hash matches previous hash and has few significant
             # regions of deviation then increment the number of matches
-            if (similarity >= self.detect_level
-                    and 0 < default_similarities < 0.2):
+            if ((similarity >= self.detect_level and significance < 0.2)
+                    or season_similarity >= self.detect_level):
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -315,13 +341,22 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             if self.debug:
                 self.print_hash(
-                    self.hashes.data[-2],
-                    self.hashes.data[-1],
+                    self.hashes.data[hash_index - 1],
+                    self.hashes.data[hash_index],
                     self.hashes.hash_size
                 )
-                self.log('Hash compare: {0:1.2f}/{1:1.2f} in {2:1.4f}s'.format(
-                    default_similarities,
+                if (hasattr(self, 'past_hashes')
+                        and len(self.past_hashes.data) > hash_index):
+                    self.print_hash(
+                        self.past_hashes.data[hash_index],
+                        self.hashes.data[hash_index],
+                        self.hashes.hash_size
+                    )
+                msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f} in {3:1.4f}s'
+                self.log(msg.format(
+                    significance,
                     similarity,
+                    season_similarity,
                     delta
                 ), 2)
 
@@ -332,6 +367,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         self.running = False
         self.sigterm = False
+
+    def store_hashes(self):
+        global STORED_HASHES
+        STORED_HASHES = self.hashes.save()
 
     def update_default(self):
         if len(self.hashes.data) < 5:

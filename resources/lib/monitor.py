@@ -213,6 +213,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Stop detector once popup is requested
             if self.detector and not utils.get_setting_bool('detectAlways'):
+                self.detector.store_hashes()
                 self.detector.stop()
                 del self.detector
                 self.detector = None
@@ -231,6 +232,8 @@ class UpNextMonitor(xbmc.Monitor):
                 state=self.state
             )
             self.playbackmanager.launch_up_next()
+
+            # Free up resources and exit tracking loop
             del self.playbackmanager
             self.playbackmanager = None
             break
