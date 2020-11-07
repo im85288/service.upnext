@@ -237,9 +237,6 @@
                         <visible>!Window.IsVisible(extendedprogressdialog)</visible>
                         <animation effect="fade" time="150">VisibleChange</animation>
 						<top>-15</top>
-						<itemgap>5</itemgap>
-                        <orientation>vertical</orientation>
-                        <usecontrolcoords>true</usecontrolcoords>
                         <control type="label">
                             <font>font_clock</font>
 							<align>right</align>
@@ -248,7 +245,7 @@
                             <label>$INFO[System.Time]</label>
                         </control>
                         <control type="label">
-							<font>font30_title</font>
+							<font>font12</font>
 							<align>right</align>
                             <label>$ADDON[service.upnext 30009]</label>
                             <shadowcolor>text_shadow</shadowcolor>

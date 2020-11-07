@@ -177,11 +177,11 @@ msgid "Auto-detect end credits"
 msgstr ""
 
 msgctxt "#30631"
-msgid "Detection window [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
+msgid "Detection window  [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
 msgstr ""
 
 msgctxt "#30632"
-msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
+msgid "Detection match threshold  [COLOR gray](% similarity)[/COLOR]"
 msgstr ""
 
 msgctxt "#30700"
@@ -205,7 +205,7 @@ msgid "Test how the user interface looks"
 msgstr ""
 
 msgctxt "#30803"
-msgid "Use skinned pop-up if available"
+msgid "Apply Kodi Skin to UpNext pop-up  [COLOR gray](requires skin integration)[/COLOR]"
 msgstr ""
 
 msgctxt "#30805"
