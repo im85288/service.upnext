@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-"""Implements helper functions for addons to interact with Up Next"""
+"""Implements helper functions for addons to interact with UpNext"""
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
@@ -13,14 +13,14 @@ def log(msg, level=2):
 
 
 def send_signal(sender, upnext_info):
-    """Helper function for addons to send data to Up Next"""
+    """Helper function for addons to send data to UpNext"""
     # Exit if not enough addon information provided
     if not (upnext_info.get('current_episode')
             and (upnext_info.get('play_url') or upnext_info.get('play_info'))):
-        log('Invalid Up Next info sent - %s' % upnext_info, 1)
+        log('Invalid UpNext info sent: %s' % upnext_info, 1)
         return
 
-    # Extract ListItem or InfoTagVideo details for use by Up Next
+    # Extract ListItem or InfoTagVideo details for use by UpNext
     for key, val in upnext_info.items():
         thumb = ''
         fanart = ''
@@ -63,13 +63,13 @@ def send_signal(sender, upnext_info):
         episode['art'] = {}
         # Next provided episode may not be the next consecutive episode so we
         # can't assume that the episode can simply be incremented, instead set
-        # title to indicate the next episode in the Up Next popup
+        # title to indicate the next episode in the UpNext popup
         # from utils import get_int
         # episode['episode'] = get_int(episode, 'episode') + 1
         # TODO: Change to localised string variable for translation purposes
         episode['title'] = 'Next episode'
         # Change season and episode info to empty string to avoid episode
-        # formatting issues ("S-1E-1") in Up Next popup
+        # formatting issues ("S-1E-1") in UpNext popup
         episode['season'] = ''
         episode['episode'] = ''
         episode['plot'] = ''

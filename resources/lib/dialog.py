@@ -12,7 +12,7 @@ OS_MACHINE = platform.machine()
 
 
 class UpNextPopup(xbmcgui.WindowXMLDialog):
-    """Class for Up Next popup state variables and methods"""
+    """Class for UpNext popup state variables and methods"""
 
     def __init__(self, *args, **kwargs):
         # Set info here rather than onInit to avoid dialog update flash
@@ -33,7 +33,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args)
-        self.log('Init - %s' % args[0], 2)
+        self.log('Init: %s' % args[0], 2)
 
     # __enter__ and __exit__ allows UpNextPopup to be used as a contextmanager
     # to check whether popup is still open before accessing attributes

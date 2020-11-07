@@ -9,7 +9,7 @@ import utils
 
 
 class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
-    """Controller for Up Next popup and playback of next episode"""
+    """Controller for UpNext popup and playback of next episode"""
     __slots__ = ('player', 'state', 'popup', 'sigterm')
 
     def __init__(self, player, state):
@@ -28,7 +28,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         # No episode get out of here
         if not episode:
-            self.log('Exiting - no next episode', 2)
+            self.log('Exiting: no next episode', 2)
             return
 
         # Show popup and get new playback state
@@ -55,7 +55,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # Checked if next episode has been watched and if it should be skipped
         watched = self.state.unwatched_only and self.state.playcount
         if episodeid != -1 and self.state.episodeid == episodeid or watched:
-            self.log('Exit launch_popup early - video already watched', 2)
+            self.log('Exit launch_popup early: video already watched', 2)
             play_next = False
             keep_playing = True
             return play_next, keep_playing
@@ -71,11 +71,11 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # played in a row count has been set to zero for testing
         else:
             show_upnext = self.state.played_limit != self.state.played_in_a_row
-        # Allow auto play if enabled in settings and showing Up Next popup
+        # Allow auto play if enabled in settings and showing UpNext popup
         auto_play = self.state.auto_play and show_upnext
 
-        self.log('Played in a row setting - %s' % self.state.played_limit, 2)
-        self.log('Played in a row - %s' % self.state.played_in_a_row, 2)
+        self.log('Played in a row setting: %s' % self.state.played_limit, 2)
+        self.log('Played in a row: %s' % self.state.played_in_a_row, 2)
 
         # Filename for dialog XML
         filename = 'script-upnext{0}{1}{2}.xml'.format(
@@ -83,7 +83,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             '-simple' if self.state.simple_mode else '',
             '' if utils.get_setting_bool('enablePopupSkin') else '-original'
         )
-        # Create Kodi dialog to show Up Next or Still Watching? popup
+        # Create Kodi dialog to show UpNext or Still Watching? popup
         self.popup = dialog.UpNextPopup(
             filename,
             utils.addon_path(),
@@ -97,7 +97,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         abort_popup = not self.show_popup_and_wait(auto_play)
 
         if abort_popup:
-            self.log('Exit launch_popup early - tracked video not playing', 2)
+            self.log('Exit launch_popup early: tracked video not playing', 2)
             play_next = False
             # Stop if Still Watching? popup was shown to prevent unwanted
             # playback that can occur if fast forwarding through popup
@@ -118,14 +118,14 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         )
 
         if shuffle_start:
-            self.log('Exit launch_popup early - shuffle requested', 2)
+            self.log('Exit launch_popup early: shuffle requested', 2)
             play_next = False
             keep_playing = True
             self.remove_popup()
             return play_next, keep_playing
 
         if not auto_play and not play_now:
-            self.log('Exit launch_popup early - playback not selected', 2)
+            self.log('Exit launch_popup early: playback not selected', 2)
             play_next = False
             # Keep playing if NAV_BACK or Cancel button was clicked on popup
             # Stop playing if Stop button was clicked on popup
@@ -174,7 +174,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         )
 
         # Determine playback method. Used for logging purposes
-        msg = 'Playback requested - using{0}{1}{2} method'
+        msg = 'Playback requested: using{0}{1}{2} method'
         msg = msg.format(
             ' play_now' if play_now else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
@@ -203,7 +203,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             popup_done = False
             return popup_done
 
-        # If cue point was provided then Up Next will auto play after a fixed
+        # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
         if auto_play and self.state.popup_cue:
             popup_duration = self.state.auto_play_delay
