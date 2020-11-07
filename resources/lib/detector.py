@@ -9,7 +9,6 @@ import timeit
 from PIL import Image
 import xbmc
 import player
-import statichelper
 import utils
 
 
