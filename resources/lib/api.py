@@ -203,12 +203,33 @@ def play_addon_item(data, encoding):
         )
 
 
+def get_player_id(type=None):
+    """Function to get active player ID"""
+    result = utils.jsonrpc(
+        method='Player.GetActivePlayers',
+    )
+    result = result.get('result', [{}])
+    result = [
+        player.get('playerid') for player in result
+        if player.get('type') in (
+            {type} if type else {'video', 'audio', 'picture'}
+        )
+    ]
+
+    if not result:
+        log('Error: no active player', 1)
+        return None
+
+    log('Player ID: %s' % result[0], 2)
+    return result[0]
+
+
 def get_now_playing():
     """Function to get detail of currently playing item"""
     result = utils.jsonrpc(
         method='Player.GetItem',
         params=dict(
-            playerid=xbmc.PLAYLIST_VIDEO,
+            playerid=get_player_id(type='video'),
             properties=EPISODE_PROPERTIES,
         )
     )
