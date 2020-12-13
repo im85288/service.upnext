@@ -23,7 +23,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (16, 16))
-        self.data = kwargs.get('data', [])
+        self.data = kwargs.get('data', {})
 
     @classmethod
     def log(cls, msg, level=2):
@@ -38,24 +38,30 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
     @classmethod
     def int_to_hash(cls, val):
-        return map(int, format(val, 'b'))
+        return [int(bit_val) for bit_val in format(val, 'b')]
 
     @classmethod
     def hash_to_int(cls, image_hash):
-        return int(''.join(map(str, image_hash)), 2)
+        return int(''.join(str(bit_val) for bit_val in image_hash), 2)
 
     def load(self, data):
         data = json.loads(data)
         for key, val in data.items():
             if key == 'data':
-                val = map(self.int_to_hash, val)
+                val = {
+                    int(idx): self.int_to_hash(hash_val)
+                    for idx, hash_val in val.items()
+                }
             setattr(self, key, val)
 
     def save(self):
         output = dict(
             version=self.version,
             hash_size=self.hash_size,
-            data=map(self.hash_to_int, self.data)
+            data={
+                idx: self.hash_to_int(hash)
+                for idx, hash in self.data.items()
+            }
         )
         return json.dumps(output)
 
@@ -103,11 +109,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             hash_size=hash_size,
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
-            data=[(
+            data={0: (
                 [0] * (1 + hash_size[0] // 4)
                 + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
                 + [0] * (1 + hash_size[0] // 4)
-            ) * hash_size[1]]
+            ) * hash_size[1]}
         )
         global STORED_HASHES
         if STORED_HASHES:
@@ -277,7 +283,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         while not monitor.abortRequested() and not self.sigterm:
             now = self.debug and timeit.default_timer()
             # Only capture if playing at normal speed
-            playing = self.player.get_speed() == 1
+            with self.player as check_fail:
+                total_time = self.player.getTotalTime()
+                play_time = self.player.getTime()
+                playing = self.player.get_speed() == 1
+                check_fail = False
+            if check_fail:
+                self.log('No file is playing', 2)
+                break
             raw = self.capturer.getImage(0) if playing or self.debug else None
 
             # del self.capturer
@@ -304,33 +317,28 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image_hash_madm = image.point(lut)
 
             # Calculate median absolute deviation from the median to represent
-            # significant deviations
+            # significant deviations and use transformed image as the hash of
+            # the current video frame
             quartiles = self.calc_quartiles(image_hash_madm.getdata())
             lut = [i > quartiles[1] for i in range(256)]
             image_hash_madm = image_hash_madm.point(lut)
-
-            # Store transformed image as a hash of current video frame
             image_hash_madm = list(image_hash_madm.getdata())
-            self.hashes.data.append(image_hash_madm)
-            hash_index += 1
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
-                self.hashes.data[hash_index - 1], self.hashes.data[hash_index]
+                self.hashes.data[hash_index],
+                image_hash_madm
             )
             # Calculate percentage of significant deviations
             significance = (
-                sum(self.hashes.data[hash_index])
-                / len(self.hashes.data[hash_index])
+                sum(image_hash_madm)
+                / len(image_hash_madm)
             )
             # Calculate similarity to hash from previous episode
             season_similarity = self.calc_similarity(
-                self.past_hashes.data[hash_index],
-                self.hashes.data[hash_index]
-            ) if (
-                hasattr(self, 'past_hashes')
-                and len(self.past_hashes.data) > hash_index
-            ) else 0
+                self.past_hashes.data[int(total_time - play_time)],
+                image_hash_madm
+            ) if hasattr(self, 'past_hashes') else 0
 
             # If current hash matches previous hash and has few significant
             # regions of deviation then increment the number of matches
@@ -352,15 +360,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             if self.debug:
                 self.print_hash(
-                    self.hashes.data[hash_index - 1],
                     self.hashes.data[hash_index],
+                    image_hash_madm,
                     self.hashes.hash_size
                 )
-                if (hasattr(self, 'past_hashes')
-                        and len(self.past_hashes.data) > hash_index):
+                if hasattr(self, 'past_hashes'):
                     self.print_hash(
-                        self.past_hashes.data[hash_index],
-                        self.hashes.data[hash_index],
+                        self.past_hashes.data[int(total_time - play_time)],
+                        image_hash_madm,
                         self.hashes.hash_size
                     )
                 msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f} in {3:1.4f}s'
@@ -370,6 +377,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     season_similarity,
                     delta
                 ), 2)
+
+            # Store hash for comparison with next video frame
+            hash_index = int(total_time - play_time)
+            self.hashes.data[hash_index] = image_hash_madm
 
             monitor.waitForAbort(1)
 
