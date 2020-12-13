@@ -203,7 +203,7 @@ def play_addon_item(data, encoding):
         )
 
 
-def get_player_id(type=None):
+def get_player_id(player_type=None):
     """Function to get active player ID"""
     result = utils.jsonrpc(
         method='Player.GetActivePlayers',
@@ -212,7 +212,7 @@ def get_player_id(type=None):
     result = [
         player.get('playerid') for player in result
         if player.get('type') in (
-            {type} if type else {'video', 'audio', 'picture'}
+            {player_type} if player_type else {'video', 'audio', 'picture'}
         )
     ]
 
@@ -229,7 +229,7 @@ def get_now_playing():
     result = utils.jsonrpc(
         method='Player.GetItem',
         params=dict(
-            playerid=get_player_id(type='video'),
+            playerid=get_player_id('video'),
             properties=EPISODE_PROPERTIES,
         )
     )
