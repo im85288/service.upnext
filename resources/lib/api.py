@@ -69,7 +69,7 @@ def log(msg, level=2):
 
 def play_kodi_item(episode):
     """Function to directly play a file from the Kodi library"""
-    log('Playing from library - {0}'.format(episode), 2)
+    log('Playing from library: {0}'.format(episode), 2)
     utils.jsonrpc(
         method='Player.Open',
         params=dict(
@@ -87,7 +87,7 @@ def play_kodi_item(episode):
 
 
 def queue_next_item(data=None, episode=None):
-    """Function to add next episode to the Up Next queue"""
+    """Function to add next episode to the UpNext queue"""
     next_item = {}
     play_url = data.get('play_url') if data else None
     episodeid = utils.get_int(episode, 'episodeid') if episode else None
@@ -99,7 +99,7 @@ def queue_next_item(data=None, episode=None):
         next_item.update(episodeid=episodeid)
 
     if next_item:
-        log('Adding to queue - {0}'.format(next_item), 2)
+        log('Adding to queue: {0}'.format(next_item), 2)
         utils.jsonrpc(
             method='Playlist.Add',
             params=dict(playlistid=xbmc.PLAYLIST_VIDEO, item=next_item),
@@ -112,7 +112,7 @@ def queue_next_item(data=None, episode=None):
 
 
 def reset_queue():
-    """Function to remove the 1st item from the playlist, used by Up Next queue"""
+    """Function to remove the 1st item from the playlist, used by UpNext queue"""
     log('Removing previously played item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -123,7 +123,7 @@ def reset_queue():
 
 
 def dequeue_next_item():
-    """Function to remove the 2nd item from the playlist, used by Up Next queue"""
+    """Function to remove the 2nd item from the playlist, used by UpNext queue"""
     log('Removing unplayed next item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -160,7 +160,7 @@ def get_next_in_playlist(position):
 
     # Don't check if next item is an episode, just use it if it is there
     if not item:  # item.get('type') != 'episode':
-        log('Error - no next item found in playlist', 1)
+        log('Error: no next item found in playlist', 1)
         return None
     item = item[0]
 
@@ -171,13 +171,13 @@ def get_next_in_playlist(position):
     item['episodeid'] = utils.get_int(item, 'id')
     item['tvshowid'] = utils.get_int(item, 'tvshowid')
     # If missing season/episode, change to empty string to avoid episode
-    # formatting issues ("S-1E-1") in Up Next popup
+    # formatting issues ("S-1E-1") in UpNext popup
     if utils.get_int(item, 'season') == -1:
         item['season'] = ''
     if utils.get_int(item, 'episode') == -1:
         item['episode'] = ''
 
-    log('Next item in playlist - %s' % item, 2)
+    log('Next item in playlist: %s' % item, 2)
     return item
 
 
@@ -185,14 +185,14 @@ def play_addon_item(data, encoding):
     """Function to play next addon item, either directly or by passthrough to addon"""
     data = data.get('play_url')
     if data:
-        log('Playing from addon - {0}'.format(data), 2)
+        log('Playing from addon: {0}'.format(data), 2)
         utils.jsonrpc(
             method='Player.Open',
             params=dict(item=dict(file=data)),
             no_response=True
         )
     else:
-        msg = 'Sending to addon - ({encoding}) {play_info}'
+        msg = 'Sending to addon: ({encoding}) {play_info}'
         msg = msg.format(dict(encoding=encoding, **data))
         log(msg, 2)
         utils.event(
@@ -220,7 +220,7 @@ def get_player_id(type=None):
         log('Error: no active player', 1)
         return None
 
-    log('Player ID: %s' % result[0], 2)
+    log('playerid: %s' % result[0], 2)
     return result[0]
 
 
@@ -236,10 +236,10 @@ def get_now_playing():
     result = result.get('result', {}).get('item')
 
     if not result:
-        log('Error - now playing item info not found', 1)
+        log('Error: now playing item info not found', 1)
         return None
 
-    log('Now playing - %s' % result, 2)
+    log('Now playing: %s' % result, 2)
     return result
 
 
@@ -247,7 +247,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
     """Function to get show and next episode details from Kodi library"""
     episode = get_from_library(tvshowid, episodeid)
     if not episode:
-        log('Error - next episode info not found in library', 1)
+        log('Error: next episode info not found in library', 1)
         episode = None
         new_season = False
         return episode, new_season
@@ -322,7 +322,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Error - next episode info not found in library', 1)
+        log('Error: next episode info not found in library', 1)
         episode = None
         new_season = False
         return episode, new_season
@@ -330,7 +330,7 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
     new_season = not random and episode['season'] != result[0]['season']
     episode.update(result[0])
 
-    log('Next episode from library - %s' % episode, 2)
+    log('Next episode from library: %s' % episode, 2)
     return episode, new_season
 
 
@@ -346,7 +346,7 @@ def get_from_library(tvshowid, episodeid):
     result = result.get('result', {}).get('tvshowdetails')
 
     if not result:
-        log('Error - show info not found in library', 1)
+        log('Error: show info not found in library', 1)
         return None
     episode = result
 
@@ -360,11 +360,11 @@ def get_from_library(tvshowid, episodeid):
     result = result.get('result', {}).get('episodedetails')
 
     if not result:
-        log('Error - episode info not found in library', 1)
+        log('Error: episode info not found in library', 1)
         return None
     episode.update(result)
 
-    log('Episode from library - %s' % episode, 2)
+    log('Episode from library: %s' % episode, 2)
     return episode
 
 
@@ -385,7 +385,7 @@ def get_tvshowid(title):
     result = result.get('result', {}).get('tvshows')
 
     if not result:
-        log('Error - tvshowid not found in library', 1)
+        log('Error: tvshowid not found in library', 1)
         return -1
 
     return utils.get_int(result[0], 'tvshowid')
@@ -419,7 +419,7 @@ def get_episodeid(tvshowid, season, episode):
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Error - episodeid not found in library', 1)
+        log('Error: episodeid not found in library', 1)
         return -1
 
     return utils.get_int(result[0], 'episodeid')
@@ -442,18 +442,18 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
         return
 
     params = dict(episodeid=episodeid)
-    msg = 'Library update - id: {0}'
+    msg = 'Library update: id - {0}'
 
-    # If Kodi has not increased playcount then Up Next will
+    # If Kodi has not increased playcount then UpNext will
     if current_playcount == playcount:
         playcount += 1
         params['playcount'] = playcount
-        msg += ', playcount: {1} to {2}'
+        msg += ', playcount - {1} to {2}'
 
     # If resume point has been saved then reset it
     if current_resume and reset_resume:
         params['resume'] = dict(position=0)
-        msg += ', resume: {3} to {4}'
+        msg += ', resume - {3} to {4}'
 
     # Only update library if playcount or resume point needs to change
     if len(params) == 1:
