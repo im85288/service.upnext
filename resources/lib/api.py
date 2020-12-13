@@ -48,7 +48,14 @@ class Api:
         return bool(next_item)
 
     @staticmethod
+    def dequeue_next_item():
+        """Remove unplayed next item from video playlist"""
+        jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=1))
+        return False
+
+    @staticmethod
     def reset_queue():
+        """Remove previously played item from video playlist"""
         jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=0))
 
     def get_next_in_playlist(self, position):

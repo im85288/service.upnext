@@ -54,7 +54,16 @@ class PlaybackManager:
                 self.log('Error: no episode could be found to play next...exiting', 1)
                 return
         self.log('episode details %s' % episode, 2)
-        self.launch_popup(episode, playlist_item)
+        play_next, keep_playing = self.launch_popup(episode, playlist_item)
+        self.state.playing_next = play_next
+
+        # Dequeue and stop playback if not playing next file
+        if not play_next and self.state.queued:
+            self.state.queued = self.api.dequeue_next_item()
+        if not keep_playing:
+            self.log('Stopping playback', 2)
+            self.player.stop()
+
         self.api.reset_addon_data()
 
     def launch_popup(self, episode, playlist_item):
@@ -62,7 +71,9 @@ class PlaybackManager:
         no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
         include_play_count = True if self.state.include_watched else no_play_count
         if not include_play_count or self.state.current_episode_id == episode_id:
-            return
+            play_next = False
+            keep_playing = True
+            return play_next, keep_playing
 
         if not playlist_item:
             self.state.queued = self.api.queue_next_item(episode)
@@ -84,11 +95,18 @@ class PlaybackManager:
                                                                               still_watching_page)
         if not self.state.track:
             self.log('exit launch_popup early due to disabled tracking', 2)
-            return
+            play_next = False
+            # Stop if Still Watching? popup was shown to prevent unwanted playback when using FF or skip
+            keep_playing = showing_next_up_page
+            return play_next, keep_playing
+
         play_item_option_1 = (should_play_default and self.state.play_mode == 0)
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
-            return
+            play_next = False
+            # Note that this will stop playback prematurely, even if stopAfterClose is not enabled
+            keep_playing = False
+            return play_next, keep_playing
 
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
@@ -104,6 +122,10 @@ class PlaybackManager:
         else:
             # Play local media
             self.api.play_kodi_item(episode)
+
+        play_next = True
+        keep_playing = True
+        return play_next, keep_playing
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
         try:
