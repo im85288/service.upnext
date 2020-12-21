@@ -70,7 +70,7 @@ class UpNextMonitor(Monitor):
             if last_file and last_file == from_unicode(current_file):
                 # Already processed this playback before
                 continue
-            elif not last_wait_file or last_wait_file != from_unicode(current_file):
+            if not last_wait_file or last_wait_file != from_unicode(current_file):
                 # Set initial time when waiting for player initialization started
                 start = time()
                 self.player.set_last_wait_file(from_unicode(current_file))
@@ -89,12 +89,12 @@ class UpNextMonitor(Monitor):
                 self.player.disable_tracking()
                 self.playback_manager.demo.hide()
                 continue
-            elif total_time == 0:
+            if total_time == 0:
                 # Sleep if not yet ready to retry later
                 sleep(0.5)
                 continue
-            else:
-                self.player.set_last_wait_file(None)
+
+            self.player.set_last_wait_file(None)
 
             try:
                 play_time = self.player.getTime()
