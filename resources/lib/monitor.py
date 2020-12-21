@@ -8,6 +8,7 @@ from playbackmanager import PlaybackManager
 from player import UpNextPlayer
 from statichelper import from_unicode
 from utils import decode_json, get_property, get_setting_bool, kodi_version_major, log as ulog
+from time import time, sleep
 
 
 class UpNextMonitor(Monitor):
@@ -27,6 +28,7 @@ class UpNextMonitor(Monitor):
     def run(self):
         """Main service loop"""
         self.log('Service started', 0)
+        start = 0
 
         while not self.abortRequested():
             # check every 1 sec
@@ -56,6 +58,7 @@ class UpNextMonitor(Monitor):
                 continue
 
             last_file = self.player.get_last_file()
+            last_wait_file = self.player.get_last_wait_file()
             try:
                 current_file = self.player.getPlayingFile()
             except RuntimeError:
@@ -67,6 +70,10 @@ class UpNextMonitor(Monitor):
             if last_file and last_file == from_unicode(current_file):
                 # Already processed this playback before
                 continue
+            elif not last_wait_file or last_wait_file != from_unicode(current_file):
+                # Set initial time when waiting for player initialization started
+                start = time()
+                self.player.set_last_wait_file(from_unicode(current_file))
 
             try:
                 total_time = self.player.getTotalTime()
@@ -76,11 +83,18 @@ class UpNextMonitor(Monitor):
                 self.playback_manager.demo.hide()
                 continue
 
-            if total_time == 0:
+            if total_time == 0 and time() - start > 60:
+                # Skip processing of player if it took too long to complete
                 self.log('Up Next tracking stopped, no file is playing', 2)
                 self.player.disable_tracking()
                 self.playback_manager.demo.hide()
                 continue
+            elif total_time == 0:
+                # Sleep if not yet ready to retry later
+                sleep(0.5)
+                continue
+            else:
+                self.player.set_last_wait_file(None)
 
             try:
                 play_time = self.player.getTime()

@@ -18,6 +18,7 @@ class State:
         self.tv_show_id = None
         self.played_in_a_row = 1
         self.last_file = None
+        self.last_wait_file = None
         self.track = False
         self.pause = False
         self.queued = False

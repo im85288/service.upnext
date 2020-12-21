@@ -24,6 +24,12 @@ class UpNextPlayer(Player):
     def get_last_file(self):
         return self.state.last_file
 
+    def set_last_wait_file(self, filename):
+        self.state.last_wait_file = filename
+
+    def get_last_wait_file(self):
+        return self.state.last_wait_file
+
     def is_tracking(self):
         return self.state.track
 
