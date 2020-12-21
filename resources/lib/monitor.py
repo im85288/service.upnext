@@ -2,13 +2,13 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
+from time import time, sleep
 from xbmc import Monitor
 from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
 from statichelper import from_unicode
 from utils import decode_json, get_property, get_setting_bool, kodi_version_major, log as ulog
-from time import time, sleep
 
 
 class UpNextMonitor(Monitor):
