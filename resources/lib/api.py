@@ -183,16 +183,16 @@ def get_next_in_playlist(position):
 
 def play_addon_item(data, encoding):
     """Function to play next addon item, either directly or by passthrough to addon"""
-    data = data.get('play_url')
-    if data:
-        log('Playing from addon: {0}'.format(data), 2)
+    if data.get('play_url'):
+        data = data.get('play_url')
+        log('Playing from addon - {0}'.format(data), 2)
         utils.jsonrpc(
             method='Player.Open',
             params=dict(item=dict(file=data)),
             no_response=True
         )
-    else:
-        msg = 'Sending to addon: ({encoding}) {play_info}'
+    elif data.get('play_info'):
+        msg = 'Sending to addon - ({encoding}) {play_info}'
         msg = msg.format(dict(encoding=encoding, **data))
         log(msg, 2)
         utils.event(
@@ -201,6 +201,8 @@ def play_addon_item(data, encoding):
             sender='upnextprovider',
             encoding=encoding
         )
+    else:
+        log('Error - no addon data available for playback', 1)
 
 
 def get_player_id(player_type=None):
