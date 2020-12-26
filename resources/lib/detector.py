@@ -4,26 +4,22 @@
 from __future__ import absolute_import, division, unicode_literals
 import json
 import operator
+import os
 import threading
 import timeit
 from PIL import Image
 import xbmc
+import xbmcvfs
 import player
 import utils
 
 
-STORED_HASHES = None
-
-
 class HashStore(object):  # pylint: disable=useless-object-inheritance
-    def __init__(self, init_data=None, **kwargs):
-        if init_data:
-            self.load(init_data)
-            return
-
+    def __init__(self, **kwargs):
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (16, 16))
         self.data = kwargs.get('data', {})
+        self.popup_time = kwargs.get('popup_time')
 
     @classmethod
     def log(cls, msg, level=2):
@@ -44,8 +40,21 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
     def hash_to_int(cls, image_hash):
         return int(''.join(str(bit_val) for bit_val in image_hash), 2)
 
-    def load(self, data):
-        data = json.loads(data)
+    def load(self, data=None, target=None):
+        if data:
+            data = json.loads(data)
+
+        elif target:
+            target = os.path.join(target, 'upnext.json')
+            if not xbmcvfs.exists(target):
+                self.log('Error: Load path (%s) does not exist' % target, 1)
+                return False
+            with open(target, mode='r') as target_file:
+                data = json.load(target_file)
+
+        if not data:
+            return False
+
         for key, val in data.items():
             if key == 'data':
                 val = {
@@ -53,17 +62,27 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
                     for idx, hash_val in val.items()
                 }
             setattr(self, key, val)
+        return True
 
-    def save(self):
+    def save(self, target=None):
         output = dict(
             version=self.version,
             hash_size=self.hash_size,
             data={
                 idx: self.hash_to_int(hash)
                 for idx, hash in self.data.items()
-            }
+            },
+            popup_time=self.popup_time
         )
-        return json.dumps(output)
+
+        if not target or not xbmcvfs.exists(target):
+            self.log('Error: Save path (%s) does not exist' % target, 1)
+            return json.dumps(output)
+
+        target = os.path.join(target, 'upnext.json')
+        with open(target, mode='w') as target_file:
+            json.dump(output, target_file)
+            return output
 
 
 class Detector(object):  # pylint: disable=useless-object-inheritance
@@ -113,11 +132,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 [0] * (1 + hash_size[0] // 4)
                 + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
                 + [0] * (1 + hash_size[0] // 4)
-            ) * hash_size[1]}
+            ) * hash_size[1]},
+            popup_time=None
         )
-        global STORED_HASHES
-        if STORED_HASHES:
-            self.past_hashes = HashStore(init_data=STORED_HASHES)
+        past_hashes = HashStore()
+        if past_hashes.load(target=xbmc.getInfoLabel('Player.Folderpath')):
+            self.past_hashes = past_hashes
 
         self.match_count = 5
         self.matches = 0
@@ -195,11 +215,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return (width, height), aspect_ratio
 
     @classmethod
-    def print_hash(cls, hash_1, hash_2, size=None):
+    def print_hash(cls, hash1, hash2, size=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
-        num_pixels = len(hash_1)
-        if num_pixels != len(hash_2):
+        if not hash1 or not hash2 or len(hash1) != len(hash2):
             return
+        num_pixels = len(hash1)
         if not size:
             size = int(num_pixels ** 0.5)
             size = (size, size)
@@ -210,10 +230,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             cls.log('{0:>3} |{1}|{2}|'.format(
                 row,
                 ' '.join(
-                    ['*' if bit else ' ' for bit in hash_1[row:row + size[0]]]
+                    ['*' if bit else ' ' for bit in hash1[row:row + size[0]]]
                 ),
                 ' '.join(
-                    ['*' if bit else ' ' for bit in hash_2[row:row + size[0]]]
+                    ['*' if bit else ' ' for bit in hash2[row:row + size[0]]]
                 )
             ), 2)
         cls.log(seperator, 2)
@@ -336,7 +356,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             # Calculate similarity to hash from previous episode
             season_similarity = self.calc_similarity(
-                self.past_hashes.data[int(total_time - play_time)],
+                self.past_hashes.data.get(int(total_time - play_time)),
                 image_hash_madm
             ) if hasattr(self, 'past_hashes') else 0
 
@@ -366,7 +386,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 )
                 if hasattr(self, 'past_hashes'):
                     self.print_hash(
-                        self.past_hashes.data[int(total_time - play_time)],
+                        self.past_hashes.data.get(int(total_time - play_time)),
                         image_hash_madm,
                         self.hashes.hash_size
                     )
@@ -391,8 +411,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigterm = False
 
     def store_hashes(self):
-        global STORED_HASHES
-        STORED_HASHES = self.hashes.save()
+        self.hashes.save(target=xbmc.getInfoLabel('Player.Folderpath'))
 
     def update_default(self):
         if len(self.hashes.data) < 5:
