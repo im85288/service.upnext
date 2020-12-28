@@ -136,7 +136,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # Close dialog once we are done with it
         self.remove_popup()
 
-        # Request playback of next file
+        # Request playback of next file based on source and type
+        has_addon_data = self.state.has_addon_data()
         # Primary method is to play next playlist item
         if source == 'playlist' or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
@@ -158,11 +159,11 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
                 # Stick to playnext() for now, without possibility for resuming
                 self.player.playnext()
 
-        # Fallback addon playback option, used if addon provides play_info
-        elif self.state.has_addon_data():
+        # Fallback addon playback method, used if addon provides play_info
+        elif has_addon_data:
             api.play_addon_item(self.state.data, self.state.encoding)
 
-        # Fallback library playback option, not normally used
+        # Fallback library playback method, not normally used
         else:
             api.play_kodi_item(episode)
 
@@ -179,8 +180,9 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             ' play_now' if play_now else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
             ' auto_play',
-            ' play_url' if (self.state.has_addon_data() == 1) else
-            ' play_info' if (self.state.has_addon_data() == 2) else
+            ' play_url' if (has_addon_data == 2) else
+            ' play_info' if (has_addon_data == 3) else
+            ' missing_addon_data' if (has_addon_data == 1) else
             ' library' if (isinstance(episodeid, int) and episodeid != -1) else
             ' file',
             ' playlist' if source == 'playlist' else

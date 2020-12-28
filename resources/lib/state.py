@@ -271,8 +271,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def has_addon_data(self):
         if self.data:
-            if self.data.get('play_info'):
+            if self.data.get('play_url'):
                 return 2
+            if self.data.get('play_info'):
+                return 3
             return 1
         return 0
 
