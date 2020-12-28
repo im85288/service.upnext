@@ -202,7 +202,7 @@ def play_addon_item(data, encoding):
             encoding=encoding
         )
     else:
-        log('Error - no addon data available for playback', 1)
+        log('Error: no addon data available for playback', 1)
 
 
 def get_player_id(player_type=None):

@@ -414,7 +414,7 @@ class UpNextMonitor(xbmc.Monitor):
             decoded_data, encoding = utils.decode_json(data)
             sender = sender.replace('.SIGNAL', '')
             if not isinstance(decoded_data, dict) or not decoded_data:
-                msg = 'Addon data error: {0} sent {1} as {2}'
+                msg = 'Error: {0} addon, sent {1} as {2}'
                 self.log(msg.format(sender, decoded_data, data), 1)
                 return
             decoded_data.update(id='%s_play_action' % sender)

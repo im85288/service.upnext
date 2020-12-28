@@ -17,7 +17,7 @@ def send_signal(sender, upnext_info):
     # Exit if not enough addon information provided
     if not (upnext_info.get('current_episode')
             and (upnext_info.get('play_url') or upnext_info.get('play_info'))):
-        log('Invalid UpNext info sent: %s' % upnext_info, 1)
+        log('Error: Invalid UpNext info - %s' % upnext_info, 1)
         return
 
     # Extract ListItem or InfoTagVideo details for use by UpNext
