@@ -19,7 +19,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (16, 16))
         self.data = kwargs.get('data', {})
-        self.popup_time = kwargs.get('popup_time')
+        self.ids = kwargs.get('ids', {})
+        self.enabled = kwargs.get('enabled', False)
 
     @classmethod
     def log(cls, msg, level=2):
@@ -72,7 +73,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
                 idx: self.hash_to_int(hash)
                 for idx, hash in self.data.items()
             },
-            popup_time=self.popup_time
+            ids=self.ids
         )
 
         if not target or not xbmcvfs.exists(target):
@@ -133,11 +134,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
                 + [0] * (1 + hash_size[0] // 4)
             ) * hash_size[1]},
-            popup_time=None
+            ids={},
+            enabled=True
         )
-        past_hashes = HashStore()
-        if past_hashes.load(target=xbmc.getInfoLabel('Player.Folderpath')):
-            self.past_hashes = past_hashes
+        self.past_hashes = HashStore()
+        self.past_hashes.load(target=xbmc.getInfoLabel('Player.Folderpath'))
 
         self.match_count = 5
         self.matches = 0
@@ -217,9 +218,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     @classmethod
     def print_hash(cls, hash1, hash2, size=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
-        if not hash1 or not hash2 or len(hash1) != len(hash2):
+        if not hash1 or not hash2:
             return
         num_pixels = len(hash1)
+        if num_pixels != len(hash2):
+            return
+
         if not size:
             size = int(num_pixels ** 0.5)
             size = (size, size)
@@ -268,16 +272,27 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             for pixel in pixels
         )
 
+    def update_id(self, episodeid):
+        self.past_hashes.enabled = (
+            len(self.past_hashes.ids) > 1 or
+            (not self.past_hashes.ids.get(episodeid) and self.past_hashes.ids)
+        )
+
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
         return self.matches >= self.match_count
 
-    def reset(self):
+    def reset(self, episodeid=None):
         self.matches = 0
         self.match_count = 5
+        if episodeid:
+            self.update_id(episodeid)
 
-    def run(self):
+    def run(self, episodeid=None):
         """Method to run actual detection test loop in a separate thread"""
+        if episodeid:
+            self.update_id(episodeid)
+
         self.detector = threading.Thread(target=self.test)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
@@ -353,7 +368,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
-                self.hashes.data[hash_index[0]],
+                self.hashes.data.get(hash_index[0]),
                 image_hash_madm
             )
             # Calculate percentage of significant deviations
@@ -362,15 +377,15 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 / len(image_hash_madm)
             )
             # Calculate similarity to hash from previous episode
-            season_similarity = self.calc_similarity(
+            episode_similarity = self.calc_similarity(
                 self.past_hashes.data.get(hash_index[1]),
                 image_hash_madm
-            ) if hasattr(self, 'past_hashes') else 0
+            ) if self.past_hashes.enabled else 0
 
             # If current hash matches previous hash and has few significant
             # regions of deviation then increment the number of matches
             if ((similarity >= self.detect_level and significance < 0.2)
-                    or season_similarity >= self.detect_level):
+                    or episode_similarity >= self.detect_level):
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -388,20 +403,19 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.log(msg.format(
                     significance,
                     similarity,
-                    season_similarity,
+                    episode_similarity,
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
-                    self.hashes.data[hash_index[0]],
+                    self.hashes.data.get(hash_index[0]),
                     image_hash_madm,
                     self.hashes.hash_size
                 )
-                if hasattr(self, 'past_hashes'):
-                    self.print_hash(
-                        self.past_hashes.data.get(hash_index[1]),
-                        image_hash_madm,
-                        self.hashes.hash_size
-                    )
+                self.print_hash(
+                    self.past_hashes.data.get(hash_index[1]),
+                    image_hash_madm,
+                    self.hashes.hash_size
+                )
 
             # Store hash for comparison with next video frame
             hash_index[0] = hash_index[1]
@@ -415,19 +429,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.running = False
         self.sigterm = False
 
-    def store_hashes(self, popup_time=None):
-        target = xbmc.getInfoLabel('Player.Folderpath')
-
-        if not hasattr(self, 'past_hashes'):
-            if popup_time:
-                self.hashes.popup_time = popup_time
-            self.hashes.save(target)
-
-        elif self.hashes.hash_size == self.past_hashes.hash_size:
-            if popup_time:
-                self.past_hashes.popup_time = popup_time
-            self.past_hashes.data.update(self.hashes.data)
-            self.past_hashes.save(target)
+    def store_hashes(self, episodeid):
+        self.past_hashes.data.update(self.hashes.data)
+        self.past_hashes.ids[episodeid] = True
+        self.past_hashes.save(xbmc.getInfoLabel('Player.Folderpath'))
 
     def update_default(self):
         if len(self.hashes.data) < 5:

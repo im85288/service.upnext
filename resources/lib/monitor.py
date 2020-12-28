@@ -178,7 +178,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # If tracker was (re)started, ensure detector is also reset
         if self.detector:
-            self.detector.reset()
+            self.detector.reset(self.state.episodeid)
 
         # Loop unless abort requested
         while not self.abortRequested() and not self.sigterm:
@@ -207,10 +207,10 @@ class UpNextMonitor(xbmc.Monitor):
             # Detector start before normal popup request time
             detect_time = self.state.get_detect_time()
             if detect_time and play_time >= detect_time:
-                # Start detector is not already started
+                # Start detector if not already started
                 if not self.detector:
                     self.detector = detector.Detector()
-                    self.detector.run()
+                    self.detector.run(self.state.episodeid)
                 # Otherwise check whether credit have been detected
                 elif self.detector.detected():
                     self.log('Credits detected', 2)
@@ -224,7 +224,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Stop detector once popup is requested
             if self.detector and not utils.get_setting_bool('detectAlways'):
-                self.detector.store_hashes(popup_time)
+                self.detector.store_hashes(self.state.episodeid)
                 self.detector.stop()
                 del self.detector
                 self.detector = None
