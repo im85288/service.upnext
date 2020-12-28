@@ -224,8 +224,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Stop detector once popup is requested
             if self.detector and not utils.get_setting_bool('detectAlways'):
-                if not self.state.popup_cue:
-                    self.detector.store_hashes()
+                self.detector.store_hashes(popup_time)
                 self.detector.stop()
                 del self.detector
                 self.detector = None

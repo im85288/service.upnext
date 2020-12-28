@@ -304,44 +304,51 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             now = self.debug and timeit.default_timer()
             # Only capture if playing at normal speed
             with self.player as check_fail:
-                total_time = self.player.getTotalTime()
-                play_time = self.player.getTime()
                 playing = self.player.get_speed() == 1
+                remaining_time = int(
+                    self.player.getTotalTime() - self.player.getTime()
+                )
                 check_fail = False
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            raw = self.capturer.getImage(0) if playing or self.debug else None
+            image = (
+                self.capturer.getImage(0)
+                if playing or self.debug
+                else None
+            )
 
             # del self.capturer
             # self.capturer = xbmc.RenderCapture()
             # self.capturer.capture(*self.capture_size)
 
             # Capture failed or was skipped
-            if not raw or raw[-1] != 255:
+            if not image or image[-1] != 255:
                 continue
 
             # Convert captured image data from BGRA to RGBA
-            raw[0::4], raw[2::4] = raw[2::4], raw[0::4]
+            image[0::4], image[2::4] = image[2::4], image[0::4]
+            # Convert to greyscale to reduce size of data by a factor of 4
             image = Image.frombuffer(
-                'RGBA', self.capture_size, raw, 'raw', 'RGBA', 0, 1
-            )
-            # Convert to greyscale and resize to manageable size for hashing
-            image = image.convert('L')
+                'RGBA', self.capture_size, image, 'raw', 'RGBA', 0, 1
+            ).convert('L')
+            # Resize to reduce number of pixels processed for hashing
             if self.hashes.hash_size != self.capture_size:
                 image = image.resize(self.hashes.hash_size, resample=Image.BOX)
 
             # Transform image to show absolute deviation from median pixel luma
             quartiles = self.calc_quartiles(image.getdata())
-            lut = [abs(i - quartiles[1]) for i in range(256)]
-            image_hash_madm = image.point(lut)
+            image_hash_madm = image.point(
+                [abs(i - quartiles[1]) for i in range(256)]
+            )
 
             # Calculate median absolute deviation from the median to represent
             # significant deviations and use transformed image as the hash of
             # the current video frame
             quartiles = self.calc_quartiles(image_hash_madm.getdata())
-            lut = [i > quartiles[1] for i in range(256)]
-            image_hash_madm = image_hash_madm.point(lut)
+            image_hash_madm = image_hash_madm.point(
+                [i > quartiles[1] for i in range(256)]
+            )
             image_hash_madm = list(image_hash_madm.getdata())
 
             # Calculate similarity between current hash and previous hash
@@ -356,7 +363,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             # Calculate similarity to hash from previous episode
             season_similarity = self.calc_similarity(
-                self.past_hashes.data.get(int(total_time - play_time)),
+                self.past_hashes.data.get(remaining_time),
                 image_hash_madm
             ) if hasattr(self, 'past_hashes') else 0
 
@@ -376,9 +383,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 mismatch_count = 0
                 # self.update_default()
 
-            delta = self.debug and timeit.default_timer() - now
-
             if self.debug:
+                msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f} in {3:1.4f}s'
+                self.log(msg.format(
+                    significance,
+                    similarity,
+                    season_similarity,
+                    timeit.default_timer() - now
+                ), 2)
                 self.print_hash(
                     self.hashes.data[hash_index],
                     image_hash_madm,
@@ -386,20 +398,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 )
                 if hasattr(self, 'past_hashes'):
                     self.print_hash(
-                        self.past_hashes.data.get(int(total_time - play_time)),
+                        self.past_hashes.data.get(remaining_time),
                         image_hash_madm,
                         self.hashes.hash_size
                     )
-                msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f} in {3:1.4f}s'
-                self.log(msg.format(
-                    significance,
-                    similarity,
-                    season_similarity,
-                    delta
-                ), 2)
 
             # Store hash for comparison with next video frame
-            hash_index = int(total_time - play_time)
+            hash_index = remaining_time
             self.hashes.data[hash_index] = image_hash_madm
 
             monitor.waitForAbort(1)
@@ -410,8 +415,19 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.running = False
         self.sigterm = False
 
-    def store_hashes(self):
-        self.hashes.save(target=xbmc.getInfoLabel('Player.Folderpath'))
+    def store_hashes(self, popup_time=None):
+        target = xbmc.getInfoLabel('Player.Folderpath')
+
+        if not hasattr(self, 'past_hashes'):
+            if popup_time:
+                self.hashes.popup_time = popup_time
+            self.hashes.save(target)
+
+        elif self.hashes.hash_size == self.past_hashes.hash_size:
+            if popup_time:
+                self.past_hashes.popup_time = popup_time
+            self.past_hashes.data.update(self.hashes.data)
+            self.past_hashes.save(target)
 
     def update_default(self):
         if len(self.hashes.data) < 5:
