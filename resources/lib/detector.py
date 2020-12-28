@@ -297,7 +297,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return
         self.running = True
 
-        hash_index = 0
+        hash_index = [0, 0]
         mismatch_count = 0
         monitor = xbmc.Monitor()
         while not monitor.abortRequested() and not self.sigterm:
@@ -305,7 +305,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Only capture if playing at normal speed
             with self.player as check_fail:
                 playing = self.player.get_speed() == 1
-                remaining_time = int(
+                hash_index[1] = int(
                     self.player.getTotalTime() - self.player.getTime()
                 )
                 check_fail = False
@@ -353,7 +353,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
-                self.hashes.data[hash_index],
+                self.hashes.data[hash_index[0]],
                 image_hash_madm
             )
             # Calculate percentage of significant deviations
@@ -363,7 +363,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             # Calculate similarity to hash from previous episode
             season_similarity = self.calc_similarity(
-                self.past_hashes.data.get(remaining_time),
+                self.past_hashes.data.get(hash_index[1]),
                 image_hash_madm
             ) if hasattr(self, 'past_hashes') else 0
 
@@ -392,20 +392,20 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
-                    self.hashes.data[hash_index],
+                    self.hashes.data[hash_index[0]],
                     image_hash_madm,
                     self.hashes.hash_size
                 )
                 if hasattr(self, 'past_hashes'):
                     self.print_hash(
-                        self.past_hashes.data.get(remaining_time),
+                        self.past_hashes.data.get(hash_index[1]),
                         image_hash_madm,
                         self.hashes.hash_size
                     )
 
             # Store hash for comparison with next video frame
-            hash_index = remaining_time
-            self.hashes.data[hash_index] = image_hash_madm
+            hash_index[0] = hash_index[1]
+            self.hashes.data[hash_index[0]] = image_hash_madm
 
             monitor.waitForAbort(1)
 
