@@ -64,10 +64,8 @@ def send_signal(sender, upnext_info):
         # Next provided episode may not be the next consecutive episode so we
         # can't assume that the episode can simply be incremented, instead set
         # title to indicate the next episode in the UpNext popup
-        # from utils import get_int
-        # episode['episode'] = get_int(episode, 'episode') + 1
-        # TODO: Change to localised string variable for translation purposes
-        episode['title'] = 'Next episode'
+        # episode['episode'] = utils.get_int(episode, 'episode') + 1
+        episode['title'] = utils.localize(30049)
         # Change season and episode info to empty string to avoid episode
         # formatting issues ("S-1E-1") in UpNext popup
         episode['season'] = ''
