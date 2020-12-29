@@ -296,7 +296,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.log('Skip video check: PsuedoTV detected', 2)
             return
 
-        if utils.supports_python_api(18) and self.player.isExternalPlayer():
+        if self.player.isExternalPlayer():
             self.log('Skip video check: external player detected', 2)
             return
 

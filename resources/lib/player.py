@@ -86,7 +86,11 @@ class UpNextPlayer(xbmc.Player):
 
     def isExternalPlayer(self):  # pylint: disable=invalid-name
         # Use inbuilt method to store actual value
-        actual = getattr(xbmc.Player, 'isExternalPlayer')(self)
+        actual = (
+            getattr(xbmc.Player, 'isExternalPlayer')(self)
+            if utils.supports_python_api(18)
+            else False
+        )
         self.state.external_player = actual
         # Return actual value or forced value if forced
         return self.state.external_player
