@@ -428,6 +428,7 @@ def get_episodeid(tvshowid, season, episode):
 
 
 def handle_just_watched(episodeid, playcount=0, reset_resume=True):
+    """Function to update playcount and resume point of just watched video"""
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
         params=dict(
