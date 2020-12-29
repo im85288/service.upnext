@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-"""Implements helper functions used elsewhere in the add-on"""
+"""Implements helper functions used elsewhere in the addon"""
 
 from __future__ import absolute_import, division, unicode_literals
 import base64
@@ -18,17 +18,17 @@ KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion')[:4])
 
 
 def get_addon_info(key):
-    """Return add-on information"""
+    """Return addon information"""
     return statichelper.to_unicode(ADDON.getAddonInfo(key))
 
 
 def addon_id():
-    """Return add-on ID"""
+    """Return addon ID"""
     return get_addon_info('id')
 
 
 def addon_path():
-    """Return add-on path"""
+    """Return addon path"""
     return get_addon_info('path')
 
 
@@ -54,11 +54,11 @@ def clear_property(key, window_id=10000):
 
 
 def get_setting(key, default=None):
-    """Get an add-on setting as string"""
+    """Get an addon setting as string"""
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
         value = statichelper.to_unicode(xbmcaddon.Addon().getSetting(key))
-    # Occurs when the add-on is disabled
+    # Occurs when the addon is disabled
     except RuntimeError:
         return default
     if value == '' and default is not None:
@@ -67,7 +67,7 @@ def get_setting(key, default=None):
 
 
 def get_setting_bool(key, default=None):
-    """Get an add-on setting as boolean"""
+    """Get an addon setting as boolean"""
     try:
         return xbmcaddon.Addon().getSettingBool(key)
     # On Krypton or older, or when not a boolean
@@ -76,13 +76,13 @@ def get_setting_bool(key, default=None):
         if value not in {'false', 'true'}:
             return default
         return bool(value == 'true')
-    # Occurs when the add-on is disabled
+    # Occurs when the addon is disabled
     except RuntimeError:
         return default
 
 
 def get_setting_int(key, default=None):
-    """Get an add-on setting as integer"""
+    """Get an addon setting as integer"""
     try:
         return xbmcaddon.Addon().getSettingInt(key)
     # On Krypton or older, or when not an integer
@@ -92,7 +92,7 @@ def get_setting_int(key, default=None):
             return int(value)
         except ValueError:
             return default
-    # Occurs when the add-on is disabled
+    # Occurs when the addon is disabled
     except RuntimeError:
         return default
 

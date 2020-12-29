@@ -1,5 +1,5 @@
-# Service Up Next language file
-# Addon Name: Up Next
+# Service UpNext language file
+# Addon Name: UpNext
 # Addon id: service.upnext
 # Addon Provider: im85288
 msgid ""
@@ -19,11 +19,11 @@ msgstr ""
 
 ### APPLICATION
 msgctxt "#30006"
-msgid "Watch Now"
+msgid "Watch now"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Up Next"
+msgid "UpNext"
 msgstr ""
 
 msgctxt "#30009"
@@ -91,7 +91,7 @@ msgid "Debug"
 msgstr ""
 
 msgctxt "#30049"
-msgid "Next Episode"
+msgid "Next episode"
 msgstr ""
 
 
@@ -189,7 +189,7 @@ msgid "Expert"
 msgstr ""
 
 msgctxt "#30703"
-msgid "Disable Up Next"
+msgid "Disable UpNext"
 msgstr ""
 
 msgctxt "#30705"
