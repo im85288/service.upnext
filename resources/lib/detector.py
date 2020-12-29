@@ -285,8 +285,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def update_id(self, episodeid):
         self.past_hashes.enabled = (
-            len(self.past_hashes.ids) > 1 or
-            (not self.past_hashes.ids.get(episodeid) and self.past_hashes.ids)
+            len(self.past_hashes.ids) > 1
+            or (
+                len(self.past_hashes.ids) == 1
+                and not self.past_hashes.ids.get(str(episodeid))
+            )
         )
 
     def detected(self):
@@ -442,7 +445,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def store_hashes(self, episodeid):
         self.past_hashes.data.update(self.hashes.data)
-        self.past_hashes.ids[episodeid] = True
+        self.past_hashes.ids[str(episodeid)] = True
         self.past_hashes.save()
 
     def update_default(self):
