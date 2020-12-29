@@ -10,6 +10,7 @@ import sys
 import xbmc
 import xbmcaddon
 import xbmcgui
+import xbmcvfs
 import statichelper
 
 
@@ -32,9 +33,43 @@ def addon_path():
     return get_addon_info('path')
 
 
+def addon_data_path():
+    """Return addon data path"""
+    return translate_path(
+        'special://profile/addon_data/%s' % addon_id()
+    )
+
+
 def supports_python_api(version):
     """Return True if Kodi supports target Python API version"""
     return KODI_VERSION >= version
+
+
+def make_legal_filename(filename):
+    """Returns a legal filename, from an arbitrary string input, as a string"""
+    try:
+        return xbmcvfs.makeLegalFilename(filename)
+    except AttributeError:
+        xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
+        return xbmcvfs.makeLegalFilename(filename)
+
+
+def translate_path(path):
+    """Returns a real path, translated from a special:// path, as a string"""
+    try:
+        return xbmcvfs.translatePath(path)
+    except AttributeError:
+        xbmcvfs.translatePath = xbmc.translatePath
+        return xbmcvfs.translatePath(path)
+
+
+def validate_path(path):
+    """Returns a OS specific validated path, as a string"""
+    try:
+        return xbmcvfs.validatePath(path)
+    except AttributeError:
+        xbmcvfs.validatePath = xbmc.validatePath
+        return xbmcvfs.validatePath(path)
 
 
 def get_property(key, window_id=10000):

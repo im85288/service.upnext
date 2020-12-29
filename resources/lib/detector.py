@@ -9,9 +9,19 @@ import threading
 import timeit
 from PIL import Image
 import xbmc
-import xbmcvfs
+import api
 import player
 import utils
+
+
+SAVE_PATH = os.path.join(utils.addon_data_path(), 'detector', '')
+
+try:
+    if not os.path.exists(SAVE_PATH):
+        os.makedirs(SAVE_PATH)
+except (IOError, OSError) as error:
+    if error.errno != os.errno.EEXIST:
+        raise
 
 
 class HashStore(object):  # pylint: disable=useless-object-inheritance
@@ -41,17 +51,18 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
     def hash_to_int(cls, image_hash):
         return int(''.join(str(bit_val) for bit_val in image_hash), 2)
 
-    def load(self, data=None, target=None):
+    def load(self, data=None):
         if data:
             data = json.loads(data)
-
-        elif target:
-            target = os.path.join(target, 'upnext.json')
-            if not xbmcvfs.exists(target):
-                self.log('Error: Load path (%s) does not exist' % target, 1)
+        else:
+            identifier = api.generate_season_identifier(suffix='.json')
+            target = os.path.join(SAVE_PATH, identifier)
+            try:
+                with open(target, mode='r') as target_file:
+                    data = json.load(target_file)
+            except (IOError, OSError):
+                self.log('Could not load stored hashes from %s' % target, 2)
                 return False
-            with open(target, mode='r') as target_file:
-                data = json.load(target_file)
 
         if not data:
             return False
@@ -65,7 +76,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             setattr(self, key, val)
         return True
 
-    def save(self, target=None):
+    def save(self):
         output = dict(
             version=self.version,
             hash_size=self.hash_size,
@@ -76,14 +87,14 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             ids=self.ids
         )
 
-        if not target or not xbmcvfs.exists(target):
-            self.log('Error: Save path (%s) does not exist' % target, 1)
-            return json.dumps(output)
-
-        target = os.path.join(target, 'upnext.json')
-        with open(target, mode='w') as target_file:
-            json.dump(output, target_file)
-            return output
+        identifier = api.generate_season_identifier(suffix='.json')
+        target = os.path.join(SAVE_PATH, identifier)
+        try:
+            with open(target, mode='w') as target_file:
+                json.dump(output, target_file, indent=4)
+        except (IOError, OSError):
+            self.log('Error: Could not save hashes to %s' % target, 1)
+        return output
 
 
 class Detector(object):  # pylint: disable=useless-object-inheritance
@@ -138,7 +149,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             enabled=True
         )
         self.past_hashes = HashStore()
-        self.past_hashes.load(target=xbmc.getInfoLabel('Player.Folderpath'))
+        self.past_hashes.load()
 
         self.match_count = 5
         self.matches = 0
@@ -432,7 +443,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def store_hashes(self, episodeid):
         self.past_hashes.data.update(self.hashes.data)
         self.past_hashes.ids[episodeid] = True
-        self.past_hashes.save(xbmc.getInfoLabel('Player.Folderpath'))
+        self.past_hashes.save()
 
     def update_default(self):
         if len(self.hashes.data) < 5:

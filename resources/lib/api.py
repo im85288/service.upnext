@@ -427,6 +427,28 @@ def get_episodeid(tvshowid, season, episode):
     return utils.get_int(result[0], 'episodeid')
 
 
+def generate_season_identifier(prefix='', suffix=''):
+    """Generate a season identifier filename for the currently playing video"""
+    item = get_now_playing()
+    if not item or item.get('type') != 'episode':
+        return None
+
+    identifier = '_'.join((
+        str(item.get('showtitle')),
+        str(item.get('tvshowid')),
+        str(item.get('season'))
+    ))
+    identifier = ''.join((
+        prefix,
+        identifier,
+        suffix
+    ))
+    identifier = utils.make_legal_filename(identifier)
+    if identifier.endswith('/'):
+        identifier = identifier[:-1]
+    return identifier
+
+
 def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     """Function to update playcount and resume point of just watched video"""
     result = utils.jsonrpc(
