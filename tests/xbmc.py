@@ -11,7 +11,7 @@ import os
 import json
 import random
 import time
-from xbmcextra import global_settings, import_language
+from xbmcextra import global_settings, import_language, __KODI_MATRIX__
 from statichelper import to_unicode
 
 LOGFATAL = 'Fatal'
@@ -23,7 +23,7 @@ LOGDEBUG = 'Debug'
 LOGNONE = ''
 
 INFO_LABELS = {
-    'System.BuildVersion': '18.2',
+    'System.BuildVersion': '18.9' if __KODI_MATRIX__ else '19.0',
 }
 
 REGIONS = {
@@ -174,6 +174,7 @@ class InfoTagVideo:
         ''' A stub implementation for the xbmc InfoTagVideo class getMediaType() method '''
         return ''
 
+
 class RenderCapture:
     ''' A stub implementation of the xbmc RenderCapture class '''
 
@@ -268,15 +269,21 @@ def sleep(seconds):
     ''' A reimplementation of the xbmc sleep() function '''
     time.sleep(seconds)
 
+# translatePath and makeLegalFilename have been moved to xbmcvfs in Kodi 19+
+# but currently still available in xbmc
+if not __KODI_MATRIX__ or True:
+    def translatePath(path):
+        ''' A stub implementation of the xbmc translatePath() function '''
+        if path.startswith('special://home'):
+            return path.replace('special://home', os.path.join(os.getcwd(), 'tests/'))
+        if path.startswith('special://masterprofile'):
+            return path.replace('special://masterprofile', os.path.join(os.getcwd(), 'tests/userdata/'))
+        if path.startswith('special://profile'):
+            return path.replace('special://profile', os.path.join(os.getcwd(), 'tests/userdata/'))
+        if path.startswith('special://userdata'):
+            return path.replace('special://userdata', os.path.join(os.getcwd(), 'tests/userdata/'))
+        return path
 
-def translatePath(path):
-    ''' A stub implementation of the xbmc translatePath() function '''
-    if path.startswith('special://home'):
-        return path.replace('special://home', os.path.join(os.getcwd(), 'tests/'))
-    if path.startswith('special://masterprofile'):
-        return path.replace('special://masterprofile', os.path.join(os.getcwd(), 'tests/userdata/'))
-    if path.startswith('special://profile'):
-        return path.replace('special://profile', os.path.join(os.getcwd(), 'tests/userdata/'))
-    if path.startswith('special://userdata'):
-        return path.replace('special://userdata', os.path.join(os.getcwd(), 'tests/userdata/'))
-    return path
+    def makeLegalFilename(path):
+        ''' A stub implementation of the xbmc makeLegalFilename() function '''
+        return os.path.normpath(path)

@@ -9,6 +9,10 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 import os
 import xml.etree.ElementTree as ET
 import polib
+import random
+
+
+__KODI_MATRIX__ = bool(random.randint(0, 1))
 
 
 def kodi_to_ansi(string):

@@ -52,7 +52,7 @@ def make_legal_filename(filename, prefix='', suffix=''):
         filename,
         suffix
     ))
-    try:        
+    try:
         filename = xbmcvfs.makeLegalFilename(filename)
     except AttributeError:
         xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
@@ -70,15 +70,6 @@ def translate_path(path):
     except AttributeError:
         xbmcvfs.translatePath = xbmc.translatePath
         return xbmcvfs.translatePath(path)
-
-
-def validate_path(path):
-    """Returns a OS specific validated path, as a string"""
-    try:
-        return xbmcvfs.validatePath(path)
-    except AttributeError:
-        xbmcvfs.validatePath = xbmc.validatePath
-        return xbmcvfs.validatePath(path)
 
 
 def get_property(key, window_id=10000):
