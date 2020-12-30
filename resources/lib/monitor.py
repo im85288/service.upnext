@@ -178,7 +178,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # If tracker was (re)started, ensure detector is also reset
         if self.detector:
-            self.detector.reset(self.state.episodeid)
+            self.detector.reset()
 
         # Loop unless abort requested
         while not self.abortRequested() and not self.sigterm:
@@ -209,8 +209,11 @@ class UpNextMonitor(xbmc.Monitor):
             if detect_time and play_time >= detect_time:
                 # Start detector if not already started
                 if not self.detector:
-                    self.detector = detector.Detector()
-                    self.detector.run(self.state.episodeid)
+                    self.detector = detector.Detector(
+                        player=self.player,
+                        state=self.state
+                    )
+                    self.detector.run()
                 # Otherwise check whether credit have been detected
                 elif self.detector.detected():
                     self.log('Credits detected', 2)
@@ -224,7 +227,7 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Stop detector once popup is requested
             if self.detector and not utils.get_setting_bool('detectAlways'):
-                self.detector.store_hashes(self.state.episodeid)
+                self.detector.store_hashes()
                 self.detector.stop()
                 del self.detector
                 self.detector = None
@@ -312,8 +315,11 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.set_addon_data(data, encoding)
         has_addon_data = self.state.has_addon_data()
 
-        if utils.get_setting_bool('detectAlways'):
-            self.detector = detector.Detector()
+        if utils.get_setting_bool('detectAlways') and not self.detector:
+            self.detector = detector.Detector(
+                player=self.player,
+                state=self.state
+            )
             self.detector.run()
 
         # Start tracking if UpNext can handle the currently playing video

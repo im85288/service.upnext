@@ -10,8 +10,6 @@ import threading
 import timeit
 from PIL import Image
 import xbmc
-import api
-import player
 import utils
 
 
@@ -52,18 +50,15 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
     def hash_to_int(cls, image_hash):
         return int(''.join(str(bit_val) for bit_val in image_hash), 2)
 
-    def load(self, data=None):
-        if data:
-            data = json.loads(data)
-        else:
-            identifier = api.generate_season_identifier(suffix='.json')
-            target = os.path.join(SAVE_PATH, identifier)
-            try:
-                with open(target, mode='r') as target_file:
-                    data = json.load(target_file)
-            except (IOError, OSError):
-                self.log('Could not load stored hashes from %s' % target, 2)
-                return False
+    def load(self, identifier):
+        filename = utils.make_legal_filename(identifier, suffix='.json')
+        target = os.path.join(SAVE_PATH, filename)
+        try:
+            with open(target, mode='r') as target_file:
+                data = json.load(target_file)
+        except (IOError, OSError):
+            self.log('Could not load stored hashes from %s' % target, 2)
+            return False
 
         if not data:
             return False
@@ -77,7 +72,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             setattr(self, key, val)
         return True
 
-    def save(self):
+    def save(self, identifier):
         output = dict(
             version=self.version,
             hash_size=self.hash_size,
@@ -88,8 +83,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             ids=self.ids
         )
 
-        identifier = api.generate_season_identifier(suffix='.json')
-        target = os.path.join(SAVE_PATH, identifier)
+        filename = utils.make_legal_filename(identifier, suffix='.json')
+        target = os.path.join(SAVE_PATH, filename)
         try:
             with open(target, mode='w') as target_file:
                 json.dump(output, target_file, indent=4)
@@ -102,9 +97,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     """Detector class used to detect end credits in playing video"""
     __slots__ = (
         # Instances
+        'capturer',
         'detector',
         'player',
-        'capturer',
+        'state',
         # Settings
         'debug',
         'detect_level',
@@ -120,10 +116,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'sigterm'
     )
 
-    def __init__(self):
-        self.detector = None
-        self.player = player.UpNextPlayer()
+    def __init__(self, player, state):
         self.capturer = xbmc.RenderCapture()
+        self.detector = None
+        self.player = player
+        self.state = state
 
         self.debug = utils.get_setting_bool('detectDebugLogging')
         self.detect_level = utils.get_setting_int('detectLevel') / 100
@@ -150,7 +147,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             enabled=True
         )
         self.past_hashes = HashStore()
-        self.past_hashes.load()
+        self.past_hashes.load(self.state.season_identifier)
 
         self.match_count = 5
         self.matches = 0
@@ -284,30 +281,25 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             for pixel in pixels
         )
 
-    def update_id(self, episodeid):
-        self.past_hashes.enabled = (
-            len(self.past_hashes.ids) > 1
-            or (
-                len(self.past_hashes.ids) == 1
-                and not self.past_hashes.ids.get(str(episodeid))
-            )
-        )
-
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
         return self.matches >= self.match_count
 
-    def reset(self, episodeid=None):
+    def reset(self):
         self.matches = 0
         self.match_count = 5
-        if episodeid:
-            self.update_id(episodeid)
 
-    def run(self, episodeid=None):
+        if self.past_hashes.ids:
+            if len(self.past_hashes.ids) > 1:
+                self.past_hashes.enabled = True
+            elif not self.past_hashes.ids.get(str(self.state.episodeid)):
+                self.past_hashes.enabled = True
+        else:
+            self.past_hashes.enabled = False
+
+    def run(self):
         """Method to run actual detection test loop in a separate thread"""
-        if episodeid:
-            self.update_id(episodeid)
-
+        self.reset()
         self.detector = threading.Thread(target=self.test)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
@@ -444,10 +436,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.running = False
         self.sigterm = False
 
-    def store_hashes(self, episodeid):
+    def store_hashes(self):
         self.past_hashes.data.update(self.hashes.data)
-        self.past_hashes.ids[str(episodeid)] = True
-        self.past_hashes.save()
+        self.past_hashes.ids[str(self.state.episodeid)] = True
+        self.past_hashes.save(self.state.season_identifier)
 
     def update_default(self):
         if len(self.hashes.data) < 5:

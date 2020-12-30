@@ -45,13 +45,22 @@ def supports_python_api(version):
     return KODI_VERSION >= version
 
 
-def make_legal_filename(filename):
+def make_legal_filename(filename, prefix='', suffix=''):
     """Returns a legal filename, from an arbitrary string input, as a string"""
-    try:
-        return xbmcvfs.makeLegalFilename(filename)
+    filename = ''.join((
+        prefix,
+        filename,
+        suffix
+    ))
+    try:        
+        filename = xbmcvfs.makeLegalFilename(filename)
     except AttributeError:
         xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
-        return xbmcvfs.makeLegalFilename(filename)
+        filename = xbmcvfs.makeLegalFilename(filename)
+
+    if filename.endswith('/'):
+        filename = filename[:-1]
+    return filename
 
 
 def translate_path(path):
