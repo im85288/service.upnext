@@ -108,11 +108,14 @@ class PlaybackManager:
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
             # play_next = False
-            # keep_playing = False
+            # keep_playing = next_up_page.is_cancel() if showing_next_up_page else still_watching_page.is_cancel()
+            # keep_playing = keep_playing and not get_setting_bool('stopAfterClose')
             # return play_next, keep_playing
-            # Don't play next file, and stop current file if not playback option selected
-            # Note that this will stop playback prematurely, even if stopAfterClose is not enabled
-            return False, False
+            # Don't play next file, and stop current file if no playback option selected
+            return False, (
+                (next_up_page.is_cancel() if showing_next_up_page else still_watching_page.is_cancel())
+                and not get_setting_bool('stopAfterClose')
+            )
 
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
