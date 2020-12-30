@@ -317,15 +317,11 @@ class UpNextMonitor(xbmc.Monitor):
             self.detector.run()
 
         # Start tracking if UpNext can handle the currently playing video
-        if is_playlist_item or has_addon_data or media_type == 'episode':
+        # Process now playing video to get episode details and save playcount
+        if ((is_playlist_item or has_addon_data or media_type == 'episode')
+                and self.state.process_now_playing(has_addon_data)):
             self.state.set_tracking(playing_file)
             self.state.reset_queue()
-
-            # Get details of currently playing video to save playcount
-            if has_addon_data:
-                self.state.handle_addon_now_playing()
-            else:
-                self.state.handle_library_now_playing()
 
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)

@@ -25,6 +25,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'filename',
         'tvshowid',
         'episodeid',
+        'season_identifier',
         'playcount',
         'popup_time',
         'popup_cue',
@@ -56,6 +57,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.filename = None
         self.tvshowid = None
         self.episodeid = None
+        self.season_identifier = None
         self.playcount = 0
         self.popup_time = 0
         self.popup_cue = False
@@ -207,6 +209,22 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.popup_cue = True
         self.popup_time = time
 
+    def process_now_playing(self, has_addon_data=False):
+        item = (
+            self.handle_addon_now_playing() if has_addon_data
+            else self.handle_library_now_playing()
+        )
+        if not item:
+            return None
+
+        self.season_identifier = '_'.join((
+            str(item.get('showtitle')),
+            str(item.get('tvshowid')),
+            str(item.get('season'))
+        ))
+
+        return item
+
     def handle_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
         self.log('Addon current_episode: {0}'.format(item), 2)
@@ -241,8 +259,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         tvshowid = utils.get_int(item, 'tvshowid')
         if tvshowid == -1:
             title = item.get('showtitle')
-            self.tvshowid = api.get_tvshowid(title)
-            self.log('Fetched tvshowid: %s' % self.tvshowid, 2)
+            tvshowid = api.get_tvshowid(title)
+            self.log('Fetched tvshowid: %s' % tvshowid, 2)
+        # Now playing show not found in library
+        if tvshowid == -1:
+            return None
 
         # Reset play count if new show playing
         if self.tvshowid != tvshowid:
@@ -264,6 +285,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 item.get('episode')
             )
             self.log('Fetched episodeid: %s' % self.episodeid, 2)
+        # Now playing episode not found in library
+        if self.episodeid == -1:
+            return None
 
         self.playcount = utils.get_int(item, 'playcount', 0)
 
