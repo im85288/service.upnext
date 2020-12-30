@@ -384,15 +384,19 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 / len(image_hash_madm)
             )
             # Calculate similarity to hash from previous episode
-            episode_similarity = self.calc_similarity(
+            episode_similarity = (self.calc_similarity(
+                self.past_hashes.data.get(hash_index[0]),
+                image_hash_madm
+            ), self.calc_similarity(
                 self.past_hashes.data.get(hash_index[1]),
                 image_hash_madm
-            ) if self.past_hashes.enabled else 0
+            )) if self.past_hashes.enabled else 0
 
             # If current hash matches previous hash and has few significant
             # regions of deviation then increment the number of matches
             if ((similarity >= self.detect_level and significance < 0.2)
-                    or episode_similarity >= self.detect_level):
+                    or episode_similarity[0] >= self.detect_level
+                    or episode_similarity[1] >= self.detect_level):
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -406,11 +410,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 # self.update_default()
 
             if self.debug:
-                msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f} in {3:1.4f}s'
+                msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f}/{3:1.2f} in {4:1.4f}s'
                 self.log(msg.format(
                     significance,
                     similarity,
-                    episode_similarity,
+                    episode_similarity[0],
+                    episode_similarity[1],
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
