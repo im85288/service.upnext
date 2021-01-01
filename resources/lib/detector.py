@@ -64,7 +64,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         for key, val in data.items():
             if key == 'data':
                 val = {
-                    idx: self.int_to_hash(hash_val)
+                    tuple(int(sub_idx) for sub_idx in idx[1:-1].split(', ')):
+                        self.int_to_hash(hash_val)
                     for idx, hash_val in val.items()
                 }
             setattr(self, key, val)
@@ -75,7 +76,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             version=self.version,
             hash_size=self.hash_size,
             data={
-                idx: self.hash_to_int(hash)
+                str(idx): self.hash_to_int(hash)
                 for idx, hash in self.data.items()
             }
         )
