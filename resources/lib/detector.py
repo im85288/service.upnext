@@ -432,7 +432,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Store hash for comparison with next video frame
             hash_index[0] = hash_index[1]
-            self.hashes.data[hash_index[0]] = image_hash
+            self.hashes.data[hash_index[1]] = image_hash
 
             monitor.waitForAbort(1)
 
