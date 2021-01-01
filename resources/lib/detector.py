@@ -28,8 +28,6 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (16, 16))
         self.data = kwargs.get('data', {})
-        self.ids = kwargs.get('ids', {})
-        self.enabled = kwargs.get('enabled', False)
 
     @classmethod
     def log(cls, msg, level=2):
@@ -66,7 +64,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         for key, val in data.items():
             if key == 'data':
                 val = {
-                    int(idx): self.int_to_hash(hash_val)
+                    idx: self.int_to_hash(hash_val)
                     for idx, hash_val in val.items()
                 }
             setattr(self, key, val)
@@ -79,8 +77,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             data={
                 idx: self.hash_to_int(hash)
                 for idx, hash in self.data.items()
-            },
-            ids=self.ids
+            }
         )
 
         filename = utils.make_legal_filename(identifier, suffix='.json')
@@ -138,13 +135,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             hash_size=hash_size,
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
-            data={0: (
+            data={(0, 0): (
                 [0] * (1 + hash_size[0] // 4)
                 + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
                 + [0] * (1 + hash_size[0] // 4)
-            ) * hash_size[1]},
-            ids={},
-            enabled=True
+            ) * hash_size[1]}
         )
         self.past_hashes = HashStore()
         self.past_hashes.load(self.state.season_identifier)
@@ -281,6 +276,23 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             for pixel in pixels
         )
 
+    def calc_episode_similarity(self, image_hash, current_hash_index):
+        old_hash_indexes = (
+            idx for idx in self.past_hashes.data
+            if current_hash_index[0] - 1 <= idx[0] <= current_hash_index[0] + 1
+            and idx[1] != current_hash_index[1]
+        )
+        episode_similarity = 0
+        old_hash_index = (0, 0)
+        for old_hash_index in old_hash_indexes:
+            episode_similarity = self.calc_similarity(
+                self.past_hashes.data.get(old_hash_index),
+                image_hash
+            )
+            if episode_similarity >= self.detect_level:
+                break
+        return episode_similarity, old_hash_index
+
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
         return self.matches >= self.match_count
@@ -288,14 +300,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def reset(self):
         self.matches = 0
         self.match_count = 5
-
-        if self.past_hashes.ids:
-            if len(self.past_hashes.ids) > 1:
-                self.past_hashes.enabled = True
-            elif not self.past_hashes.ids.get(str(self.state.episodeid)):
-                self.past_hashes.enabled = True
-        else:
-            self.past_hashes.enabled = False
 
     def run(self):
         """Method to run actual detection test loop in a separate thread"""
@@ -319,7 +323,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return
         self.running = True
 
-        hash_index = [0, 0]
+        hash_index = [(0, 0), (0, 0)]
         mismatch_count = 0
         monitor = xbmc.Monitor()
         while not monitor.abortRequested() and not self.sigterm:
@@ -327,9 +331,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Only capture if playing at normal speed
             with self.player as check_fail:
                 playing = self.player.get_speed() == 1
-                hash_index[1] = int(
+                hash_index[1] = (int(
                     self.player.getTotalTime() - self.player.getTime()
-                )
+                ), self.state.episodeid)
                 check_fail = False
             if check_fail:
                 self.log('No file is playing', 2)
@@ -360,43 +364,36 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Transform image to show absolute deviation from median pixel luma
             quartiles = self.calc_quartiles(image.getdata())
-            image_hash_madm = image.point(
+            image_hash = image.point(
                 [abs(i - quartiles[1]) for i in range(256)]
             )
 
             # Calculate median absolute deviation from the median to represent
             # significant deviations and use transformed image as the hash of
             # the current video frame
-            quartiles = self.calc_quartiles(image_hash_madm.getdata())
-            image_hash_madm = image_hash_madm.point(
+            quartiles = self.calc_quartiles(image_hash.getdata())
+            image_hash = image_hash.point(
                 [i > quartiles[1] for i in range(256)]
             )
-            image_hash_madm = list(image_hash_madm.getdata())
+            image_hash = list(image_hash.getdata())
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
                 self.hashes.data.get(hash_index[0]),
-                image_hash_madm
+                image_hash
             )
             # Calculate percentage of significant deviations
-            significance = (
-                sum(image_hash_madm)
-                / len(image_hash_madm)
+            significance = sum(image_hash) / len(image_hash)
+            # Calculate similarity to hash from other episodes
+            episode_similarity, old_hash_index = self.calc_episode_similarity(
+                image_hash,
+                hash_index[1]
             )
-            # Calculate similarity to hash from previous episode
-            episode_similarity = (self.calc_similarity(
-                self.past_hashes.data.get(hash_index[0]),
-                image_hash_madm
-            ), self.calc_similarity(
-                self.past_hashes.data.get(hash_index[1]),
-                image_hash_madm
-            )) if self.past_hashes.enabled else 0
 
             # If current hash matches previous hash and has few significant
             # regions of deviation then increment the number of matches
             if ((similarity >= self.detect_level and significance < 0.2)
-                    or episode_similarity[0] >= self.detect_level
-                    or episode_similarity[1] >= self.detect_level):
+                    or episode_similarity >= self.detect_level):
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -410,28 +407,32 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 # self.update_default()
 
             if self.debug:
-                msg = 'Hash compare: {0:1.2f}/{1:1.2f}/{2:1.2f}/{3:1.2f} in {4:1.4f}s'
-                self.log(msg.format(
+                self.log((
+                    'Hash compare:'
+                    ' {0:1.2f} (significance)'
+                    '/{1:1.2f} (similarity)'
+                    '/{2:1.2f} (episode similarity)'
+                    ' in {3:1.4f}s'
+                ).format(
                     significance,
                     similarity,
-                    episode_similarity[0],
-                    episode_similarity[1],
+                    episode_similarity,
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
                     self.hashes.data.get(hash_index[0]),
-                    image_hash_madm,
+                    image_hash,
                     self.hashes.hash_size
                 )
                 self.print_hash(
-                    self.past_hashes.data.get(hash_index[1]),
-                    image_hash_madm,
+                    self.past_hashes.data.get(old_hash_index),
+                    image_hash,
                     self.hashes.hash_size
                 )
 
             # Store hash for comparison with next video frame
             hash_index[0] = hash_index[1]
-            self.hashes.data[hash_index[0]] = image_hash_madm
+            self.hashes.data[hash_index[0]] = image_hash
 
             monitor.waitForAbort(1)
 
@@ -443,7 +444,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def store_hashes(self):
         self.past_hashes.data.update(self.hashes.data)
-        self.past_hashes.ids[str(self.state.episodeid)] = True
         self.past_hashes.save(self.state.season_identifier)
 
     def update_default(self):
