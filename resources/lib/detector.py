@@ -54,7 +54,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         try:
             with open(target, mode='r') as target_file:
                 data = json.load(target_file)
-        except (IOError, OSError):
+        except (IOError, OSError, TypeError, ValueError):
             self.log('Could not load stored hashes from %s' % target, 2)
             return False
 
@@ -85,7 +85,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         try:
             with open(target, mode='w') as target_file:
                 json.dump(output, target_file, indent=4)
-        except (IOError, OSError):
+        except (IOError, OSError, TypeError, ValueError):
             self.log('Error: Could not save hashes to %s' % target, 1)
         return output
 
