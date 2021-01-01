@@ -331,9 +331,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Only capture if playing at normal speed
             with self.player as check_fail:
                 playing = self.player.get_speed() == 1
-                hash_index[1] = (int(
-                    self.player.getTotalTime() - self.player.getTime()
-                ), self.state.episodeid)
+                hash_index[1] = (
+                    int(self.player.getTotalTime() - self.player.getTime()),
+                    self.state.episodeid
+                )
                 check_fail = False
             if check_fail:
                 self.log('No file is playing', 2)
