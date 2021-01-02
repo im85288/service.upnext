@@ -32,13 +32,6 @@ def addon_path():
     return get_addon_info('path')
 
 
-def addon_data_path():
-    """Return addon data path"""
-    return translate_path(
-        'special://profile/addon_data/%s' % addon_id()
-    )
-
-
 def supports_python_api(version):
     """Return True if Kodi supports target Python API version"""
     return KODI_VERSION >= version
