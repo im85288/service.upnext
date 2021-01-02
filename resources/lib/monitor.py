@@ -365,9 +365,8 @@ class UpNextMonitor(xbmc.Monitor):
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
 
-        if (not utils.supports_python_api(18)
-                and method == 'Player.OnPlay'
-                or method == 'Player.OnAVStart'):
+        if (method == 'Player.OnAVStart' or not utils.supports_python_api(18)
+                and method == 'Player.OnPlay'):
             # Update player state and remove remnants from previous operations
             self.player.state.set('time', force=False)
             if self.playbackmanager:

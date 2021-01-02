@@ -2,10 +2,9 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import errno
 import json
 import operator
-import os
+import os.path
 import threading
 import timeit
 from PIL import Image
@@ -314,6 +313,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         """Detection test loop captures Kodi render buffer every 1s to create
            an image hash. Hash is compared to the previous hash to determine
            whether current frame of video is similar to the previous frame.
+
+           Hash is also compared to hashes calculated from previously played
+           episodes to detect common sequence of frames (i.e. credits).
 
            A consecutive number of matching frames must be detected to confirm
            that end credits are playing."""
