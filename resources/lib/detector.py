@@ -10,17 +10,14 @@ import threading
 import timeit
 from PIL import Image
 import xbmc
+import file_utils
 import utils
 
 
-SAVE_PATH = os.path.join(utils.addon_data_path(), 'detector', '')
-
-try:
-    if not os.path.exists(SAVE_PATH):
-        os.makedirs(SAVE_PATH)
-except (IOError, OSError) as error:
-    if error.errno != errno.EEXIST:
-        raise
+# Create directory where all stored hashes will be saved
+SAVE_PATH = 'special://profile/addon_data/%s' % utils.addon_id()
+SAVE_PATH = os.path.join(file_utils.translate_path(SAVE_PATH), 'detector', '')
+file_utils.create_directory(SAVE_PATH)
 
 
 class HashStore(object):  # pylint: disable=useless-object-inheritance
@@ -49,7 +46,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         return int(''.join(str(bit_val) for bit_val in image_hash), 2)
 
     def load(self, identifier):
-        filename = utils.make_legal_filename(identifier, suffix='.json')
+        filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(SAVE_PATH, filename)
         try:
             with open(target, mode='r') as target_file:
@@ -81,7 +78,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             }
         )
 
-        filename = utils.make_legal_filename(identifier, suffix='.json')
+        filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(SAVE_PATH, filename)
         try:
             with open(target, mode='w') as target_file:

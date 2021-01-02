@@ -10,7 +10,6 @@ import sys
 import xbmc
 import xbmcaddon
 import xbmcgui
-import xbmcvfs
 import statichelper
 
 
@@ -43,33 +42,6 @@ def addon_data_path():
 def supports_python_api(version):
     """Return True if Kodi supports target Python API version"""
     return KODI_VERSION >= version
-
-
-def make_legal_filename(filename, prefix='', suffix=''):
-    """Returns a legal filename, from an arbitrary string input, as a string"""
-    filename = ''.join((
-        prefix,
-        filename,
-        suffix
-    ))
-    try:
-        filename = xbmcvfs.makeLegalFilename(filename)
-    except AttributeError:
-        xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
-        filename = xbmcvfs.makeLegalFilename(filename)
-
-    if filename.endswith('/'):
-        filename = filename[:-1]
-    return filename
-
-
-def translate_path(path):
-    """Returns a real path, translated from a special:// path, as a string"""
-    try:
-        return xbmcvfs.translatePath(path)
-    except AttributeError:
-        xbmcvfs.translatePath = xbmc.translatePath
-        return xbmcvfs.translatePath(path)
 
 
 def get_property(key, window_id=10000):
