@@ -344,11 +344,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            image = (
-                self.capturer.getImage(0)
-                if playing or self.debug
-                else None
-            )
+            image = self.capturer.getImage(0) if playing else None
 
             # del self.capturer
             # self.capturer = xbmc.RenderCapture()
