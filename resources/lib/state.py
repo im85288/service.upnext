@@ -42,14 +42,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def __init__(self, reset=None):
         # Settings state variables
-        self.disabled = utils.get_setting_bool('disableNextUp')
-        self.auto_play = utils.get_setting_int('autoPlayMode') == 0
-        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
-        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.unwatched_only = not utils.get_setting_bool('includeWatched')
-        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
-        self.played_limit = utils.get_setting_int('playedInARow')
-        self.simple_mode = utils.get_setting_int('simpleMode') == 0
+        self.update_settings()
         # Addon data
         self.data = None
         self.encoding = 'base64'
