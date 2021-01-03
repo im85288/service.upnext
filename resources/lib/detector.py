@@ -445,6 +445,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigterm = False
 
     def store_hashes(self):
+        if not self.state.season_identifier:
+            return
         self.past_hashes.data.update(self.hashes.data)
         self.past_hashes.save(self.state.season_identifier)
 
