@@ -332,7 +332,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return
         self.running = True
 
-        hash_index = [(0, 0), (0, 0)]
+        hash_index = {
+            'previous': (0, 0),
+            'current': (0, 0),
+            'store': False
+        }
         mismatch_count = 0
         monitor = xbmc.Monitor()
         while not monitor.abortRequested() and not self.sigterm:
@@ -340,8 +344,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Only capture if playing at normal speed
             with self.player as check_fail:
                 playing = self.player.get_speed() == 1
-                hash_index[1] = (
-                    int(self.player.getTotalTime() - self.player.getTime()),
+                play_time = self.player.getTime()
+                hash_index['store'] = self.state.detect_time <= play_time
+                hash_index['current'] = (
+                    int(self.player.getTotalTime() - play_time),
                     self.state.episodeid
                 )
                 check_fail = False
@@ -385,7 +391,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
-                self.hashes.data.get(hash_index[0]),
+                self.hashes.data.get(hash_index['previous']),
                 image_hash
             )
             # Calculate percentage of significant deviations
@@ -393,7 +399,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Calculate similarity to hash from other episodes
             episode_similarity, old_hash_index = self.calc_episode_similarity(
                 image_hash,
-                hash_index[1]
+                hash_index['current']
             )
 
             # If current hash matches previous hash and has few significant
@@ -426,7 +432,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
-                    self.hashes.data.get(hash_index[0]),
+                    self.hashes.data.get(hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size
                 )
@@ -436,9 +442,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     self.hashes.hash_size
                 )
 
-            # Store hash for comparison with next video frame
-            hash_index[0] = hash_index[1]
-            self.hashes.data[hash_index[1]] = image_hash
+            # Store current hash for comparison with next video frame
+            # But delete previous hash if not yet required to save it
+            if not hash_index['store']:
+                del self.hashes.data[hash_index['previous']]
+            self.hashes.data[hash_index['current']] = image_hash
+            hash_index['previous'] = hash_index['current']
 
             monitor.waitForAbort(1)
 
