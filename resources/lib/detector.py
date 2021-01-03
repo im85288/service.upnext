@@ -356,18 +356,18 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             now = self.debug and timeit.default_timer()
             # Only capture if playing at normal speed
             with self.player as check_fail:
-                playing = self.player.get_speed() == 1
-                play_time = self.player.getTime()
-                hash_index['store'] = self.state.detect_time <= play_time
+                play_check = self.player.getTime()
+                hash_index['store'] = self.state.detect_time <= play_check
                 hash_index['current'] = (
-                    int(self.player.getTotalTime() - play_time),
+                    int(self.player.getTotalTime() - play_check),
                     self.state.episodeid
                 )
+                play_check = self.player.get_speed() == 1
                 check_fail = False
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            image = self.capturer.getImage(0) if playing else None
+            image = self.capturer.getImage(0) if play_check else None
 
             # del self.capturer
             # self.capturer = xbmc.RenderCapture()
