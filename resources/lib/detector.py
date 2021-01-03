@@ -14,8 +14,13 @@ import utils
 
 
 # Create directory where all stored hashes will be saved
-SAVE_PATH = 'special://profile/addon_data/%s' % utils.addon_id()
-SAVE_PATH = os.path.join(file_utils.translate_path(SAVE_PATH), 'detector', '')
+SAVE_PATH = os.path.join(
+    file_utils.translate_path(
+        'special://profile/addon_data/%s' % utils.addon_id()
+    ),
+    'detector',
+    ''
+)
 file_utils.create_directory(SAVE_PATH)
 
 
