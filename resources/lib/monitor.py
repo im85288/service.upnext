@@ -315,7 +315,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.set_addon_data(data, encoding)
         has_addon_data = self.state.has_addon_data()
 
-        if utils.get_setting_bool('detectAlways') and not self.detector:
+        if self.state.detect_always and not self.detector:
             self.detector = detector.Detector(
                 player=self.player,
                 state=self.state
