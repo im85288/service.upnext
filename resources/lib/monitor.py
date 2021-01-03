@@ -206,18 +206,17 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Detector start before normal popup request time
             detect_time = self.state.get_detect_time()
-            if detect_time and play_time >= detect_time:
-                # Start detector if not already started
-                if not self.detector:
-                    self.detector = detector.Detector(
-                        player=self.player,
-                        state=self.state
-                    )
-                    self.detector.run()
-                # Otherwise check whether credit have been detected
-                elif self.detector.detected():
-                    self.log('Credits detected', 2)
-                    self.state.set_detected_popup_time(play_time)
+            # Start detector if not already started
+            if not self.detector and 0 < detect_time <= play_time:
+                self.detector = detector.Detector(
+                    player=self.player,
+                    state=self.state
+                )
+                self.detector.run()
+            # Otherwise check whether credits have been detected
+            elif 0 < detect_time <= play_time and self.detector.detected():
+                self.log('Credits detected', 2)
+                self.state.set_detected_popup_time(play_time)
 
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
