@@ -179,9 +179,9 @@ class RenderCapture:
     ''' A stub implementation of the xbmc RenderCapture class '''
 
     def __init__(self):
+        ''' A stub constructor for the xbmc RenderCapture class '''
         self._width = 0
         self._height = 0
-        ''' A stub constructor for the xbmc RenderCapture class '''
 
     def capture(self, width, height):
         ''' A stub implementation for the xbmc RenderCapture class capture() method '''

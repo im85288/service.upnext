@@ -35,6 +35,20 @@ class ControlLabel(Control):
         ''' A stub implementation for the xbmcgui ControlLabel class getLabel() method '''
 
 
+class ControlProgress(Control):
+    ''' A reimplementation of the xbmcgui ControlProgress class '''
+
+    def __init__(self):  # pylint: disable=super-init-not-called
+        ''' A stub constructor for the xbmcgui ControlLabel class '''
+        self._percentage = 0.0
+
+    def setPercent(self, percent):
+        self._percentage = max(0.0, min(100.0, percent))
+
+    def getPercentage(self):
+        return self._percentage
+
+
 class Dialog:
     ''' A reimplementation of the xbmcgui Dialog class '''
 
@@ -210,8 +224,10 @@ class Window:
         ''' A stub implementation for the xbmcgui Window class close() method '''
 
     @staticmethod
-    def getControl():
+    def getControl(controlID):
         ''' A stub implementation for the xbmcgui Window class getControl() method '''
+        if controlID == 3014:
+            return ControlProgress()
         return ControlLabel()
 
     @staticmethod
