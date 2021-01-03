@@ -155,6 +155,7 @@ class UpNextMonitor(xbmc.Monitor):
         else:
             self.sigstop = self.running
 
+        # Exit if tracker thread has not been created
         if not self.tracker:
             return
 
