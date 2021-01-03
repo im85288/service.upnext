@@ -110,6 +110,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'past_hashes',
         'match_count',
         'matches',
+        'credits_detected',
         # Signals
         'running',
         'sigterm'
@@ -148,6 +149,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         self.match_count = 5
         self.matches = 0
+        self.credits_detected = False
 
         self.running = False
         self.sigterm = False
@@ -297,11 +299,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
-        return self.matches >= self.match_count
+        self.credits_detected = self.matches >= self.match_count
+        return self.credits_detected
 
     def reset(self):
-        self.matches = 0
         self.match_count = 5
+        self.matches = 0
+        self.credits_detected = False
 
     def run(self):
         """Method to run actual detection test loop in a separate thread"""
