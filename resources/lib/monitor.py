@@ -204,7 +204,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.state.set_tracking(False)
                 continue
 
-            # Detector start before normal popup request time
+            # Detector starts before normal popup request time
             detect_time = self.state.get_detect_time()
             # Start detector if not already started
             if not self.detector and 0 < detect_time <= play_time:
@@ -224,13 +224,6 @@ class UpNextMonitor(xbmc.Monitor):
                 self.waitForAbort(min(1, popup_time - play_time))
                 continue
 
-            # Stop detector once popup is requested
-            if self.detector and not utils.get_setting_bool('detectAlways'):
-                self.detector.store_hashes()
-                self.detector.stop()
-                del self.detector
-                self.detector = None
-
             # Stop second thread and popup from being created after next file
             # has been requested but not yet loaded
             self.state.set_tracking(False)
@@ -246,9 +239,26 @@ class UpNextMonitor(xbmc.Monitor):
             )
             self.playbackmanager.launch_up_next()
 
-            # Free up resources and exit tracking loop
+            # Free up resources
             del self.playbackmanager
             self.playbackmanager = None
+
+            # Stop detector and store hashes for current video
+            if self.detector:
+                self.detector.store_hashes()
+                detected = self.detector.credits_detected
+                self.detector.stop()
+                del self.detector
+                self.detector = None
+                # If credits were (in)correctly detected and popup is cancelled
+                # by the user, then restart tracking loop to allow detector to
+                # restart, or to launch popup at default time
+                if detected and not self.state.playing_next:
+                    self.state.set_tracking(True)
+                    self.sigstop = False
+                    continue
+
+            # Exit tracking loop once all processing complete
             break
         else:
             self.log('Tracker: abort', 1)
