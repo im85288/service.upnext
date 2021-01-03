@@ -316,7 +316,20 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.detector.start()
 
     def stop(self):
-        self.sigterm = True
+        # Exit if detector thread has not been created
+        if not self.detector:
+            return
+
+        # Set terminate signal if detector is running
+        self.sigterm = self.running
+
+        # Wait for thread to complete
+        if self.running:
+            self.detector.join()
+
+        # Free resources
+        del self.detector
+        self.detector = None
 
     def test(self):
         """Detection test loop captures Kodi render buffer every 1s to create
@@ -451,7 +464,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             monitor.waitForAbort(1)
 
+        del self.capturer
         del self.player
+        del self.state
         del monitor
 
         self.running = False
