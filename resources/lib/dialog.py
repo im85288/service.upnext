@@ -118,7 +118,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.update_progress_control()
 
     def update_progress_control(self):
-        self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
+        self.progress_control.setPercent(self.current_progress_percent)
 
     def set_cancel(self, cancel):
         self.cancel = cancel
