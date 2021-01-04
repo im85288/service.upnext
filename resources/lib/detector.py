@@ -370,7 +370,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         mismatch_count = 0
         monitor = xbmc.Monitor()
         while (not monitor.abortRequested()
-                and not (self.sigterm or self.sigstop)):
+               and not (self.sigterm or self.sigstop)):
             now = self.debug and timeit.default_timer()
             # Only capture if playing at normal speed
             with self.player as check_fail:
