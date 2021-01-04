@@ -147,7 +147,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             ) * hash_size[1]}
         )
         self.past_hashes = HashStore()
-        self.past_hashes.load(self.state.season_identifier)
+        if self.state.season_identifier:
+            self.past_hashes.load(self.state.season_identifier)
         self.hash_index = {
             'old': (0, 0),
             'previous': (0, 0),
