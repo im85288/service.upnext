@@ -108,6 +108,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'capture_ar',
         'hashes',
         'past_hashes',
+        'hash_index',
         'match_count',
         'matches',
         'credits_detected',
@@ -146,6 +147,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         )
         self.past_hashes = HashStore()
         self.past_hashes.load(self.state.season_identifier)
+        self.hash_index = {
+            'old': (0, 0),
+            'previous': (0, 0),
+            'current': (0, 0),
+            'store': False
+        }
 
         self.match_count = 5
         self.matches = 0
@@ -345,29 +352,23 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return
         self.running = True
 
-        hash_index = {
-            'previous': (0, 0),
-            'current': (0, 0),
-            'store': False
-        }
         mismatch_count = 0
         monitor = xbmc.Monitor()
         while not monitor.abortRequested() and not self.sigterm:
             now = self.debug and timeit.default_timer()
             # Only capture if playing at normal speed
             with self.player as check_fail:
-                play_check = self.player.getTime()
-                hash_index['store'] = self.state.detect_time <= play_check
-                hash_index['current'] = (
-                    int(self.player.getTotalTime() - play_check),
+                play_time = self.player.getTime()
+                self.hash_index['store'] = self.state.detect_time <= play_time
+                self.hash_index['current'] = (
+                    int(self.player.getTotalTime() - play_time),
                     self.state.episodeid
                 )
-                play_check = self.player.get_speed() == 1
-                check_fail = False
+                check_fail = self.player.get_speed() != 1
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            image = self.capturer.getImage(0) if play_check else None
+            image = self.capturer.getImage(0)
 
             # del self.capturer
             # self.capturer = xbmc.RenderCapture()
@@ -404,15 +405,17 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
-                self.hashes.data.get(hash_index['previous']),
+                self.hashes.data.get(self.hash_index['previous']),
                 image_hash
             )
             # Calculate percentage of significant deviations
             significance = sum(image_hash) / len(image_hash)
             # Calculate similarity to hash from other episodes
-            episode_similarity, old_hash_index = self.calc_episode_similarity(
-                image_hash,
-                hash_index['current']
+            episode_similarity, self.hash_index['old'] = (
+                self.calc_episode_similarity(
+                    image_hash,
+                    self.hash_index['current']
+                )
             )
 
             # If current hash matches previous hash and has few significant
@@ -445,22 +448,22 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
-                    self.hashes.data.get(hash_index['previous']),
+                    self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size
                 )
                 self.print_hash(
-                    self.past_hashes.data.get(old_hash_index),
+                    self.past_hashes.data.get(self.hash_index['old']),
                     image_hash,
                     self.hashes.hash_size
                 )
 
             # Store current hash for comparison with next video frame
             # But delete previous hash if not yet required to save it
-            if not hash_index['store']:
-                del self.hashes.data[hash_index['previous']]
-            self.hashes.data[hash_index['current']] = image_hash
-            hash_index['previous'] = hash_index['current']
+            if not self.hash_index['store']:
+                del self.hashes.data[self.hash_index['previous']]
+            self.hashes.data[self.hash_index['current']] = image_hash
+            self.hash_index['previous'] = self.hash_index['current']
 
             monitor.waitForAbort(1)
 
