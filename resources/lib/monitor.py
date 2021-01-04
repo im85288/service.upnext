@@ -256,7 +256,7 @@ class UpNextMonitor(xbmc.Monitor):
                 # by the user, then restart tracking loop to allow detector to
                 # restart, or to launch popup at default time
                 if detected and not self.state.playing_next:
-                    self.state.set_tracking(True)
+                    self.state.set_tracking(tracked_file)
                     self.sigstop = False
                     continue
 
