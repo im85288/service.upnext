@@ -389,17 +389,17 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 image = image.resize(self.hashes.hash_size, resample=Image.BOX)
 
             # Transform image to show absolute deviation from median pixel luma
-            quartiles = self.calc_quartiles(image.getdata())
+            median_pixel = self.calc_quartiles(image.getdata())[1]
             image_hash = image.point(
-                [abs(i - quartiles[1]) for i in range(256)]
+                [abs(i - median_pixel) for i in range(256)]
             )
 
             # Calculate median absolute deviation from the median to represent
             # significant deviations and use transformed image as the hash of
             # the current video frame
-            quartiles = self.calc_quartiles(image_hash.getdata())
+            median_pixel = self.calc_quartiles(image_hash.getdata())[1]
             image_hash = image_hash.point(
-                [i > quartiles[1] for i in range(256)]
+                [i > median_pixel for i in range(256)]
             )
             image_hash = list(image_hash.getdata())
 
