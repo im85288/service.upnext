@@ -72,7 +72,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.playbackmanager.remove_popup(terminate=True)
             self.log('Cleanup popup', 2)
         if self.detector:
-            self.detector.stop()
+            self.detector.stop(terminate=True)
             del self.detector
             self.detector = None
             self.log('Cleanup detector', 2)
@@ -179,7 +179,8 @@ class UpNextMonitor(xbmc.Monitor):
 
         # If tracker was (re)started, ensure detector is also reset
         if self.detector:
-            self.detector.reset()
+            self.detector.stop()
+            self.detector.run()
 
         # Loop unless abort requested
         while not self.abortRequested() and not self.sigterm:
@@ -248,7 +249,7 @@ class UpNextMonitor(xbmc.Monitor):
             if self.detector:
                 self.detector.store_hashes()
                 detected = self.detector.credits_detected
-                self.detector.stop()
+                self.detector.stop(terminate=True)
                 del self.detector
                 self.detector = None
                 # If credits were (in)correctly detected and popup is cancelled
@@ -382,7 +383,7 @@ class UpNextMonitor(xbmc.Monitor):
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
             if self.detector:
-                self.detector.stop()
+                self.detector.stop(terminate=True)
                 del self.detector
                 self.detector = None
 
@@ -405,7 +406,7 @@ class UpNextMonitor(xbmc.Monitor):
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
             if self.detector:
-                self.detector.stop()
+                self.detector.stop(terminate=True)
                 del self.detector
                 self.detector = None
             self.stop_tracking()

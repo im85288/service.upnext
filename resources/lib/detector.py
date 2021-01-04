@@ -114,6 +114,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'credits_detected',
         # Signals
         'running',
+        'sigstop',
         'sigterm'
     )
 
@@ -159,6 +160,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.credits_detected = False
 
         self.running = False
+        self.sigstop = False
         self.sigterm = False
 
         self.capturer.capture(*self.capture_size)
@@ -316,19 +318,21 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def run(self):
         """Method to run actual detection test loop in a separate thread"""
-        self.reset()
         self.detector = threading.Thread(target=self.test)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
         self.detector.start()
 
-    def stop(self):
+    def stop(self, terminate=False):
         # Exit if detector thread has not been created
         if not self.detector:
             return
 
-        # Set terminate signal if detector is running
-        self.sigterm = self.running
+        # Set terminate or stop signals if detector is running
+        if terminate:
+            self.sigterm = self.running
+        else:
+            self.sigstop = self.running
 
         # Wait for thread to complete
         if self.running:
@@ -337,6 +341,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Free resources
         del self.detector
         self.detector = None
+        # Delete reference to instances if detector will not be restarted
+        if terminate:
+            del self.capturer
+            self.capturer = None
+            del self.player
+            self.player = None
+            del self.state
+            self.state = None
 
     def test(self):
         """Detection test loop captures Kodi render buffer every 1s to create
@@ -348,13 +360,17 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
            A consecutive number of matching frames must be detected to confirm
            that end credits are playing."""
+
+        # Only run detector if old detector is not running
         if self.running:
             return
+        self.log('Detector started', 2)
         self.running = True
 
         mismatch_count = 0
         monitor = xbmc.Monitor()
-        while not monitor.abortRequested() and not self.sigterm:
+        while (not monitor.abortRequested()
+                and not (self.sigterm or self.sigstop)):
             now = self.debug and timeit.default_timer()
             # Only capture if playing at normal speed
             with self.player as check_fail:
@@ -467,12 +483,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             monitor.waitForAbort(1)
 
-        del self.capturer
-        del self.player
-        del self.state
+        # Free resources
         del monitor
 
+        # Reset thread signals
+        self.log('Detector: stopped', 2)
         self.running = False
+        self.sigstop = False
         self.sigterm = False
 
     def store_hashes(self):
