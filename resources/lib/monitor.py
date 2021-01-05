@@ -248,17 +248,19 @@ class UpNextMonitor(xbmc.Monitor):
             # Stop detector and store hashes for current video
             if self.detector:
                 self.detector.store_hashes()
-                detected = self.detector.credits_detected
-                self.detector.stop(terminate=True)
-                del self.detector
-                self.detector = None
                 # If credits were (in)correctly detected and popup is cancelled
                 # by the user, then restart tracking loop to allow detector to
                 # restart, or to launch popup at default time
-                if detected and not self.state.playing_next:
+                if (self.detector.credits_detected
+                        and not self.state.playing_next):
                     self.state.set_tracking(tracked_file)
                     self.sigstop = False
+                    self.detector.reset()
+                    self.state.set_popup_time(total_time)
                     continue
+                self.detector.stop(terminate=True)
+                del self.detector
+                self.detector = None
 
             # Exit tracking loop once all processing complete
             break
