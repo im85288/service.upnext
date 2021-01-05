@@ -43,7 +43,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
     @classmethod
     def int_to_hash(cls, val):
-        return [int(bit_val) for bit_val in format(val, 'b')]
+        return tuple([int(bit_val) for bit_val in format(val, 'b')])
 
     @classmethod
     def hash_to_int(cls, image_hash):
@@ -65,11 +65,12 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         for key, val in data.items():
             if key == 'data':
                 val = {
-                    tuple(int(sub_idx) for sub_idx in idx[1:-1].split(', ')):
+                    tuple([int(sub_idx) for sub_idx in idx[1:-1].split(', ')]):
                         self.int_to_hash(hash_val)
                     for idx, hash_val in val.items()
                 }
             setattr(self, key, val)
+        self.log('Hashes loaded from %s' % target, 2)
         return True
 
     def save(self, identifier):
@@ -87,6 +88,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         try:
             with open(target, mode='w') as target_file:
                 json.dump(output, target_file, indent=4)
+                self.log('Hashes saved to %s' % target, 2)
         except (IOError, OSError, TypeError, ValueError):
             self.log('Error: Could not save hashes to %s' % target, 1)
         return output
@@ -271,10 +273,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             int(num_vals * 0.75)
         ]
         vals = sorted(vals)
-        return tuple(
-            [vals[pivot] for pivot in pivots] if num_vals % 2
-            else [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
-        )
+        if num_vals % 2:
+            return [vals[pivot] for pivot in pivots]
+        else:
+            return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
 
     @classmethod
     def calc_threshold_hash(cls, pixels, threshold=0.5):
@@ -285,10 +287,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             else 2 if threshold == 0.75
             else 1
         ]
-        return tuple(
-            int(pixel > threshold)
-            for pixel in pixels
-        )
+        return [int(pixel > threshold) for pixel in pixels]
 
     def calc_episode_similarity(self, image_hash, current_hash_index):
         old_hash_indexes = (
@@ -418,7 +417,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image_hash = image_hash.point(
                 [i > median_pixel for i in range(256)]
             )
-            image_hash = list(image_hash.getdata())
+            image_hash = tuple(image_hash.getdata())
 
             # Calculate similarity between current hash and previous hash
             similarity = self.calc_similarity(
