@@ -275,8 +275,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         vals = sorted(vals)
         if num_vals % 2:
             return [vals[pivot] for pivot in pivots]
-        else:
-            return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
+        return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
 
     @classmethod
     def calc_threshold_hash(cls, pixels, threshold=0.5):
