@@ -233,5 +233,5 @@ msgid "Verbose output logging"
 msgstr ""
 
 msgctxt "#30822"
-msgid "Enable detector for all content"
+msgid "Enable always on detector"
 msgstr ""
