@@ -34,13 +34,6 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def update_default(self):
-        new_default = [0] * self.hash_size[0] * self.hash_size[1]
-        for image_hash in self.data[1::]:
-            for idx, pixel in enumerate(image_hash):
-                new_default[idx] += pixel
-        self.data[0] = Detector.calc_threshold_hash(new_default, 0.5)
-
     @classmethod
     def int_to_hash(cls, val):
         return tuple([int(bit_val) for bit_val in format(val, 'b')])
@@ -174,15 +167,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         utils.log(msg, name=cls.__name__, level=level)
 
     @classmethod
-    def all_equal(cls, *args, **kwargs):
-        if not args:
-            return False
-        if len(args) == 1:
-            args = tuple(args[0])
-        compare_to = kwargs.get('equals', args[0])
-        return args.count(compare_to) == len(args)
-
-    @classmethod
     def calc_similarity(
             cls, hash1, hash2,
             function=operator.eq,
@@ -276,17 +260,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if num_vals % 2:
             return [vals[pivot] for pivot in pivots]
         return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
-
-    @classmethod
-    def calc_threshold_hash(cls, pixels, threshold=0.5):
-        """Method to create a pixel by pixel hash, where significant pixels
-           values are greater than threshold (median by default) pixel value"""
-        threshold = cls.calc_quartiles(pixels)[
-            0 if threshold == 0.25
-            else 2 if threshold == 0.75
-            else 1
-        ]
-        return [int(pixel > threshold) for pixel in pixels]
 
     def calc_episode_similarity(self, image_hash, current_hash_index):
         old_hash_indexes = (
@@ -447,7 +420,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if mismatch_count > 2:
                 self.matches = 0
                 mismatch_count = 0
-                # self.update_default()
 
             if self.debug:
                 self.log((
@@ -496,12 +468,3 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return
         self.past_hashes.data.update(self.hashes.data)
         self.past_hashes.save(self.state.season_identifier)
-
-    def update_default(self):
-        if len(self.hashes.data) < 5:
-            return
-        new_default = [0] * self.hashes.hash_size[0] * self.hashes.hash_size[1]
-        for image_hash in self.hashes.data[-5:]:
-            for idx, pixel in enumerate(image_hash):
-                new_default[idx] += pixel
-        self.hashes.data[0] = self.calc_threshold_hash(new_default, 0.5)
