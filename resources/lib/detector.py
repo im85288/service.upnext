@@ -396,8 +396,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image_hash = tuple(image_hash.getdata())
 
             # Calculate similarity between current hash and previous hash
-            similarity = self.calc_similarity(
+            frame_similarity = self.calc_similarity(
                 self.hashes.data.get(self.hash_index['previous']),
+                image_hash
+            )
+            # Calculate similarity between current hash and representative hash
+            credits_similarity = self.calc_similarity(
+                self.hashes.data.get((0, 0)),
                 image_hash
             )
             # Calculate percentage of significant deviations
@@ -411,9 +416,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
 
             # If current hash matches previous hash and has few significant
-            # regions of deviation then increment the number of matches
-            if ((similarity >= self.detect_level and significance < 0.2)
+            # regions of deviation
+            if (frame_similarity >= self.detect_level and significance < 0.2
+                    # Or current hash (loosely) matches representative hash
+                    or credits_similarity >= self.detect_level - 0.1
+                    # Or current hash matches other episode hashes
                     or episode_similarity >= self.detect_level):
+                # Then increment the number of matches
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -429,17 +438,24 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.log((
                     'Hash compare:'
                     ' {0:1.2f} (significance)'
-                    '/{1:1.2f} (similarity)'
-                    '/{2:1.2f} (episode similarity)'
-                    ' in {3:1.4f}s'
+                    '/{1:1.2f} (frame similarity)'
+                    '/{2:1.2f} (credits similarity)'
+                    '/{3:1.2f} (episode similarity)'
+                    ' in {4:1.4f}s'
                 ).format(
                     significance,
-                    similarity,
+                    frame_similarity,
+                    credits_similarity,
                     episode_similarity,
                     timeit.default_timer() - now
                 ), 2)
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
+                    image_hash,
+                    self.hashes.hash_size
+                )
+                self.print_hash(
+                    self.hashes.data.get((0, 0)),
                     image_hash,
                     self.hashes.hash_size
                 )
