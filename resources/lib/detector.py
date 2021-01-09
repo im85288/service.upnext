@@ -27,7 +27,7 @@ file_utils.create_directory(SAVE_PATH)
 class HashStore(object):  # pylint: disable=useless-object-inheritance
     def __init__(self, **kwargs):
         self.version = kwargs.get('version', '0.1')
-        self.hash_size = kwargs.get('hash_size', (16, 16))
+        self.hash_size = kwargs.get('hash_size', (8, 8))
         self.data = kwargs.get('data', {})
 
     @classmethod
@@ -141,7 +141,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 + [0] * (1 + hash_size[0] // 4)
             ) * hash_size[1]}
         )
-        self.past_hashes = HashStore()
+        self.past_hashes = HashStore(hash_size=hash_size)
         if self.state.season_identifier:
             self.past_hashes.load(self.state.season_identifier)
         self.hash_index = {
@@ -466,5 +466,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def store_hashes(self):
         if not self.state.season_identifier:
             return
+        self.past_hashes.hash_size = self.hashes.hash_size
         self.past_hashes.data.update(self.hashes.data)
         self.past_hashes.save(self.state.season_identifier)
