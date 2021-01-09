@@ -136,10 +136,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
             data={(0, 0): (
-                [0] * (1 + hash_size[0] // 4)
-                + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
-                + [0] * (1 + hash_size[0] // 4)
-            ) * hash_size[1]}
+                [0] * hash_size[0]
+                + (
+                    [0] * (1 + hash_size[0] // 4)
+                    + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
+                    + [0] * (1 + hash_size[0] // 4)
+                ) * (hash_size[1] - 2)
+                + [0] * hash_size[0]
+            )}
         )
         self.past_hashes = HashStore(hash_size=hash_size)
         if self.state.season_identifier:
