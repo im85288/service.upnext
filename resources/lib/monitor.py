@@ -174,7 +174,7 @@ class UpNextMonitor(xbmc.Monitor):
         # Only track playback if old tracker is not running
         if self.running:
             return
-        self.log('Tracker started', 2)
+        self.log('Tracker: started', 2)
         self.running = True
 
         # If tracker was (re)started, ensure detector is also reset
@@ -186,7 +186,7 @@ class UpNextMonitor(xbmc.Monitor):
         while not self.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
-                self.log('Tracker: exit', 2)
+                self.log('Tracker: stopping', 2)
                 break
 
             # Get video details, exit if nothing playing
@@ -197,7 +197,7 @@ class UpNextMonitor(xbmc.Monitor):
                 play_time = self.player.getTime()
                 check_fail = False
             if check_fail:
-                self.log('No file is playing', 2)
+                self.log('Tracker: no file is playing', 2)
                 self.state.set_tracking(False)
                 continue
             # New stream started without tracking being updated
@@ -217,7 +217,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.detector.run()
             # Otherwise check whether credits have been detected
             elif 0 < detect_time <= play_time and self.detector.detected():
-                self.log('Credits detected', 2)
+                self.log('Tracker: credits detected', 2)
                 self.state.set_detected_popup_time(play_time)
 
             popup_time = self.state.get_popup_time()
@@ -232,7 +232,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.sigstop = True
 
             # Start UpNext to handle playback of next file
-            msg = 'Popup due at: {0}s - file ({1}s runtime) ends in {2}s'
+            msg = 'Tracker: popup at {0}s - file ({1}s runtime) ends in {2}s'
             msg = msg.format(popup_time, total_time, total_time - play_time)
             self.log(msg, 2)
             self.playbackmanager = playbackmanager.PlaybackManager(

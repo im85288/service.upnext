@@ -340,7 +340,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Only run detector if old detector is not running
         if self.running:
             return
-        self.log('Detector started', 2)
+        self.log('Started', 2)
         self.running = True
 
         mismatch_count = 0
@@ -462,7 +462,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         del monitor
 
         # Reset thread signals
-        self.log('Detector: stopped', 2)
+        self.log('Stopped', 2)
         self.running = False
         self.sigstop = False
         self.sigterm = False
