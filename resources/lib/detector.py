@@ -360,14 +360,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            image = self.capturer.getImage(0)
+            image = self.capturer.getImage()
 
-            # del self.capturer
-            # self.capturer = xbmc.RenderCapture()
-            # self.capturer.capture(*self.capture_size)
-
-            # Capture failed or was skipped
+            # Capture failed or was skipped, re-initialise RenderCapture
             if not image or image[-1] != 255:
+                del self.capturer
+                self.capturer = xbmc.RenderCapture()
+                self.capturer.capture(*self.capture_size)
                 continue
 
             # Convert captured image data from BGRA to RGBA
