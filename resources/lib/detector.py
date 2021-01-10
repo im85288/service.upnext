@@ -98,6 +98,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Settings
         'debug',
         'detect_level',
+        'significance_level',
         # Variables
         'capture_size',
         'capture_ar',
@@ -144,6 +145,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 + [0] * hash_size[0]
             )}
         )
+        self.significance_level = self.calc_significance(
+            self.hashes.data[(0, 0)]
+        )
+
         self.past_hashes = HashStore(hash_size=hash_size)
         if self.state.season_identifier:
             self.past_hashes.load(self.state.season_identifier)
@@ -203,6 +208,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             similarity = bit_compare
 
         return similarity
+
+    @classmethod
+    def calc_significance(cls, vals):
+        return 100 * sum(vals) / len(vals)
 
     @classmethod
     def capture_resolution(cls, scale_down=1):
@@ -291,11 +300,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image_hash
         )
         # Calculate percentage of significant pixels
-        stats['significance'] = 100 * sum(image_hash) / len(image_hash)
+        stats['significance'] = self.calc_significance(image_hash)
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
         if (stats['previous'] >= self.detect_level
-                and stats['significance'] <= 25):
+                and stats['significance'] <= self.significance_level):
             is_match = True
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not self.debug:
