@@ -175,6 +175,21 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         utils.log(msg, name=cls.__name__, level=level)
 
     @classmethod
+    def calc_quartiles(cls, vals):
+        """Method to calculate approximate quartiles for a list of values by
+           sorting and indexing the list"""
+        num_vals = len(vals)
+        pivots = [
+            int(num_vals * 0.25),
+            int(num_vals * 0.50),
+            int(num_vals * 0.75)
+        ]
+        vals = sorted(vals)
+        if num_vals % 2:
+            return [vals[pivot] for pivot in pivots]
+        return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
+
+    @classmethod
     def calc_similarity(
             cls, hash1, hash2,
             function=operator.eq,
@@ -257,21 +272,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 )
             ), 2)
         cls.log(seperator, 2)
-
-    @classmethod
-    def calc_quartiles(cls, vals):
-        """Method to calculate approximate quartiles for a list of values by
-           sorting and indexing the list"""
-        num_vals = len(vals)
-        pivots = [
-            int(num_vals * 0.25),
-            int(num_vals * 0.50),
-            int(num_vals * 0.75)
-        ]
-        vals = sorted(vals)
-        if num_vals % 2:
-            return [vals[pivot] for pivot in pivots]
-        return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
 
     def check_similarity(self, image_hash, index_offset):
         is_match = False
