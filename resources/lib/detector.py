@@ -247,7 +247,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return (width, height), aspect_ratio
 
     @classmethod
-    def print_hash(cls, hash1, hash2, size=None):
+    def print_hash(cls, hash1, hash2, size=None, prefix=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
         if not hash1 or not hash2:
             return
@@ -259,10 +259,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             size = int(num_pixels ** 0.5)
             size = (size, size)
 
-        seperator = '-' * (5 + size[0] + size[0] + size[0] + size[0])
-        cls.log(seperator, 2)
+        msg = prefix if prefix else '-' * (7 + 4 * size[0])
         for row in range(0, num_pixels, size[0]):
-            cls.log('{0:>3} |{1}|{2}|'.format(
+            msg += '\n\t\t\t{0:>3} |{1}|{2}|'.format(
                 row,
                 ' '.join(
                     ['*' if bit else ' ' for bit in hash1[row:row + size[0]]]
@@ -270,8 +269,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 ' '.join(
                     ['*' if bit else ' ' for bit in hash2[row:row + size[0]]]
                 )
-            ), 2)
-        cls.log(seperator, 2)
+            )
+        cls.log(msg, 2)
 
     def check_similarity(self, image_hash, index_offset):
         is_match = False
@@ -462,30 +461,30 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
-                    self.hashes.hash_size
+                    self.hashes.hash_size,
+                    (
+                        'Hash compare: {0:2.1f}% similar to typical credits'
+                    ).format(stats['credits'])
                 )
-                self.log((
-                    'Hash compare: {0:2.1f}% similar to typical credits'
-                ).format(stats['credits']), 2)
 
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
-                    self.hashes.hash_size
+                    self.hashes.hash_size,
+                    (
+                        'Hash compare: {0:2.1f}% similar to previous frame'
+                        ' with {1:2.1f}% significant pixels'
+                    ).format(stats['previous'], stats['significance'])
                 )
-                self.log((
-                    'Hash compare: {0:2.1f}% similar to previous frame'
-                    ' with {1:2.1f}% significant pixels'
-                ).format(stats['previous'], stats['significance']), 2)
 
                 self.print_hash(
                     self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
-                    self.hashes.hash_size
+                    self.hashes.hash_size,
+                    (
+                        'Hash compare: {0:2.1f}% similar to other episodes'
+                    ).format(stats['episodes'])
                 )
-                self.log((
-                    'Hash compare: {0:2.1f}% similar to other episodes'
-                ).format(stats['episodes']), 2)
 
                 self.log((
                     'Hash compare: completed in {0:1.4f}s'
