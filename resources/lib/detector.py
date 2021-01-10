@@ -119,7 +119,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.state = state
 
         self.debug = utils.get_setting_bool('detectDebugLogging')
-        self.detect_level = utils.get_setting_int('detectLevel') / 100
+        self.detect_level = utils.get_setting_int('detectLevel')
 
         self.capture_size, self.capture_ar = self.capture_resolution(
             scale_down=8
@@ -194,10 +194,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         # Evaluate similarity as a percentage of all pixels in the hash
         if target == 'all':
-            similarity = bit_compare / num_pixels
+            similarity = 100 * bit_compare / num_pixels
         # Or similarity as a percentage of all non-zero pixels in both hashes
         elif target == 'both':
-            similarity = bit_compare / sum(map(any, zip(hash1, hash2)))
+            similarity = 100 * bit_compare / sum(map(any, zip(hash1, hash2)))
         # Or similarity as count of matching pixels
         elif target == 'none':
             similarity = bit_compare
@@ -279,7 +279,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image_hash
         )
         # Match if current hash (loosely) matches representative hash
-        if stats['credits'] >= self.detect_level - 0.1:
+        if stats['credits'] >= self.detect_level - 10:
             is_match = True
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not self.debug:
@@ -290,12 +290,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data.get(self.hash_index['previous']),
             image_hash
         )
-        # Calculate percentage of significant deviations
-        stats['significance'] = sum(image_hash) / len(image_hash)
+        # Calculate percentage of significant pixels
+        stats['significance'] = 100 * sum(image_hash) / len(image_hash)
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
         if (stats['previous'] >= self.detect_level
-                and stats['significance'] < 0.2):
+                and stats['significance'] <= 25):
             is_match = True
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not self.debug:
@@ -303,8 +303,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         old_hash_indexes = (
             idx for idx in self.past_hashes.data
-            if (self.hash_index['current'][0] - index_offset <= idx[0] <=
-                self.hash_index['current'][0] + index_offset)
+            if (self.hash_index['current'][0] - index_offset <= idx[0]
+                <= self.hash_index['current'][0] + index_offset)
             and idx[1] != self.hash_index['current'][1]
         )
         old_hash_index = (0, 0)
@@ -424,8 +424,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
 
             # Calculate median absolute deviation from the median to represent
-            # significant deviations and use transformed image as the hash of
-            # the current video frame
+            # significant pixels and use transformed image as the hash of the
+            # current video frame
             median_pixel = self.calc_quartiles(image_hash.getdata())[1]
             image_hash = image_hash.point(
                 [i > median_pixel for i in range(256)]
@@ -451,13 +451,18 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             if self.debug:
                 self.log((
-                    'Hash compare similarity to:'
-                    '\n\t{0[credits]:1.2f} (typical credits)'
-                    '\n\t{0[previous]:1.2f} / {0[significance]:1.2f}'
-                    ' (previous frame / significance)'
-                    '\n\t{0[episodes]:1.2f} (other episodes)'
-                    '\nin {1:1.4f}s'
-                ).format(stats, timeit.default_timer() - now), 2)
+                    'Hash compare: {0:2.1f}% similar to typical credits'
+                ).format(stats['credits']), 2)
+                self.log((
+                    'Hash compare: {0:2.1f}% similar to previous frame'
+                    ' with {1:2.1f}% significant pixels'
+                ).format(stats['previous'], stats['significance']), 2)
+                self.log((
+                    'Hash compare: {0:2.1f}% similar to other episodes'
+                ).format(stats['episodes']), 2)
+                self.log((
+                    'Hash compare: in {0:1.4f}s'
+                ).format(timeit.default_timer() - now), 2)
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
