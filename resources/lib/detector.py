@@ -450,34 +450,37 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 mismatch_count = 0
 
             if self.debug:
-                self.log((
-                    'Hash compare: {0:2.1f}% similar to typical credits'
-                ).format(stats['credits']), 2)
-                self.log((
-                    'Hash compare: {0:2.1f}% similar to previous frame'
-                    ' with {1:2.1f}% significant pixels'
-                ).format(stats['previous'], stats['significance']), 2)
-                self.log((
-                    'Hash compare: {0:2.1f}% similar to other episodes'
-                ).format(stats['episodes']), 2)
-                self.log((
-                    'Hash compare: in {0:1.4f}s'
-                ).format(timeit.default_timer() - now), 2)
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
                     self.hashes.hash_size
                 )
+                self.log((
+                    'Hash compare: {0:2.1f}% similar to typical credits'
+                ).format(stats['credits']), 2)
+
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size
                 )
+                self.log((
+                    'Hash compare: {0:2.1f}% similar to previous frame'
+                    ' with {1:2.1f}% significant pixels'
+                ).format(stats['previous'], stats['significance']), 2)
+
                 self.print_hash(
                     self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
                     self.hashes.hash_size
                 )
+                self.log((
+                    'Hash compare: {0:2.1f}% similar to other episodes'
+                ).format(stats['episodes']), 2)
+
+                self.log((
+                    'Hash compare: completed in {0:1.4f}s'
+                ).format(timeit.default_timer() - now), 2)
 
             # Store current hash for comparison with next video frame
             # But delete previous hash if not yet required to save it
