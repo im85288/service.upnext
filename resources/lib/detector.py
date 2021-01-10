@@ -329,7 +329,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return is_match, stats
 
     def detected(self):
-        required_matches = 2
+        required_matches = 3
         self.log('{0}/{1} matches'.format(self.matches, required_matches), 2)
         self.credits_detected = self.matches >= required_matches
         return self.credits_detected
