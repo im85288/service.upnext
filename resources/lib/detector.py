@@ -149,7 +149,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if self.state.season_identifier:
             self.past_hashes.load(self.state.season_identifier)
         self.hash_index = {
-            'old': (0, 0),
+            'credits': (0, 0),
+            'episodes': (0, 0),
             'previous': (0, 0),
             'current': (0, 0),
             'store': False
@@ -265,22 +266,61 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return [vals[pivot] for pivot in pivots]
         return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
 
-    def calc_episode_similarity(self, image_hash, current_hash_index):
+    def check_similarity(self, image_hash, index_offset):
+        is_match = False
+        stats = {
+            'credits': 0,
+            'previous': 0,
+            'significance': 0,
+            'episodes': 0
+        }
+
+        # Calculate similarity between current hash and representative hash
+        stats['credits'] = self.calc_similarity(
+            self.hashes.data.get(self.hash_index['credits']),
+            image_hash
+        )
+        # Match if current hash (loosely) matches representative hash
+        if stats['credits'] >= self.detect_level - 0.1:
+            is_match = True
+        # Unless debugging, return if match found, otherwise continue checking
+        if is_match and not self.debug:
+            return is_match, stats
+
+        # Calculate similarity between current hash and previous hash
+        stats['previous'] = self.calc_similarity(
+            self.hashes.data.get(self.hash_index['previous']),
+            image_hash
+        )
+        # Calculate percentage of significant deviations
+        stats['significance'] = sum(image_hash) / len(image_hash)
+        # Match if current hash matches previous hash and has few significant
+        # regions of deviation
+        if (stats['previous'] >= self.detect_level
+                and stats['significance'] < 0.2):
+            is_match = True
+        # Unless debugging, return if match found, otherwise continue checking
+        if is_match and not self.debug:
+            return is_match, stats
+
         old_hash_indexes = (
             idx for idx in self.past_hashes.data
-            if current_hash_index[0] - 1 <= idx[0] <= current_hash_index[0] + 1
-            and idx[1] != current_hash_index[1]
+            if (self.hash_index['current'][0] - index_offset <= idx[0] <=
+                self.hash_index['current'][0] + index_offset)
+            and idx[1] != self.hash_index['current'][1]
         )
-        episode_similarity = 0
         old_hash_index = (0, 0)
         for old_hash_index in old_hash_indexes:
-            episode_similarity = self.calc_similarity(
+            stats['episodes'] = self.calc_similarity(
                 self.past_hashes.data.get(old_hash_index),
                 image_hash
             )
-            if episode_similarity >= self.detect_level:
+            if stats['episodes'] >= self.detect_level:
+                is_match = True
                 break
-        return episode_similarity, old_hash_index
+        self.hash_index['episodes'] = old_hash_index
+
+        return is_match, stats
 
     def detected(self):
         self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
@@ -394,33 +434,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             image_hash = tuple(image_hash.getdata())
 
-            # Calculate similarity between current hash and previous hash
-            frame_similarity = self.calc_similarity(
-                self.hashes.data.get(self.hash_index['previous']),
-                image_hash
-            )
-            # Calculate similarity between current hash and representative hash
-            credits_similarity = self.calc_similarity(
-                self.hashes.data.get((0, 0)),
-                image_hash
-            )
-            # Calculate percentage of significant deviations
-            significance = sum(image_hash) / len(image_hash)
-            # Calculate similarity to hash from other episodes
-            episode_similarity, self.hash_index['old'] = (
-                self.calc_episode_similarity(
-                    image_hash,
-                    self.hash_index['current']
-                )
-            )
+            # Check if current hash matches with previous hash, typical end
+            # credits hash, or other episode hashes
+            is_match, stats = self.check_similarity(image_hash, 2)
 
-            # If current hash matches previous hash and has few significant
-            # regions of deviation
-            if (frame_similarity >= self.detect_level and significance < 0.2
-                    # Or current hash (loosely) matches representative hash
-                    or credits_similarity >= self.detect_level - 0.1
-                    # Or current hash matches other episode hashes
-                    or episode_similarity >= self.detect_level):
+            if is_match:
                 # Then increment the number of matches
                 self.matches += 1
                 mismatch_count = 0
@@ -435,31 +453,25 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             if self.debug:
                 self.log((
-                    'Hash compare:'
-                    ' {0:1.2f} (significance)'
-                    '/{1:1.2f} (frame similarity)'
-                    '/{2:1.2f} (credits similarity)'
-                    '/{3:1.2f} (episode similarity)'
-                    ' in {4:1.4f}s'
-                ).format(
-                    significance,
-                    frame_similarity,
-                    credits_similarity,
-                    episode_similarity,
-                    timeit.default_timer() - now
-                ), 2)
+                    'Hash compare similarity to:'
+                    '\n\t{0[credits]:1.2f} (typical credits)'
+                    '\n\t{0[previous]:1.2f} / {0[significance]:1.2f}'
+                    ' (previous frame / significance)'
+                    '\n\t{0[episodes]:1.2f} (other episodes)'
+                    '\nin {1:1.4f}s'
+                ).format(stats, timeit.default_timer() - now), 2)
+                self.print_hash(
+                    self.hashes.data.get(self.hash_index['credits']),
+                    image_hash,
+                    self.hashes.hash_size
+                )
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size
                 )
                 self.print_hash(
-                    self.hashes.data.get((0, 0)),
-                    image_hash,
-                    self.hashes.hash_size
-                )
-                self.print_hash(
-                    self.past_hashes.data.get(self.hash_index['old']),
+                    self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
                     self.hashes.hash_size
                 )
@@ -471,7 +483,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            monitor.waitForAbort(1)
+            monitor.waitForAbort(2)
 
         # Free resources
         del monitor
