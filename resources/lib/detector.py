@@ -104,7 +104,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'hashes',
         'past_hashes',
         'hash_index',
-        'match_count',
         'matches',
         'credits_detected',
         # Signals
@@ -156,7 +155,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             'store': False
         }
 
-        self.match_count = 5
         self.matches = 0
         self.credits_detected = False
 
@@ -323,12 +321,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return is_match, stats
 
     def detected(self):
-        self.log('{0}/{1} matches'.format(self.matches, self.match_count), 2)
-        self.credits_detected = self.matches >= self.match_count
+        required_matches = 2
+        self.log('{0}/{1} matches'.format(self.matches, required_matches), 2)
+        self.credits_detected = self.matches >= required_matches
         return self.credits_detected
 
     def reset(self):
-        self.match_count = 5
         self.matches = 0
         self.credits_detected = False
 
