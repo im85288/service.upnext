@@ -23,13 +23,13 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def launch_up_next(self):
+    def launch_upnext(self):
         episode, source = self.state.get_next()
 
         # No episode get out of here
         if not episode:
             self.log('Exiting: no next episode', 2)
-            return
+            return False
 
         # Show popup and get new playback state
         play_next, keep_playing = self.launch_popup(episode, source)
@@ -43,11 +43,11 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.player.stop()
         # Relauch popup if shuffle enabled to get new random episode
         elif self.state.shuffle and not play_next:
-            self.launch_up_next()
-            return
+            return self.launch_upnext()
 
         self.sigterm = False
         self.log('Exit', 2)
+        return True
 
     def launch_popup(self, episode, source=None):
         episodeid = utils.get_int(episode, 'episodeid')

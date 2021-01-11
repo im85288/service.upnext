@@ -239,7 +239,7 @@ class UpNextMonitor(xbmc.Monitor):
                 player=self.player,
                 state=self.state
             )
-            self.playbackmanager.launch_up_next()
+            can_play_next = self.playbackmanager.launch_upnext()
 
             # Free up resources
             del self.playbackmanager
@@ -252,6 +252,7 @@ class UpNextMonitor(xbmc.Monitor):
                 # by the user, then restart tracking loop to allow detector to
                 # restart, or to launch popup at default time
                 if (self.detector.credits_detected
+                        and can_play_next
                         and not self.state.playing_next):
                     self.state.set_tracking(tracked_file)
                     self.sigstop = False
