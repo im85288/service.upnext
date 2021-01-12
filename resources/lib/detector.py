@@ -452,7 +452,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            is_match, stats = self.check_similarity(image_hash, 2)
+            is_match, stats = self.check_similarity(image_hash, 5)
 
             if is_match:
                 # Then increment the number of matches
