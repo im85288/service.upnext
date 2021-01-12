@@ -217,8 +217,11 @@ class UpNextMonitor(xbmc.Monitor):
                 self.detector.run()
             # Otherwise check whether credits have been detected
             elif 0 < detect_time <= play_time and self.detector.detected():
+                self.detector.stop()
                 self.log('Tracker: credits detected', 2)
-                self.state.set_detected_popup_time(play_time)
+                self.state.set_detected_popup_time(
+                    self.detector.update_timestamp(play_time)
+                )
 
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
@@ -245,9 +248,9 @@ class UpNextMonitor(xbmc.Monitor):
             del self.playbackmanager
             self.playbackmanager = None
 
-            # Stop detector and store hashes for current video
+            # Stop detector and store hashes and timestamp for current video
             if self.detector:
-                self.detector.store_hashes()
+                self.detector.store_data()
                 # If credits were (in)correctly detected and popup is cancelled
                 # by the user, then restart tracking loop to allow detector to
                 # restart, or to launch popup at default time

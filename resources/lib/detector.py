@@ -29,6 +29,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (8, 8))
         self.data = kwargs.get('data', {})
+        self.timestamps = kwargs.get('timestamps', {})
 
     @classmethod
     def log(cls, msg, level=2):
@@ -62,6 +63,11 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
                         self.int_to_hash(hash_val)
                     for idx, hash_val in val.items()
                 }
+            elif key == 'timestamps':
+                val = {
+                    int(episodeid): timestamp
+                    for episodeid, timestamp in val.items()
+                }
             setattr(self, key, val)
         self.log('Hashes loaded from %s' % target, 2)
         return True
@@ -73,7 +79,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             data={
                 str(idx): self.hash_to_int(hash)
                 for idx, hash in self.data.items()
-            }
+            },
+            timestamps=self.timestamps
         )
 
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
@@ -143,7 +150,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     + [0] * (1 + hash_size[0] // 4)
                 ) * (hash_size[1] - 2)
                 + [0] * hash_size[0]
-            )}
+            )},
+            timestamps={}
         )
         self.significance_level = self.calc_significance(
             self.hashes.data[(0, 0)]
@@ -329,6 +337,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return is_match, stats
 
     def detected(self):
+        if self.past_hashes.timestamps.get(self.state.episodeid):
+            return True
         required_matches = 3
         self.log('{0}/{1} matches'.format(self.matches, required_matches), 2)
         self.credits_detected = self.matches >= required_matches
@@ -508,9 +518,16 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-    def store_hashes(self):
+    def update_timestamp(self, play_time):
+        if self.credits_detected:
+            self.hashes.timestamps[self.state.episodeid] = play_time
+            return play_time
+        return self.past_hashes.timestamps.get(self.state.episodeid)
+
+    def store_data(self):
         if not self.state.season_identifier:
             return
         self.past_hashes.hash_size = self.hashes.hash_size
         self.past_hashes.data.update(self.hashes.data)
+        self.past_hashes.timestamps.update(self.hashes.timestamps)
         self.past_hashes.save(self.state.season_identifier)
