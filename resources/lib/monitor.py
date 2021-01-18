@@ -373,10 +373,8 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
-
             # Seek towards end of file if demo mode is enabled
             self.handle_demo_seek()
-
             return
 
         self.log('Skip video check: UpNext unable to handle playing item', 2)

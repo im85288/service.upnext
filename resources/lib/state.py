@@ -22,7 +22,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'demo_mode',
         'demo_seek',
         'demo_cue',
-        'demo_plaugin',
+        'demo_plugin',
         # Addon data
         'data',
         'encoding',
@@ -177,7 +177,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             popup_duration = utils.get_int(self.data, 'notification_time')
             if 0 < popup_duration < total_time:
                 # Enable cue point unless forced off in demo mode
-                self.popup_cue = False if self.demo_cue == 2 else True
+                self.popup_cue = self.demo_cue != 2
                 self.popup_time = total_time - popup_duration
                 return
 
@@ -185,7 +185,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             popup_time = utils.get_int(self.data, 'notification_offset')
             if 0 < popup_time < total_time:
                 # Enable cue point unless forced off in demo mode
-                self.popup_cue = False if self.demo_cue == 2 else True
+                self.popup_cue = self.demo_cue != 2
                 self.popup_time = popup_time
                 return
 
@@ -206,9 +206,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         else:
             duration_setting = 'autoPlaySeasonTime'
 
-        # Use addon settings, no cue point unless forced on in demo mode
+        # Use addon settings for duration
         popup_duration = utils.get_setting_int(duration_setting)
-        self.popup_cue = True if self.demo_cue == 1 else False
+        # Disable cue point unless forced on in demo mode
+        self.popup_cue = self.demo_cue == 1
         if 0 < popup_duration < total_time:
             self.popup_time = total_time - popup_duration
         else:
@@ -218,7 +219,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Force popup time to specified time
         self.popup_time = time
         # Enable cue point unless forced off in demo mode
-        self.popup_cue = False if self.demo_cue == 2 else True
+        self.popup_cue = self.demo_cue != 2
 
     def process_now_playing(self, has_addon_data=False):
         item = (
