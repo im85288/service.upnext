@@ -11,14 +11,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
     __slots__ = (
         # Settings state variables
         'disabled',
+        'simple_mode',
         'auto_play',
+        'enable_playlist',
+        'unwatched_only',
+        'played_limit',
         'auto_play_delay',
         'detect_enabled',
         'detect_always',
-        'unwatched_only',
-        'enable_playlist',
-        'played_limit',
-        'simple_mode',
         # Addon data
         'data',
         'encoding',
@@ -76,14 +76,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def update_settings(self):
         self.disabled = utils.get_setting_bool('disableNextUp')
+        self.simple_mode = utils.get_setting_int('simpleMode') == 0
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
+        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
+        self.unwatched_only = not utils.get_setting_bool('includeWatched')
+        self.played_limit = utils.get_setting_int('playedInARow')
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.detect_always = utils.get_setting_bool('detectAlways')
-        self.unwatched_only = not utils.get_setting_bool('includeWatched')
-        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
-        self.played_limit = utils.get_setting_int('playedInARow')
-        self.simple_mode = utils.get_setting_int('simpleMode') == 0
+        self.detect_always = (
+            self.detect_enabled and utils.get_setting_bool('detectAlways')
+        )
 
     def get_tracked_file(self):
         return self.filename

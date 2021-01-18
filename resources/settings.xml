@@ -2,7 +2,7 @@
 <settings>
     <category label="30500"> <!-- Interface -->
         <setting label="30503" type="enum" id="simpleMode" lvalues="30038|30039" default="1"/>
-		<setting label="30803" type="bool" id="enablePopupSkin" default="True"/>
+		<setting label="30504" type="bool" id="enablePopupSkin" default="true"/>
         <setting label="30505" type="bool" id="stopAfterClose" default="false"/>
     </category>
     <category label="30600"> <!-- Behaviour -->
@@ -20,9 +20,9 @@
         <setting label="30623" type="slider" id="autoPlayTimeM" default="40" range="0,5,120" option="int" subsetting="true" visible="eq(-4,true)"/>
         <setting label="30625" type="slider" id="autoPlayTimeL" default="50" range="0,5,120" option="int" subsetting="true" visible="eq(-5,true)"/>
         <setting label="30627" type="slider" id="autoPlayTimeXL" default="60" range="0,5,120" option="int" subsetting="true" visible="eq(-6,true)"/>
-		<setting label="30630" type="bool" id="detectPlayTime" default="True"/>
-		<setting label="30631" type="slider" id="detectPeriod" default="90" range="30,30,240" option="int" subsetting="true" visible="eq(-1,true)"/>
-		<setting label="30632" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
+		<setting label="30631" type="bool" id="detectPlayTime" default="true"/>
+		<setting label="30633" type="slider" id="detectPeriod" default="90" range="30,30,240" option="int" subsetting="true" visible="eq(-1,true)"/>
+		<setting label="30635" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
     </category>
     <category label="30700"> <!-- Expert -->
         <setting label="30703" type="bool" id="disableNextUp" default="false"/>
