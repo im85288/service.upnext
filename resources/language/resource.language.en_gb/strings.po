@@ -90,10 +90,37 @@ msgctxt "#30044"
 msgid "Debug"
 msgstr ""
 
+msgctxt "#30045"
+msgid "Off"
+msgstr ""
+
+msgctxt "#30046"
+msgid "To 15s before end"
+msgstr ""
+
+msgctxt "#30047"
+msgid "To popup start time"
+msgstr ""
+
+msgctxt "#30048"
+msgid "To detector start time"
+msgstr ""
+
 msgctxt "#30049"
 msgid "Next episode"
 msgstr ""
 
+msgctxt "#30050"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Forced on"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Forced off"
+msgstr ""
 
 ### SETTINGS
 msgctxt "#30500"
@@ -224,14 +251,34 @@ msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
 msgstr ""
 
-msgctxt "#30820"
-msgid "Detector developer settings"
+msgctxt "#30813"
+msgid "Test UpNext operation"
+msgstr ""
+
+msgctxt "#30815"
+msgid "Enable demo mode"
+msgstr ""
+
+msgctxt "#30817"
+msgid "Auto seek after playback starts"
+msgstr ""
+
+msgctxt "#30819"
+msgid "Force popup cue point"
 msgstr ""
 
 msgctxt "#30821"
+msgid "Force use plugin data and playback method"
+msgstr ""
+
+msgctxt "#30823"
+msgid "Detector developer settings"
+msgstr ""
+
+msgctxt "#30825"
 msgid "Verbose output logging"
 msgstr ""
 
-msgctxt "#30822"
+msgctxt "#30827"
 msgid "Enable always on detector"
 msgstr ""

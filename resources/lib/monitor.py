@@ -55,6 +55,27 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
+    def handle_demo_seek(self):
+        seek_time = 0
+        if not self.state.demo_seek:
+            return
+        # Seek to popup start time
+        if self.state.demo_seek == 2:
+            seek_time = self.state.get_popup_time()
+        # Seek to detector start time
+        elif self.state.demo_seek == 3:
+            seek_time = self.state.get_detect_time()
+
+        with self.player as check_fail:
+            # Seek to 15s before end of video if no other seek point set
+            if not seek_time:
+                total_time = self.player.getTotalTime()
+                seek_time = total_time - 15
+            self.player.seekTime(seek_time)
+            check_fail = False
+        if check_fail:
+            self.log('Error: unable to seek in demo mode, nothing playing', 1)
+
     def run(self):
         # Re-trigger player event if addon started mid playback
         if self.test_trigger and self.player.isPlaying():
@@ -352,6 +373,10 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
+
+            # Seek towards end of file if demo mode is enabled
+            self.handle_demo_seek()
+
             return
 
         self.log('Skip video check: UpNext unable to handle playing item', 2)

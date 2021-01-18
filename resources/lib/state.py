@@ -19,6 +19,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'auto_play_delay',
         'detect_enabled',
         'detect_always',
+        'demo_mode',
+        'demo_seek',
+        'demo_cue',
+        'demo_plaugin',
         # Addon data
         'data',
         'encoding',
@@ -85,6 +89,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
         self.detect_always = (
             self.detect_enabled and utils.get_setting_bool('detectAlways')
+        )
+        self.demo_mode = utils.get_setting_bool('enableDemoMode')
+        self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
+        self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
+        self.demo_plugin = (
+            self.demo_mode and utils.get_setting_bool('demoPlugin')
         )
 
     def get_tracked_file(self):
@@ -166,14 +176,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             # Some addons send the time from video end
             popup_duration = utils.get_int(self.data, 'notification_time')
             if 0 < popup_duration < total_time:
-                self.popup_cue = True
+                # Enable cue point unless forced off in demo mode
+                self.popup_cue = False if self.demo_cue == 2 else True
                 self.popup_time = total_time - popup_duration
                 return
 
             # Some addons send the time from video start (e.g. Netflix)
             popup_time = utils.get_int(self.data, 'notification_offset')
             if 0 < popup_time < total_time:
-                self.popup_cue = True
+                # Enable cue point unless forced off in demo mode
+                self.popup_cue = False if self.demo_cue == 2 else True
                 self.popup_time = popup_time
                 return
 
@@ -194,18 +206,19 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         else:
             duration_setting = 'autoPlaySeasonTime'
 
-        # Use addon settings, no cue point provided
+        # Use addon settings, no cue point unless forced on in demo mode
         popup_duration = utils.get_setting_int(duration_setting)
-        self.popup_cue = False
+        self.popup_cue = True if self.demo_cue == 1 else False
         if 0 < popup_duration < total_time:
             self.popup_time = total_time - popup_duration
         else:
             self.popup_time = 0
 
     def set_detected_popup_time(self, time):
-        # Force popup time to specified time and use as a cue point
-        self.popup_cue = True
+        # Force popup time to specified time
         self.popup_time = time
+        # Enable cue point unless forced off in demo mode
+        self.popup_cue = False if self.demo_cue == 2 else True
 
     def process_now_playing(self, has_addon_data=False):
         item = (
