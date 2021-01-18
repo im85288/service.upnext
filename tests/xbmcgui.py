@@ -10,6 +10,7 @@ from xbmcextra import kodi_to_ansi
 
 ACTION_NAV_BACK = 92
 ACTION_STOP = 13
+NOTIFICATION_INFO = 'info'
 
 
 class Control:  # pylint: disable=too-few-public-methods
