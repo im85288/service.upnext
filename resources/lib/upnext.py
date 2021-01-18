@@ -30,31 +30,31 @@ def send_signal(sender, upnext_info):
             val = val.getVideoInfoTag()
 
         if isinstance(val, xbmc.InfoTagVideo):
-            upnext_info[key] = dict(
-                episodeid=val.getDbId(),
+            upnext_info[key] = {
+                'episodeid': val.getDbId(),
                 # Use show title as substitute for missing ListItem tvshowid
-                tvshowid=val.getTVShowTitle() or -1,
-                title=val.getTitle(),
-                art={
+                'tvshowid': val.getTVShowTitle() or -1,
+                'title': val.getTitle(),
+                'art': {
                     'thumb': thumb,
                     'tvshow.fanart': fanart,
                 },
-                season=val.getSeason(),
-                episode=val.getEpisode(),
-                showtitle=val.getTVShowTitle(),
-                plot=val.getPlotOutline() or val.getPlot(),
-                playcount=val.getPlayCount(),
-                rating=val.getUserRating() or int(val.getRating()),
-                firstaired=(
+                'season': val.getSeason(),
+                'episode': val.getEpisode(),
+                'showtitle': val.getTVShowTitle(),
+                'plot': val.getPlotOutline() or val.getPlot(),
+                'playcount': val.getPlayCount(),
+                'rating': val.getUserRating() or int(val.getRating()),
+                'firstaired': (
                     val.getFirstAired()
                     or val.getPremiered()
                     or val.getYear()
                 ),
-                runtime=(
+                'runtime': (
                     val.getDuration() if utils.supports_python_api(18)
                     else None
                 )
-            )
+            }
 
     # If next episode information is not provided, fake it
     if not upnext_info.get('next_episode'):

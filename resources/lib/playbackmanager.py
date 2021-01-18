@@ -170,7 +170,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # Signal to trakt previous episode watched
         utils.event(
             message='NEXTUPWATCHEDSIGNAL',
-            data=dict(episodeid=self.state.episodeid),
+            data={'episodeid': self.state.episodeid},
             encoding='base64'
         )
 

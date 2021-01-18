@@ -73,15 +73,15 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         return True
 
     def save(self, identifier):
-        output = dict(
-            version=self.version,
-            hash_size=self.hash_size,
-            data={
+        output = {
+            'version': self.version,
+            'hash_size': self.hash_size,
+            'data': {
                 str(idx): self.hash_to_int(hash)
                 for idx, hash in self.data.items()
             },
-            timestamps=self.timestamps
-        )
+            'timestamps': self.timestamps
+        }
 
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(SAVE_PATH, filename)

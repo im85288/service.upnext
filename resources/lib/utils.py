@@ -159,11 +159,11 @@ def event(message, data=None, sender=None, encoding='base64'):
 
     jsonrpc(
         method='JSONRPC.NotifyAll',
-        params=dict(
-            sender='%s.SIGNAL' % sender,
-            message=message,
-            data=[encoded],
-        )
+        params={
+            'sender': '%s.SIGNAL' % sender,
+            'message': message,
+            'data': [encoded],
+        }
     )
 
 
@@ -205,7 +205,7 @@ def get_global_setting(setting):
     """Get a Kodi setting"""
     result = jsonrpc(
         method='Settings.GetSettingValue',
-        params=dict(setting=setting)
+        params={'setting': setting}
     )
     return result.get('result', {}).get('value')
 

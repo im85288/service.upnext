@@ -72,16 +72,10 @@ def play_kodi_item(episode):
     log('Playing from library: {0}'.format(episode), 2)
     utils.jsonrpc(
         method='Player.Open',
-        params=dict(
-            item=dict(
-                episodeid=utils.get_int(episode, 'episodeid')
-            )
-        ),
+        params={'item': {'episodeid': utils.get_int(episode, 'episodeid')}},
         # Disable resuming, playback from start
         # TODO: Add setting to control playback from start or resume point
-        options=dict(
-            resume=False
-        ),
+        options={'resume': False},
         no_response=True
     )
 
@@ -102,7 +96,7 @@ def queue_next_item(data=None, episode=None):
         log('Adding to queue: {0}'.format(next_item), 2)
         utils.jsonrpc(
             method='Playlist.Add',
-            params=dict(playlistid=xbmc.PLAYLIST_VIDEO, item=next_item),
+            params={'playlistid': xbmc.PLAYLIST_VIDEO, 'item': next_item},
             no_response=True
         )
     else:
@@ -116,7 +110,7 @@ def reset_queue():
     log('Removing previously played item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
-        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=0),
+        params={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 0},
         no_response=True
     )
     return False
@@ -127,7 +121,7 @@ def dequeue_next_item():
     log('Removing unplayed next item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
-        params=dict(playlistid=xbmc.PLAYLIST_VIDEO, position=1),
+        params={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1},
         no_response=True
     )
     return False
@@ -149,12 +143,12 @@ def get_next_in_playlist(position):
     """Function to get details of next episode in playlist"""
     result = utils.jsonrpc(
         method='Playlist.GetItems',
-        params=dict(
-            playlistid=xbmc.PLAYLIST_VIDEO,
+        params={
+            'playlistid': xbmc.PLAYLIST_VIDEO,
             # limits are zero indexed, position is one indexed
-            limits=dict(start=position, end=position + 1),
-            properties=EPISODE_PROPERTIES
-        )
+            'limits': {'start': position, 'end': position + 1},
+            'properties': EPISODE_PROPERTIES
+        }
     )
     item = result.get('result', {}).get('items')
 
@@ -188,12 +182,12 @@ def play_addon_item(data, encoding):
         log('Playing from addon - {0}'.format(data), 2)
         utils.jsonrpc(
             method='Player.Open',
-            params=dict(item=dict(file=data)),
+            params={'item': {'file': data}},
             no_response=True
         )
     elif data.get('play_info'):
-        msg = 'Sending to addon - ({encoding}) {play_info}'
-        msg = msg.format(dict(encoding=encoding, **data))
+        msg = 'Sending to addon - ({0}) {play_info}'
+        msg = msg.format(encoding, **data)
         log(msg, 2)
         utils.event(
             message=data.get('id'),
@@ -230,10 +224,10 @@ def get_now_playing():
     """Function to get detail of currently playing item"""
     result = utils.jsonrpc(
         method='Player.GetItem',
-        params=dict(
-            playerid=get_player_id('video'),
-            properties=EPISODE_PROPERTIES,
-        )
+        params={
+            'playerid': get_player_id('video'),
+            'properties': EPISODE_PROPERTIES,
+        }
     )
     result = result.get('result', {}).get('item')
 
@@ -310,16 +304,16 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
-        params=dict(
-            tvshowid=tvshowid,
-            properties=EPISODE_PROPERTIES,
-            sort=(
-                dict(method='random') if random
-                else dict(order='ascending', method='episode')
+        params={
+            'tvshowid': tvshowid,
+            'properties': EPISODE_PROPERTIES,
+            'sort': (
+                {'method': 'random'} if random
+                else {'order': 'ascending', 'method': 'episode'}
             ),
-            limits={'start': 0, 'end': 1},
-            filter=filters
-        )
+            'limits': {'start': 0, 'end': 1},
+            'filter': filters
+        }
     )
     result = result.get('result', {}).get('episodes')
 
@@ -340,10 +334,10 @@ def get_from_library(tvshowid, episodeid):
     """Function to get show and episode details from Kodi library"""
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShowDetails',
-        params=dict(
-            tvshowid=tvshowid,
-            properties=TVSHOW_PROPERTIES
-        )
+        params={
+            'tvshowid': tvshowid,
+            'properties': TVSHOW_PROPERTIES
+        }
     )
     result = result.get('result', {}).get('tvshowdetails')
 
@@ -354,10 +348,10 @@ def get_from_library(tvshowid, episodeid):
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
-        params=dict(
-            episodeid=episodeid,
-            properties=EPISODE_PROPERTIES
-        )
+        params={
+            'episodeid': episodeid,
+            'properties': EPISODE_PROPERTIES
+        }
     )
     result = result.get('result', {}).get('episodedetails')
 
@@ -374,15 +368,15 @@ def get_tvshowid(title):
     """Function to search Kodi library for tshowid by title"""
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
-        params=dict(
-            properties=['title'],
-            limits={'start': 0, 'end': 1},
-            filter={
+        params={
+            'properties': ['title'],
+            'limits': {'start': 0, 'end': 1},
+            'filter': {
                 'field': 'title',
                 'operator': 'is',
                 'value': title
             }
-        )
+        }
     )
     result = result.get('result', {}).get('tvshows')
 
@@ -411,12 +405,12 @@ def get_episodeid(tvshowid, season, episode):
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
-        params=dict(
-            tvshowid=tvshowid,
-            properties=EPISODE_PROPERTIES,
-            limits={'start': 0, 'end': 1},
-            filter=filters
-        )
+        params={
+            'tvshowid': tvshowid,
+            'properties': EPISODE_PROPERTIES,
+            'limits': {'start': 0, 'end': 1},
+            'filter': filters
+        }
     )
     result = result.get('result', {}).get('episodes')
 
@@ -431,10 +425,10 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     """Function to update playcount and resume point of just watched video"""
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
-        params=dict(
-            episodeid=episodeid,
-            properties=['playcount'],
-        )
+        params={
+            'episodeid': episodeid,
+            'properties': ['playcount'],
+        }
     )
     result = result.get('result', {}).get('episodedetails')
 
@@ -444,7 +438,7 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     else:
         return
 
-    params = dict(episodeid=episodeid)
+    params = {'episodeid': episodeid}
     msg = 'Library update: id - {0}'
 
     # If Kodi has not increased playcount then UpNext will
@@ -455,7 +449,7 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
 
     # If resume point has been saved then reset it
     if current_resume and reset_resume:
-        params['resume'] = dict(position=0)
+        params['resume'] = {'position': 0}
         msg += ', resume - {3} to {4}'
 
     # Only update library if playcount or resume point needs to change

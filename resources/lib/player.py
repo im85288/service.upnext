@@ -26,11 +26,11 @@ class UpNextPlayerState(dict):
 
     def set(self, name, *args, **kwargs):
         if name not in self:
-            self[name] = dict(
-                value=None,
-                force=False,
-                actual=None
-            )
+            self[name] = {
+                'value': None,
+                'force': False,
+                'actual': None
+            }
 
         has_force = 'force' in kwargs
         has_value = bool(args)
