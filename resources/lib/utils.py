@@ -232,3 +232,11 @@ def localize_time(time):
 def is_amlogic():
     """Check whether AMLogic hardware video decoder is being used"""
     return xbmc.getInfoLabel('Player.Process(VideoDecoder)')[:3] == 'am-'
+
+
+def notification(
+        heading, message,
+        icon=xbmcgui.NOTIFICATION_INFO, time=5000, sound=False
+):
+    """Display a notification in Kodi with notification sound off by default"""
+    xbmcgui.Dialog().notification(heading, message, icon, time, sound)

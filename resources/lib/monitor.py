@@ -55,7 +55,10 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def handle_demo_seek(self):
+    def handle_demo_mode(self):
+        if self.state.demo_mode:
+            utils.notification('UpNext demo mode', 'Active')
+
         seek_time = 0
         if not self.state.demo_seek:
             return
@@ -373,8 +376,8 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
-            # Seek towards end of file if demo mode is enabled
-            self.handle_demo_seek()
+            # Handle demo mode functionality and notification
+            self.handle_demo_mode()
             return
 
         self.log('Skip video check: UpNext unable to handle playing item', 2)
