@@ -35,40 +35,47 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    @classmethod
-    def int_to_hash(cls, val):
-        return tuple([int(bit_val) for bit_val in format(val, 'b')])
+    @staticmethod
+    def int_to_hash(val, hash_size):
+        return tuple([
+            1 if bit_val == "1" else 0
+            for bit_val in bin(val)[2:].zfill(hash_size)
+        ])
 
-    @classmethod
-    def hash_to_int(cls, image_hash):
-        return int(''.join(str(bit_val) for bit_val in image_hash), 2)
+    @staticmethod
+    def hash_to_int(image_hash):
+        return sum(
+            bit_val << i
+            for i, bit_val in enumerate(reversed(image_hash))
+        )
 
     def load(self, identifier):
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(SAVE_PATH, filename)
         try:
             with open(target, mode='r') as target_file:
-                data = json.load(target_file)
+                hashes = json.load(target_file)
         except (IOError, OSError, TypeError, ValueError):
             self.log('Could not load stored hashes from %s' % target, 2)
             return False
 
-        if not data:
+        if not hashes:
             return False
 
-        for key, val in data.items():
-            if key == 'data':
-                val = {
-                    tuple([int(sub_idx) for sub_idx in idx[1:-1].split(', ')]):
-                        self.int_to_hash(hash_val)
-                    for idx, hash_val in val.items()
-                }
-            elif key == 'timestamps':
-                val = {
-                    int(episodeid): timestamp
-                    for episodeid, timestamp in val.items()
-                }
-            setattr(self, key, val)
+        self.version = hashes.get('version', self.version)
+        self.hash_size = hashes.get('hash_size', self.hash_size)
+        if 'data' in hashes:
+            self.data = {
+                tuple([int(i) for i in key[1:-1].split(', ')]):
+                    self.int_to_hash(val, self.hash_size)
+                for key, val in hashes.get('data').items()
+            }
+        if 'timestamps' in hashes:
+            self.timestamps = {
+                int(episodeid): timestamp
+                for episodeid, timestamp in hashes.get('timestamps').items()
+            }
+
         self.log('Hashes loaded from %s' % target, 2)
         return True
 

@@ -75,7 +75,7 @@ def get_setting_bool(key, default=None):
         value = get_setting(key, default)
         if value not in {'false', 'true'}:
             return default
-        return bool(value == 'true')
+        return value == 'true'
     # Occurs when the addon is disabled
     except RuntimeError:
         return default
