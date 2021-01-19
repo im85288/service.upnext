@@ -66,14 +66,14 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         self.hash_size = hashes.get('hash_size', self.hash_size)
         if 'data' in hashes:
             self.data = {
-                tuple([int(i) for i in key[1:-1].split(', ')]):
+                tuple([utils.get_int(i) for i in key[1:-1].split(', ')]):
                     self.int_to_hash(val, self.hash_size)
                 for key, val in hashes.get('data').items()
             }
         if 'timestamps' in hashes:
             self.timestamps = {
-                int(episodeid): timestamp
-                for episodeid, timestamp in hashes.get('timestamps').items()
+                utils.get_int(episode): timestamp
+                for episode, timestamp in hashes.get('timestamps').items()
             }
 
         self.log('Hashes loaded from %s' % target, 2)
@@ -344,7 +344,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return is_match, stats
 
     def detected(self):
-        if self.past_hashes.timestamps.get(self.state.episodeid):
+        if self.past_hashes.timestamps.get(utils.get_int(self.state.episode)):
             return True
         required_matches = 3
         self.log('{0}/{1} matches'.format(self.matches, required_matches), 2)
@@ -417,7 +417,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.hash_index['store'] = self.state.detect_time <= play_time
                 self.hash_index['current'] = (
                     int(self.player.getTotalTime() - play_time),
-                    self.state.episodeid
+                    utils.get_int(self.state.episode)
                 )
                 check_fail = self.player.get_speed() != 1
             if check_fail:
@@ -526,10 +526,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigterm = False
 
     def update_timestamp(self, play_time):
+        episode = utils.get_int(self.state.episode)
         if self.credits_detected:
-            self.hashes.timestamps[self.state.episodeid] = play_time
+            self.hashes.timestamps[episode] = play_time
             return play_time
-        return self.past_hashes.timestamps.get(self.state.episodeid)
+        return self.past_hashes.timestamps.get(episode)
 
     def store_data(self):
         if not self.state.season_identifier:

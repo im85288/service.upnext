@@ -97,12 +97,12 @@ def get_setting_int(key, default=None):
         return default
 
 
-def get_int(obj, key, default=-1):
-    """Returns a value for the given key, as integer.
-       Returns default value if key is not available.
+def get_int(obj, key=None, default=-1):
+    """Returns an object or value for the given key in object, as an integer.
+       Returns default value if key or object is not available.
        Returns value if value cannot be converted to integer."""
     try:
-        val = obj.get(key, default)
+        val = obj.get(key, default) if key else obj
     except (AttributeError, TypeError):
         return default
     try:

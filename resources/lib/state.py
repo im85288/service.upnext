@@ -31,7 +31,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'tvshowid',
         'episodeid',
         'season_identifier',
+        'episode',
         'playcount',
+        # Popup state variables
         'popup_time',
         'popup_cue',
         'detect_time',
@@ -56,7 +58,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.tvshowid = None
         self.episodeid = None
         self.season_identifier = None
+        self.episode = None
         self.playcount = 0
+        # Popup state variables
         self.popup_time = 0
         self.popup_cue = False
         self.detect_time = 0
@@ -231,7 +235,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         self.season_identifier = '_'.join((
             str(item.get('showtitle')),
-            str(item.get('tvshowid')),
+            # str(item.get('tvshowid')),
             str(item.get('season'))
         ))
 
@@ -257,7 +261,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.played_in_a_row = 1
 
         self.episodeid = utils.get_int(item, 'episodeid')
-
+        self.episode = utils.get_int(item, 'episode')
         self.playcount = utils.get_int(item, 'playcount', 0)
 
         return item
@@ -301,6 +305,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if self.episodeid == -1:
             return None
 
+        self.episode = utils.get_int(item, 'episode')
         self.playcount = utils.get_int(item, 'playcount', 0)
 
         return item
