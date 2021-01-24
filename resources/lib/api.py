@@ -241,7 +241,7 @@ def get_now_playing():
 
 def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
     """Function to get show and next episode details from Kodi library"""
-    episode = get_from_library(tvshowid, episodeid)
+    episode = get_from_library(episodeid, tvshowid)
     if not episode:
         log('Error: next episode info not found in library', 1)
         episode = None
@@ -330,22 +330,8 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
     return episode, new_season
 
 
-def get_from_library(tvshowid, episodeid):
+def get_from_library(episodeid, tvshowid=None):
     """Function to get show and episode details from Kodi library"""
-    result = utils.jsonrpc(
-        method='VideoLibrary.GetTVShowDetails',
-        params={
-            'tvshowid': tvshowid,
-            'properties': TVSHOW_PROPERTIES
-        }
-    )
-    result = result.get('result', {}).get('tvshowdetails')
-
-    if not result:
-        log('Error: show info not found in library', 1)
-        return None
-    episode = result
-
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
         params={
@@ -358,10 +344,27 @@ def get_from_library(tvshowid, episodeid):
     if not result:
         log('Error: episode info not found in library', 1)
         return None
-    episode.update(result)
+    episode = result
 
-    log('Episode from library: %s' % episode, 2)
-    return episode
+    if not tvshowid:
+        tvshowid = episode.get('tvshowid')
+
+    result = utils.jsonrpc(
+        method='VideoLibrary.GetTVShowDetails',
+        params={
+            'tvshowid': tvshowid,
+            'properties': TVSHOW_PROPERTIES
+        }
+    )
+    result = result.get('result', {}).get('tvshowdetails')
+
+    if not result:
+        log('Error: show info not found in library', 1)
+        return None
+    result.update(episode)
+
+    log('Episode from library: %s' % result, 2)
+    return result
 
 
 def get_tvshowid(title):
