@@ -226,10 +226,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Enable cue point unless forced off in demo mode
         self.popup_cue = self.demo_cue != 2
 
-    def process_now_playing(self, has_addon_data=False):
+    def process_now_playing(self, is_playlist, has_addon_data, media_type):
         item = (
             self.handle_addon_now_playing() if has_addon_data
-            else self.handle_library_now_playing()
+            else self.handle_playlist_now_playing() if is_playlist
+            else self.handle_library_now_playing() if media_type == 'episode'
+            else None
         )
         if not item:
             return None
@@ -306,6 +308,18 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if self.episodeid == -1:
             return None
 
+        self.episode = utils.get_int(item, 'episode')
+        self.playcount = utils.get_int(item, 'playcount', 0)
+
+        return item
+
+    def handle_playlist_now_playing(self):
+        item = api.get_now_playing()
+        if not item:
+            return None
+
+        self.tvshowid = utils.get_int(item, 'tvshowid')
+        self.episodeid = utils.get_int(item, 'id')
         self.episode = utils.get_int(item, 'episode')
         self.playcount = utils.get_int(item, 'playcount', 0)
 
