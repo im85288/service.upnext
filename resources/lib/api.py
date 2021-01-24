@@ -14,22 +14,22 @@ EPISODE_PROPERTIES = [
     'season',
     'episode',
     'showtitle',
-    # 'originaltitle',
+    # 'originaltitle', # Not used
     'plot',
-    # 'votes',
+    # 'votes', # Not used
     'file',
     'rating',
-    # 'ratings',
-    # 'userrating',
+    # 'ratings', # Not used, slow
+    # 'userrating', # Not used
     'resume',
     'tvshowid',
     'firstaired',
     'art',
-    'streamdetails',
+    # 'streamdetails', # Not used, slow
     'runtime',
-    # 'director',
-    'writer',
-    # 'cast',
+    # 'director', # Not used
+    # 'writer', # Not used
+    # 'cast', # Not used, slow
     'dateadded',
     'lastplayed'
 ]
@@ -39,11 +39,11 @@ TVSHOW_PROPERTIES = [
     'studio',
     'year',
     'plot',
-    # 'cast',
+    # 'cast', # Not used, slow
     'rating',
-    # 'ratings',
-    # 'userrating',
-    # 'votes',
+    # 'ratings', # Not used, slow
+    # 'userrating', # Not used
+    # 'votes', # Not used
     'genre',
     'episode',
     'season',
@@ -52,13 +52,13 @@ TVSHOW_PROPERTIES = [
     'premiered',
     'playcount',
     'lastplayed',
-    # 'sorttitle',
-    # 'originaltitle',
+    # 'sorttitle', # Not used
+    # 'originaltitle', # Not used
     'art',
-    'tag',
+    # 'tag', # Not used, slow
     'dateadded',
     'watchedepisodes',
-    # 'imdbnumber'
+    # 'imdbnumber' # Not used
 ]
 
 
