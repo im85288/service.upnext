@@ -130,16 +130,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         position = api.get_playlist_position()
         has_addon_data = self.has_addon_data()
 
-        # Next video from non addon playlist
-        if position and not has_addon_data and not self.shuffle:
-            episode = api.get_next_in_playlist(position)
-            source = 'playlist'
-
         # Next video from addon data
-        elif has_addon_data:
+        if has_addon_data:
             episode = self.data.get('next_episode')
             source = 'addon'
             self.log('Addon next_episode: {0}'.format(episode), 2)
+
+        # Next video from non-addon playlist
+        elif position and not self.shuffle:
+            episode = api.get_next_in_playlist(position)
+            source = 'playlist'
 
         # Next video from Kodi library
         else:
