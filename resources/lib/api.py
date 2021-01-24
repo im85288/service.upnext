@@ -239,14 +239,14 @@ def get_now_playing():
     return result
 
 
-def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
+def get_next_from_library(episodeid, tvshowid=None, unwatched_only=True, random=False):
     """Function to get show and next episode details from Kodi library"""
     episode = get_from_library(episodeid, tvshowid)
     if not episode:
         log('Error: next episode info not found in library', 1)
-        episode = None
+        episodes = None
         new_season = False
-        return episode, new_season
+        return episodes, new_season
 
     (path, filename) = os.path.split(episode['file'])
     filters = [
@@ -302,6 +302,9 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
         )
     filters = {'and': filters}
 
+    if not tvshowid:
+        tvshowid = episode.get('tvshowid')
+
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
         params={
@@ -319,15 +322,19 @@ def get_next_from_library(tvshowid, episodeid, unwatched_only, random=False):
 
     if not result:
         log('Error: next episode info not found in library', 1)
-        episode = None
+        episodes = None
         new_season = False
-        return episode, new_season
+        return episodes, new_season
 
-    new_season = not random and episode['season'] != result[0]['season']
-    episode.update(result[0])
-
-    log('Next episode from library: %s' % episode, 2)
-    return episode, new_season
+    next_episode = episode.copy()
+    next_episode.update(result[0])
+    log('Next episode from library: %s' % next_episode, 2)
+    episodes = {
+        'current': episode,
+        'next': next_episode
+    }
+    new_season = not random and episode['season'] != next_episode['season']
+    return episodes, new_season
 
 
 def get_from_library(episodeid, tvshowid=None):
