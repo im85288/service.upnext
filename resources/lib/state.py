@@ -271,7 +271,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def handle_library_now_playing(self):
         item = api.get_now_playing()
-        if not item or item.get('type') != 'episode':
+        if not item:
             return None
 
         # Get current tvshowid or search in library if detail missing
