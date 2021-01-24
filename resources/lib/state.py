@@ -236,11 +236,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if not item:
             return None
 
-        self.season_identifier = '_'.join((
-            str(item.get('showtitle')),
-            # str(item.get('tvshowid')),
-            str(item.get('season'))
-        ))
+        showtitle = item.get('showtitle')
+        season = item.get('season')
+        if not showtitle or not season or season == -1:
+            self.season_identifier = None
+        else:
+            self.season_identifier = '_'.join((str(showtitle), str(season)))
 
         return item
 
