@@ -143,13 +143,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         # Next video from Kodi library
         else:
-            episodes, new_season = api.get_next_from_library(
+            episode, new_season = api.get_next_from_library(
                 self.episodeid,
                 self.tvshowid,
                 self.unwatched_only,
                 self.shuffle
             )
-            episode = episodes['next'] if episodes else None
             source = 'library'
             # Show Still Watching? popup if next episode is from next season
             if new_season:
