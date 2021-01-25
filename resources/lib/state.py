@@ -133,7 +133,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Next video from addon data
         if has_addon_data:
             episode = self.data.get('next_episode')
-            source = 'addon'
+            source = 'addon' if not position else 'playlist'
             self.log('Addon next_episode: {0}'.format(episode), 2)
 
         # Next video from non-addon playlist
