@@ -12,6 +12,45 @@ def log(msg, level=2):
     utils.log(msg, name=__name__, level=level)
 
 
+def create_listitem(episode):
+    """Create a xbmcgui.ListItem from provided episode details"""
+    kwargs = {
+        'label': episode.get('title', ''),
+        'label2': '',
+        'path': episode.get('file', '')
+    }
+    if utils.supports_python_api(18):
+        kwargs['offscreen'] = True
+
+    listitem = xbmcgui.ListItem(**kwargs)
+    listitem.setInfo(
+        type='Video',
+        infoLabels={
+            'dbid': episode.get('episodeid', -1),
+            'path': episode.get('file', ''),
+            'title': episode.get('title', ''),
+            'plot': episode.get('plot', ''),
+            'tvshowtitle': episode.get('showtitle', ''),
+            'season': episode.get('season', -1),
+            'episode': episode.get('episode', -1),
+            'rating': str(float(episode.get('rating', 0.0))),
+            'premiered': episode.get('firstaired', ''),
+            'dateadded': episode.get('dateadded', ''),
+            'lastplayed': episode.get('lastplayed', ''),
+            'playcount': episode.get('playcount', 0),
+            'mediatype': 'episode'
+        }
+    )
+    listitem.setProperty('tvshowid', str(episode.get('tvshowid', -1)))
+    listitem.setArt(episode.get('art', {}))
+    listitem.setProperty('isPlayable', 'true')
+    listitem.setPath(episode.get('file', ''))
+    if utils.supports_python_api(18):
+        listitem.setIsFolder(False)
+
+    return listitem
+
+
 def send_signal(sender, upnext_info):
     """Helper function for addons to send data to UpNext"""
     # Exit if not enough addon information provided

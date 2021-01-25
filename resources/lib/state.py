@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import api
+import upnext
 import utils
 
 
@@ -234,6 +235,26 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         )
         if not item:
             return None
+
+        # Force use of addon data method if demo plugin mode is enabled
+        if not has_addon_data and self.demo_plugin:
+            next_episode, source = self.get_next()
+
+            if source == 'library':
+                next_dbid = next_episode.get('episodeid')
+                current_episode = upnext.create_listitem(item)
+                next_episode = upnext.create_listitem(next_episode)
+
+                addon_id = utils.addon_id()
+                upnext_info = {
+                    'current_episode': current_episode,
+                    'next_episode': next_episode,
+                    'play_url': 'plugin://{0}/?play={1}'.format(
+                        addon_id,
+                        next_dbid
+                    )
+                }
+                upnext.send_signal(addon_id, upnext_info)
 
         showtitle = item.get('showtitle')
         season = item.get('season')
