@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-"""Implements helper functions to interact with Kodi library, player and playlist"""
+"""Implements helper functions to interact with the Kodi library, player and
+   playlist"""
 
 from __future__ import absolute_import, division, unicode_literals
 import os.path
@@ -106,7 +107,8 @@ def queue_next_item(data=None, episode=None):
 
 
 def reset_queue():
-    """Function to remove the 1st item from the playlist, used by UpNext queue"""
+    """Function to remove the 1st item from the playlist, used by the UpNext
+       queue for the video that was just played"""
     log('Removing previously played item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -117,7 +119,8 @@ def reset_queue():
 
 
 def dequeue_next_item():
-    """Function to remove the 2nd item from the playlist, used by UpNext queue"""
+    """Function to remove the 2nd item from the playlist, used by the UpNext
+       queue for the next video to be played"""
     log('Removing unplayed next item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -176,7 +179,8 @@ def get_next_in_playlist(position):
 
 
 def play_addon_item(data, encoding):
-    """Function to play next addon item, either directly or by passthrough to addon"""
+    """Function to play next addon item, either using JSONRPC Player.Open or by
+       passthrough back to the addon"""
     if data.get('play_url'):
         data = data.get('play_url')
         log('Playing from addon - {0}'.format(data), 2)
@@ -398,7 +402,8 @@ def get_tvshowid(title):
 
 
 def get_episodeid(tvshowid, season, episode):
-    """Function to search Kodi library for episodeid by tvshowid, season, and episode"""
+    """Function to search Kodi library for episodeid by tvshowid, season, and
+       episode"""
     filters = [
         {
             'field': 'season',
