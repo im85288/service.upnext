@@ -325,15 +325,15 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if is_match and not self.debug:
             return is_match, stats
 
-        old_hash_indexes = (
         # Get all previous hash indexes for episodes other than the current
         # episode and where the hash timestamps are approximately equal (+/- an
         # index_offset)
+        old_hash_indexes = [
             idx for idx in self.past_hashes.data
             if (self.hash_index['current'][0] - index_offset <= idx[0]
                 <= self.hash_index['current'][0] + index_offset)
             and idx[1] != self.hash_index['current'][1]
-        )
+        ]
         old_hash_index = (0, 0)
         for old_hash_index in old_hash_indexes:
             stats['episodes'] = self.calc_similarity(
@@ -430,7 +430,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            image = self.capturer.getImage()
+            image = self.capturer.getImage(100)
 
             # Capture failed or was skipped, re-initialise RenderCapture
             if not image or image[-1] != 255:
@@ -475,9 +475,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Otherwise increment number of mismatches
             else:
                 mismatch_count += 1
-            # If 3 mismatches in a row (to account for bad frame capture), then
-            # reset match count
-            if mismatch_count > 2:
+            # If 2 mismatches in a row then reset match count
+            if mismatch_count > 1:
                 self.matches = 0
                 mismatch_count = 0
 
