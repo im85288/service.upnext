@@ -326,6 +326,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return is_match, stats
 
         old_hash_indexes = (
+        # Get all previous hash indexes for episodes other than the current
+        # episode and where the hash timestamps are approximately equal (+/- an
+        # index_offset)
             idx for idx in self.past_hashes.data
             if (self.hash_index['current'][0] - index_offset <= idx[0]
                 <= self.hash_index['current'][0] + index_offset)
@@ -337,6 +340,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.past_hashes.data.get(old_hash_index),
                 image_hash
             )
+            # Match if current hash matches other episode hashes
             if stats['episodes'] >= self.detect_level:
                 is_match = True
                 break
@@ -345,6 +349,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return is_match, stats
 
     def detected(self):
+        # If a previously detected timestamp exists then indicate that credits
+        # have been detected
         if self.past_hashes.timestamps.get(utils.get_int(self.state.episode)):
             return True
         required_matches = 3
@@ -463,7 +469,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             is_match, stats = self.check_similarity(image_hash, 5)
 
             if is_match:
-                # Then increment the number of matches
+                # Increment the number of matches
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -528,12 +534,16 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def update_timestamp(self, play_time):
         episode = utils.get_int(self.state.episode)
+        # Return current playtime if credits were detected
         if self.credits_detected:
             self.hashes.timestamps[episode] = play_time
             return play_time
+        # Otherwise return previously detected timestamp
         return self.past_hashes.timestamps.get(episode)
 
     def store_data(self):
+        # Only store data for videos that are grouped by season (i.e. same show
+        # title, same season number)
         if not self.state.season_identifier:
             return
         self.past_hashes.hash_size = self.hashes.hash_size
