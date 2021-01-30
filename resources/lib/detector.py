@@ -68,13 +68,13 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             hash_size = self.hash_size[0] * self.hash_size[1]
             self.data = {
                 tuple([utils.get_int(i) for i in key[1:-1].split(', ')]):
-                    self.int_to_hash(val, hash_size)
-                for key, val in hashes.get('data').items()
+                    self.int_to_hash(hashes['data'][key], hash_size)
+                for key in hashes['data']
             }
         if 'timestamps' in hashes:
             self.timestamps = {
-                utils.get_int(episode): timestamp
-                for episode, timestamp in hashes.get('timestamps').items()
+                utils.get_int(episode): hashes['timestamps'][episode]
+                for episode in hashes['timestamps']
             }
 
         self.log('Hashes loaded from %s' % target, 2)
@@ -85,8 +85,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             'version': self.version,
             'hash_size': self.hash_size,
             'data': {
-                str(idx): self.hash_to_int(hash)
-                for idx, hash in self.data.items()
+                str(hash_index): self.hash_to_int(self.data[hash_index])
+                for hash_index in self.data
             },
             'timestamps': self.timestamps
         }
@@ -330,14 +330,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # index_offset)
         old_hash_indexes = [
             idx for idx in self.past_hashes.data
-            if (self.hash_index['current'][0] - index_offset <= idx[0]
-                <= self.hash_index['current'][0] + index_offset)
-            and idx[1] != self.hash_index['current'][1]
+            if idx[1] != self.hash_index['current'][1]
+            and idx[0] >= self.hash_index['current'][0] - index_offset
+            and idx[0] <= self.hash_index['current'][0] + index_offset
         ]
         old_hash_index = None
         for old_hash_index in old_hash_indexes:
             stats['episodes'] = self.calc_similarity(
-                self.past_hashes.data.get(old_hash_index),
+                self.past_hashes.data[old_hash_index],
                 image_hash
             )
             # Match if current hash matches other episode hashes
@@ -545,7 +545,20 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # title, same season number)
         if not self.state.season_identifier:
             return
+
         self.past_hashes.hash_size = self.hashes.hash_size
-        self.past_hashes.data.update(self.hashes.data)
-        self.past_hashes.timestamps.update(self.hashes.timestamps)
+        # If credit were detected only store the previous 5s worth of hashes to
+        # reduce false positives when comparing to other episodes
+        if self.credits_detected:
+            timestamp = self.state.get_popoup_time()
+            self.past_hashes.data.update({
+                hash_index: self.hashes.data[hash_index]
+                for hash_index in self.hashes.data
+                if hash_index[0] >= timestamp - 5
+            })
+            self.past_hashes.timestamps.update(self.hashes.timestamps)
+        # Otherwise store all hashes for comparison with other episodes
+        else:
+            self.past_hashes.data.update(self.hashes.data)
+
         self.past_hashes.save(self.state.season_identifier)
