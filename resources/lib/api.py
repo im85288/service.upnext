@@ -251,8 +251,8 @@ def get_next_from_library(
         episode=None
 ):
     """Function to get show and next episode details from Kodi library"""
-    if not episode and episodeid is not None:
-        episode = get_from_library(episodeid, tvshowid)
+    episode = episode.copy() if episode else get_from_library(episodeid)
+
     if not episode:
         log('Error: next episode info not found in library', 1)
         episode = None
