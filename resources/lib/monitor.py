@@ -124,11 +124,13 @@ class UpNextMonitor(xbmc.Monitor):
 
         # threading.Timer method not used by default. More testing required
         if self.use_timer:
-            # getTime() needs some time to update correctly after seek/skip
-            # Wait 1s, but this may not be enough to properly update play_time
+            # Playtime needs some time to update correctly after seek/skip
+            # Try waiting 1s for update, longer delay may be required
             self.waitForAbort(1)
             with self.player as check_fail:
-                play_time = self.player.getTime()
+                # Use VideoPlayer.Time infolabel over xbmc.Player.getTime(), as
+                # the infolabel appears to update quicker
+                play_time = self.player.getTime(use_infolabel=True)
                 speed = self.player.get_speed()
                 check_fail = False
             # Exit if not playing, paused, or rewinding

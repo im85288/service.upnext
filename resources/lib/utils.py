@@ -215,7 +215,7 @@ def localize(string_id):
     return ADDON.getLocalizedString(string_id)
 
 
-def localize_time(time):
+def localize_time(time_str):
     """Localize time format"""
     time_format = xbmc.getRegion('time')
 
@@ -226,7 +226,7 @@ def localize_time(time):
     # Strip off seconds
     time_format = time_format.replace(':%S', '')
 
-    return time.strftime(time_format)
+    return time_str.strftime(time_format)
 
 
 def is_amlogic():
@@ -240,3 +240,18 @@ def notification(
 ):
     """Display a notification in Kodi with notification sound off by default"""
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
+
+
+def time_to_seconds(time_str):
+    """Convert a time string in the format hh:mm:ss to seconds as an integer"""
+    seconds = 0
+
+    time_split = time_str.split(':')
+    try:
+        seconds += int(time_split[-1])
+        seconds += int(time_split[-2]) * 60
+        seconds += int(time_split[-3]) * 3600
+    except (IndexError, ValueError):
+        pass
+
+    return seconds
