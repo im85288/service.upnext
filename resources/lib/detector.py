@@ -138,7 +138,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.detect_level = utils.get_setting_int('detectLevel')
 
         self.capture_size, self.capture_ar = self.capture_resolution(
-            scale_down=8
+            scale_down=4
         )
 
         # Hash size as (width, height)
@@ -430,7 +430,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if check_fail:
                 self.log('No file is playing', 2)
                 break
-            image = self.capturer.getImage(100)
+            image = self.capturer.getImage()
 
             # Capture failed or was skipped, re-initialise RenderCapture
             if not image or image[-1] != 255:
@@ -475,6 +475,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Otherwise increment number of mismatches
             else:
                 mismatch_count += 1
+            # If 3 mismatches in a row (to account for bad frame capture), then
+            # reset match count
+            # if mismatch_count > 2:
             # If 2 mismatches in a row then reset match count
             if mismatch_count > 1:
                 self.matches = 0
