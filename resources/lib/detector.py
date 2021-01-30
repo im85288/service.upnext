@@ -170,9 +170,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.past_hashes.load(self.state.season_identifier)
         self.hash_index = {
             'credits': (0, 0),
-            'episodes': (0, 0),
-            'previous': (0, 0),
-            'current': (0, 0),
+            'episodes': None,
+            'previous': None,
+            'current': None,
             'store': False
         }
 
@@ -334,7 +334,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 <= self.hash_index['current'][0] + index_offset)
             and idx[1] != self.hash_index['current'][1]
         ]
-        old_hash_index = (0, 0)
+        old_hash_index = None
         for old_hash_index in old_hash_indexes:
             stats['episodes'] = self.calc_similarity(
                 self.past_hashes.data.get(old_hash_index),
@@ -515,7 +515,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Store current hash for comparison with next video frame
             # But delete previous hash if not yet required to save it
-            if not self.hash_index['store']:
+            if not self.hash_index['store'] and self.hash_index['previous']:
                 del self.hashes.data[self.hash_index['previous']]
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
