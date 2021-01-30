@@ -172,7 +172,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             'credits': (0, 0),
             'episodes': None,
             'previous': None,
-            'current': None,
+            'current': (0, 0),
             'store': False
         }
 
