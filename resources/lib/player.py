@@ -164,7 +164,7 @@ class UpNextPlayer(xbmc.Player):
             self.state.speed = 0
         return self.state.speed
 
-    def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name
+    def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
         if self.state.playing and not self.state.actual('playing'):
             actual = self.state.time
