@@ -285,6 +285,7 @@ class UpNextMonitor(xbmc.Monitor):
                     self.state.set_tracking(tracked_file)
                     self.sigstop = False
                     self.detector.reset()
+                    self.detector.run()
                     self.state.set_popup_time(total_time)
                     continue
                 self.detector.store_data()
