@@ -292,7 +292,7 @@ class UpNextMonitor(xbmc.Monitor):
                 del self.detector
                 self.detector = None
 
-            # Exit tracking loop once all processing complete
+            # Exit tracking loop once all processing is complete
             break
         else:
             self.log('Tracker: abort', 1)
