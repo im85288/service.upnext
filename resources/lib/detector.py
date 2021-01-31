@@ -173,7 +173,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             'episodes': None,
             'previous': None,
             'current': (0, 0),
-            'detected': None,
+            'detected_index': None,
             'store': False
         }
 
@@ -539,7 +539,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         episode = utils.get_int(self.state.episode)
         # Return current playtime if credits were detected
         if self.credits_detected:
-            self.hash_index['detected'] = self.hash_index['current']
+            self.hash_index['detected_index'] = self.hash_index['current'][0]
             self.hashes.timestamps[episode] = play_time
             return play_time
         # Otherwise return previously detected timestamp
@@ -558,7 +558,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
-                if hash_index[0] >= self.hash_index['detected'][0] - 5
+                if hash_index[0] >= self.hash_index['detected_index'] - 5
             })
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
