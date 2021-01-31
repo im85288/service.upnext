@@ -173,6 +173,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             'episodes': None,
             'previous': None,
             'current': (0, 0),
+            'detected': None,
             'store': False
         }
 
@@ -538,6 +539,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         episode = utils.get_int(self.state.episode)
         # Return current playtime if credits were detected
         if self.credits_detected:
+            self.hash_index['detected'] = self.hash_index['current']
             self.hashes.timestamps[episode] = play_time
             return play_time
         # Otherwise return previously detected timestamp
@@ -553,11 +555,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # If credit were detected only store the previous 5s worth of hashes to
         # reduce false positives when comparing to other episodes
         if self.credits_detected:
-            timestamp = self.state.get_popup_time()
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
-                if hash_index[0] >= timestamp - 5
+                if hash_index[0] >= self.hash_index['detected'] - 5
             })
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
