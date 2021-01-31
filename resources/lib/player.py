@@ -164,7 +164,7 @@ class UpNextPlayer(xbmc.Player):
             self.state.speed = 0
         return self.state.speed
 
-    def getTime(self, **kwargs):  # pylint: disable=invalid-name
+    def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
         if self.state.playing and not self.state.actual('playing'):
             actual = self.state.time
@@ -172,7 +172,7 @@ class UpNextPlayer(xbmc.Player):
         else:
             actual = (
                 utils.time_to_seconds(xbmc.getInfoLabel('VideoPlayer.Time'))
-                if kwargs.get('use_infolabel')
+                if use_infolabel
                 else getattr(xbmc.Player, 'getTime')(self)
             )
         self.state.time = actual
