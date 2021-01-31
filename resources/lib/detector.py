@@ -553,7 +553,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # If credit were detected only store the previous 5s worth of hashes to
         # reduce false positives when comparing to other episodes
         if self.credits_detected:
-            timestamp = self.state.get_popoup_time()
+            timestamp = self.state.get_popup_time()
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
