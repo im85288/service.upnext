@@ -41,7 +41,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         if not keep_playing:
             self.log('Stopping playback', 2)
             self.player.stop()
-        # Relauch popup if shuffle enabled to get new random episode
+        # Relaunch popup if shuffle enabled to get new random episode
         elif self.state.shuffle and not play_next:
             return self.launch_upnext()
 
