@@ -558,7 +558,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
-                if hash_index[0] >= self.hash_index['detected'] - 5
+                if hash_index[0] >= self.hash_index['detected'][0] - 5
             })
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
