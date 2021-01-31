@@ -53,8 +53,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         episodeid = utils.get_int(episode, 'episodeid')
 
         # Checked if next episode has been watched and if it should be skipped
-        watched = self.state.unwatched_only and self.state.playcount
-        if episodeid != -1 and self.state.episodeid == episodeid or watched:
+        if self.state.unwatched_only and self.state.playcount:
             self.log('Exit launch_popup early: video already watched', 2)
             play_next = False
             keep_playing = True
