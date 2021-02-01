@@ -25,9 +25,20 @@ file_utils.create_directory(SAVE_PATH)
 
 
 class HashStore(object):  # pylint: disable=useless-object-inheritance
+    __slots__ = (
+        'version',
+        'hash_size',
+        'seasonid',
+        'episode',
+        'data',
+        'timestamps'
+    )
+
     def __init__(self, **kwargs):
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (8, 8))
+        self.seasonid = kwargs.get('seasonid', '')
+        self.episode = kwargs.get('episode', -1)
         self.data = kwargs.get('data', {})
         self.timestamps = kwargs.get('timestamps', {})
 
@@ -117,9 +128,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Variables
         'capture_size',
         'capture_ar',
+        'hash_index',
         'hashes',
         'past_hashes',
-        'hash_index',
         'matches',
         'credits_detected',
         # Signals
@@ -137,45 +148,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.debug = utils.get_setting_bool('detectDebugLogging')
         self.detect_level = utils.get_setting_int('detectLevel')
 
-        self.capture_size, self.capture_ar = self.capture_resolution(
-            scale_down=4
-        )
-
-        # Hash size as (width, height)
-        hash_size = [8 * self.capture_ar, 8]
-        # Round down width to multiple of 2
-        hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
-        self.hashes = HashStore(
-            version='0.1',
-            hash_size=hash_size,
-            # Representative hash of centred end credits text on a dark
-            # background stored as first hash
-            data={(0, 0): (
-                [0] * hash_size[0]
-                + (
-                    [0] * (1 + hash_size[0] // 4)
-                    + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
-                    + [0] * (1 + hash_size[0] // 4)
-                ) * (hash_size[1] - 2)
-                + [0] * hash_size[0]
-            )},
-            timestamps={}
-        )
-        self.significance_level = self.calc_significance(
-            self.hashes.data[(0, 0)]
-        )
-
-        self.past_hashes = HashStore(hash_size=hash_size)
-        if self.state.season_identifier:
-            self.past_hashes.load(self.state.season_identifier)
-        self.hash_index = {
-            'credits': (0, 0),
-            'episodes': None,
-            'previous': None,
-            'current': (0, 0),
-            'detected_index': None,
-            'store': False
-        }
+        self.init_hashes()
 
         self.matches = 0
         self.credits_detected = False
@@ -352,19 +325,81 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def detected(self):
         # If a previously detected timestamp exists then indicate that credits
         # have been detected
-        if self.past_hashes.timestamps.get(utils.get_int(self.state.episode)):
+        if self.past_hashes.timestamps.get(self.hashes.episode):
             return True
         required_matches = 3
         self.log('{0}/{1} matches'.format(self.matches, required_matches), 2)
         self.credits_detected = self.matches >= required_matches
         return self.credits_detected
 
-    def reset(self):
+    def init_hashes(self):
+        self.capture_size, self.capture_ar = self.capture_resolution(
+            scale_down=4
+        )
+
+        self.hash_index = {
+            # Current hash index
+            'current': (0, 0),
+            # Previous hash index
+            'previous': None,
+            # Representative end credits hash index
+            'credits': (0, 0),
+            # Other episodes hash index
+            'episodes': None,
+            # Detected end credits timestamp from end of file
+            'detected_at': None,
+            # Storing enabled flag
+            'store': False
+        }
+
+        # Hash size as (width, height)
+        hash_size = [8 * self.capture_ar, 8]
+        # Round down width to multiple of 2
+        hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
+        # Hashes for currently playing episode
+        self.hashes = HashStore(
+            version='0.1',
+            hash_size=hash_size,
+            seasonid=self.state.season_identifier,
+            episode=utils.get_int(self.state.episode),
+            # Representative hash of centred end credits text on a dark
+            # background stored as first hash
+            data={self.hash_index['credits']: (
+                [0] * hash_size[0]
+                + (
+                    [0] * (1 + hash_size[0] // 4)
+                    + [1] * (hash_size[0] - 2 * (1 + hash_size[0] // 4))
+                    + [0] * (1 + hash_size[0] // 4)
+                ) * (hash_size[1] - 2)
+                + [0] * hash_size[0]
+            )},
+            timestamps={}
+        )
+
+        # Calculated maximum allowable significant level
+        self.significance_level = self.calc_significance(
+            self.hashes.data[self.hash_index['credits']]
+        )
+
+        # Hashes from previously played episodes
+        self.past_hashes = HashStore(hash_size=hash_size)
+        if self.hashes.seasonid:
+            self.past_hashes.load(self.hashes.seasonid)
+
+    def reset(self, reset_hashes=False):
         self.matches = 0
         self.credits_detected = False
 
+        if reset_hashes:
+            self.init_hashes()
+
     def run(self):
         """Method to run actual detection test loop in a separate thread"""
+        # Reset hash data if episode has changed
+        if (self.hashes.seasonid != self.state.season_identifier
+                or self.hashes.episode != utils.get_int(self.state.episode)):
+            self.reset(True)
+
         self.detector = threading.Thread(target=self.test)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
@@ -425,7 +460,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.hash_index['store'] = self.state.detect_time <= play_time
                 self.hash_index['current'] = (
                     int(self.player.getTotalTime() - play_time),
-                    utils.get_int(self.state.episode)
+                    self.hashes.episode
                 )
                 check_fail = self.player.get_speed() != 1
             if check_fail:
@@ -536,19 +571,18 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigterm = False
 
     def update_timestamp(self, play_time):
-        episode = utils.get_int(self.state.episode)
         # Return current playtime if credits were detected
         if self.credits_detected:
-            self.hash_index['detected_index'] = self.hash_index['current'][0]
-            self.hashes.timestamps[episode] = play_time
+            self.hash_index['detected_at'] = self.hash_index['current'][0]
+            self.hashes.timestamps[self.hashes.episode] = play_time
             return play_time
         # Otherwise return previously detected timestamp
-        return self.past_hashes.timestamps.get(episode)
+        return self.past_hashes.timestamps.get(self.hashes.episode)
 
     def store_data(self):
         # Only store data for videos that are grouped by season (i.e. same show
         # title, same season number)
-        if not self.state.season_identifier:
+        if not self.hashes.seasonid:
             return
 
         self.past_hashes.hash_size = self.hashes.hash_size
@@ -558,11 +592,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
-                if hash_index[0] >= self.hash_index['detected_index'] - 5
+                if hash_index[0] >= self.hash_index['detected_at'] - 5
             })
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
         else:
             self.past_hashes.data.update(self.hashes.data)
 
-        self.past_hashes.save(self.state.season_identifier)
+        self.past_hashes.save(self.hashes.seasonid)
