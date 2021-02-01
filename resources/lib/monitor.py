@@ -203,7 +203,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Tracker: started', 2)
         self.running = True
 
-        # If tracker was (re)started, ensure detector is also reset
+        # If tracker was (re)started, ensure detector is also restarted
         if self.detector and not self.detector.detected():
             self.detector.stop()
             self.detector.run()
