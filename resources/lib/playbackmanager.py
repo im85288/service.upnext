@@ -237,14 +237,16 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             if (remaining <= 1
                     or self.popup.is_cancel()
                     or self.popup.is_playnow()):
+                popup_done = True
                 break
 
             monitor.waitForAbort(min(wait_time, remaining))
         else:
             popup_done = False
-            return popup_done
 
-        popup_done = True
+        # Free resources
+        del monitor
+
         return popup_done
 
     def show_popup(self):
