@@ -420,6 +420,7 @@ class UpNextMonitor(xbmc.Monitor):
                 self.playbackmanager.remove_popup()
             if self.detector:
                 self.detector.stop()
+                self.detector.reset(True)
 
             # Increase playcount and reset resume point of previous file
             if self.state.playing_next:
@@ -441,6 +442,8 @@ class UpNextMonitor(xbmc.Monitor):
                 self.playbackmanager.remove_popup()
             if self.detector:
                 self.detector.stop()
+                self.detector.reset(True)
+
             self.stop_tracking()
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing
