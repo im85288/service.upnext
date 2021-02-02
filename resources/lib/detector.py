@@ -304,11 +304,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Get all previous hash indexes for episodes other than the current
         # episode and where the hash timestamps are approximately equal (+/- an
         # index_offset)
+        episode_idx = self.hash_index['current'][1]
+        min_time_idx = self.hash_index['current'][0] - index_offset
+        max_time_idx = self.hash_index['current'][0] + index_offset
         old_hash_indexes = [
             idx for idx in self.past_hashes.data
-            if idx[1] != self.hash_index['current'][1]
-            and idx[0] >= self.hash_index['current'][0] - index_offset
-            and idx[0] <= self.hash_index['current'][0] + index_offset
+            if idx[1] != episode_idx
+            and idx[0] >= min_time_idx
+            and idx[0] <= max_time_idx
         ]
         old_hash_index = None
         for old_hash_index in old_hash_indexes:
@@ -591,10 +594,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # If credit were detected only store the previous 5s worth of hashes to
         # reduce false positives when comparing to other episodes
         if self.credits_detected:
+            detect_offset = self.hash_index['detected_at'] + self.match_number
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
-                if hash_index[0] >= self.hash_index['detected_at'] - 5
+                if hash_index[0] <= detect_offset
             })
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
