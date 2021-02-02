@@ -124,6 +124,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Settings
         'debug',
         'detect_level',
+        'match_number',
         'significance_level',
         # Variables
         'capture_size',
@@ -147,6 +148,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         self.debug = utils.get_setting_bool('detectDebugLogging')
         self.detect_level = utils.get_setting_int('detectLevel')
+        self.match_number = 5
 
         self.init_hashes()
 
@@ -327,9 +329,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # have been detected
         if self.past_hashes.timestamps.get(self.hashes.episode):
             return True
-        required_matches = 3
-        self.log('{0}/{1} matches'.format(self.matches, required_matches), 2)
-        self.credits_detected = self.matches >= required_matches
+
+        self.log('{0}/{1} matches'.format(self.matches, self.match_number), 2)
+        self.credits_detected = self.matches >= self.match_number
         return self.credits_detected
 
     def init_hashes(self):
@@ -502,7 +504,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            is_match, stats = self.check_similarity(image_hash, 5)
+            is_match, stats = self.check_similarity(
+                image_hash, self.match_number
+            )
 
             if is_match:
                 # Increment the number of matches
@@ -513,9 +517,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 mismatch_count += 1
             # If 3 mismatches in a row (to account for bad frame capture), then
             # reset match count
-            # if mismatch_count > 2:
-            # If 2 mismatches in a row then reset match count
-            if mismatch_count > 1:
+            if mismatch_count > 2:
                 self.matches = 0
                 mismatch_count = 0
 
@@ -559,7 +561,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            monitor.waitForAbort(2)
+            monitor.waitForAbort(1)
 
         # Free resources
         del monitor
