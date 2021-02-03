@@ -159,7 +159,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-        self.capturer.capture(*self.capture_size)
         self.log('Init', 2)
 
     @classmethod
@@ -456,9 +455,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         mismatch_count = 0
         monitor = xbmc.Monitor()
+        self.capturer.capture(*self.capture_size)
         while (not monitor.abortRequested()
                and not (self.sigterm or self.sigstop)):
-            now = self.debug and timeit.default_timer()
+            now = timeit.default_timer()
             # Only capture if playing at normal speed
             with self.player as check_fail:
                 play_time = self.player.getTime()
@@ -475,8 +475,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Capture failed or was skipped, re-initialise RenderCapture
             if not image or image[-1] != 255:
-                del self.capturer
-                self.capturer = xbmc.RenderCapture()
                 self.capturer.capture(*self.capture_size)
                 continue
 
@@ -511,8 +509,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 image_hash, self.match_number
             )
 
+            # Increment the number of matches
             if is_match:
-                # Increment the number of matches
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
@@ -564,7 +562,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            monitor.waitForAbort(1)
+            self.capturer.capture(*self.capture_size)
+            monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
 
         # Free resources
         del monitor

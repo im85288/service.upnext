@@ -158,10 +158,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return episode, source
 
     def get_detect_time(self):
-        # Dont use detection time period if an addon cue point was provided,
-        # or end credits detection is disabled, or AML HW decoder is in use
-        if (self.popup_cue or not self.detect_enabled
-                or (utils.is_amlogic() and not self.detect_always)):
+        # Don't use detection time period if an addon cue point was provided,
+        # or end credits detection is disabled
+        if self.popup_cue or not self.detect_enabled:
             return None
         return self.detect_time
 
