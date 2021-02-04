@@ -60,6 +60,18 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             for i, bit_val in enumerate(reversed(image_hash))
         )
 
+    def is_valid(self, seasonid=None, episode=None):
+        return (
+            self.seasonid
+            and self.episode != -1
+            and (self.seasonid == seasonid) if seasonid is not None else True
+            and (self.episode == episode) if episode is not None else True
+        )
+
+    def invalidate(self):
+        self.seasonid = ''
+        self.episode = -1
+
     def load(self, identifier):
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(SAVE_PATH, filename)
@@ -329,6 +341,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return is_match, stats
 
     def detected(self):
+        # Ignore invalidated hash data
+        if not self.hashes.is_valid():
+            return False
+
         # If a previously detected timestamp exists then indicate that credits
         # have been detected
         if self.past_hashes.timestamps.get(self.hashes.episode):
@@ -389,7 +405,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         # Hashes from previously played episodes
         self.past_hashes = HashStore(hash_size=hash_size)
-        if self.hashes.seasonid:
+        if self.hashes.is_valid():
             self.past_hashes.load(self.hashes.seasonid)
 
         self.matches = 0
@@ -404,8 +420,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.matches = 0
             self.credits_detected = False
         # Reset detector data if episode has changed
-        elif (self.hashes.seasonid != self.state.season_identifier
-                or self.hashes.episode != utils.get_int(self.state.episode)):
+        if not self.hashes.is_valid(
+            self.state.season_identifier,
+            utils.get_int(self.state.episode)
+        ):
             self.init_hashes()
 
         self.detector = threading.Thread(target=self.test)
@@ -432,10 +450,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         del self.detector
         self.detector = None
 
-        # Reset hash data if not needed for later use
+        # Invalidate collected hashes if not needed for later use
         if reset:
-            self.hashes = HashStore()
-            self.past_hashes = HashStore()
+            self.hashes.invalidate()
         # Delete reference to instances if detector will not be restarted
         elif terminate:
             del self.capturer
@@ -448,7 +465,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def store_data(self):
         # Only store data for videos that are grouped by season (i.e. same show
         # title, same season number)
-        if not self.hashes.seasonid:
+        if not self.hashes.is_valid():
             return
 
         self.past_hashes.hash_size = self.hashes.hash_size
