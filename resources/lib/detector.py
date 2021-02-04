@@ -423,8 +423,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.credits_detected = False
         # Reset detector data if episode has changed
         if not self.hashes.is_valid(
-            self.state.season_identifier,
-            utils.get_int(self.state.episode)
+                self.state.season_identifier,
+                utils.get_int(self.state.episode)
         ):
             self.init_hashes()
 
