@@ -153,9 +153,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         self.init_hashes()
 
-        self.matches = 0
-        self.credits_detected = False
-
         self.running = False
         self.sigstop = False
         self.sigterm = False
@@ -395,26 +392,28 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if self.hashes.seasonid:
             self.past_hashes.load(self.hashes.seasonid)
 
-    def reset(self, reset_hashes=False):
         self.matches = 0
         self.credits_detected = False
 
-        if reset_hashes:
-            self.init_hashes()
-
-    def run(self):
+    def run(self, restart=False, resume=False):
         """Method to run actual detection test loop in a separate thread"""
-        # Reset hash data if episode has changed
-        if (self.hashes.seasonid != self.state.season_identifier
+
+        if restart:
+            self.stop()
+        elif resume:
+            self.matches = 0
+            self.credits_detected = False
+        # Reset detector data if episode has changed
+        elif (self.hashes.seasonid != self.state.season_identifier
                 or self.hashes.episode != utils.get_int(self.state.episode)):
-            self.reset(True)
+            self.init_hashes()
 
         self.detector = threading.Thread(target=self.test)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
         self.detector.start()
 
-    def stop(self, terminate=False):
+    def stop(self, reset=False, terminate=False):
         # Exit if detector thread has not been created
         if not self.detector:
             return
@@ -432,8 +431,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Free resources
         del self.detector
         self.detector = None
+
+        # Reset hash data if not needed for later use
+        if reset:
+            self.hashes = HashStore()
+            self.past_hashes = HashStore()
         # Delete reference to instances if detector will not be restarted
-        if terminate:
+        elif terminate:
             del self.capturer
             self.capturer = None
             del self.player

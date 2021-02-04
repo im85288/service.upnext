@@ -206,8 +206,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # If tracker was (re)started, ensure detector is also restarted
         if self.detector and not self.detector.detected():
-            self.detector.stop()
-            self.detector.run()
+            self.detector.run(restart=True)
 
         # Loop unless abort requested
         while not self.abortRequested() and not self.sigterm:
@@ -285,8 +284,7 @@ class UpNextMonitor(xbmc.Monitor):
                         and not self.state.playing_next):
                     self.state.set_tracking(tracked_file)
                     self.sigstop = False
-                    self.detector.reset()
-                    self.detector.run()
+                    self.detector.run(resume=True)
                     self.state.set_popup_time(total_time)
                     continue
                 self.detector.store_data()
@@ -421,8 +419,7 @@ class UpNextMonitor(xbmc.Monitor):
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
             if self.detector:
-                self.detector.stop()
-                self.detector.reset(True)
+                self.detector.stop(reset=True)
 
             # Increase playcount and reset resume point of previous file
             if self.state.playing_next:
@@ -443,8 +440,7 @@ class UpNextMonitor(xbmc.Monitor):
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
             if self.detector:
-                self.detector.stop()
-                self.detector.reset(True)
+                self.detector.stop(reset=True)
 
             self.stop_tracking()
             self.state.reset_queue()
