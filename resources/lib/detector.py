@@ -163,6 +163,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.detect_level = utils.get_setting_int('detectLevel')
         self.match_number = 5
 
+        self.matches = 0
+        self.credits_detected = False
         self.init_hashes()
 
         self.running = False
