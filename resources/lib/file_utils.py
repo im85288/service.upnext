@@ -10,6 +10,7 @@ import xbmcvfs
 
 def make_legal_filename(filename, prefix='', suffix=''):
     """Returns a legal filename, from an arbitrary string input, as a string"""
+
     filename = ''.join((
         prefix,
         filename,
@@ -28,6 +29,7 @@ def make_legal_filename(filename, prefix='', suffix=''):
 
 def translate_path(path):
     """Returns a real path, translated from a special:// path, as a string"""
+
     try:
         return xbmcvfs.translatePath(path)
     except AttributeError:
@@ -37,6 +39,7 @@ def translate_path(path):
 
 def create_directory(path):
     """Create a directory from a path string"""
+
     try:
         if not xbmcvfs.exists(path) and not xbmcvfs.mkdirs(path):
             raise IOError

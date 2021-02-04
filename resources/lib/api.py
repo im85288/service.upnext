@@ -65,11 +65,13 @@ TVSHOW_PROPERTIES = [
 
 def log(msg, level=2):
     """Log wrapper"""
+
     utils.log(msg, name=__name__, level=level)
 
 
 def play_kodi_item(episode):
     """Function to directly play a file from the Kodi library"""
+
     log('Playing from library: {0}'.format(episode), 2)
     utils.jsonrpc(
         method='Player.Open',
@@ -83,6 +85,7 @@ def play_kodi_item(episode):
 
 def queue_next_item(data=None, episode=None):
     """Function to add next episode to the UpNext queue"""
+
     next_item = {}
     play_url = data.get('play_url') if data else None
     episodeid = utils.get_int(episode, 'episodeid') if episode else None
@@ -109,6 +112,7 @@ def queue_next_item(data=None, episode=None):
 def reset_queue():
     """Function to remove the 1st item from the playlist, used by the UpNext
        queue for the video that was just played"""
+
     log('Removing previously played item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -121,6 +125,7 @@ def reset_queue():
 def dequeue_next_item():
     """Function to remove the 2nd item from the playlist, used by the UpNext
        queue for the next video to be played"""
+
     log('Removing unplayed next item from queue', 2)
     utils.jsonrpc(
         method='Playlist.Remove',
@@ -132,6 +137,7 @@ def dequeue_next_item():
 
 def get_playlist_position():
     """Function to get current playlist playback position"""
+
     playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
     position = playlist.getposition()
     # A playlist with only one element has no next item
@@ -144,6 +150,7 @@ def get_playlist_position():
 
 def get_next_in_playlist(position):
     """Function to get details of next episode in playlist"""
+
     result = utils.jsonrpc(
         method='Playlist.GetItems',
         params={
@@ -181,6 +188,7 @@ def get_next_in_playlist(position):
 def play_addon_item(data, encoding):
     """Function to play next addon item, either using JSONRPC Player.Open or by
        passthrough back to the addon"""
+
     if data.get('play_url'):
         data = data.get('play_url')
         log('Playing from addon - {0}'.format(data), 2)
@@ -205,6 +213,7 @@ def play_addon_item(data, encoding):
 
 def get_player_id(player_type=None):
     """Function to get active player ID"""
+
     result = utils.jsonrpc(
         method='Player.GetActivePlayers',
     )
@@ -226,6 +235,7 @@ def get_player_id(player_type=None):
 
 def get_now_playing():
     """Function to get detail of currently playing item"""
+
     result = utils.jsonrpc(
         method='Player.GetItem',
         params={
@@ -251,6 +261,7 @@ def get_next_from_library(
         episode=None
 ):
     """Function to get show and next episode details from Kodi library"""
+
     episode = episode.copy() if episode else get_from_library(episodeid)
 
     if not episode:
@@ -345,6 +356,7 @@ def get_next_from_library(
 
 def get_from_library(episodeid, tvshowid=None):
     """Function to get show and episode details from Kodi library"""
+
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
         params={
@@ -382,6 +394,7 @@ def get_from_library(episodeid, tvshowid=None):
 
 def get_tvshowid(title):
     """Function to search Kodi library for tshowid by title"""
+
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
         params={
@@ -406,6 +419,7 @@ def get_tvshowid(title):
 def get_episodeid(tvshowid, season, episode):
     """Function to search Kodi library for episodeid by tvshowid, season, and
        episode"""
+
     filters = [
         {
             'field': 'season',
@@ -440,6 +454,7 @@ def get_episodeid(tvshowid, season, episode):
 
 def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     """Function to update playcount and resume point of just watched video"""
+
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodeDetails',
         params={

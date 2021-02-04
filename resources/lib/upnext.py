@@ -14,6 +14,7 @@ def log(msg, level=2):
 
 def create_listitem(episode):
     """Create a xbmcgui.ListItem from provided episode details"""
+
     kwargs = {
         'label': episode.get('title', ''),
         'label2': '',
@@ -53,6 +54,7 @@ def create_listitem(episode):
 
 def send_signal(sender, upnext_info):
     """Helper function for addons to send data to UpNext"""
+
     # Exit if not enough addon information provided
     if not (upnext_info.get('current_episode')
             and (upnext_info.get('play_url') or upnext_info.get('play_info'))):

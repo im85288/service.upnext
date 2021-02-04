@@ -24,6 +24,7 @@ PLAYER_MONITOR_EVENTS = {
 
 class UpNextMonitor(xbmc.Monitor):
     """Service and player monitor/tracker for Kodi"""
+
     # Set True to enable threading.Thread method for triggering a popup
     # Will continuously poll playtime in a threading.Thread to track popup time
     # Default True
@@ -405,6 +406,7 @@ class UpNextMonitor(xbmc.Monitor):
 
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
+
         if self.state.is_disabled():
             return
 

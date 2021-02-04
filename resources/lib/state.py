@@ -9,6 +9,7 @@ import utils
 
 class UpNextState(object):  # pylint: disable=useless-object-inheritance
     """Class encapsulating all state variables and methods"""
+
     __slots__ = (
         # Settings state variables
         'disabled',
@@ -126,6 +127,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def get_next(self):
         """Get next episode to play, based on current video source"""
+
         episode = None
         source = None
         position = api.get_playlist_position()

@@ -115,10 +115,13 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
 class Detector(object):  # pylint: disable=useless-object-inheritance
     """Detector class used to detect end credits in playing video"""
+
     __slots__ = (
         # Instances
         'capturer',
         'detector',
+        'hashes',
+        'past_hashes',
         'player',
         'state',
         # Settings
@@ -130,8 +133,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'capture_size',
         'capture_ar',
         'hash_index',
-        'hashes',
-        'past_hashes',
         'matches',
         'credits_detected',
         # Signals
@@ -169,6 +170,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def calc_quartiles(cls, vals):
         """Method to calculate approximate quartiles for a list of values by
            sorting and indexing the list"""
+
         num_vals = len(vals)
         pivots = [
             int(num_vals * 0.25),
@@ -190,6 +192,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         """Method to compare the similarity between two image hashes.
            By default checks whether each bit in the first hash is equal to the
            corresponding bit in the second hash"""
+
         # Check that hashes are not empty and that dimensions are equal
         if not hash1 or not hash2:
             return 0
@@ -224,6 +227,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         """Method to detect playing video resolution and aspect ratio and
            return a scaled down resolution tuple and aspect ratio for use in
            capturing the video frame buffer at a specific size/resolution"""
+
         # Capturing render buffer at higher resolution captures more detail
         # depending on Kodi scaling function used, but slows down processing
         width = int(
@@ -240,6 +244,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     @classmethod
     def print_hash(cls, hash1, hash2, size=None, prefix=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
+
         if not hash1 or not hash2:
             return
         num_pixels = len(hash1)
@@ -436,6 +441,29 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             del self.state
             self.state = None
 
+    def store_data(self):
+        # Only store data for videos that are grouped by season (i.e. same show
+        # title, same season number)
+        if not self.hashes.seasonid:
+            return
+
+        self.past_hashes.hash_size = self.hashes.hash_size
+        # If credit were detected only store the previous 5s worth of hashes to
+        # reduce false positives when comparing to other episodes
+        if self.credits_detected:
+            detect_offset = self.hash_index['detected_at'] + self.match_number
+            self.past_hashes.data.update({
+                hash_index: self.hashes.data[hash_index]
+                for hash_index in self.hashes.data
+                if hash_index[0] <= detect_offset
+            })
+            self.past_hashes.timestamps.update(self.hashes.timestamps)
+        # Otherwise store all hashes for comparison with other episodes
+        else:
+            self.past_hashes.data.update(self.hashes.data)
+
+        self.past_hashes.save(self.hashes.seasonid)
+
     def test(self):
         """Detection test loop captures Kodi render buffer every 1s to create
            an image hash. Hash is compared to the previous hash to determine
@@ -582,26 +610,3 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             return play_time
         # Otherwise return previously detected timestamp
         return self.past_hashes.timestamps.get(self.hashes.episode)
-
-    def store_data(self):
-        # Only store data for videos that are grouped by season (i.e. same show
-        # title, same season number)
-        if not self.hashes.seasonid:
-            return
-
-        self.past_hashes.hash_size = self.hashes.hash_size
-        # If credit were detected only store the previous 5s worth of hashes to
-        # reduce false positives when comparing to other episodes
-        if self.credits_detected:
-            detect_offset = self.hash_index['detected_at'] + self.match_number
-            self.past_hashes.data.update({
-                hash_index: self.hashes.data[hash_index]
-                for hash_index in self.hashes.data
-                if hash_index[0] <= detect_offset
-            })
-            self.past_hashes.timestamps.update(self.hashes.timestamps)
-        # Otherwise store all hashes for comparison with other episodes
-        else:
-            self.past_hashes.data.update(self.hashes.data)
-
-        self.past_hashes.save(self.hashes.seasonid)

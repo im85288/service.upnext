@@ -10,6 +10,7 @@ import utils
 
 class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
     """Controller for UpNext popup and playback of next episode"""
+
     __slots__ = ('player', 'state', 'popup', 'sigterm')
 
     def __init__(self, player, state):

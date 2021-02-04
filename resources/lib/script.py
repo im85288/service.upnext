@@ -90,6 +90,7 @@ def open_settings():
 
 def run(argv):
     """Route to API method"""
+
     if len(argv) > 2 and argv[1] == 'test_window':
         # Fancy style popup
         if len(argv) == 3:
