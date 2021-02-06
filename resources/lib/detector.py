@@ -516,7 +516,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         mismatch_count = 0
         monitor = xbmc.Monitor()
-        self.capturer.capture(*self.capture_size)
         while (not monitor.abortRequested()
                and not (self.sigterm or self.sigstop)):
             now = timeit.default_timer()
@@ -532,11 +531,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             if check_fail:
                 self.log('No file is playing', 2)
                 break
+            self.capturer.capture(*self.capture_size)
             image = self.capturer.getImage()
 
             # Capture failed or was skipped, re-initialise RenderCapture
             if not image or image[-1] != 255:
-                self.capturer.capture(*self.capture_size)
                 continue
 
             # Convert captured image data from BGRA to RGBA
@@ -623,7 +622,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            self.capturer.capture(*self.capture_size)
             monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
 
         # Free resources
