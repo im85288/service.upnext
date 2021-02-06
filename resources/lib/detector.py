@@ -159,10 +159,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.player = player
         self.state = state
 
-        self.debug = utils.get_setting_bool('detectDebugLogging')
-        self.detect_level = utils.get_setting_int('detectLevel')
-        self.match_number = 5
-
         self.matches = 0
         self.credits_detected = False
         self.init_hashes()
@@ -416,6 +412,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.past_hashes = HashStore(hash_size=hash_size)
         if self.hashes.is_valid():
             self.past_hashes.load(self.hashes.seasonid)
+
+        self.debug = utils.get_setting_bool('detectDebugLogging')
+        self.detect_level = utils.get_setting_int('detectLevel')
+        self.match_number = 5
 
         self.matches = 0
         self.credits_detected = False
