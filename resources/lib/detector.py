@@ -388,14 +388,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 [0] * hash_size[0]
                 + (
                     (
-                        [0] * (5 * hash_size[0] // 16)
-                        + [1] * (hash_size[0] - 2 * (5 * hash_size[0] // 16))
-                        + [0] * (5 * hash_size[0] // 16)
+                        [0] * (4 * hash_size[0] // 16)
+                        + [1] * (hash_size[0] - 2 * (4 * hash_size[0] // 16))
+                        + [0] * (4 * hash_size[0] // 16)
                     )
                     + (
-                        [0] * (7 * hash_size[0] // 16)
-                        + [1] * (hash_size[0] - 2 * (7 * hash_size[0] // 16))
-                        + [0] * (7 * hash_size[0] // 16)
+                        [0] * (6 * hash_size[0] // 16)
+                        + [1] * (hash_size[0] - 2 * (6 * hash_size[0] // 16))
+                        + [0] * (6 * hash_size[0] // 16)
                     )
                 ) * ((hash_size[1] - 2) // 2)
                 + [0] * hash_size[0]
