@@ -276,8 +276,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         cls.log(msg, 2)
 
     def check_similarity(self, image_hash, index_offset):
-        is_match = False
         stats = {
+            'is_match': False,
+            'possible_match': False,
             'credits': 0,
             'previous': 0,
             'significance': 0,
@@ -291,10 +292,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         )
         # Match if current hash (loosely) matches representative hash
         if stats['credits'] >= self.detect_level - 10:
-            is_match = True
+            stats['is_match'] = True
         # Unless debugging, return if match found, otherwise continue checking
-        if is_match and not self.debug:
-            return is_match, stats
+        if stats['is_match'] and not self.debug:
+            return stats
 
         # Calculate similarity between current hash and previous hash
         stats['previous'] = self.calc_similarity(
@@ -305,12 +306,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         stats['significance'] = self.calc_significance(image_hash)
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
-        if (stats['previous'] >= self.detect_level
-                and stats['significance'] <= self.significance_level):
-            is_match = True
+        if stats['previous'] >= self.detect_level:
+            stats['possible_match'] = True
+            stats['is_match'] = (
+                stats['significance'] <= self.significance_level
+            )
         # Unless debugging, return if match found, otherwise continue checking
-        if is_match and not self.debug:
-            return is_match, stats
+        if stats['is_match'] and not self.debug:
+            return stats
 
         # Get all previous hash indexes for episodes other than the current
         # episode and where the hash timestamps are approximately equal (+/- an
@@ -332,11 +335,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             )
             # Match if current hash matches other episode hashes
             if stats['episodes'] >= self.detect_level:
-                is_match = True
+                stats['is_match'] = True
                 break
         self.hash_index['episodes'] = old_hash_index
 
-        return is_match, stats
+        return stats
 
     def detected(self):
         # Ignore invalidated hash data
@@ -563,16 +566,16 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            is_match, stats = self.check_similarity(
+            stats = self.check_similarity(
                 image_hash, self.match_number
             )
 
             # Increment the number of matches
-            if is_match:
+            if stats['is_match']:
                 self.matches += 1
                 mismatch_count = 0
             # Otherwise increment number of mismatches
-            else:
+            elif not stats['possible_match']:
                 mismatch_count += 1
             # If 3 mismatches in a row (to account for bad frame capture), then
             # reset match count
