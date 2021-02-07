@@ -527,7 +527,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         while (not monitor.abortRequested()
                and not (self.sigterm or self.sigstop)):
             now = timeit.default_timer()
-            # Only capture if playing at normal speed
+
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 self.hash_index['store'] = self.state.detect_time <= play_time
@@ -535,10 +535,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     int(self.player.getTotalTime() - play_time),
                     self.hashes.episode
                 )
-                check_fail = self.player.get_speed() != 1
+                # Only capture if playing at normal speed
+                # check_fail = self.player.get_speed() != 1
+                check_fail = False
             if check_fail:
                 self.log('No file is playing', 2)
                 break
+
             self.capturer.capture(*self.capture_size)
             image = self.capturer.getImage()
 
