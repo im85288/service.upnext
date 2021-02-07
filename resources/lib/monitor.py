@@ -39,19 +39,6 @@ class UpNextMonitor(xbmc.Monitor):
     # Default False
     _trigger = False
 
-    __slots__ = (
-        # Instances
-        'detector',
-        'playbackmanager',
-        'player',
-        'state',
-        'tracker',
-        # Signals
-        'running',
-        'sigstop',
-        'sigterm'
-    )
-
     def __init__(self):
         self.detector = None
         self.playbackmanager = None

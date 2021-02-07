@@ -147,7 +147,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'capture_size',
         'capture_ar',
         'hash_index',
-        'matches',
+        'match_count',
         'credits_detected',
         # Signals
         'running',
@@ -161,7 +161,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.player = player
         self.state = state
 
-        self.matches = 0
+        self.match_count = {
+            'hits': 0,
+            'misses': 0
+        }
         self.credits_detected = False
         self.init_hashes()
 
@@ -353,8 +356,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if self.past_hashes.timestamps.get(self.hashes.episode):
             return True
 
-        self.log('{0}/{1} matches'.format(self.matches, self.match_number), 2)
-        self.credits_detected = self.matches >= self.match_number
+        self.log('{0}/{1} matches'.format(
+            self.match_count['hits'],
+            self.match_number
+        ), 2)
+        self.credits_detected = self.match_count['hits'] >= self.match_number
         return self.credits_detected
 
     def init_hashes(self):
@@ -422,7 +428,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.detect_level = utils.get_setting_int('detectLevel')
         self.match_number = 5
 
-        self.matches = 0
+        self.match_count['hits'] = 0
+        self.match_count['misses'] = 0
         self.credits_detected = False
 
     def run(self, restart=False, resume=False):
@@ -431,7 +438,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if restart:
             self.stop()
         elif resume:
-            self.matches = 0
+            self.match_count['hits'] = 0
+            self.match_count['misses'] = 0
             self.credits_detected = False
         # Reset detector data if episode has changed
         if not self.hashes.is_valid(
@@ -519,11 +527,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if self._profile:
             import cProfile
             import pstats
-            import StringIO
+            try:
+                from StringIO import StringIO
+            except ImportError:
+                from io import StringIO
+
             profiler = cProfile.Profile()
             profiler.enable()
 
-        mismatch_count = 0
         monitor = xbmc.Monitor()
         while (not monitor.abortRequested()
                and not (self.sigterm or self.sigstop)):
@@ -583,16 +594,16 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             # Increment the number of matches
             if stats['is_match']:
-                self.matches += 1
-                mismatch_count = 0
+                self.match_count['hits'] += 1
+                self.match_count['misses'] = 0
             # Otherwise increment number of mismatches
             elif not stats['possible_match']:
-                mismatch_count += 1
+                self.match_count['misses'] += 1
             # If 3 mismatches in a row (to account for bad frame capture), then
             # reset match count
-            if mismatch_count > 2:
-                self.matches = 0
-                mismatch_count = 0
+            if self.match_count['misses'] > 2:
+                self.match_count['hits'] = 0
+                self.match_count['misses'] = 0
 
             if self.debug:
                 self.print_hash(
@@ -638,13 +649,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             if self._profile:
                 profiler.disable()
-                output_stream = StringIO.StringIO()
-                profiler_stats = pstats.Stats(
+                output_stream = StringIO()
+                pstats.Stats(
                     profiler,
                     stream=output_stream
-                ).sort_stats('cumulative')
-                profiler_stats.print_stats()
+                ).sort_stats('cumulative').print_stats()
                 self.log(output_stream.getvalue())
+                output_stream.close()
 
         # Free resources
         del monitor
