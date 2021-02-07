@@ -172,7 +172,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     @classmethod
     def log(cls, msg, level=2):
-        utils.log(msg, name=cls.__name__, level=level)
+        utils.log(msg, name=cls.__name__, level=level, force=True)
 
     @classmethod
     def calc_quartiles(cls, vals):

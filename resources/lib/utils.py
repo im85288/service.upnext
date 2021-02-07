@@ -182,12 +182,17 @@ def event(message, data=None, sender=None, encoding='base64'):
     )
 
 
-def log(msg, name=None, level=1):
+def log(msg, name=None, level=1, force=False):
     """Log information to the Kodi log"""
 
-    log_level = get_setting_int('logLevel', level)
-    debug_logging = get_global_setting('debug.showloginfo')
-    set_property('logLevel', log_level)
+    if force:
+        log_level = 2
+        debug_logging = False
+    else:
+        log_level = get_setting_int('logLevel', level)
+        debug_logging = get_global_setting('debug.showloginfo')
+        set_property('logLevel', log_level)
+
     if not debug_logging and log_level < level:
         return
     if debug_logging:
