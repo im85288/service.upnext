@@ -415,7 +415,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         )
 
         # Calculated maximum allowable significant level
-        self.significance_level = self.calc_significance(
+        self.significance_level = 0.90 * self.calc_significance(
             self.hashes.data[self.hash_index['credits']]
         )
 
