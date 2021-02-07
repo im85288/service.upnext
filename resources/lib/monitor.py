@@ -28,23 +28,37 @@ class UpNextMonitor(xbmc.Monitor):
     # Set True to enable threading.Thread method for triggering a popup
     # Will continuously poll playtime in a threading.Thread to track popup time
     # Default True
-    use_thread = True
+    _use_thread = True
     # Set True to enable threading.Timer method for triggering a popup
     # Will schedule a threading.Timer to start tracking when popup is required
-    # Overrides use_thread if set True
+    # Overrides _use_thread if set True
     # Default False
-    use_timer = False
+    _use_timer = False
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
-    test_trigger = False
+    _trigger = False
+
+    __slots__ = (
+        # Instances
+        'detector',
+        'playbackmanager',
+        'player',
+        'state',
+        'tracker',
+        # Signals
+        'running',
+        'sigstop',
+        'sigterm'
+    )
 
     def __init__(self):
-        self.state = state.UpNextState()
-        self.player = player.UpNextPlayer()
-        self.playbackmanager = None
-        self.tracker = None
         self.detector = None
+        self.playbackmanager = None
+        self.player = player.UpNextPlayer()
+        self.state = state.UpNextState()
+        self.tracker = None
+
         self.running = False
         self.sigstop = False
         self.sigterm = False
@@ -82,7 +96,7 @@ class UpNextMonitor(xbmc.Monitor):
 
     def run(self):
         # Re-trigger player event if addon started mid playback
-        if self.test_trigger and self.player.isPlaying():
+        if self._trigger and self.player.isPlaying():
             if utils.supports_python_api(18):
                 method = 'Player.OnAVStart'
             else:
@@ -124,7 +138,7 @@ class UpNextMonitor(xbmc.Monitor):
         called[0] = True
 
         # threading.Timer method not used by default. More testing required
-        if self.use_timer:
+        if self._use_timer:
             # Playtime needs some time to update correctly after seek/skip
             # Try waiting 1s for update, longer delay may be required
             self.waitForAbort(1)
@@ -158,7 +172,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Use while not abortRequested() loop in a separate thread to allow for
         # continued monitoring in main service thread
-        elif self.use_thread:
+        elif self._use_thread:
             self.tracker = threading.Thread(target=self.track_playback)
             # Daemon threads may not work in Kodi, but enable it anyway
             self.tracker.daemon = True
@@ -190,7 +204,7 @@ class UpNextMonitor(xbmc.Monitor):
         if self.running:
             self.tracker.join()
         # Or if tracker has not yet started on timer then cancel old timer
-        elif self.use_timer:
+        elif self._use_timer:
             self.tracker.cancel()
 
         # Free resources

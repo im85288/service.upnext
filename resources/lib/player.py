@@ -54,6 +54,8 @@ class UpNextPlayerState(dict):
 class UpNextPlayer(xbmc.Player):
     """Inbuilt player function overrides"""
 
+    __slots__ = ('state',)
+
     def __init__(self):
         # Used to override player state for testing
         self.state = UpNextPlayerState()
