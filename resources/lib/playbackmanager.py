@@ -40,21 +40,18 @@ class PlaybackManager:
             self.demo.hide()
 
     def launch_up_next(self):
-        playlist_item = get_setting_bool('enablePlaylist')
-        episode = self.play_item.get_next()
-        self.log('Playlist setting: %s' % playlist_item)
-        if episode and not playlist_item:
+        enable_playlist = get_setting_bool('enablePlaylist')
+        episode, source = self.play_item.get_next()
+        self.log('Playlist setting: %s' % enable_playlist)
+        if source == 'playlist' and not enable_playlist:
             self.log('Playlist integration disabled', 2)
             return
         if not episode:
-            playlist_item = False
-            episode = self.play_item.get_episode()
-            if episode is None:
-                # No episode get out of here
-                self.log('Error: no episode could be found to play next...exiting', 1)
-                return
+            # No episode get out of here
+            self.log('Error: no episode could be found to play next...exiting', 1)
+            return
         self.log('episode details %s' % episode, 2)
-        play_next, keep_playing = self.launch_popup(episode, playlist_item)
+        play_next, keep_playing = self.launch_popup(episode, source)
         self.state.playing_next = play_next
 
         # Dequeue and stop playback if not playing next file
@@ -66,7 +63,7 @@ class PlaybackManager:
 
         self.api.reset_addon_data()
 
-    def launch_popup(self, episode, playlist_item):
+    def launch_popup(self, episode, source=None):
         episode_id = episode.get('episodeid')
         no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
         include_play_count = True if self.state.include_watched else no_play_count
@@ -77,7 +74,8 @@ class PlaybackManager:
             # Don't play next file, but keep playing current file
             return False, True
 
-        if not playlist_item:
+        # Add next file to playlist if existing playlist is not being used
+        if source != 'playlist':
             self.state.queued = self.api.queue_next_item(episode)
 
         # We have a next up episode choose mode
@@ -120,7 +118,7 @@ class PlaybackManager:
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
-        if playlist_item or self.state.queued:
+        if source == 'playlist' or self.state.queued:
             # Play playlist media
             if should_play_non_default:
                 # Only start the next episode if the user asked for it specifically
