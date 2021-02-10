@@ -21,7 +21,8 @@ class PlayItem:
     def log(self, msg, level=2):
         ulog(msg, name=self.__class__.__name__, level=level)
 
-    def get_playlist_position(self):
+    @staticmethod
+    def get_playlist_position():
         """Function to get current playlist playback position"""
 
         playlist = PlayList(PLAYLIST_VIDEO)
