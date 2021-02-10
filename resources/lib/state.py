@@ -229,9 +229,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def process_now_playing(self, is_playlist, has_addon_data, media_type):
         item = (
-            self.handle_addon_now_playing() if has_addon_data
-            else self.handle_playlist_now_playing() if is_playlist
-            else self.handle_library_now_playing() if media_type == 'episode'
+            self.get_addon_now_playing() if has_addon_data
+            else self.get_playlist_now_playing() if is_playlist
+            else self.get_library_now_playing() if media_type == 'episode'
             else None
         )
         if not item:
@@ -266,7 +266,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         return item
 
-    def handle_addon_now_playing(self):
+    def get_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
         self.log('Addon current_episode: {0}'.format(item), 2)
         if not item:
@@ -291,7 +291,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         return item
 
-    def handle_library_now_playing(self):
+    def get_library_now_playing(self):
         item = api.get_now_playing()
         if not item:
             return None
@@ -335,7 +335,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         return item
 
-    def handle_playlist_now_playing(self):
+    def get_playlist_now_playing(self):
         item = api.get_now_playing()
         if not item:
             return None
