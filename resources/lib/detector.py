@@ -282,9 +282,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         stats = {
             'is_match': False,
             'possible_match': False,
+            # Similarity to representative end credits hash
             'credits': 0,
+            # Similarity to previous frame hash
             'previous': 0,
+            # Significance level - areas of significant deviation in hash
             'significance': 0,
+            # Similarity to hash from other episodes
             'episodes': 0
         }
 
