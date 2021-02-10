@@ -434,9 +434,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def run(self, restart=False, resume=False):
         """Method to run actual detection test loop in a separate thread"""
 
-        if restart:
+        if restart or self.running:
             self.stop()
-        elif resume:
+        if resume:
             self.match_count['hits'] = 0
             self.match_count['misses'] = 0
             self.credits_detected = False
@@ -517,9 +517,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
            A consecutive number of matching frames must be detected to confirm
            that end credits are playing."""
 
-        # Only run detector if old detector is not running
-        if self.running:
-            return
         self.log('Started', 2)
         self.running = True
 
