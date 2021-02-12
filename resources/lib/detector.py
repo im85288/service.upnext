@@ -233,22 +233,26 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return 100 * sum(vals) / len(vals)
 
     @classmethod
-    def capture_resolution(cls, scale_down=1):
+    def capture_resolution(cls, max_size=None):
         """Method to detect playing video resolution and aspect ratio and
            return a scaled down resolution tuple and aspect ratio for use in
            capturing the video frame buffer at a specific size/resolution"""
 
-        # Capturing render buffer at higher resolution captures more detail
-        # depending on Kodi scaling function used, but slows down processing
-        width = int(
-            xbmc.getInfoLabel('Player.Process(VideoWidth)').replace(',', '')
-        ) // scale_down
-        height = int(
-            xbmc.getInfoLabel('Player.Process(VideoHeight)').replace(',', '')
-        ) // scale_down
         aspect_ratio = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
-        # width = 14
-        # height = 8
+
+        # Capturing render buffer at higher resolution captures more detail
+        # depending on Kodi scaling function used, but slows down processing.
+        # Limit captured data to max_size (in kB)
+        if max_size:
+            max_size = max_size * 8 * 1024
+            height = int((max_size / aspect_ratio) ** 0.5)
+            width = int(height * aspect_ratio)
+        else:
+            width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
+            width = int(width.replace(',', ''))
+            height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
+            height = int(height.replace(',', ''))
+
         return (width, height), aspect_ratio
 
     @classmethod
@@ -366,8 +370,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return self.credits_detected
 
     def init_hashes(self):
+        # Limit captured data to 16 kB
         self.capture_size, self.capture_ar = self.capture_resolution(
-            scale_down=4
+            max_size=16
         )
 
         self.hash_index = {
