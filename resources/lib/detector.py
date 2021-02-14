@@ -442,7 +442,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.match_count['misses'] = 0
         self.credits_detected = False
 
-    def run(self, restart=False, resume=False):
+    def start(self, restart=False, resume=False):
         """Method to run actual detection test loop in a separate thread"""
 
         if restart or self.running:
@@ -458,7 +458,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         ):
             self.init_hashes()
 
-        self.detector = threading.Thread(target=self.test)
+        self.detector = threading.Thread(target=self.run)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.detector.daemon = True
         self.detector.start()
@@ -517,9 +517,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         self.past_hashes.save(self.hashes.seasonid)
 
-    def test(self):
-        """Detection test loop captures Kodi render buffer every 1s to create
-           an image hash. Hash is compared to the previous hash to determine
+    def run(self):
+        """Detection loop captures Kodi render buffer every 1s to create an
+           image hash. Hash is compared to the previous hash to determine
            whether current frame of video is similar to the previous frame.
 
            Hash is also compared to hashes calculated from previously played
