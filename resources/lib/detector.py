@@ -128,6 +128,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 class Detector(object):  # pylint: disable=useless-object-inheritance
     """Detector class used to detect end credits in playing video"""
 
+    _profile = False
+
     __slots__ = (
         # Instances
         'capturer',
@@ -529,6 +531,17 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.log('Started', 2)
         self.running = True
 
+        if self._profile:
+            import cProfile
+            import pstats
+            try:
+                from StringIO import StringIO
+            except ImportError:
+                from io import StringIO
+
+            profiler = cProfile.Profile()
+            profiler.enable()
+
         monitor = xbmc.Monitor()
         while (not monitor.abortRequested()
                and not (self.sigterm or self.sigstop)):
@@ -640,6 +653,16 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             self.hash_index['previous'] = self.hash_index['current']
 
             monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
+
+            if self._profile:
+                profiler.disable()
+                output_stream = StringIO()
+                pstats.Stats(
+                    profiler,
+                    stream=output_stream
+                ).sort_stats('cumulative').print_stats()
+                self.log(output_stream.getvalue())
+                output_stream.close()
 
         # Free resources
         del monitor
