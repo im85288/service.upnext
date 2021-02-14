@@ -359,13 +359,6 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.set_addon_data(data, encoding)
         has_addon_data = self.state.has_addon_data()
 
-        if self.state.detect_always and not self.detector:
-            self.detector = detector.Detector(
-                player=self.player,
-                state=self.state
-            )
-            self.detector.run()
-
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
         if self.state.process_now_playing(

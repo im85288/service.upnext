@@ -41,6 +41,5 @@
 		<setting label="30821" type="bool" id="demoPlugin" default="false" subsetting="true" enable="eq(-3,true)"/>
 		<setting label="30823" type="lsep"/> <!-- Detector debug settings -->
 		<setting label="30825" type="bool" id="detectDebugLogging" default="false"/>
-		<setting label="30827" type="bool" id="detectAlways" default="false"/>
     </category>
 </settings>

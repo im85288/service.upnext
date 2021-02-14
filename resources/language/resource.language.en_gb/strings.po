@@ -278,7 +278,3 @@ msgstr ""
 msgctxt "#30825"
 msgid "Verbose output logging"
 msgstr ""
-
-msgctxt "#30827"
-msgid "Enable always on detector"
-msgstr ""

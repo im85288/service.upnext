@@ -20,7 +20,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'played_limit',
         'auto_play_delay',
         'detect_enabled',
-        'detect_always',
         'demo_mode',
         'demo_seek',
         'demo_cue',
@@ -93,9 +92,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.played_limit = utils.get_setting_int('playedInARow')
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.detect_always = (
-            self.detect_enabled and utils.get_setting_bool('detectAlways')
-        )
         self.demo_mode = utils.get_setting_bool('enableDemoMode')
         self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
         self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
