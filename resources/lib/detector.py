@@ -195,6 +195,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
 
     @classmethod
+    def calc_significance(cls, vals):
+        return 100 * sum(vals) / len(vals)
+
+    @classmethod
     def calc_similarity(
             cls, hash1, hash2,
             function=operator.eq,
@@ -229,10 +233,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             similarity = bit_compare
 
         return similarity
-
-    @classmethod
-    def calc_significance(cls, vals):
-        return 100 * sum(vals) / len(vals)
 
     @classmethod
     def capture_resolution(cls, max_size=None):
@@ -442,81 +442,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.match_count['misses'] = 0
         self.credits_detected = False
 
-    def start(self, restart=False, resume=False):
-        """Method to run actual detection test loop in a separate thread"""
-
-        if restart or self.running:
-            self.stop()
-        if resume:
-            self.match_count['hits'] = 0
-            self.match_count['misses'] = 0
-            self.credits_detected = False
-        # Reset detector data if episode has changed
-        if not self.hashes.is_valid(
-                self.state.season_identifier,
-                utils.get_int(self.state.episode)
-        ):
-            self.init_hashes()
-
-        self.detector = threading.Thread(target=self.run)
-        # Daemon threads may not work in Kodi, but enable it anyway
-        self.detector.daemon = True
-        self.detector.start()
-
-    def stop(self, reset=False, terminate=False):
-        # Exit if detector thread has not been created
-        if not self.detector:
-            return
-
-        # Set terminate or stop signals if detector is running
-        if terminate:
-            self.sigterm = self.running
-        else:
-            self.sigstop = self.running
-
-        # Wait for thread to complete
-        if self.running:
-            self.detector.join()
-
-        # Free resources
-        del self.detector
-        self.detector = None
-
-        # Invalidate collected hashes if not needed for later use
-        if reset or terminate:
-            self.hashes.invalidate()
-        # Delete reference to instances if detector will not be restarted
-        if terminate:
-            del self.capturer
-            self.capturer = None
-            del self.player
-            self.player = None
-            del self.state
-            self.state = None
-
-    def store_data(self):
-        # Only store data for videos that are grouped by season (i.e. same show
-        # title, same season number)
-        if not self.hashes.is_valid():
-            return
-
-        self.past_hashes.hash_size = self.hashes.hash_size
-        # If credit were detected only store the previous 5s worth of hashes to
-        # reduce false positives when comparing to other episodes
-        if self.credits_detected:
-            detect_offset = self.hash_index['detected_at'] + self.match_number
-            self.past_hashes.data.update({
-                hash_index: self.hashes.data[hash_index]
-                for hash_index in self.hashes.data
-                if hash_index[0] <= detect_offset
-            })
-            self.past_hashes.timestamps.update(self.hashes.timestamps)
-        # Otherwise store all hashes for comparison with other episodes
-        else:
-            self.past_hashes.data.update(self.hashes.data)
-
-        self.past_hashes.save(self.hashes.seasonid)
-
     def run(self):
         """Detection loop captures Kodi render buffer every 1s to create an
            image hash. Hash is compared to the previous hash to determine
@@ -672,6 +597,81 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.running = False
         self.sigstop = False
         self.sigterm = False
+
+    def start(self, restart=False, resume=False):
+        """Method to run actual detection test loop in a separate thread"""
+
+        if restart or self.running:
+            self.stop()
+        if resume:
+            self.match_count['hits'] = 0
+            self.match_count['misses'] = 0
+            self.credits_detected = False
+        # Reset detector data if episode has changed
+        if not self.hashes.is_valid(
+                self.state.season_identifier,
+                utils.get_int(self.state.episode)
+        ):
+            self.init_hashes()
+
+        self.detector = threading.Thread(target=self.run)
+        # Daemon threads may not work in Kodi, but enable it anyway
+        self.detector.daemon = True
+        self.detector.start()
+
+    def stop(self, reset=False, terminate=False):
+        # Exit if detector thread has not been created
+        if not self.detector:
+            return
+
+        # Set terminate or stop signals if detector is running
+        if terminate:
+            self.sigterm = self.running
+        else:
+            self.sigstop = self.running
+
+        # Wait for thread to complete
+        if self.running:
+            self.detector.join()
+
+        # Free resources
+        del self.detector
+        self.detector = None
+
+        # Invalidate collected hashes if not needed for later use
+        if reset or terminate:
+            self.hashes.invalidate()
+        # Delete reference to instances if detector will not be restarted
+        if terminate:
+            del self.capturer
+            self.capturer = None
+            del self.player
+            self.player = None
+            del self.state
+            self.state = None
+
+    def store_data(self):
+        # Only store data for videos that are grouped by season (i.e. same show
+        # title, same season number)
+        if not self.hashes.is_valid():
+            return
+
+        self.past_hashes.hash_size = self.hashes.hash_size
+        # If credit were detected only store the previous 5s worth of hashes to
+        # reduce false positives when comparing to other episodes
+        if self.credits_detected:
+            detect_offset = self.hash_index['detected_at'] + self.match_number
+            self.past_hashes.data.update({
+                hash_index: self.hashes.data[hash_index]
+                for hash_index in self.hashes.data
+                if hash_index[0] <= detect_offset
+            })
+            self.past_hashes.timestamps.update(self.hashes.timestamps)
+        # Otherwise store all hashes for comparison with other episodes
+        else:
+            self.past_hashes.data.update(self.hashes.data)
+
+        self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
         # Return current playtime if credits were detected
