@@ -483,10 +483,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.detector = None
 
         # Invalidate collected hashes if not needed for later use
-        if reset:
+        if reset or terminate:
             self.hashes.invalidate()
         # Delete reference to instances if detector will not be restarted
-        elif terminate:
+        if terminate:
             del self.capturer
             self.capturer = None
             del self.player
