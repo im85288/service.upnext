@@ -69,16 +69,14 @@ def log(msg, level=2):
     utils.log(msg, name=__name__, level=level)
 
 
-def play_kodi_item(episode):
+def play_kodi_item(episode, resume=False):
     """Function to directly play a file from the Kodi library"""
 
     log('Playing from library: {0}'.format(episode), 2)
     utils.jsonrpc(
         method='Player.Open',
         params={'item': {'episodeid': utils.get_int(episode, 'episodeid')}},
-        # Disable resuming, playback from start
-        # TODO: Add setting to control playback from start or resume point
-        options={'resume': False},
+        options={'resume': resume},
         no_response=True
     )
 
@@ -133,6 +131,24 @@ def dequeue_next_item():
         no_response=True
     )
     return False
+
+
+def play_playlist_item(position=0, resume=False):
+    """Function to play episode in playlist"""
+
+    if position == 'next':
+        position = get_playlist_position()
+
+    log('Playing from playlist position: {0}'.format(position), 2)
+    utils.jsonrpc(
+        method='Player.Open',
+        params={'item': {
+            'playlistid': xbmc.PLAYLIST_VIDEO,
+            'position': position
+        }},
+        options={'resume': resume},
+        no_response=True
+    )
 
 
 def get_playlist_position():
@@ -257,6 +273,7 @@ def get_next_from_library(
         episodeid=None,
         tvshowid=None,
         unwatched_only=False,
+        next_season=True,
         random=False,
         episode=None
 ):
@@ -290,6 +307,7 @@ def get_next_from_library(
             }
         ]}
     ]
+
     if unwatched_only:
         # Exclude watched episodes
         filters.append({
@@ -297,31 +315,35 @@ def get_next_from_library(
             'operator': 'lessthan',
             'value': '1'
         })
+
     if not random:
-        filters.append(
-            {'or': [
-                # Next episode in current season
-                {'and': [
-                    {
-                        'field': 'season',
-                        'operator': 'is',
-                        'value': str(episode['season'])
-                    },
-                    {
-                        'field': 'episode',
-                        'operator': 'greaterthan',
-                        'value': str(episode['episode'])
-                    }
-                ]},
-                # Next episode in next season
-                # TODO: Make next season search optional
+        season = str(episode['season'])
+        # Next episode in current season
+        episode_filter = {'and': [
+            {
+                'field': 'season',
+                'operator': 'is',
+                'value': season
+            },
+            {
+                'field': 'episode',
+                'operator': 'greaterthan',
+                'value': season
+            }
+        ]}
+        # Next episode in next season
+        if next_season:
+            episode_filter = [
+                episode_filter,
                 {
                     'field': 'season',
                     'operator': 'greaterthan',
-                    'value': str(episode['season'])
+                    'value': season
                 }
-            ]}
-        )
+            ]
+            episode_filter = {'or': episode_filter}
+        filters.append(episode_filter)
+
     filters = {'and': filters}
 
     if not tvshowid:
@@ -452,7 +474,12 @@ def get_episodeid(tvshowid, season, episode):
     return utils.get_int(result[0], 'episodeid')
 
 
-def handle_just_watched(episodeid, playcount=0, reset_resume=True):
+def handle_just_watched(
+        episodeid,
+        previous_playcount,
+        reset_playcount=False,
+        reset_resume=True
+):
     """Function to update playcount and resume point of just watched video"""
 
     result = utils.jsonrpc(
@@ -473,10 +500,12 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     params = {'episodeid': episodeid}
     msg = 'Library update: id - {0}'
 
-    # If Kodi has not increased playcount then UpNext will
-    if current_playcount == playcount:
-        playcount += 1
-        params['playcount'] = playcount
+    # If Kodi has not updated playcount then UpNext will
+    if reset_playcount:
+        previous_playcount = -1
+    if reset_playcount or current_playcount == previous_playcount:
+        previous_playcount += 1
+        params['playcount'] = previous_playcount
         msg += ', playcount - {1} to {2}'
 
     # If resume point has been saved then reset it
@@ -497,7 +526,7 @@ def handle_just_watched(episodeid, playcount=0, reset_resume=True):
     msg = msg.format(
         episodeid,
         current_playcount,
-        playcount,
+        previous_playcount,
         current_resume,
         0 if reset_resume else current_resume
     )

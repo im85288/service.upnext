@@ -18,6 +18,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'enable_playlist',
         'unwatched_only',
         'played_limit',
+        'mark_watched',
+        'enable_resume',
+        'next_season',
         'auto_play_delay',
         'detect_enabled',
         'demo_mode',
@@ -90,6 +93,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.enable_playlist = utils.get_setting_bool('enablePlaylist')
         self.unwatched_only = not utils.get_setting_bool('includeWatched')
         self.played_limit = utils.get_setting_int('playedInARow')
+        self.mark_watched = utils.get_setting_int('markWatched')
+        self.enable_resume = utils.get_setting_bool('enableResume')
+        self.next_season = utils.get_setting_bool('nextSeason')
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
         self.demo_mode = utils.get_setting_bool('enableDemoMode')
@@ -146,6 +152,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 self.episodeid,
                 self.tvshowid,
                 self.unwatched_only,
+                self.next_season,
                 self.shuffle
             )
             source = 'library'

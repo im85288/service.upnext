@@ -156,8 +156,12 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
                 # PlayMedia builtin can't target now playing playlist
                 # PlayMedia('',[playoffset=xx],[resume],[noresume])
                 # JSON Player.Open is too slow (further testing required)
+                api.play_playlist_item(
+                    position='next',
+                    resume=self.state.enable_resume
+                )
                 # Stick to playnext() for now, without possibility for resuming
-                self.player.playnext()
+                # self.player.playnext()
 
         # Fallback addon playback method, used if addon provides play_info
         elif has_addon_data:
@@ -165,7 +169,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         # Fallback library playback method, not normally used
         else:
-            api.play_kodi_item(episode)
+            api.play_kodi_item(episode, self.state.enable_resume)
 
         # Signal to trakt previous episode watched
         utils.event(

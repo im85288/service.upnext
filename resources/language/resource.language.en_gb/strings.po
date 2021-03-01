@@ -215,6 +215,22 @@ msgctxt "#30635"
 msgid "Detection match threshold  [COLOR gray](% similarity)[/COLOR]"
 msgstr ""
 
+msgctxt "#30640"
+msgid "Kodi Library"
+msgstr ""
+
+msgctxt "#30641"
+msgid "Mark as watched after UpNext popup is shown [COLOR gray](override default Kodi functionality)[/COLOR]"
+msgstr ""
+
+msgctxt "#30642"
+msgid "Resume playback where possible [COLOR gray](disable to always play from start)[/COLOR]"
+msgstr ""
+
+msgctxt "#30643"
+msgid "Search for next episode in next season"
+msgstr ""
+
 msgctxt "#30700"
 msgid "Expert"
 msgstr ""

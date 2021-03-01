@@ -184,16 +184,15 @@ class UpNextMonitor(xbmc.Monitor):
             self.player.state.set('time', force=False)
             self.tracker.stop()
 
-            # Increase playcount and reset resume point of previous file
-            if self.state.playing_next:
-                self.state.playing_next = False
-                # TODO: Add settings to control whether file is marked as
-                # watched and resume point is reset when next file is played
+            # Update playcount and reset resume point of previous file
+            if self.state.playing_next and self.state.mark_watched:
                 api.handle_just_watched(
                     episodeid=self.state.episodeid,
-                    playcount=self.state.playcount,
+                    previous_playcount=self.state.playcount,
+                    reset_playcount=(self.state.mark_watched == 2),
                     reset_resume=True
                 )
+            self.state.playing_next = False
 
             # Check whether UpNext can start tracking
             self.check_video()
