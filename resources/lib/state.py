@@ -92,7 +92,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.enable_playlist = utils.get_setting_bool('enablePlaylist')
         self.unwatched_only = not utils.get_setting_bool('includeWatched')
-        self.played_limit = utils.get_setting_int('playedInARow')
+        self.played_limit = (
+            utils.get_setting_int('playedInARow')
+            if utils.get_setting_bool('enableStillWatching') else 0
+        )
         self.mark_watched = utils.get_setting_int('markWatched')
         self.enable_resume = utils.get_setting_bool('enableResume')
         self.next_season = utils.get_setting_bool('nextSeason')

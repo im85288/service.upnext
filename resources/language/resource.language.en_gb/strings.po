@@ -71,11 +71,11 @@ msgid "Fancy"
 msgstr ""
 
 msgctxt "#30040"
-msgid "Play next"
+msgid "Play next episode automatically"
 msgstr ""
 
 msgctxt "#30041"
-msgid "Stop playing"
+msgid "Stop playback at end of video"
 msgstr ""
 
 msgctxt "#30042"
@@ -136,7 +136,7 @@ msgid "Set the display mode for the notifications"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Apply Kodi Skin to UpNext pop-up  [COLOR gray](requires skin integration)[/COLOR]"
+msgid "Apply Kodi Skin to UpNext pop-up [COLOR gray](requires skin integration)[/COLOR]"
 msgstr ""
 
 msgctxt "#30505"
@@ -148,19 +148,23 @@ msgid "Behaviour"
 msgstr ""
 
 msgctxt "#30601"
-msgid "Features"
+msgid "Playback"
 msgstr ""
 
 msgctxt "#30603"
-msgid "Default action when nothing selected"
+msgid "Default action after UpNext popup is shown"
 msgstr ""
 
 msgctxt "#30605"
 msgid "Include already watched episodes"
 msgstr ""
 
+msgctxt "#30606"
+msgid "Check if still watching [COLOR gray](stops auto playback if not still watching)[/COLOR]"
+msgstr ""
+
 msgctxt "#30607"
-msgid "Number of episodes before \"Still there?\" query"
+msgid "Episodes to play before checking if still watching"
 msgstr ""
 
 msgctxt "#30609"
@@ -180,27 +184,27 @@ msgid "Customize notification time (in seconds) by episode length"
 msgstr ""
 
 msgctxt "#30617"
-msgid "All episodes  [COLOR gray]any length[/COLOR]"
+msgid "All episodes [COLOR gray]any length[/COLOR]"
 msgstr ""
 
 msgctxt "#30619"
-msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
+msgid "Very short episodes [COLOR gray]< 10 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30621"
-msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
+msgid "Short episodes [COLOR gray]> 10 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30623"
-msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
+msgid "Medium episodes [COLOR gray]> 20 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30625"
-msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
+msgid "Long episodes [COLOR gray]> 40 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30627"
-msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
+msgid "Very long episodes [COLOR gray]> 60 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30631"
@@ -208,11 +212,11 @@ msgid "Auto-detect end credits"
 msgstr ""
 
 msgctxt "#30633"
-msgid "Detection window  [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
+msgid "Detection window [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
 msgstr ""
 
 msgctxt "#30635"
-msgid "Detection match threshold  [COLOR gray](% similarity)[/COLOR]"
+msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
 msgstr ""
 
 msgctxt "#30640"
