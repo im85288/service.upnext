@@ -152,16 +152,10 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             # Can't just wait for next file to play as VideoPlayer closes all
             # video threads when the current file finishes
             if play_now or (auto_play and self.state.popup_cue):
-                # xbmc.Player().playnext() does not allow for control of resume
-                # PlayMedia builtin can't target now playing playlist
-                # PlayMedia('',[playoffset=xx],[resume],[noresume])
-                # JSON Player.Open is too slow (further testing required)
                 api.play_playlist_item(
                     position='next',
                     resume=self.state.enable_resume
                 )
-                # Stick to playnext() for now, without possibility for resuming
-                # self.player.playnext()
 
         # Fallback addon playback method, used if addon provides play_info
         elif has_addon_data:

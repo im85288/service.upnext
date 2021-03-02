@@ -136,10 +136,15 @@ def dequeue_next_item():
 def play_playlist_item(position=0, resume=False):
     """Function to play episode in playlist"""
 
+    log('Playing from playlist position: {0}'.format(position), 2)
     if position == 'next':
+        # xbmc.Player().playnext() does not allow for control of resume
+        if not resume:
+            xbmc.Player().playnext()
+            return
         position = get_playlist_position()
 
-    log('Playing from playlist position: {0}'.format(position), 2)
+    # JSON Player.Open can be too slow but is needed if resuming is enabled
     utils.jsonrpc(
         method='Player.Open',
         params={'item': {
