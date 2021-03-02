@@ -201,7 +201,7 @@ def get_next_in_playlist(position):
     return item
 
 
-def play_addon_item(data, encoding):
+def play_addon_item(data, encoding, resume=False):
     """Function to play next addon item, either using JSONRPC Player.Open or by
        passthrough back to the addon"""
 
@@ -211,6 +211,7 @@ def play_addon_item(data, encoding):
         utils.jsonrpc(
             method='Player.Open',
             params={'item': {'file': data}},
+            options={'resume': resume},
             no_response=True
         )
     elif data.get('play_info'):

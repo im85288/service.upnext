@@ -165,7 +165,11 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         # Fallback addon playback method, used if addon provides play_info
         elif has_addon_data:
-            api.play_addon_item(self.state.data, self.state.encoding)
+            api.play_addon_item(
+                self.state.data,
+                self.state.encoding,
+                self.state.enable_resume
+            )
 
         # Fallback library playback method, not normally used
         else:
