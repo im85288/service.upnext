@@ -323,18 +323,17 @@ def get_next_from_library(
         })
 
     if not random:
-        season = str(episode['season'])
         # Next episode in current season
         episode_filter = {'and': [
             {
                 'field': 'season',
                 'operator': 'is',
-                'value': season
+                'value': str(episode['season'])
             },
             {
                 'field': 'episode',
                 'operator': 'greaterthan',
-                'value': season
+                'value': str(episode['episode'])
             }
         ]}
         # Next episode in next season
@@ -344,7 +343,7 @@ def get_next_from_library(
                 {
                     'field': 'season',
                     'operator': 'greaterthan',
-                    'value': season
+                    'value': str(episode['season'])
                 }
             ]
             episode_filter = {'or': episode_filter}
