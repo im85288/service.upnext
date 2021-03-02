@@ -269,9 +269,10 @@ def sleep(seconds):
     ''' A reimplementation of the xbmc sleep() function '''
     time.sleep(seconds)
 
+
 # translatePath and makeLegalFilename have been moved to xbmcvfs in Kodi 19+
 # but currently still available in xbmc
-if not __KODI_MATRIX__ or True:
+if not __KODI_MATRIX__ or True:  # pylint: disable=condition-evals-to-constant
     def translatePath(path):
         ''' A stub implementation of the xbmc translatePath() function '''
         if path.startswith('special://home'):

@@ -48,7 +48,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 
     @staticmethod
     def int_to_hash(val, hash_size):
-        return tuple([
+        return tuple([  # pylint: disable=consider-using-generator
             1 if bit_val == "1" else 0
             for bit_val in bin(val)[2:].zfill(hash_size)
         ])
@@ -90,8 +90,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         if 'data' in hashes:
             hash_size = self.hash_size[0] * self.hash_size[1]
             self.data = {
-                tuple([utils.get_int(i) for i in key[1:-1].split(', ')]):
-                    self.int_to_hash(hashes['data'][key], hash_size)
+                tuple([utils.get_int(i) for i in key[1:-1].split(', ')]):  # pylint: disable=consider-using-generator
+                self.int_to_hash(hashes['data'][key], hash_size)
                 for key in hashes['data']
             }
         if 'timestamps' in hashes:
