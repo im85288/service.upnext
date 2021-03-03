@@ -179,7 +179,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         )
 
         # Determine playback method. Used for logging purposes
-        self.log('Playback requested: using{0}{1}{2} method'format(
+        self.log('Playback requested: using{0}{1}{2} method'.format(
             ' play_now' if play_now else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
             ' auto_play',
