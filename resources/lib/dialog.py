@@ -33,7 +33,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args)
-        self.log('Init: %s' % args[0], 2)
+        self.log('Init: {0}'.format(args[0]))
 
     # __enter__ and __exit__ allows UpNextPopup to be used as a contextmanager
     # to check whether popup is still open before accessing attributes
@@ -63,7 +63,6 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.getControl(3013).setLabel(utils.localize(30034))  # Close
 
     def set_info(self):
-        episode_info = '%(season)sx%(episode)s.' % self.item
         if self.item.get('rating') is None:
             rating = ''
         else:
@@ -82,7 +81,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.setProperty('title', self.item.get('title', ''))
             self.setProperty('season', str(self.item.get('season', '')))
             self.setProperty('episode', str(self.item.get('episode', '')))
-            self.setProperty('seasonepisode', episode_info)
+            self.setProperty(
+                'seasonepisode', '{0[season]}x{0[episode]}'.format(self.item)
+            )
             self.setProperty('year', str(self.item.get('firstaired', '')))
             self.setProperty('rating', rating)
             self.setProperty('playcount', str(self.item.get('playcount', 0)))
@@ -101,8 +102,10 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.setProperty('endtime', endtime)
 
         # Remaining time countdown for current episode
-        remaining_str = statichelper.from_unicode('%02d' % remaining)
-        self.setProperty('remaining', remaining_str)
+        self.setProperty(
+            'remaining',
+            statichelper.from_unicode('{0:02d}'.format(remaining))
+        )
 
         if not self.progress_control:
             return

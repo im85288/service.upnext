@@ -77,7 +77,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.queued = False
         self.playing_next = False
 
-        self.log('Reset' if reset else 'Init', 2)
+        self.log('Reset' if reset else 'Init')
 
     @classmethod
     def log(cls, msg, level=2):
@@ -108,6 +108,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.demo_mode and utils.get_setting_bool('demoPlugin')
         )
 
+        utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
+
     def get_tracked_file(self):
         return self.filename
 
@@ -119,12 +121,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def set_tracking(self, filename):
         if filename:
-            msg = 'Tracking enabled: {0}'.format(filename)
+            self.track = True
+            self.filename = filename
+            self.log('Tracking enabled: {0}'.format(filename))
         else:
-            msg = 'Tracking disabled'
-        self.log(msg, 2)
-        self.track = bool(filename)
-        self.filename = filename if filename else None
+            self.track = False
+            self.filename = None
+            self.log('Tracking disabled')
 
     def reset_queue(self):
         if self.queued:
@@ -142,7 +145,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if has_addon_data:
             episode = self.data.get('next_episode')
             source = 'addon' if not position else 'playlist'
-            self.log('Addon next_episode: {0}'.format(episode), 2)
+            self.log('Addon next_episode: {0}'.format(episode))
 
         # Next video from non-addon playlist
         elif position and not self.shuffle:
@@ -274,20 +277,17 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def get_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
-        self.log('Addon current_episode: {0}'.format(item), 2)
+        self.log('Addon current_episode: {0}'.format(item))
         if not item:
             return None
 
         tvshowid = utils.get_int(item, 'tvshowid')
 
-        # Reset play count if new show playing
+        # Reset played in a row count if new show playing
         if self.tvshowid != tvshowid:
-            msg = 'Reset played count: tvshowid change from {0} to {1}'
-            msg = msg.format(
-                self.tvshowid,
-                tvshowid
-            )
-            self.log(msg, 2)
+            self.log('Reset played count: tvshowid change - {0} to {1}'.format(
+                self.tvshowid, tvshowid
+            ))
             self.tvshowid = tvshowid
             self.played_in_a_row = 1
 
@@ -307,19 +307,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if tvshowid == -1:
             title = item.get('showtitle')
             tvshowid = api.get_tvshowid(title)
-            self.log('Fetched tvshowid: %s' % tvshowid, 2)
+            self.log('Fetched tvshowid: {0}'.format(tvshowid))
         # Now playing show not found in library
         if tvshowid == -1:
             return None
 
-        # Reset play count if new show playing
+        # Reset played in a row count if new show playing
         if self.tvshowid != tvshowid:
-            msg = 'Reset played count: tvshowid change from {0} to {1}'
-            msg = msg.format(
-                self.tvshowid,
-                tvshowid
-            )
-            self.log(msg, 2)
+            self.log('Reset played count: tvshowid change - {0} to {1}'.format(
+                self.tvshowid, tvshowid
+            ))
             self.tvshowid = tvshowid
             self.played_in_a_row = 1
 
@@ -331,7 +328,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 item.get('season'),
                 item.get('episode')
             )
-            self.log('Fetched episodeid: %s' % self.episodeid, 2)
+            self.log('Fetched episodeid: {0}'.format(self.episodeid))
         # Now playing episode not found in library
         if self.episodeid == -1:
             return None
@@ -364,6 +361,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def set_addon_data(self, data, encoding='base64'):
         if data:
-            self.log('Addon data: %s' % data, 2)
+            self.log('Addon data: {0}'.format(data))
         self.data = data
         self.encoding = encoding

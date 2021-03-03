@@ -70,7 +70,7 @@ class UpNextPlayer(xbmc.Player):
         self.state.stop = None
 
         xbmc.Player.__init__(self)
-        self.log('Init', 2)
+        self.log('Init')
 
     # __enter__ and __exit__ allow UpNextPlayer to be used as a contextmanager
     # to check whether video is actually playing when getting video details

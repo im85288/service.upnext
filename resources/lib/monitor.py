@@ -37,7 +37,7 @@ class UpNextMonitor(xbmc.Monitor):
         )
 
         xbmc.Monitor.__init__(self)
-        self.log('Init', 2)
+        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=2):
@@ -47,7 +47,7 @@ class UpNextMonitor(xbmc.Monitor):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
             return
-        self.log('Starting video check', 2)
+        self.log('Starting video check')
         # Increment starting counter
         self.state.starting += 1
         start_num = max(1, self.state.starting)
@@ -66,30 +66,30 @@ class UpNextMonitor(xbmc.Monitor):
             media_type = self.player.get_media_type()
             check_fail = False
         if check_fail:
-            self.log('Skip video check: nothing playing', 2)
+            self.log('Skip video check: nothing playing', 4)
             return
-        self.log('Playing: %s - %s' % (media_type, playing_file), 2)
+        self.log('Playing: {0} - {1}'.format(media_type, playing_file))
 
         # Exit if starting counter has been reset or new start detected or
         # starting state has been reset by playback error/end/stop
         if not self.state.starting or start_num != self.state.starting:
-            self.log('Skip video check: playing item not fully loaded', 2)
+            self.log('Skip video check: playing item not fully loaded')
             return
         self.state.starting = 0
         self.state.playing = 1
 
         if utils.get_property('PseudoTVRunning') == 'True':
-            self.log('Skip video check: PsuedoTV detected', 2)
+            self.log('Skip video check: PsuedoTV detected')
             return
 
         if self.player.isExternalPlayer():
-            self.log('Skip video check: external player detected', 2)
+            self.log('Skip video check: external player detected')
             return
 
         # Exit if UpNext playlist handling has not been enabled
         is_playlist = api.get_playlist_position()
         if is_playlist and not self.state.enable_playlist:
-            self.log('Skip video check: playlist handling not enabled', 2)
+            self.log('Skip video check: playlist handling not enabled')
             return
 
         # Use new addon data if provided or erase old addon data.
@@ -116,7 +116,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.tracker.start()
             return
 
-        self.log('Skip video check: UpNext unable to handle playing item', 2)
+        self.log('Skip video check: UpNext unable to handle playing item')
         if self.state.is_tracking():
             self.state.reset()
 
@@ -142,7 +142,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.player.seekTime(seek_time)
             check_fail = False
         if check_fail:
-            self.log('Error: unable to seek in demo mode, nothing playing', 1)
+            self.log('Error: unable to seek in demo mode, nothing playing', 4)
 
     def run(self):
         # Re-trigger player event if addon started mid playback
@@ -160,13 +160,13 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker.stop(terminate=True)
         del self.tracker
         self.tracker = None
-        self.log('Cleanup tracker', 2)
+        self.log('Cleanup tracker')
         del self.state
         self.state = None
-        self.log('Cleanup state', 2)
+        self.log('Cleanup state')
         del self.player
         self.player = None
-        self.log('Cleanup player', 2)
+        self.log('Cleanup player')
 
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
@@ -216,10 +216,11 @@ class UpNextMonitor(xbmc.Monitor):
             decoded_data, encoding = utils.decode_json(data)
             sender = sender.replace('.SIGNAL', '')
             if not isinstance(decoded_data, dict) or not decoded_data:
-                msg = 'Error: {0} addon, sent {1} as {2}'
-                self.log(msg.format(sender, decoded_data, data), 1)
+                self.log('Error: {0} addon, sent {1} as {2}'.format(
+                    sender, decoded_data, data
+                ), 4)
                 return
-            decoded_data.update(id='%s_play_action' % sender)
+            decoded_data.update(id='{0}_play_action'.format(sender))
 
             # Initial processing of data to start tracking
             self.check_video(decoded_data, encoding)
@@ -229,10 +230,10 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker.start()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
-        self.log('Settings changed', 2)
+        self.log('Settings changed', 1)
         self.state.update_settings()
 
         # Shutdown tracking loop if disabled
         if self.state.is_disabled():
-            self.log('UpNext disabled', 0)
+            self.log('UpNext disabled', 4)
             self.tracker.stop(terminate=True)

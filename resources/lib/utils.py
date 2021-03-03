@@ -131,7 +131,7 @@ def encode_data(data, encoding='base64'):
     elif encoding == 'hex':
         encoded_data = binascii.hexlify(json_data)
     else:
-        log("Unknown payload encoding type '%s'" % encoding, level=0)
+        log('Unknown payload encoding type: {0}'.format(encoding), 4)
         return None
     if sys.version_info[0] > 2:
         encoded_data = encoded_data.decode('ascii')
@@ -175,34 +175,43 @@ def event(message, data=None, sender=None, encoding='base64'):
     jsonrpc(
         method='JSONRPC.NotifyAll',
         params={
-            'sender': '%s.SIGNAL' % sender,
+            'sender': '{0}.SIGNAL'.format(sender),
             'message': message,
             'data': [encoded],
         }
     )
 
 
-def log(msg, name=None, level=1, force=False):
+LOG_ENABLE_LEVEL = get_setting_int('logLevel')
+
+
+def log(msg, name=None, level=xbmc.LOGDEBUG):
     """Log information to the Kodi log"""
 
-    if force:
-        log_level = 2
-        debug_logging = False
+    # Log everything
+    if LOG_ENABLE_LEVEL == 2:
+        log_enable = True
+        if level <= xbmc.LOGINFO:
+            # Kodi v19+ uses LOGINFO (=2) as minimum visible event log level.
+            if supports_python_api(19):
+                level = xbmc.LOGINFO
+            # Kodi v18 uses LOGNOTICE (=3) as minimum visible event log level.
+            # LOGNOTICE is deprecated in Kodi v19+
+            else:
+                level = xbmc.LOGINFO + 1
+    # Only log important messages
+    elif LOG_ENABLE_LEVEL == 1:
+        log_enable = level >= xbmc.LOGINFO
+        # Kodi v18 uses LOGNOTICE (=3) as minimum visible event log level.
+        # LOGNOTICE is deprecated in Kodi v19+
+        if not supports_python_api(19) and level == xbmc.LOGINFO:
+            level = xbmc.LOGINFO + 1
+    # Log nothing
     else:
-        log_level = get_setting_int('logLevel', level)
-        debug_logging = get_global_setting('debug.showloginfo')
-        set_property('logLevel', log_level)
+        log_enable = False
 
-    if not debug_logging and log_level < level:
+    if not log_enable:
         return
-    if debug_logging:
-        level = xbmc.LOGDEBUG
-    # Kodi v19+ uses LOGINFO (=2) as default log level. LOGNOTICE is deprecated
-    elif supports_python_api(19):
-        level = xbmc.LOGINFO
-    # Kodi v18 and below uses LOGNOTICE (=3) as default log level.
-    else:
-        level = xbmc.LOGINFO + 1
 
     # Convert to unicode for string formatting with Unicode literal
     msg = statichelper.to_unicode(msg)

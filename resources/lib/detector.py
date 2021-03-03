@@ -16,7 +16,7 @@ import utils
 # Create directory where all stored hashes will be saved
 SAVE_PATH = os.path.join(
     file_utils.translate_path(
-        'special://profile/addon_data/%s' % utils.addon_id()
+        'special://profile/addon_data/{0}'.format(utils.addon_id())
     ),
     'detector',
     ''
@@ -79,7 +79,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             with open(target, mode='r') as target_file:
                 hashes = json.load(target_file)
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Could not load stored hashes from %s' % target, 2)
+            self.log('Could not load stored hashes from {0}'.format(target), 1)
             return False
 
         if not hashes:
@@ -100,7 +100,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
                 for episode in hashes['timestamps']
             }
 
-        self.log('Hashes loaded from %s' % target, 2)
+        self.log('Hashes loaded from {0}'.format(target))
         return True
 
     def save(self, identifier):
@@ -119,9 +119,9 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         try:
             with open(target, mode='w') as target_file:
                 json.dump(output, target_file, indent=4)
-                self.log('Hashes saved to %s' % target, 2)
+                self.log('Hashes saved to {0}'.format(target))
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Error: Could not save hashes to %s' % target, 1)
+            self.log('Error: Could not save hashes to {0}'.format(target), 4)
         return output
 
 
@@ -172,11 +172,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-        self.log('Init', 2)
+        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=2):
-        utils.log(msg, name=cls.__name__, level=level, force=True)
+        utils.log(msg, name=cls.__name__, level=level)
 
     @classmethod
     def calc_quartiles(cls, vals):
@@ -271,9 +271,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             size = int(num_pixels ** 0.5)
             size = (size, size)
 
-        msg = prefix if prefix else '-' * (7 + 4 * size[0])
-        for row in range(0, num_pixels, size[0]):
-            msg += '\n\t\t\t{0:>3} |{1}|{2}|'.format(
+        cls.log('\n\t\t\t'.join(
+            [prefix if prefix else '-' * (7 + 4 * size[0])]
+            + ['{0:>3} |{1}|{2}|'.format(
                 row,
                 ' '.join(
                     ['*' if bit else ' ' for bit in hash1[row:row + size[0]]]
@@ -281,8 +281,8 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 ' '.join(
                     ['*' if bit else ' ' for bit in hash2[row:row + size[0]]]
                 )
-            )
-        cls.log(msg, 2)
+            ) for row in range(0, num_pixels, size[0])]
+        ), 1)
 
     def check_similarity(self, image_hash, index_offset):
         stats = {
@@ -367,7 +367,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.log('{0}/{1} matches'.format(
             self.match_count['hits'],
             self.match_number
-        ), 2)
+        ), 1)
         self.credits_detected = self.match_count['hits'] >= self.match_number
         return self.credits_detected
 
@@ -453,7 +453,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
            A consecutive number of matching frames must be detected to confirm
            that end credits are playing."""
 
-        self.log('Started', 2)
+        self.log('Started')
         self.running = True
 
         if self._profile:
@@ -483,7 +483,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 # check_fail = self.player.get_speed() != 1
                 check_fail = False
             if check_fail:
-                self.log('No file is playing', 2)
+                self.log('No file is playing')
                 break
 
             self.capturer.capture(*self.capture_size)
@@ -566,9 +566,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['episodes'])
                 )
 
-                self.log((
-                    'Hash compare: completed in {0:1.4f}s'
-                ).format(timeit.default_timer() - now), 2)
+                self.log('Hash compare: completed in {0:1.4f}s'.format(
+                    timeit.default_timer() - now
+                ), 1)
 
             # Store current hash for comparison with next video frame
             # But delete previous hash if not yet required to save it
@@ -586,14 +586,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     profiler,
                     stream=output_stream
                 ).sort_stats('cumulative').print_stats()
-                self.log(output_stream.getvalue())
+                self.log(output_stream.getvalue(), 1)
                 output_stream.close()
 
         # Free resources
         del monitor
 
         # Reset thread signals
-        self.log('Stopped', 2)
+        self.log('Stopped')
         self.running = False
         self.sigstop = False
         self.sigterm = False

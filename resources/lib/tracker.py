@@ -34,7 +34,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-        self.log('Init', 2)
+        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=2):
@@ -44,7 +44,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Only track playback if old tracker is not running
         if self.running:
             return
-        self.log('Tracker: started', 2)
+        self.log('Tracker: started')
         self.running = True
 
         # If tracker was (re)started, ensure detector is also restarted
@@ -56,7 +56,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         while not monitor.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
-                self.log('Tracker: stopping', 2)
+                self.log('Tracker: stopping')
                 break
 
             # Get video details, exit if nothing playing
@@ -67,12 +67,12 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 play_time = self.player.getTime()
                 check_fail = False
             if check_fail:
-                self.log('Tracker: no file is playing', 2)
+                self.log('Tracker: no file is playing')
                 self.state.set_tracking(False)
                 continue
             # New stream started without tracking being updated
             if tracked_file and tracked_file != current_file:
-                self.log('Error: unknown file playing', 1)
+                self.log('Error: unknown file playing', 4)
                 self.state.set_tracking(False)
                 continue
 
@@ -88,7 +88,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Otherwise check whether credits have been detected
             elif 0 < detect_time <= play_time and self.detector.detected():
                 self.detector.stop()
-                self.log('Tracker: credits detected', 2)
+                self.log('Tracker: credits detected')
                 self.state.set_detected_popup_time(
                     self.detector.update_timestamp(play_time)
                 )
@@ -105,9 +105,9 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.sigstop = True
 
             # Start UpNext to handle playback of next file
-            msg = 'Tracker: popup at {0}s - file ({1}s runtime) ends in {2}s'
-            msg = msg.format(popup_time, total_time, total_time - play_time)
-            self.log(msg, 2)
+            self.log('Tracker: popup at {0}s of {1}s'.format(
+                popup_time, total_time
+            ))
             self.playbackmanager = playbackmanager.PlaybackManager(
                 player=self.player,
                 state=self.state
@@ -139,13 +139,13 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Exit tracking loop once all processing is complete
             break
         else:
-            self.log('Tracker: abort', 1)
+            self.log('Tracker: abort', 4)
 
         # Free resources
         del monitor
 
         # Reset thread signals
-        self.log('Tracker: stopped', 2)
+        self.log('Tracker: stopped')
         self.running = False
         self.sigstop = False
         self.sigterm = False
@@ -181,11 +181,9 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Convert to delay and scale to real time minus a 10s offset
             delay = (detect_time if detect_time else popup_time) - play_time
             delay = max(0, delay // speed - 10)
-            msg = 'Tracker: starting at {0}s in {1}s'
-            self.log(msg.format(
-                detect_time if detect_time else popup_time,
-                delay
-            ), 2)
+            self.log('Tracker: starting at {0}s in {1}s'.format(
+                detect_time if detect_time else popup_time, delay
+            ))
 
             # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.run)
