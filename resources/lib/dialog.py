@@ -19,6 +19,8 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.item = kwargs.get('item')
         self.set_info()
         self.cancel = False
+        self.stop_enable = kwargs.get('stop_button')
+        self.setProperty('stop_enable', str(self.stop_enable))
         self.stop = False
         self.playnow = False
         self.countdown_total_time = None
@@ -57,7 +59,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.update_progress_control()
 
         # TODO: Fix button text update flash
-        if utils.get_setting_bool('stopAfterClose'):
+        if self.stop_enable:
             self.getControl(3013).setLabel(utils.localize(30033))  # Stop
         else:
             self.getControl(3013).setLabel(utils.localize(30034))  # Close
@@ -156,7 +158,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         # Cancel - Close / Stop
         elif controlId == 3013:
             self.set_cancel(True)
-            if utils.get_setting_bool('stopAfterClose'):
+            if self.stop_enable:
                 self.set_stop(True)
             self.close()
         # Shuffle play

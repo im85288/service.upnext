@@ -14,6 +14,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Settings state variables
         'disabled',
         'simple_mode',
+        'skin_popup',
+        'show_stop_button',
         'auto_play',
         'enable_playlist',
         'unwatched_only',
@@ -23,10 +25,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'next_season',
         'auto_play_delay',
         'detect_enabled',
+        'detect_period',
         'demo_mode',
         'demo_seek',
         'demo_cue',
         'demo_plugin',
+        'popup_durations',
         # Addon data
         'data',
         'encoding',
@@ -89,6 +93,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
     def update_settings(self):
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
+        self.skin_popup = utils.get_setting_bool('enablePopupSkin')
+        self.show_stop_button = utils.get_setting_bool('stopAfterClose')
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.enable_playlist = utils.get_setting_bool('enablePlaylist')
         self.unwatched_only = not utils.get_setting_bool('includeWatched')
@@ -101,12 +107,23 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.next_season = utils.get_setting_bool('nextSeason')
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
+        self.detect_period = utils.get_setting_int('detectPeriod')
         self.demo_mode = utils.get_setting_bool('enableDemoMode')
         self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
         self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
         self.demo_plugin = (
             self.demo_mode and utils.get_setting_bool('demoPlugin')
         )
+
+        self.popup_durations = {
+            3600: utils.get_setting_int('autoPlayTimeXL'),
+            2400: utils.get_setting_int('autoPlayTimeL'),
+            1200: utils.get_setting_int('autoPlayTimeM'),
+            600: utils.get_setting_int('autoPlayTimeS'),
+            0: utils.get_setting_int('autoPlayTimeXS')
+        } if utils.get_setting_bool('customAutoPlayTime') else {
+            0: utils.get_setting_int('autoPlaySeasonTime')
+        }
 
         utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
 
@@ -179,7 +196,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Detection time period starts before normal popup time
         self.detect_time = max(
             0,
-            self.popup_time - utils.get_setting_int('detectPeriod')
+            self.popup_time - self.detect_period
         )
 
     def get_popup_time(self):
@@ -204,25 +221,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 self.popup_time = popup_time
                 return
 
-        # Use a customized notification time, when configured
-        if utils.get_setting_bool('customAutoPlayTime'):
-            if total_time > 60 * 60:
-                duration_setting = 'autoPlayTimeXL'
-            elif total_time > 40 * 60:
-                duration_setting = 'autoPlayTimeL'
-            elif total_time > 20 * 60:
-                duration_setting = 'autoPlayTimeM'
-            elif total_time > 10 * 60:
-                duration_setting = 'autoPlayTimeS'
-            else:
-                duration_setting = 'autoPlayTimeXS'
-
-        # Use one global default, regardless of episode length
-        else:
-            duration_setting = 'autoPlaySeasonTime'
-
         # Use addon settings for duration
-        popup_duration = utils.get_setting_int(duration_setting)
+        popup_duration = self.popup_durations[max(0, 0, *[
+            idx for idx in self.popup_durations
+            if total_time > idx
+        ])]
         # Disable cue point unless forced on in demo mode
         self.popup_cue = self.demo_cue == 1
         if 0 < popup_duration < total_time:

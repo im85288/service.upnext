@@ -82,7 +82,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         filename = 'script-upnext{0}{1}{2}.xml'.format(
             '-upnext' if show_upnext else '-stillwatching',
             '-simple' if self.state.simple_mode else '',
-            '' if utils.get_setting_bool('enablePopupSkin') else '-original'
+            '' if self.state.skin_popup else '-original'
         )
         # Create Kodi dialog to show UpNext or Still Watching? popup
         self.popup = dialog.UpNextPopup(
@@ -91,7 +91,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             'default',
             '1080i',
             item=episode,
-            shuffle=self.state.shuffle if source == 'library' else None
+            shuffle=self.state.shuffle if source == 'library' else None,
+            stop_button=self.state.show_stop_button
         )
 
         # Show popup and check that it has not been terminated early
