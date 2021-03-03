@@ -8,6 +8,7 @@ import player
 import state
 import statichelper
 import tracker
+import upnext
 import utils
 
 
@@ -100,9 +101,10 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
-        if self.state.process_now_playing(
-                is_playlist, has_addon_data, media_type
-        ):
+        now_playing_item = self.state.process_now_playing(
+            is_playlist, has_addon_data, media_type
+        )
+        if now_playing_item:
             self.state.set_tracking(playing_file)
             self.state.reset_queue()
 
@@ -111,7 +113,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.set_detect_time()
 
             # Handle demo mode functionality and notification
-            self.handle_demo_mode()
+            self.handle_demo_mode(now_playing_item)
             # Start tracking playback in order to launch popup at required time
             self.tracker.start()
             return
@@ -120,9 +122,28 @@ class UpNextMonitor(xbmc.Monitor):
         if self.state.is_tracking():
             self.state.reset()
 
-    def handle_demo_mode(self):
+    def handle_demo_mode(self, now_playing_item):
         if self.state.demo_mode:
             utils.notification('UpNext demo mode', 'Active')
+
+        # Force use of addon data method if demo plugin mode is enabled
+        if not self.state.has_addon_data() and self.state.demo_plugin:
+            next_episode, source = self.state.get_next()
+
+            if source == 'library':
+                next_dbid = next_episode.get('episodeid')
+                current_episode = upnext.create_listitem(now_playing_item)
+                next_episode = upnext.create_listitem(next_episode)
+
+                addon_id = utils.addon_id()
+                upnext_info = {
+                    'current_episode': current_episode,
+                    'next_episode': next_episode,
+                    'play_url': 'plugin://{0}/?play={1}'.format(
+                        addon_id, next_dbid
+                    )
+                }
+                upnext.send_signal(addon_id, upnext_info)
 
         seek_time = 0
         if not self.state.demo_seek:
