@@ -180,7 +180,7 @@
                             <pulseonselect>no</pulseonselect>
                         </control>
                         <control type="button" id="3013">
-                            <label>$ADDON[service.upnext 30034]</label>
+                            <label>$INFO[Window.Property(stop_close_label)]</label>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>

@@ -15,20 +15,19 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     """Class for UpNext popup state variables and methods"""
 
     def __init__(self, *args, **kwargs):
-        # Set info here rather than onInit to avoid dialog update flash
         self.item = kwargs.get('item')
-        self.set_info()
-        self.cancel = False
+        self.shuffle = kwargs.get('shuffle')
         self.stop_enable = kwargs.get('stop_button')
-        self.setProperty('stop_enable', str(self.stop_enable))
+
+        # Set info here rather than onInit to avoid dialog update flash
+        self.set_info()
+
+        self.cancel = False
         self.stop = False
         self.playnow = False
         self.countdown_total_time = None
         self.current_progress_percent = 100
         self.progress_control = None
-        self.shuffle = kwargs.get('shuffle')
-        self.setProperty('shuffle_enable', str(self.shuffle is not None))
-        self.setProperty('shuffle_on', str(self.shuffle))
 
         # TODO: Figure out why this is required. Issues with iOS?
         if OS_MACHINE[0:5] == 'armv7':
@@ -58,17 +57,18 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         else:
             self.update_progress_control()
 
-        # TODO: Fix button text update flash
-        if self.stop_enable:
-            self.getControl(3013).setLabel(utils.localize(30033))  # Stop
-        else:
-            self.getControl(3013).setLabel(utils.localize(30034))  # Close
-
     def set_info(self):
         if self.item.get('rating') is None:
             rating = ''
         else:
             rating = str(round(float(self.item.get('rating')), 1))
+
+        self.setProperty(
+            'stop_close_label',
+            utils.localize(30033 if self.stop_enable else 30034)
+        )
+        self.setProperty('shuffle_enable', str(self.shuffle is not None))
+        self.setProperty('shuffle_on', str(self.shuffle))
 
         if self.item is not None:
             art = self.item.get('art')
