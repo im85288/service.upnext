@@ -125,40 +125,65 @@ def get_int(obj, key=None, default=-1):
 def encode_data(data, encoding='base64'):
     """Encode data for a notification event"""
 
-    json_data = json.dumps(data).encode()
-    if encoding == 'base64':
-        encoded_data = base64.b64encode(json_data)
-    elif encoding == 'hex':
-        encoded_data = binascii.hexlify(json_data)
-    else:
+    encode_methods = {
+        'hex': binascii.hexlify,
+        'base64': base64.b64encode
+    }
+    encode_method = encode_methods.get(encoding)
+
+    if not encode_method:
         log('Unknown payload encoding type: {0}'.format(encoding), 4)
         return None
+
+    try:
+        json_data = json.dumps(data).encode()
+        encoded_data = encode_method(json_data)
+    except (TypeError, ValueError, binascii.Error):
+        log('Unable to encode data as {0}: {1}'.format(encoding, data), 4)
+        return None
+
     if sys.version_info[0] > 2:
         encoded_data = encoded_data.decode('ascii')
+
     return encoded_data
 
 
 def decode_data(encoded):
     """Decode data coming from a notification event"""
 
-    try:
-        json_data = binascii.unhexlify(encoded)
-        encoding = 'hex'
-    except (TypeError, binascii.Error):
-        json_data = base64.b64decode(encoded)
-        encoding = 'base64'
+    decode_methods = {
+        'hex': binascii.unhexlify,
+        'base64': base64.b64decode
+    }
+    for encoding, decode_method in decode_methods.items():
+        try:
+            json_data = decode_method(encoded)
+            break
+        except (TypeError, binascii.Error):
+            pass
+    else:
+        return None, None
 
     # NOTE: With Python 3.5 and older json.loads() does not support bytes
     # or bytearray, so we convert to unicode
-    return json.loads(statichelper.to_unicode(json_data)), encoding
+    try:
+        return json.loads(statichelper.to_unicode(json_data)), encoding
+    except (TypeError, ValueError):
+        return None, None
 
 
 def decode_json(data):
     """Decode JSON data coming from a notification event"""
 
-    encoded = json.loads(data)
+    encoded = None
+    try:
+        encoded = json.loads(data)
+    except (TypeError, ValueError):
+        pass
+
     if not encoded:
         return None, None
+
     return decode_data(encoded[0])
 
 
