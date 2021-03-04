@@ -29,7 +29,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         # No episode get out of here
         if not episode:
-            self.log('Exiting: no next episode', 4)
+            self.log('Exiting: no next episode')
             return False
 
         # Show popup and get new playback state

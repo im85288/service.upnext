@@ -291,7 +291,7 @@ def get_next_from_library(
     episode = episode.copy() if episode else get_from_library(episodeid)
 
     if not episode:
-        log('Error: next episode info not found in library', 4)
+        log('Error: no next episode found, current episode not in library', 4)
         episode = None
         new_season = False
         return episode, new_season
@@ -373,7 +373,7 @@ def get_next_from_library(
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Error: next episode info not found in library', 4)
+        log('No next episode found in library')
         episode = None
         new_season = False
         return episode, new_season
