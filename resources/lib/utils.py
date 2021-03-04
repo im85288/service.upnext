@@ -155,6 +155,8 @@ def decode_data(encoded):
         'hex': binascii.unhexlify,
         'base64': base64.b64decode
     }
+    encoding = None
+    json_data = None
     for encoding, decode_method in decode_methods.items():
         try:
             json_data = decode_method(encoded)
@@ -162,6 +164,9 @@ def decode_data(encoded):
         except (TypeError, binascii.Error):
             pass
     else:
+        return None, None
+
+    if not encoding or not json_data:
         return None, None
 
     # NOTE: With Python 3.5 and older json.loads() does not support bytes
