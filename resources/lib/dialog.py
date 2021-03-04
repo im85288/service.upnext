@@ -106,7 +106,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         # Remaining time countdown for current episode
         self.setProperty(
             'remaining',
-            statichelper.from_unicode('{0:02d}'.format(remaining))
+            statichelper.from_unicode('{0:02.0f}'.format(remaining))
         )
 
         if not self.progress_control:
