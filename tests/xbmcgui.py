@@ -10,6 +10,7 @@ from xbmcextra import kodi_to_ansi
 
 ACTION_NAV_BACK = 92
 ACTION_STOP = 13
+NOTIFICATION_INFO = 'info'
 
 
 class Control:  # pylint: disable=too-few-public-methods
@@ -33,6 +34,20 @@ class ControlLabel(Control):
     @staticmethod
     def setLabel(label='', font=None, textColor=None, disabledColor=None, shadowColor=None, focusedColor=None, label2=''):
         ''' A stub implementation for the xbmcgui ControlLabel class getLabel() method '''
+
+
+class ControlProgress(Control):
+    ''' A reimplementation of the xbmcgui ControlProgress class '''
+
+    def __init__(self):  # pylint: disable=super-init-not-called
+        ''' A stub constructor for the xbmcgui ControlLabel class '''
+        self._percentage = 0.0
+
+    def setPercent(self, percent):
+        self._percentage = max(0.0, min(100.0, percent))
+
+    def getPercentage(self):
+        return self._percentage
 
 
 class Dialog:
@@ -177,6 +192,11 @@ class ListItem:
         return
 
     @staticmethod
+    def setIsFolder(is_folder):
+        ''' A stub implementation for the xbmcgui ListItem class setIsFolder() method '''
+        return
+
+    @staticmethod
     def setMimeType(mimetype):
         ''' A stub implementation for the xbmcgui ListItem class setMimeType() method '''
         return
@@ -210,8 +230,10 @@ class Window:
         ''' A stub implementation for the xbmcgui Window class close() method '''
 
     @staticmethod
-    def getControl():
+    def getControl(controlID):
         ''' A stub implementation for the xbmcgui Window class getControl() method '''
+        if controlID == 3014:
+            return ControlProgress()
         return ControlLabel()
 
     @staticmethod

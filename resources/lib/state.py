@@ -8,16 +8,28 @@ import utils
 
 class UpNextState(object):  # pylint: disable=useless-object-inheritance
     """Class encapsulating all state variables and methods"""
+
     __slots__ = (
         # Settings state variables
         'disabled',
+        'simple_mode',
+        'skin_popup',
+        'show_stop_button',
         'auto_play',
+        'enable_playlist',
+        'unwatched_only',
+        'played_limit',
+        'mark_watched',
+        'enable_resume',
+        'next_season',
         'auto_play_delay',
         'detect_enabled',
-        'unwatched_only',
-        'enable_playlist',
-        'played_limit',
-        'simple_mode',
+        'detect_period',
+        'demo_mode',
+        'demo_seek',
+        'demo_cue',
+        'demo_plugin',
+        'popup_durations',
         # Addon data
         'data',
         'encoding',
@@ -25,7 +37,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'filename',
         'tvshowid',
         'episodeid',
+        'season_identifier',
+        'episode',
         'playcount',
+        # Popup state variables
         'popup_time',
         'popup_cue',
         'detect_time',
@@ -33,6 +48,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'starting',
         'playing',
         'track',
+        'shuffle',
         'played_in_a_row',
         'queued',
         'playing_next',
@@ -40,14 +56,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def __init__(self, reset=None):
         # Settings state variables
-        self.disabled = utils.get_setting_bool('disableNextUp')
-        self.auto_play = utils.get_setting_int('autoPlayMode') == 0
-        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
-        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.unwatched_only = not utils.get_setting_bool('includeWatched')
-        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
-        self.played_limit = utils.get_setting_int('playedInARow')
-        self.simple_mode = utils.get_setting_int('simpleMode') == 0
+        self.update_settings()
         # Addon data
         self.data = None
         self.encoding = 'base64'
@@ -55,7 +64,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.filename = None
         self.tvshowid = None
         self.episodeid = None
+        self.season_identifier = None
+        self.episode = None
         self.playcount = 0
+        # Popup state variables
         self.popup_time = 0
         self.popup_cue = False
         self.detect_time = 0
@@ -63,11 +75,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.starting = 0
         self.playing = False
         self.track = False
+        self.shuffle = False
         self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
 
-        self.log('Reset' if reset else 'Init', 2)
+        self.log('Reset' if reset else 'Init')
 
     @classmethod
     def log(cls, msg, level=2):
@@ -78,13 +91,40 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def update_settings(self):
         self.disabled = utils.get_setting_bool('disableNextUp')
+        self.simple_mode = utils.get_setting_int('simpleMode') == 0
+        self.skin_popup = utils.get_setting_bool('enablePopupSkin')
+        self.show_stop_button = utils.get_setting_bool('stopAfterClose')
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
+        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
+        self.unwatched_only = not utils.get_setting_bool('includeWatched')
+        self.played_limit = (
+            utils.get_setting_int('playedInARow')
+            if utils.get_setting_bool('enableStillWatching') else 0
+        )
+        self.mark_watched = utils.get_setting_int('markWatched')
+        self.enable_resume = utils.get_setting_bool('enableResume')
+        self.next_season = utils.get_setting_bool('nextSeason')
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.unwatched_only = not utils.get_setting_bool('includeWatched')
-        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
-        self.played_limit = utils.get_setting_int('playedInARow')
-        self.simple_mode = utils.get_setting_int('simpleMode') == 0
+        self.detect_period = utils.get_setting_int('detectPeriod')
+        self.demo_mode = utils.get_setting_bool('enableDemoMode')
+        self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
+        self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
+        self.demo_plugin = (
+            self.demo_mode and utils.get_setting_bool('demoPlugin')
+        )
+
+        self.popup_durations = {
+            3600: utils.get_setting_int('autoPlayTimeXL'),
+            2400: utils.get_setting_int('autoPlayTimeL'),
+            1200: utils.get_setting_int('autoPlayTimeM'),
+            600: utils.get_setting_int('autoPlayTimeS'),
+            0: utils.get_setting_int('autoPlayTimeXS')
+        } if utils.get_setting_bool('customAutoPlayTime') else {
+            0: utils.get_setting_int('autoPlaySeasonTime')
+        }
+
+        utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
 
     def get_tracked_file(self):
         return self.filename
@@ -97,40 +137,45 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def set_tracking(self, filename):
         if filename:
-            msg = 'Tracking enabled - {0}'.format(filename)
+            self.track = True
+            self.filename = filename
+            self.log('Tracking enabled: {0}'.format(filename))
         else:
-            msg = 'Tracking disabled'
-        self.log(msg, 2)
-        self.track = bool(filename)
-        self.filename = filename if filename else None
+            self.track = False
+            self.filename = None
+            self.log('Tracking disabled')
 
     def reset_queue(self):
         if self.queued:
             self.queued = api.reset_queue()
 
     def get_next(self):
+        """Get next episode to play, based on current video source"""
+
         episode = None
         source = None
         position = api.get_playlist_position()
         has_addon_data = self.has_addon_data()
 
-        if position and not has_addon_data:
-        # Next video from non addon playlist
+        # Next video from addon data
+        if has_addon_data:
+            episode = self.data.get('next_episode')
+            source = 'addon' if not position else 'playlist'
+            self.log('Addon next_episode: {0}'.format(episode))
+
+        # Next video from non-addon playlist
+        elif position and not self.shuffle:
             episode = api.get_next_in_playlist(position)
             source = 'playlist'
-
-        # Next video from addon data
-        elif has_addon_data:
-            episode = self.data.get('next_episode')
-            source = 'addon'
-            self.log('Addon next_episode - {0}'.format(episode), 2)
 
         # Next video from Kodi library
         else:
             episode, new_season = api.get_next_from_library(
-                self.tvshowid,
                 self.episodeid,
-                self.unwatched_only
+                self.tvshowid,
+                self.unwatched_only,
+                self.next_season,
+                self.shuffle
             )
             source = 'library'
             # Show Still Watching? popup if next episode is from next season
@@ -140,14 +185,17 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return episode, source
 
     def get_detect_time(self):
-        if self.popup_cue or not self.detect_enabled or utils.is_amlogic():
+        # Don't use detection time period if an addon cue point was provided,
+        # or end credits detection is disabled
+        if self.popup_cue or not self.detect_enabled:
             return None
         return self.detect_time
 
     def set_detect_time(self):
+        # Detection time period starts before normal popup time
         self.detect_time = max(
             0,
-            self.popup_time - utils.get_setting_int('detectPeriod')
+            self.popup_time - self.detect_period
         )
 
     def get_popup_time(self):
@@ -159,90 +207,98 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             # Some addons send the time from video end
             popup_duration = utils.get_int(self.data, 'notification_time')
             if 0 < popup_duration < total_time:
-                self.popup_cue = True
+                # Enable cue point unless forced off in demo mode
+                self.popup_cue = self.demo_cue != 2
                 self.popup_time = total_time - popup_duration
                 return
 
             # Some addons send the time from video start (e.g. Netflix)
             popup_time = utils.get_int(self.data, 'notification_offset')
             if 0 < popup_time < total_time:
-                self.popup_cue = True
+                # Enable cue point unless forced off in demo mode
+                self.popup_cue = self.demo_cue != 2
                 self.popup_time = popup_time
                 return
 
-        # Use a customized notification time, when configured
-        if utils.get_setting_bool('customAutoPlayTime'):
-            if total_time > 60 * 60:
-                duration_setting = 'autoPlayTimeXL'
-            elif total_time > 40 * 60:
-                duration_setting = 'autoPlayTimeL'
-            elif total_time > 20 * 60:
-                duration_setting = 'autoPlayTimeM'
-            elif total_time > 10 * 60:
-                duration_setting = 'autoPlayTimeS'
-            else:
-                duration_setting = 'autoPlayTimeXS'
-
-        # Use one global default, regardless of episode length
-        else:
-            duration_setting = 'autoPlaySeasonTime'
-
-        popup_duration = utils.get_setting_int(duration_setting)
-        self.popup_cue = False
+        # Use addon settings for duration
+        popup_duration = self.popup_durations[max(0, 0, *[
+            idx for idx in self.popup_durations
+            if total_time > idx
+        ])]
+        # Disable cue point unless forced on in demo mode
+        self.popup_cue = self.demo_cue == 1
         if 0 < popup_duration < total_time:
             self.popup_time = total_time - popup_duration
         else:
             self.popup_time = 0
 
     def set_detected_popup_time(self, time):
-        self.popup_cue = True
+        # Force popup time to specified time
         self.popup_time = time
+        # Enable cue point unless forced off in demo mode
+        self.popup_cue = self.demo_cue != 2
 
-    def handle_addon_now_playing(self):
+    def process_now_playing(self, is_playlist, has_addon_data, media_type):
+        item = (
+            self.get_addon_now_playing() if has_addon_data
+            else self.get_playlist_now_playing() if is_playlist
+            else self.get_library_now_playing() if media_type == 'episode'
+            else None
+        )
+        if not item:
+            return None
+
+        showtitle = item.get('showtitle')
+        season = item.get('season')
+        if not showtitle or not season or season == -1:
+            self.season_identifier = None
+        else:
+            self.season_identifier = '_'.join((str(showtitle), str(season)))
+
+        return item
+
+    def get_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
-        self.log('Addon current_episode - {0}'.format(item), 2)
+        self.log('Addon current_episode: {0}'.format(item))
         if not item:
             return None
 
         tvshowid = utils.get_int(item, 'tvshowid')
 
-        # Reset play count if new show playing
+        # Reset played in a row count if new show playing
         if self.tvshowid != tvshowid:
-            msg = 'Reset played count - tvshowid change from {0} to {1}'
-            msg = msg.format(
-                self.tvshowid,
-                tvshowid
-            )
-            self.log(msg, 2)
+            self.log('Reset played count: tvshowid change - {0} to {1}'.format(
+                self.tvshowid, tvshowid
+            ))
             self.tvshowid = tvshowid
             self.played_in_a_row = 1
 
         self.episodeid = utils.get_int(item, 'episodeid')
-
+        self.episode = utils.get_int(item, 'episode')
         self.playcount = utils.get_int(item, 'playcount', 0)
 
         return item
 
-    def handle_library_now_playing(self):
+    def get_library_now_playing(self):
         item = api.get_now_playing()
-        if not item or item.get('type') != 'episode':
+        if not item:
             return None
 
         # Get current tvshowid or search in library if detail missing
         tvshowid = utils.get_int(item, 'tvshowid')
         if tvshowid == -1:
             title = item.get('showtitle')
-            self.tvshowid = api.get_tvshowid(title)
-            self.log('Fetched tvshowid - %s' % self.tvshowid, 2)
+            tvshowid = api.get_tvshowid(title)
+            self.log('Fetched tvshowid: {0}'.format(tvshowid))
+        # Now playing show not found in library
+        if tvshowid == -1:
+            return None
 
-        # Reset play count if new show playing
+        # Reset played in a row count if new show playing
         if self.tvshowid != tvshowid:
-            msg = 'Reset played count - tvshowid change from {0} to {1}'
-            msg = msg.format(
-                self.tvshowid,
-                tvshowid
-            )
-            self.log(msg, 2)
+            self.log('Reset played count: tvshowid change - {0} to {1}'.format(
+                self.tvshowid, tvshowid
+            ))
             self.tvshowid = tvshowid
             self.played_in_a_row = 1
 
@@ -254,21 +310,39 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 item.get('season'),
                 item.get('episode')
             )
-            self.log('Fetched episodeid - %s' % self.episodeid, 2)
+            self.log('Fetched episodeid: {0}'.format(self.episodeid))
+        # Now playing episode not found in library
+        if self.episodeid == -1:
+            return None
 
+        self.episode = utils.get_int(item, 'episode')
+        self.playcount = utils.get_int(item, 'playcount', 0)
+
+        return item
+
+    def get_playlist_now_playing(self):
+        item = api.get_now_playing()
+        if not item:
+            return None
+
+        self.tvshowid = utils.get_int(item, 'tvshowid')
+        self.episodeid = utils.get_int(item, 'id')
+        self.episode = utils.get_int(item, 'episode')
         self.playcount = utils.get_int(item, 'playcount', 0)
 
         return item
 
     def has_addon_data(self):
         if self.data:
-            if self.data.get('play_info'):
+            if self.data.get('play_url'):
                 return 2
+            if self.data.get('play_info'):
+                return 3
             return 1
         return 0
 
     def set_addon_data(self, data, encoding='base64'):
         if data:
-            self.log('Addon data - %s' % data, 2)
+            self.log('Addon data: {0}'.format(data))
         self.data = data
         self.encoding = encoding

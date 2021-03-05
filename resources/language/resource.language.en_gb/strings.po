@@ -1,5 +1,5 @@
-# Service Up Next language file
-# Addon Name: Up Next
+# Service UpNext language file
+# Addon Name: UpNext
 # Addon id: service.upnext
 # Addon Provider: im85288
 msgid ""
@@ -19,11 +19,11 @@ msgstr ""
 
 ### APPLICATION
 msgctxt "#30006"
-msgid "Watch Now"
+msgid "Watch now"
 msgstr ""
 
 msgctxt "#30008"
-msgid "Up Next"
+msgid "UpNext"
 msgstr ""
 
 msgctxt "#30009"
@@ -71,11 +71,11 @@ msgid "Fancy"
 msgstr ""
 
 msgctxt "#30040"
-msgid "Play next"
+msgid "Play next episode automatically"
 msgstr ""
 
 msgctxt "#30041"
-msgid "Stop playing"
+msgid "Stop playback at end of video"
 msgstr ""
 
 msgctxt "#30042"
@@ -90,10 +90,37 @@ msgctxt "#30044"
 msgid "Debug"
 msgstr ""
 
-msgctxt "#30049"
-msgid "Next Episode"
+msgctxt "#30045"
+msgid "Off"
 msgstr ""
 
+msgctxt "#30046"
+msgid "To 15s before end"
+msgstr ""
+
+msgctxt "#30047"
+msgid "To popup start time"
+msgstr ""
+
+msgctxt "#30048"
+msgid "To detector start time"
+msgstr ""
+
+msgctxt "#30049"
+msgid "Next episode"
+msgstr ""
+
+msgctxt "#30050"
+msgid "Disabled"
+msgstr ""
+
+msgctxt "#30051"
+msgid "Forced on"
+msgstr ""
+
+msgctxt "#30052"
+msgid "Forced off"
+msgstr ""
 
 ### SETTINGS
 msgctxt "#30500"
@@ -108,6 +135,10 @@ msgctxt "#30503"
 msgid "Set the display mode for the notifications"
 msgstr ""
 
+msgctxt "#30504"
+msgid "Apply Kodi Skin to UpNext pop-up [COLOR gray](requires skin integration)[/COLOR]"
+msgstr ""
+
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr ""
@@ -117,19 +148,23 @@ msgid "Behaviour"
 msgstr ""
 
 msgctxt "#30601"
-msgid "Features"
+msgid "Playback"
 msgstr ""
 
 msgctxt "#30603"
-msgid "Default action when nothing selected"
+msgid "Default action after UpNext popup is shown"
 msgstr ""
 
 msgctxt "#30605"
 msgid "Include already watched episodes"
 msgstr ""
 
+msgctxt "#30606"
+msgid "Check if still watching [COLOR gray](stops auto playback if not still watching)[/COLOR]"
+msgstr ""
+
 msgctxt "#30607"
-msgid "Number of episodes before \"Still there?\" query"
+msgid "Episodes to play before checking if still watching"
 msgstr ""
 
 msgctxt "#30609"
@@ -149,39 +184,55 @@ msgid "Customize notification time (in seconds) by episode length"
 msgstr ""
 
 msgctxt "#30617"
-msgid "All episodes  [COLOR gray]any length[/COLOR]"
+msgid "All episodes [COLOR gray]any length[/COLOR]"
 msgstr ""
 
 msgctxt "#30619"
-msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
+msgid "Very short episodes [COLOR gray]< 10 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30621"
-msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
+msgid "Short episodes [COLOR gray]> 10 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30623"
-msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
+msgid "Medium episodes [COLOR gray]> 20 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30625"
-msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
+msgid "Long episodes [COLOR gray]> 40 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30627"
-msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr ""
-
-msgctxt "#30630"
-msgid "Auto-detect end credits"
+msgid "Very long episodes [COLOR gray]> 60 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30631"
+msgid "Auto-detect end credits"
+msgstr ""
+
+msgctxt "#30633"
 msgid "Detection window [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
 msgstr ""
 
-msgctxt "#30632"
+msgctxt "#30635"
 msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
+msgstr ""
+
+msgctxt "#30640"
+msgid "Kodi Library"
+msgstr ""
+
+msgctxt "#30641"
+msgid "Mark as watched after UpNext popup is shown [COLOR gray](override default Kodi functionality)[/COLOR]"
+msgstr ""
+
+msgctxt "#30642"
+msgid "Resume playback where possible [COLOR gray](disable to always play from start)[/COLOR]"
+msgstr ""
+
+msgctxt "#30643"
+msgid "Search for next episode in next season"
 msgstr ""
 
 msgctxt "#30700"
@@ -189,7 +240,7 @@ msgid "Expert"
 msgstr ""
 
 msgctxt "#30703"
-msgid "Disable Up Next"
+msgid "Disable UpNext"
 msgstr ""
 
 msgctxt "#30705"
@@ -220,14 +271,30 @@ msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
 msgstr ""
 
-msgctxt "#30820"
-msgid "Detector developer settings"
+msgctxt "#30813"
+msgid "Test UpNext operation"
+msgstr ""
+
+msgctxt "#30815"
+msgid "Enable demo mode"
+msgstr ""
+
+msgctxt "#30817"
+msgid "Auto seek after playback starts"
+msgstr ""
+
+msgctxt "#30819"
+msgid "Force popup cue point"
 msgstr ""
 
 msgctxt "#30821"
-msgid "Verbose output logging"
+msgid "Force use plugin data and playback method"
 msgstr ""
 
-msgctxt "#30822"
-msgid "Enable detector for all content"
+msgctxt "#30823"
+msgid "Detector developer settings"
+msgstr ""
+
+msgctxt "#30825"
+msgid "Verbose output logging"
 msgstr ""

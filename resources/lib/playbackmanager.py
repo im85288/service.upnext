@@ -9,7 +9,8 @@ import utils
 
 
 class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
-    """Controller for Up Next popup and playback of next episode"""
+    """Controller for UpNext popup and playback of next episode"""
+
     __slots__ = ('player', 'state', 'popup', 'sigterm')
 
     def __init__(self, player, state):
@@ -17,19 +18,19 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         self.state = state
         self.popup = None
         self.sigterm = False
-        self.log('Init', 2)
+        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def launch_up_next(self):
+    def launch_upnext(self):
         episode, source = self.state.get_next()
 
         # No episode get out of here
         if not episode:
-            self.log('Exiting - no next episode', 2)
-            return
+            self.log('Exiting: no next episode')
+            return False
 
         # Show popup and get new playback state
         play_next, keep_playing = self.launch_popup(episode, source)
@@ -39,19 +40,22 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         if not play_next and self.state.queued:
             self.state.queued = api.dequeue_next_item()
         if not keep_playing:
-            self.log('Stopping playback', 2)
+            self.log('Stopping playback')
             self.player.stop()
+        # Relaunch popup if shuffle enabled to get new random episode
+        elif self.state.shuffle and not play_next:
+            return self.launch_upnext()
 
         self.sigterm = False
-        self.log('Exit', 2)
+        self.log('Exit')
+        return True
 
     def launch_popup(self, episode, source=None):
         episodeid = utils.get_int(episode, 'episodeid')
 
         # Checked if next episode has been watched and if it should be skipped
-        watched = self.state.unwatched_only and self.state.playcount
-        if (episodeid != -1 and self.state.episodeid == episodeid or watched):
-            self.log('Exit launch_popup early - video already watched', 2)
+        if self.state.unwatched_only and self.state.playcount:
+            self.log('Exit launch_popup early: video already watched')
             play_next = False
             keep_playing = True
             return play_next, keep_playing
@@ -67,31 +71,35 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # played in a row count has been set to zero for testing
         else:
             show_upnext = self.state.played_limit != self.state.played_in_a_row
-        # Allow auto play if enabled in settings and showing Up Next popup
+        # Allow auto play if enabled in settings and showing UpNext popup
         auto_play = self.state.auto_play and show_upnext
 
-        self.log('Played in a row setting - %s' % self.state.played_limit, 2)
-        self.log('Played in a row - %s' % self.state.played_in_a_row, 2)
+        self.log('Played in a row: {0} of {1}'.format(
+            self.state.played_in_a_row, self.state.played_limit
+        ))
 
         # Filename for dialog XML
-        filename = 'script-upnext{0}{1}.xml'.format(
+        filename = 'script-upnext{0}{1}{2}.xml'.format(
             '-upnext' if show_upnext else '-stillwatching',
-            '-simple' if self.state.simple_mode else ''
+            '-simple' if self.state.simple_mode else '',
+            '' if self.state.skin_popup else '-original'
         )
-        # Create Kodi dialog to show Up Next or Still Watching? popup
+        # Create Kodi dialog to show UpNext or Still Watching? popup
         self.popup = dialog.UpNextPopup(
             filename,
             utils.addon_path(),
             'default',
             '1080i',
-            item=episode
+            item=episode,
+            shuffle=self.state.shuffle if source == 'library' else None,
+            stop_button=self.state.show_stop_button
         )
 
         # Show popup and check that it has not been terminated early
         abort_popup = not self.show_popup_and_wait(auto_play)
 
         if abort_popup:
-            self.log('Exit launch_popup early - tracked video not playing', 2)
+            self.log('Exit launch_popup early: tracked video not playing')
             play_next = False
             # Stop if Still Watching? popup was shown to prevent unwanted
             # playback that can occur if fast forwarding through popup
@@ -100,17 +108,26 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             return play_next, keep_playing
 
         # Update new playback state details
+        shuffle_start = not self.state.shuffle and self.popup.is_shuffle()
+        self.state.shuffle = self.popup.is_shuffle()
         auto_play = auto_play and not self.popup.is_cancel()
         play_now = self.popup.is_playnow()
 
         # Update played in a row count
-        if play_now:
-            self.state.played_in_a_row = 1
-        elif auto_play:
-            self.state.played_in_a_row += 1
+        self.state.played_in_a_row = (
+            self.state.played_in_a_row + 1
+            if auto_play else 1
+        )
+
+        if shuffle_start:
+            self.log('Exit launch_popup early: shuffle requested')
+            play_next = False
+            keep_playing = True
+            self.remove_popup()
+            return play_next, keep_playing
 
         if not auto_play and not play_now:
-            self.log('Exit launch_popup early - playback not selected ', 2)
+            self.log('Exit launch_popup early: playback not selected')
             play_next = False
             # Keep playing if NAV_BACK or Cancel button was clicked on popup
             # Stop playing if Stop button was clicked on popup
@@ -121,7 +138,8 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         # Close dialog once we are done with it
         self.remove_popup()
 
-        # Request playback of next file
+        # Request playback of next file based on source and type
+        has_addon_data = self.state.has_addon_data()
         # Primary method is to play next playlist item
         if source == 'playlist' or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
@@ -136,49 +154,51 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             # Can't just wait for next file to play as VideoPlayer closes all
             # video threads when the current file finishes
             if play_now or (auto_play and self.state.popup_cue):
-                # xbmc.Player().playnext() does not allow for control of resume
-                # PlayMedia builtin can't target now playing playlist
-                # PlayMedia('',[playoffset=xx],[resume],[noresume])
-                # JSON Player.Open is too slow (further testing required)
-                # Stick to playnext() for now, without possibility for resuming
-                self.player.playnext()
+                api.play_playlist_item(
+                    position='next',
+                    resume=self.state.enable_resume
+                )
 
-        # Fallback addon playback option, used if addon provides play_info
-        elif self.state.has_addon_data():
-            api.play_addon_item(self.state.data, self.state.encoding)
+        # Fallback addon playback method, used if addon provides play_info
+        elif has_addon_data:
+            api.play_addon_item(
+                self.state.data,
+                self.state.encoding,
+                self.state.enable_resume
+            )
 
-        # Fallback library playback option, not normally used
+        # Fallback library playback method, not normally used
         else:
-            api.play_kodi_item(episode)
+            api.play_kodi_item(episode, self.state.enable_resume)
 
         # Signal to trakt previous episode watched
         utils.event(
             message='NEXTUPWATCHEDSIGNAL',
-            data=dict(episodeid=self.state.episodeid),
+            data={'episodeid': self.state.episodeid},
             encoding='base64'
         )
 
         # Determine playback method. Used for logging purposes
-        msg = 'Playback requested - using{0}{1}{2} method'
-        msg = msg.format(
+        self.log('Playback requested: using{0}{1}{2} method'.format(
             ' play_now' if play_now else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
             ' auto_play',
-            ' play_url' if (self.state.has_addon_data() == 1) else
-            ' play_info' if (self.state.has_addon_data() == 2) else
+            ' play_url' if (has_addon_data == 2) else
+            ' play_info' if (has_addon_data == 3) else
+            ' missing_addon_data' if (has_addon_data == 1) else
             ' library' if (isinstance(episodeid, int) and episodeid != -1) else
             ' file',
             ' playlist' if source == 'playlist' else
             ' queue' if self.state.queued else
             ' direct'
-        )
-        self.log(msg, 2)
+        ), 1)
 
         play_next = True
         keep_playing = True
         return play_next, keep_playing
 
     def show_popup_and_wait(self, auto_play):
+        # Get video details, exit if no video playing
         with self.player as check_fail:
             total_time = self.player.getTotalTime()
             play_time = self.player.getTime()
@@ -187,7 +207,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             popup_done = False
             return popup_done
 
-        # If cue point was provided then Up Next will auto play after a fixed
+        # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
         if auto_play and self.state.popup_cue:
             popup_duration = self.state.auto_play_delay
@@ -220,14 +240,16 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             if (remaining <= 1
                     or self.popup.is_cancel()
                     or self.popup.is_playnow()):
+                popup_done = True
                 break
 
             monitor.waitForAbort(min(wait_time, remaining))
         else:
             popup_done = False
-            return popup_done
 
-        popup_done = True
+        # Free resources
+        del monitor
+
         return popup_done
 
     def show_popup(self):

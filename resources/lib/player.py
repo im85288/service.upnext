@@ -26,11 +26,11 @@ class UpNextPlayerState(dict):
 
     def set(self, name, *args, **kwargs):
         if name not in self:
-            self[name] = dict(
-                value=None,
-                force=False,
-                actual=None
-            )
+            self[name] = {
+                'value': None,
+                'force': False,
+                'actual': None
+            }
 
         has_force = 'force' in kwargs
         has_value = bool(args)
@@ -70,8 +70,10 @@ class UpNextPlayer(xbmc.Player):
         self.state.stop = None
 
         xbmc.Player.__init__(self)
-        self.log('Init', 2)
+        self.log('Init')
 
+    # __enter__ and __exit__ allow UpNextPlayer to be used as a contextmanager
+    # to check whether video is actually playing when getting video details
     def __enter__(self):
         return True
 
@@ -84,7 +86,11 @@ class UpNextPlayer(xbmc.Player):
 
     def isExternalPlayer(self):  # pylint: disable=invalid-name
         # Use inbuilt method to store actual value
-        actual = getattr(xbmc.Player, 'isExternalPlayer')(self)
+        actual = (
+            getattr(xbmc.Player, 'isExternalPlayer')(self)
+            if utils.supports_python_api(18)
+            else False
+        )
         self.state.external_player = actual
         # Return actual value or forced value if forced
         return self.state.external_player
@@ -110,6 +116,7 @@ class UpNextPlayer(xbmc.Player):
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = self.getVideoInfoTag().getMediaType()
+            actual = actual if actual else 'unknowntype'
         actual = statichelper.to_unicode(actual)
         self.state.media_type = actual
         # Return actual value or forced value if forced
@@ -128,6 +135,7 @@ class UpNextPlayer(xbmc.Player):
         return self.state.playing_file
 
     def get_speed(self):  # pylint: disable=too-many-branches
+        # There must be a better way to do this...
         if xbmc.getCondVisibility('Player.Playing'):
             self.state.speed = float(xbmc.getInfoLabel('Player.PlaySpeed'))
         elif xbmc.getCondVisibility('Player.Forwarding'):
@@ -156,13 +164,17 @@ class UpNextPlayer(xbmc.Player):
             self.state.speed = 0
         return self.state.speed
 
-    def getTime(self):  # pylint: disable=invalid-name
+    def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
         if self.state.playing and not self.state.actual('playing'):
             actual = self.state.time
         # Use inbuilt method to store actual value if playing not forced
         else:
-            actual = getattr(xbmc.Player, 'getTime')(self)
+            actual = (
+                utils.time_to_seconds(xbmc.getInfoLabel('VideoPlayer.Time'))
+                if use_infolabel
+                else getattr(xbmc.Player, 'getTime')(self)
+            )
         self.state.time = actual
 
         # Simulate time progression if forced

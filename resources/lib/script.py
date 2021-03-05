@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-"""This is the actual Up Next script"""
+"""This is the actual UpNext script"""
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmcaddon
@@ -11,11 +11,11 @@ import state
 
 def test_popup(popup_type, simple_style=False):
     # Create dummy episode to show in popup
-    test_episode = dict(
-        episodeid=-1,
-        tvshowid=-1,
-        title='Garden of Bones',
-        art={
+    test_episode = {
+        'episodeid': -1,
+        'tvshowid': -1,
+        'title': 'Garden of Bones',
+        'art': {
             'thumb': 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg',
             'tvshow.fanart': 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg',
             'tvshow.clearart': 'https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png',
@@ -23,18 +23,17 @@ def test_popup(popup_type, simple_style=False):
             'tvshow.landscape': 'https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg',
             'tvshow.poster': 'https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg',
         },
-        season=2,
-        episode=4,
-        showtitle='Game of Thrones',
-        plot='Lord Baelish arrives at Renly\'s camp just before he faces off against Stannis. '
-             'Daenerys and her company are welcomed into the city of Qarth. Arya, Gendry, and '
-             'Hot Pie find themselves imprisoned at Harrenhal.',
-        playcount=1,
-        rating=8.9,
-        firstaired=2012,
-        runtime=3000,
-    )
-
+        'season': 2,
+        'episode': 4,
+        'showtitle': 'Game of Thrones',
+        'plot': 'Lord Baelish arrives at Renly\'s camp just before he faces off against Stannis. '
+                'Daenerys and her company are welcomed into the city of Qarth. Arya, Gendry, and '
+                'Hot Pie find themselves imprisoned at Harrenhal.',
+        'playcount': 1,
+        'rating': 8.9,
+        'firstaired': 2012,
+        'runtime': 3000,
+    }
     # Create test state object
     test_state = state.UpNextState()
     # Simulate after file has started
@@ -51,23 +50,23 @@ def test_popup(popup_type, simple_style=False):
     # Create test player object
     test_player = player.UpNextPlayer()
     # Simulate player state
-    test_player.state.update(dict(
-        # external_player={'value': False, 'force': False},
+    test_player.state.update({
+        # 'external_player': {'value': False, 'force': False},
         # Simulate file is playing
-        playing={'value': True, 'force': True},
-        # paused={'value': False, 'force': False},
-        # playing_file={'value': None, 'force': False},
-        speed={'value': 1, 'force': True},
+        'playing': {'value': True, 'force': True},
+        # 'paused': {'value': False, 'force': False},
+        # 'playing_file': {'value': None, 'force': False},
+        'speed': {'value': 1, 'force': True},
         # Simulate runtime of endtime minus 10s
-        time={'value': test_episode['runtime'] - 10, 'force': True},
+        'time': {'value': test_episode['runtime'] - 10, 'force': True},
         # Simulate endtime based on dummy episode
-        total_time={'value': test_episode['runtime'], 'force': True},
-        # next_file={'value': None, 'force': False},
-        # media_type={'value': None, 'force': False}
-        # playnext={'force': False},
+        'total_time': {'value': test_episode['runtime'], 'force': True},
+        # 'next_file': {'value': None, 'force': False},
+        # 'media_type': {'value': None, 'force': False}
+        # 'playnext': {'force': False},
         # Simulate stop to ensure actual playback doesnt stop when popup closes
-        stop={'force': True}
-    ))
+        'stop': {'force': True}
+    })
     # Simulate player state could also be done using the following
     test_player.state.set('playing', True, force=True)
     test_player.state.set('speed', 1, force=True)
@@ -81,7 +80,7 @@ def test_popup(popup_type, simple_style=False):
         state=test_state
     ).launch_popup(
         episode=test_episode,
-        source=None
+        source='library'
     )
 
 
@@ -91,6 +90,7 @@ def open_settings():
 
 def run(argv):
     """Route to API method"""
+
     if len(argv) > 2 and argv[1] == 'test_window':
         # Fancy style popup
         if len(argv) == 3:

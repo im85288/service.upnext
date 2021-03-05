@@ -2,14 +2,13 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import threading
 import xbmc
 import api
-import detector
-import playbackmanager
 import player
 import state
 import statichelper
+import tracker
+import upnext
 import utils
 
 
@@ -23,234 +22,33 @@ PLAYER_MONITOR_EVENTS = {
 
 
 class UpNextMonitor(xbmc.Monitor):
-    """Service and player monitor/tracker for Kodi"""
-    # Set True to enable threading.Thread method for triggering a popup
-    # Will continuously poll playtime in a threading.Thread to track popup time
-    # Default True
-    use_thread = True
-    # Set True to enable threading.Timer method for triggering a popup
-    # Will schedule a threading.Timer to start tracking when popup is required
-    # Overrides use_thread if set True
-    # Default False
-    use_timer = False
+    """Monitor service for Kodi"""
+
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
-    test_trigger = False
+    _trigger = False
 
     def __init__(self):
-        self.state = state.UpNextState()
         self.player = player.UpNextPlayer()
-        self.playbackmanager = None
-        self.tracker = None
-        self.detector = None
-        self.running = False
-        self.sigstop = False
-        self.sigterm = False
+        self.state = state.UpNextState()
+        self.tracker = tracker.UpNextTracker(
+            player=self.player,
+            state=self.state
+        )
 
         xbmc.Monitor.__init__(self)
-        self.log('Init', 2)
+        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=2):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def run(self):
-        # Re-trigger player event if addon started mid playback
-        if self.test_trigger and self.player.isPlaying():
-            if utils.supports_python_api(18):
-                method = 'Player.OnAVStart'
-            else:
-                method = 'Player.OnPlay'
-            self.onNotification('UpNext', method)
-
-        # Wait indefinitely until addon is terminated
-        self.waitForAbort()
-
-        # Cleanup when abort requested
-        if self.playbackmanager:
-            self.playbackmanager.remove_popup(terminate=True)
-            self.log('Cleanup popup', 2)
-        if self.detector:
-            self.detector.stop()
-            del self.detector
-            self.detector = None
-            self.log('Cleanup detector', 2)
-        self.stop_tracking(terminate=True)
-        del self.tracker
-        self.tracker = None
-        self.log('Cleanup tracker', 2)
-        del self.state
-        self.state = None
-        self.log('Cleanup state', 2)
-        del self.player
-        self.player = None
-        self.log('Cleanup player', 2)
-        del self.playbackmanager
-        self.playbackmanager = None
-        self.log('Cleanup playbackmanager', 2)
-
-    def start_tracking(self, called=[False]):  # pylint: disable=dangerous-default-value
-        if not self.state.is_tracking() or called[0]:
-            return
-        self.stop_tracking()
-
-        # threading.Timer method not used by default. More testing required
-        if self.use_timer:
-            called[0] = True
-            self.waitForAbort(1)
-            with self.player as check_fail:
-                play_time = self.player.getTime()
-                speed = self.player.get_speed()
-                check_fail = False
-            if check_fail or speed < 1:
-                called[0] = False
-                return
-
-            # Determine play time left until popup is required
-            popup_time = self.state.get_popup_time()
-            detect_time = self.state.get_detect_time()
-
-            # Convert to delay and scale to real time minus a 10s offset
-            delay = (detect_time if detect_time else popup_time) - play_time
-            delay = max(0, delay // speed - 10)
-            msg = 'Tracker - starting at {0}s in {1}s'
-            self.log(msg.format(
-                detect_time if detect_time else popup_time,
-                delay
-            ), 2)
-
-            # Schedule tracker to start when required
-            self.tracker = threading.Timer(delay, self.track_playback)
-            self.tracker.start()
-            called[0] = False
-
-        # Use while not abortRequested() loop in a separate thread to allow for
-        # continued monitoring in main service thread
-        elif self.use_thread:
-            self.tracker = threading.Thread(target=self.track_playback)
-            # Daemon threads may not work in Kodi, but enable it anyway
-            self.tracker.daemon = True
-            self.tracker.start()
-
-        # Use while not abortRequested() loop in main service thread
-        else:
-            if self.running:
-                self.sigstop = False
-            else:
-                self.track_playback()
-
-    def stop_tracking(self, terminate=False):
-        # Set terminate or stop signals if tracker is running
-        if terminate:
-            self.sigterm = self.running
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup(terminate=True)
-        else:
-            self.sigstop = self.running
-
-        if not self.tracker:
-            return
-
-        # Wait for thread to complete
-        if self.running:
-            self.tracker.join()
-        # Or if tracker has not yet started on timer then cancel old timer
-        elif self.use_timer:
-            self.tracker.cancel()
-
-        # Free resources
-        del self.tracker
-        self.tracker = None
-
-    def track_playback(self):
-        # Only track playback if old tracker is not running
-        if self.running:
-            return
-        self.log('Tracker started', 2)
-        self.running = True
-
-        if self.detector:
-            self.detector.reset()
-
-        # Loop unless abort requested
-        while not self.abortRequested() and not self.sigterm:
-            # Exit loop if stop requested or if tracking stopped
-            if self.sigstop or not self.state.is_tracking():
-                self.log('Tracker - exit', 2)
-                break
-
-            tracked_file = self.state.get_tracked_file()
-            with self.player as check_fail:
-                current_file = self.player.getPlayingFile()
-                total_time = self.player.getTotalTime()
-                play_time = self.player.getTime()
-                check_fail = False
-            if check_fail:
-                self.log('No file is playing', 2)
-                self.state.set_tracking(False)
-                continue
-            # New stream started without tracking being updated
-            if tracked_file and tracked_file != current_file:
-                self.log('Error - unknown file playing', 1)
-                self.state.set_tracking(False)
-                continue
-
-            detect_time = self.state.get_detect_time()
-            if detect_time and play_time >= detect_time:
-                if not self.detector:
-                    self.detector = detector.Detector()
-                    self.detector.run()
-                elif self.detector.detected():
-                    self.log('Credits detected', 2)
-                    self.state.set_detected_popup_time(play_time)
-
-            popup_time = self.state.get_popup_time()
-            # Media hasn't reach popup time yet, waiting a bit longer
-            if play_time < popup_time:
-                self.waitForAbort(min(1, popup_time - play_time))
-                continue
-
-            # Stop detector once popup is requested
-            if self.detector and not utils.get_setting_bool('detectAlways'):
-                self.detector.store_hashes()
-                self.detector.stop()
-                del self.detector
-                self.detector = None
-
-            # Stop second thread and popup from being created after next file
-            # has been requested but not yet loaded
-            self.state.set_tracking(False)
-            self.sigstop = True
-
-            # Start Up Next to handle playback of next file
-            msg = 'Popup - due at {0}s - file ({1}s runtime) ends in {2}s'
-            msg = msg.format(popup_time, total_time, total_time - play_time)
-            self.log(msg, 2)
-            self.playbackmanager = playbackmanager.PlaybackManager(
-                player=self.player,
-                state=self.state
-            )
-            self.playbackmanager.launch_up_next()
-
-            # Free up resources and exit tracking loop
-            del self.playbackmanager
-            self.playbackmanager = None
-            break
-        else:
-            self.log('Tracker - abort', 1)
-
-        # Reset thread signals
-        self.log('Tracker - stopped', 2)
-        self.running = False
-        self.sigstop = False
-        self.sigterm = False
-
     def check_video(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
             return
-        self.log('Starting video check', 2)
+        self.log('Starting video check')
         # Increment starting counter
         self.state.starting += 1
         start_num = max(1, self.state.starting)
@@ -262,37 +60,37 @@ class UpNextMonitor(xbmc.Monitor):
             self.waitForAbort(1)
             wait_count -= 1
 
-        # Exit if no file playing
+        # Get video details, exit if no video playing
         with self.player as check_fail:
             playing_file = self.player.getPlayingFile()
             total_time = self.player.getTotalTime()
             media_type = self.player.get_media_type()
             check_fail = False
         if check_fail:
-            self.log('Skip video check - video stream not playing', 2)
+            self.log('Skip video check: nothing playing', 4)
             return
-        self.log('Playing %s - %s' % (media_type, playing_file), 2)
+        self.log('Playing: {0} - {1}'.format(media_type, playing_file))
 
         # Exit if starting counter has been reset or new start detected or
         # starting state has been reset by playback error/end/stop
         if not self.state.starting or start_num != self.state.starting:
-            self.log('Skip video check - video stream not fully loaded', 2)
+            self.log('Skip video check: playing item not fully loaded')
             return
         self.state.starting = 0
         self.state.playing = 1
 
         if utils.get_property('PseudoTVRunning') == 'True':
-            self.log('Skip video check - PsuedoTV detected', 2)
+            self.log('Skip video check: PsuedoTV detected')
             return
 
-        if utils.supports_python_api(18) and self.player.isExternalPlayer():
-            self.log('Skip video check - external player detected', 2)
+        if self.player.isExternalPlayer():
+            self.log('Skip video check: external player detected')
             return
 
-        # Exit if Up Next playlist handling has not been enabled
-        is_playlist_item = api.get_playlist_position()
-        if is_playlist_item and not self.state.enable_playlist:
-            self.log('Skip video check - playlist handling not enabled', 2)
+        # Exit if UpNext playlist handling has not been enabled
+        is_playlist = api.get_playlist_position()
+        if is_playlist and not self.state.enable_playlist:
+            self.log('Skip video check: playlist handling not enabled')
             return
 
         # Use new addon data if provided or erase old addon data.
@@ -301,50 +99,99 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.set_addon_data(data, encoding)
         has_addon_data = self.state.has_addon_data()
 
-        if utils.get_setting_bool('detectAlways'):
-            self.detector = detector.Detector()
-            self.detector.run()
-
-        # Start tracking if Up Next can handle the currently playing video
-        if is_playlist_item or has_addon_data or media_type == 'episode':
+        # Start tracking if UpNext can handle the currently playing video
+        # Process now playing video to get episode details and save playcount
+        now_playing_item = self.state.process_now_playing(
+            is_playlist, has_addon_data, media_type
+        )
+        if now_playing_item:
             self.state.set_tracking(playing_file)
             self.state.reset_queue()
-
-            # Get details of currently playing video to save playcount
-            if has_addon_data:
-                self.state.handle_addon_now_playing()
-            else:
-                self.state.handle_library_now_playing()
 
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
             self.state.set_detect_time()
 
+            # Handle demo mode functionality and notification
+            self.handle_demo_mode(now_playing_item)
             # Start tracking playback in order to launch popup at required time
-            self.start_tracking()
+            self.tracker.start()
             return
 
-        self.log('Skip video check - Up Next unable to handle video', 2)
+        self.log('Skip video check: UpNext unable to handle playing item')
         if self.state.is_tracking():
             self.state.reset()
 
-    def onSettingsChanged(self):  # pylint: disable=invalid-name
-        self.log('Settings changed', 2)
-        self.state.update_settings()
+    def handle_demo_mode(self, now_playing_item):
+        if self.state.demo_mode:
+            utils.notification('UpNext demo mode', 'Active')
 
-        # Shutdown tracking loop if disabled
-        if self.state.is_disabled():
-            self.log('Up Next disabled', 0)
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup(terminate=True)
-            self.stop_tracking(terminate=True)
+        # Force use of addon data method if demo plugin mode is enabled
+        if not self.state.has_addon_data() and self.state.demo_plugin:
+            next_episode, source = self.state.get_next()
 
-    def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
-        # Restart tracking if previously tracking
-        self.start_tracking()
+            if source == 'library':
+                next_dbid = next_episode.get('episodeid')
+                current_episode = upnext.create_listitem(now_playing_item)
+                next_episode = upnext.create_listitem(next_episode)
+
+                addon_id = utils.addon_id()
+                upnext_info = {
+                    'current_episode': current_episode,
+                    'next_episode': next_episode,
+                    'play_url': 'plugin://{0}/?play={1}'.format(
+                        addon_id, next_dbid
+                    )
+                }
+                upnext.send_signal(addon_id, upnext_info)
+
+        seek_time = 0
+        if not self.state.demo_seek:
+            return
+        # Seek to popup start time
+        if self.state.demo_seek == 2:
+            seek_time = self.state.get_popup_time()
+        # Seek to detector start time
+        elif self.state.demo_seek == 3:
+            seek_time = self.state.get_detect_time()
+
+        with self.player as check_fail:
+            # Seek to 15s before end of video if no other seek point set
+            if not seek_time:
+                total_time = self.player.getTotalTime()
+                seek_time = total_time - 15
+            self.player.seekTime(seek_time)
+            check_fail = False
+        if check_fail:
+            self.log('Error: unable to seek in demo mode, nothing playing', 4)
+
+    def run(self):
+        # Re-trigger player event if addon started mid playback
+        if self._trigger and self.player.isPlaying():
+            if utils.supports_python_api(18):
+                method = 'Player.OnAVStart'
+            else:
+                method = 'Player.OnPlay'
+            self.onNotification('UpNext', method)
+
+        # Wait indefinitely until addon is terminated
+        self.waitForAbort()
+
+        # Cleanup when abort requested
+        self.tracker.stop(terminate=True)
+        del self.tracker
+        self.tracker = None
+        self.log('Cleanup tracker')
+        del self.state
+        self.state = None
+        self.log('Cleanup state')
+        del self.player
+        self.player = None
+        self.log('Cleanup player')
 
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
+
         if self.state.is_disabled():
             return
 
@@ -352,58 +199,62 @@ class UpNextMonitor(xbmc.Monitor):
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
 
-        if (not utils.supports_python_api(18) and method == 'Player.OnPlay'
-                or method == 'Player.OnAVStart'):
-            # Update player state and remove any existing popups
+        if (method == 'Player.OnAVStart' or not utils.supports_python_api(18)
+                and method == 'Player.OnPlay'):
+            # Update player state and remove remnants from previous operations
             self.player.state.set('time', force=False)
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup()
-            if self.detector:
-                self.detector.stop()
-                del self.detector
-                self.detector = None
+            self.tracker.stop()
 
-            # Increase playcount and reset resume point of previous file
-            if self.state.playing_next:
-                self.state.playing_next = False
-                # TODO: Add settings to control whether file is marked as
-                # watched and resume point is reset when next file is played
+            # Update playcount and reset resume point of previous file
+            if self.state.playing_next and self.state.mark_watched:
                 api.handle_just_watched(
                     episodeid=self.state.episodeid,
-                    playcount=self.state.playcount,
+                    previous_playcount=self.state.playcount,
+                    reset_playcount=(self.state.mark_watched == 2),
                     reset_resume=True
                 )
+            self.state.playing_next = False
 
-            # Check whether Up Next can start tracking
+            # Check whether UpNext can start tracking
             self.check_video()
 
         elif method == 'Player.OnStop':
-            if self.playbackmanager:
-                self.playbackmanager.remove_popup()
-            if self.detector:
-                self.detector.stop()
-                del self.detector
-                self.detector = None
-            self.stop_tracking()
+            # Remove remnants from previous operations
+            self.tracker.stop()
+
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing
-            # Reset state if Up Next has not requested the next file to play
+            # Reset state if UpNext has not requested the next file to play
             if not self.state.playing_next:
                 self.state.reset()
 
         elif method in PLAYER_MONITOR_EVENTS:
             # Restart tracking if previously tracking
-            self.start_tracking()
+            self.tracker.start()
 
         # Data transfer from addons
         elif method.endswith('upnext_data'):
             decoded_data, encoding = utils.decode_json(data)
             sender = sender.replace('.SIGNAL', '')
             if not isinstance(decoded_data, dict) or not decoded_data:
-                msg = 'Addon data error - {0} sent {1} as {2}'
-                self.log(msg.format(sender, decoded_data, data), 1)
+                self.log('Error: {0} addon, sent {1} as {2}'.format(
+                    sender, decoded_data, data
+                ), 4)
                 return
-            decoded_data.update(id='%s_play_action' % sender)
+            decoded_data.update(id='{0}_play_action'.format(sender))
 
             # Initial processing of data to start tracking
             self.check_video(decoded_data, encoding)
+
+    def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
+        # Restart tracking if previously tracking
+        self.tracker.start()
+
+    def onSettingsChanged(self):  # pylint: disable=invalid-name
+        self.log('Settings changed', 1)
+        self.state.update_settings()
+
+        # Shutdown tracking loop if disabled
+        if self.state.is_disabled():
+            self.log('UpNext disabled', 4)
+            self.tracker.stop(terminate=True)
