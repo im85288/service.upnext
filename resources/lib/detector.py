@@ -61,12 +61,12 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         )
 
     def is_valid(self, seasonid=None, episode=None):
-        return (
-            self.seasonid
-            and self.episode != -1
-            and (self.seasonid == seasonid) if seasonid is not None else True
-            and (self.episode == episode) if episode is not None else True
-        )
+        if (not self.seasonid
+                or self.episode == -1
+                or seasonid is not None and self.seasonid != seasonid
+                or episode is not None and self.episode != episode):
+            return False
+        return True
 
     def invalidate(self):
         self.seasonid = ''
@@ -133,11 +133,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     __slots__ = (
         # Instances
         'capturer',
-        'detector',
         'hashes',
         'past_hashes',
         'player',
         'state',
+        'thread',
         # Settings
         'debug',
         'detect_level',
@@ -157,9 +157,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
     def __init__(self, player, state):
         self.capturer = xbmc.RenderCapture()
-        self.detector = None
         self.player = player
         self.state = state
+        self.thread = None
 
         self.match_count = {
             'hits': 0,
@@ -614,14 +614,14 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         ):
             self.init_hashes()
 
-        self.detector = threading.Thread(target=self.run)
+        self.thread = threading.Thread(target=self.run)
         # Daemon threads may not work in Kodi, but enable it anyway
-        self.detector.daemon = True
-        self.detector.start()
+        self.thread.daemon = True
+        self.thread.start()
 
     def stop(self, reset=False, terminate=False):
         # Exit if detector thread has not been created
-        if not self.detector:
+        if not self.thread:
             return
 
         # Set terminate or stop signals if detector is running
@@ -632,11 +632,11 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
         # Wait for thread to complete
         if self.running:
-            self.detector.join()
+            self.thread.join()
 
         # Free resources
-        del self.detector
-        self.detector = None
+        del self.thread
+        self.thread = None
 
         # Invalidate collected hashes if not needed for later use
         if reset or terminate:

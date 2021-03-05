@@ -209,7 +209,7 @@ class UpNextMonitor(xbmc.Monitor):
             if self.state.playing_next and self.state.mark_watched:
                 api.handle_just_watched(
                     episodeid=self.state.episodeid,
-                    previous_playcount=self.state.playcount,
+                    playcount=self.state.playcount,
                     reset_playcount=(self.state.mark_watched == 2),
                     reset_resume=True
                 )

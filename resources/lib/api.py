@@ -484,7 +484,7 @@ def get_episodeid(tvshowid, season, episode):
 
 def handle_just_watched(
         episodeid,
-        previous_playcount,
+        playcount,
         reset_playcount=False,
         reset_resume=True
 ):
@@ -500,8 +500,8 @@ def handle_just_watched(
     result = result.get('result', {}).get('episodedetails')
 
     if result:
-        current_playcount = utils.get_int(result, 'playcount', 0)
-        current_resume = result.get('resume', {}).get('position')
+        actual_playcount = utils.get_int(result, 'playcount', 0)
+        actual_resume = result.get('resume', {}).get('position')
     else:
         return
 
@@ -509,13 +509,13 @@ def handle_just_watched(
 
     # If Kodi has not updated playcount then UpNext will
     if reset_playcount:
-        previous_playcount = -1
-    if reset_playcount or current_playcount == previous_playcount:
-        previous_playcount += 1
-        params['playcount'] = previous_playcount
+        playcount = -1
+    if reset_playcount or actual_playcount == playcount:
+        playcount += 1
+        params['playcount'] = playcount
 
     # If resume point has been saved then reset it
-    if current_resume and reset_resume:
+    if actual_resume and reset_resume:
         params['resume'] = {'position': 0}
 
     # Only update library if playcount or resume point needs to change
@@ -529,13 +529,9 @@ def handle_just_watched(
 
     log('Library update: id - {0}{1}{2}{3}'.format(
         episodeid,
-        ', playcount - {0} to {1}'.format(
-            current_playcount,
-            previous_playcount
-        ) if 'playcount' in params else '',
-        ', resume - {0} to {1}'.format(
-            current_resume,
-            0 if reset_resume else current_resume
-        ) if 'resume' in params else '',
+        ', playcount - {0} to {1}'.format(actual_playcount, playcount)
+        if 'playcount' in params else '',
+        ', resume - {0} to 0'.format(actual_resume)
+        if 'resume' in params else '',
         '' if params else ', no change'
     ), 1)

@@ -239,12 +239,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.popup_cue = self.demo_cue != 2
 
     def process_now_playing(self, is_playlist, has_addon_data, media_type):
-        item = (
-            self.get_addon_now_playing() if has_addon_data
-            else self.get_playlist_now_playing() if is_playlist
-            else self.get_library_now_playing() if media_type == 'episode'
-            else None
-        )
+        if has_addon_data:
+            item = self.get_addon_now_playing()
+        elif is_playlist:
+            item = self.get_playlist_now_playing()
+        elif media_type == 'episode':
+            item = self.get_library_now_playing()
+        else:
+            item = None
+
         if not item:
             return None
 
