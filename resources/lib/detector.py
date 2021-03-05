@@ -61,11 +61,15 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         )
 
     def is_valid(self, seasonid=None, episode=None):
-        if (not self.seasonid
-                or self.episode == -1
-                or seasonid is not None and self.seasonid != seasonid
+        # Non-episodic video is being played
+        if not self.seasonid or self.episode == -1:
+            return False
+
+        # New episode is being played, invalidate old hashes
+        if (seasonid is not None and self.seasonid != seasonid
                 or episode is not None and self.episode != episode):
             return False
+
         return True
 
     def invalidate(self):
