@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import threading
 import xbmc
 import api
+import detector
 import playbackmanager
 import player
 import state
@@ -12,13 +13,13 @@ import statichelper
 import utils
 
 
-PLAYER_MONITOR_EVENTS = [
+PLAYER_MONITOR_EVENTS = {
     'Player.OnPause',
     'Player.OnResume',
     'Player.OnSpeedChanged',
     # 'Player.OnSeek',
     'Player.OnAVChange'
-]
+}
 
 
 class UpNextMonitor(xbmc.Monitor):
@@ -29,6 +30,7 @@ class UpNextMonitor(xbmc.Monitor):
     use_thread = True
     # Set True to enable threading.Timer method for triggering a popup
     # Will schedule a threading.Timer to start tracking when popup is required
+    # Overrides use_thread if set True
     # Default False
     use_timer = False
     # Set True to force a playback event on addon start. Used for testing.
@@ -41,6 +43,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.player = player.UpNextPlayer()
         self.playbackmanager = None
         self.tracker = None
+        self.detector = None
         self.running = False
         self.sigstop = False
         self.sigterm = False
@@ -55,10 +58,10 @@ class UpNextMonitor(xbmc.Monitor):
     def run(self):
         # Re-trigger player event if addon started mid playback
         if self.test_trigger and self.player.isPlaying():
-            if utils.get_kodi_version() < 18:
-                method = 'Player.OnPlay'
-            else:
+            if utils.supports_python_api(18):
                 method = 'Player.OnAVStart'
+            else:
+                method = 'Player.OnPlay'
             self.onNotification('UpNext', method)
 
         # Wait indefinitely until addon is terminated
@@ -68,6 +71,11 @@ class UpNextMonitor(xbmc.Monitor):
         if self.playbackmanager:
             self.playbackmanager.remove_popup(terminate=True)
             self.log('Cleanup popup', 2)
+        if self.detector:
+            self.detector.stop()
+            del self.detector
+            self.detector = None
+            self.log('Cleanup detector', 2)
         self.stop_tracking(terminate=True)
         del self.tracker
         self.tracker = None
@@ -82,40 +90,50 @@ class UpNextMonitor(xbmc.Monitor):
         self.playbackmanager = None
         self.log('Cleanup playbackmanager', 2)
 
-    def start_tracking(self):
-        if not self.state.is_tracking():
+    def start_tracking(self, called=[False]):  # pylint: disable=dangerous-default-value
+        if not self.state.is_tracking() or called[0]:
             return
         self.stop_tracking()
 
         # threading.Timer method not used by default. More testing required
         if self.use_timer:
+            called[0] = True
+            self.waitForAbort(1)
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 speed = self.player.get_speed()
                 check_fail = False
             if check_fail or speed < 1:
+                called[0] = False
                 return
 
             # Determine play time left until popup is required
             popup_time = self.state.get_popup_time()
-            delay = popup_time - play_time
-            # Scale play time to real time minus a 10s offset
-            delay = max(0, int(delay / speed) - 10)
+            detect_time = self.state.get_detect_time()
+
+            # Convert to delay and scale to real time minus a 10s offset
+            delay = (detect_time if detect_time else popup_time) - play_time
+            delay = max(0, delay // speed - 10)
             msg = 'Tracker - starting at {0}s in {1}s'
-            self.log(msg.format(popup_time, delay), 2)
+            self.log(msg.format(
+                detect_time if detect_time else popup_time,
+                delay
+            ), 2)
 
             # Schedule tracker to start when required
             self.tracker = threading.Timer(delay, self.track_playback)
             self.tracker.start()
+            called[0] = False
 
         # Use while not abortRequested() loop in a separate thread to allow for
-        # continued monitoring in main thread
+        # continued monitoring in main service thread
         elif self.use_thread:
             self.tracker = threading.Thread(target=self.track_playback)
             # Daemon threads may not work in Kodi, but enable it anyway
             self.tracker.daemon = True
             self.tracker.start()
 
+        # Use while not abortRequested() loop in main service thread
         else:
             if self.running:
                 self.sigstop = False
@@ -152,6 +170,9 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Tracker started', 2)
         self.running = True
 
+        if self.detector:
+            self.detector.reset()
+
         # Loop unless abort requested
         while not self.abortRequested() and not self.sigterm:
             # Exit loop if stop requested or if tracking stopped
@@ -175,11 +196,27 @@ class UpNextMonitor(xbmc.Monitor):
                 self.state.set_tracking(False)
                 continue
 
+            detect_time = self.state.get_detect_time()
+            if detect_time and play_time >= detect_time:
+                if not self.detector:
+                    self.detector = detector.Detector()
+                    self.detector.run()
+                elif self.detector.detected():
+                    self.log('Credits detected', 2)
+                    self.state.set_detected_popup_time(play_time)
+
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
             if play_time < popup_time:
                 self.waitForAbort(min(1, popup_time - play_time))
                 continue
+
+            # Stop detector once popup is requested
+            if self.detector and not utils.get_setting_bool('detectAlways'):
+                self.detector.store_hashes()
+                self.detector.stop()
+                del self.detector
+                self.detector = None
 
             # Stop second thread and popup from being created after next file
             # has been requested but not yet loaded
@@ -195,6 +232,10 @@ class UpNextMonitor(xbmc.Monitor):
                 state=self.state
             )
             self.playbackmanager.launch_up_next()
+
+            # Free up resources and exit tracking loop
+            del self.playbackmanager
+            self.playbackmanager = None
             break
         else:
             self.log('Tracker - abort', 1)
@@ -225,16 +266,17 @@ class UpNextMonitor(xbmc.Monitor):
         with self.player as check_fail:
             playing_file = self.player.getPlayingFile()
             total_time = self.player.getTotalTime()
+            media_type = self.player.get_media_type()
             check_fail = False
         if check_fail:
-            self.log('Skip video check - stream not playing', 2)
+            self.log('Skip video check - video stream not playing', 2)
             return
-        self.log('Playing - %s' % playing_file, 2)
+        self.log('Playing %s - %s' % (media_type, playing_file), 2)
 
         # Exit if starting counter has been reset or new start detected or
         # starting state has been reset by playback error/end/stop
         if not self.state.starting or start_num != self.state.starting:
-            self.log('Skip video check - stream not fully loaded', 2)
+            self.log('Skip video check - video stream not fully loaded', 2)
             return
         self.state.starting = 0
         self.state.playing = 1
@@ -243,25 +285,28 @@ class UpNextMonitor(xbmc.Monitor):
             self.log('Skip video check - PsuedoTV detected', 2)
             return
 
-        if self.player.isExternalPlayer():
+        if utils.supports_python_api(18) and self.player.isExternalPlayer():
             self.log('Skip video check - external player detected', 2)
             return
 
-        # Check what type of video is being played
-        is_playlist_item = api.get_playlist_position()
-        # Use new addon data if provided or erase old addon data.
-        # Note this may cause played in a row count to reset incorrectly if
-        # playlist of mixed non-addon and addon content is used
-        has_addon_data = self.state.set_addon_data(data, encoding)
-        is_episode = xbmc.getCondVisibility('videoplayer.content(episodes)')
-
         # Exit if Up Next playlist handling has not been enabled
+        is_playlist_item = api.get_playlist_position()
         if is_playlist_item and not self.state.enable_playlist:
             self.log('Skip video check - playlist handling not enabled', 2)
             return
 
+        # Use new addon data if provided or erase old addon data.
+        # Note this may cause played in a row count to reset incorrectly if
+        # playlist of mixed non-addon and addon content is used
+        self.state.set_addon_data(data, encoding)
+        has_addon_data = self.state.has_addon_data()
+
+        if utils.get_setting_bool('detectAlways'):
+            self.detector = detector.Detector()
+            self.detector.run()
+
         # Start tracking if Up Next can handle the currently playing video
-        if is_playlist_item or has_addon_data or is_episode:
+        if is_playlist_item or has_addon_data or media_type == 'episode':
             self.state.set_tracking(playing_file)
             self.state.reset_queue()
 
@@ -273,14 +318,15 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
+            self.state.set_detect_time()
 
             # Start tracking playback in order to launch popup at required time
             self.start_tracking()
+            return
 
-        else:
-            self.log('Skip video check - Up Next unable to handle video', 2)
-            if self.state.is_tracking():
-                self.state.reset()
+        self.log('Skip video check - Up Next unable to handle video', 2)
+        if self.state.is_tracking():
+            self.state.reset()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', 2)
@@ -297,7 +343,6 @@ class UpNextMonitor(xbmc.Monitor):
         # Restart tracking if previously tracking
         self.start_tracking()
 
-
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
         if self.state.is_disabled():
@@ -307,12 +352,16 @@ class UpNextMonitor(xbmc.Monitor):
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
 
-        if (utils.get_kodi_version() < 18 and method == 'Player.OnPlay'
+        if (not utils.supports_python_api(18) and method == 'Player.OnPlay'
                 or method == 'Player.OnAVStart'):
             # Update player state and remove any existing popups
             self.player.state.set('time', force=False)
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
+            if self.detector:
+                self.detector.stop()
+                del self.detector
+                self.detector = None
 
             # Increase playcount and reset resume point of previous file
             if self.state.playing_next:
@@ -331,6 +380,10 @@ class UpNextMonitor(xbmc.Monitor):
         elif method == 'Player.OnStop':
             if self.playbackmanager:
                 self.playbackmanager.remove_popup()
+            if self.detector:
+                self.detector.stop()
+                del self.detector
+                self.detector = None
             self.stop_tracking()
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing

@@ -9,6 +9,7 @@ from __future__ import absolute_import, division, print_function, unicode_litera
 
 import os
 import json
+import random
 import time
 from xbmcextra import global_settings, import_language
 from statichelper import to_unicode
@@ -168,6 +169,30 @@ class InfoTagVideo:
     def getRating(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getRating() method '''
         return 0
+
+    def getMediaType(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getMediaType() method '''
+        return ''
+
+class RenderCapture:
+    ''' A stub implementation of the xbmc RenderCapture class '''
+
+    def __init__(self):
+        self._width = 0
+        self._height = 0
+        ''' A stub constructor for the xbmc RenderCapture class '''
+
+    def capture(self, width, height):
+        ''' A stub implementation for the xbmc RenderCapture class capture() method '''
+        self._width = width
+        self._height = height
+
+    def getImage(self):
+        ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
+        return [
+            random.randint(0, 255)
+            for _ in range(self._width * self._height * 4)
+        ]
 
 
 def executebuiltin(string, wait=False):  # pylint: disable=unused-argument

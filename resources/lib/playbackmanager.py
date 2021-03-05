@@ -24,20 +24,15 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         utils.log(msg, name=cls.__name__, level=level)
 
     def launch_up_next(self):
-        episode, playlist_item = self.state.get_next()
+        episode, source = self.state.get_next()
 
         # No episode get out of here
         if not episode:
             self.log('Exiting - no next episode', 2)
             return
 
-        # Shouldn't get here if playlist setting is disabled, but just in case
-        if playlist_item and not self.state.enable_playlist:
-            self.log('Exiting - playlist handling disabled', 2)
-            return
-
         # Show popup and get new playback state
-        play_next, keep_playing = self.launch_popup(episode, playlist_item)
+        play_next, keep_playing = self.launch_popup(episode, source)
         self.state.playing_next = play_next
 
         # Dequeue and stop playback if not playing next file
@@ -50,7 +45,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         self.sigterm = False
         self.log('Exit', 2)
 
-    def launch_popup(self, episode, playlist_item):
+    def launch_popup(self, episode, source=None):
         episodeid = utils.get_int(episode, 'episodeid')
 
         # Checked if next episode has been watched and if it should be skipped
@@ -62,7 +57,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             return play_next, keep_playing
 
         # Add next file to playlist if existing playlist is not being used
-        if not playlist_item:
+        if source != 'playlist':
             self.state.queued = api.queue_next_item(self.state.data, episode)
 
         # Only use Still Watching? popup if played limit has been reached
@@ -128,7 +123,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
 
         # Request playback of next file
         # Primary method is to play next playlist item
-        if playlist_item or self.state.queued:
+        if source == 'playlist' or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
             # behaviour:
             # - Will sometimes continue playing past the end of the file
@@ -173,7 +168,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             ' play_info' if (self.state.has_addon_data() == 2) else
             ' library' if (isinstance(episodeid, int) and episodeid != -1) else
             ' file',
-            ' playlist' if playlist_item else
+            ' playlist' if source == 'playlist' else
             ' queue' if self.state.queued else
             ' direct'
         )

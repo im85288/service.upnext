@@ -58,11 +58,12 @@ def test_popup(popup_type, simple_style=False):
         # paused={'value': False, 'force': False},
         # playing_file={'value': None, 'force': False},
         speed={'value': 1, 'force': True},
-        # Simulate runtime of endtime minus 60s
+        # Simulate runtime of endtime minus 10s
         time={'value': test_episode['runtime'] - 10, 'force': True},
         # Simulate endtime based on dummy episode
         total_time={'value': test_episode['runtime'], 'force': True},
         # next_file={'value': None, 'force': False},
+        # media_type={'value': None, 'force': False}
         # playnext={'force': False},
         # Simulate stop to ensure actual playback doesnt stop when popup closes
         stop={'force': True}
@@ -80,7 +81,7 @@ def test_popup(popup_type, simple_style=False):
         state=test_state
     ).launch_popup(
         episode=test_episode,
-        playlist_item=False
+        source=None
     )
 
 

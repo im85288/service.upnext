@@ -133,11 +133,11 @@ msgid "Number of episodes before \"Still there?\" query"
 msgstr ""
 
 msgctxt "#30609"
-msgid "When credits offset is known (e.g. Netflix)"
+msgid "When credits offset is known (e.g. Netflix) or detected"
 msgstr ""
 
 msgctxt "#30611"
-msgid "Duration for automatic default action"
+msgid "Duration for automatic default action (in seconds)"
 msgstr ""
 
 msgctxt "#30613"
@@ -145,7 +145,7 @@ msgid "When credits offset is unknown (e.g. local media, other)"
 msgstr ""
 
 msgctxt "#30615"
-msgid "Customize notification time by episode length"
+msgid "Customize notification time (in seconds) by episode length"
 msgstr ""
 
 msgctxt "#30617"
@@ -170,6 +170,18 @@ msgstr ""
 
 msgctxt "#30627"
 msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
+msgstr ""
+
+msgctxt "#30630"
+msgid "Auto-detect end credits"
+msgstr ""
+
+msgctxt "#30631"
+msgid "Detection window [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
+msgstr ""
+
+msgctxt "#30632"
+msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
 msgstr ""
 
 msgctxt "#30700"
@@ -206,4 +218,16 @@ msgstr ""
 
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
+msgstr ""
+
+msgctxt "#30820"
+msgid "Detector developer settings"
+msgstr ""
+
+msgctxt "#30821"
+msgid "Verbose output logging"
+msgstr ""
+
+msgctxt "#30822"
+msgid "Enable detector for all content"
 msgstr ""

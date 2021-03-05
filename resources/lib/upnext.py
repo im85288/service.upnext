@@ -50,7 +50,10 @@ def send_signal(sender, upnext_info):
                     or val.getPremiered()
                     or val.getYear()
                 ),
-                runtime=val.getDuration()
+                runtime=(
+                    val.getDuration() if utils.supports_python_api(18)
+                    else None
+                )
             )
 
     # If next episode information is not provided, fake it
