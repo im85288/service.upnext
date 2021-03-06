@@ -81,10 +81,13 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.setProperty('plot', self.item.get('plot', ''))
             self.setProperty('tvshowtitle', self.item.get('showtitle', ''))
             self.setProperty('title', self.item.get('title', ''))
-            self.setProperty('season', str(self.item.get('season', '')))
-            self.setProperty('episode', str(self.item.get('episode', '')))
+            season = str(self.item.get('season', ''))
+            self.setProperty('season', season)
+            episode = str(self.item.get('episode', ''))
+            self.setProperty('episode', episode)
             self.setProperty(
-                'seasonepisode', '{0[season]}x{0[episode]}'.format(self.item)
+                'seasonepisode',
+                '{0}x{1}'.format(season, episode) if season else episode
             )
             self.setProperty('year', str(self.item.get('firstaired', '')))
             self.setProperty('rating', rating)
