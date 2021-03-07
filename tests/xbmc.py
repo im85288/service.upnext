@@ -14,13 +14,23 @@ import time
 from xbmcextra import global_settings, import_language, __KODI_MATRIX__
 from statichelper import to_unicode
 
-LOGFATAL = 'Fatal'
-LOGERROR = 'Error'
-LOGWARNING = 'Warning'
-LOGNOTICE = 'Notice'
-LOGINFO = 'Info'
-LOGDEBUG = 'Debug'
-LOGNONE = ''
+
+if __KODI_MATRIX__:
+    LOGDEBUG = 0
+    LOGINFO = 1
+    LOGWARNING = 2
+    LOGERROR = 3
+    LOGFATAL = 4
+    LOGNONE = 5
+else:
+    LOGDEBUG = 0
+    LOGINFO = 1
+    LOGNOTICE = 2
+    LOGWARNING = 3
+    LOGERROR = 4
+    LOGSEVERE = 5
+    LOGFATAL = 6
+    LOGNONE = 7
 
 INFO_LABELS = {
     'System.BuildVersion': '18.9' if __KODI_MATRIX__ else '19.0',
@@ -215,7 +225,7 @@ def executeJSONRPC(jsonrpccommand):
         return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(textures=[dict(cachedurl="", imagehash="", lasthashcheck="", textureid=4837, url="")])))
     if command.get('method') == 'Textures.RemoveTexture':
         return json.dumps(dict(id=1, jsonrpc='2.0', result="OK"))
-    log("executeJSONRPC does not implement method '{method}'".format(**command), 'Error')
+    log("executeJSONRPC does not implement method '{method}'".format(**command), LOGERROR)
     return json.dumps(dict(error=dict(code=-1, message='Not implemented'), id=1, jsonrpc='2.0'))
 
 
@@ -248,13 +258,13 @@ def getRegion(key):
 
 def log(msg, level):
     ''' A reimplementation of the xbmc log() function '''
-    if level in ('Error', 'Fatal'):
+    if level in (LOGERROR, LOGFATAL):
         print('\033[31;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
-        if level == 'Fatal':
+        if level == LOGFATAL:
             raise Exception(msg)
-    elif level in ('Warning', 'Notice'):
+    elif level in (LOGWARNING, LOGNOTICE):
         print('\033[33;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
-    elif level == 'Debug':
+    elif level == LOGDEBUG:
         print('\033[32;1m%s: \033[30;1m%s\033[39;0m' % (level, to_unicode(msg)))
     else:
         print('\033[32;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
