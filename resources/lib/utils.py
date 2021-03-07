@@ -212,36 +212,34 @@ def event(message, data=None, sender=None, encoding='base64'):
     )
 
 
+LOGDEBUG = xbmc.LOGDEBUG
+LOGINFO = xbmc.LOGINFO
+LOGWARNING = xbmc.LOGWARNING
+LOGERROR = xbmc.LOGERROR
+LOGFATAL = xbmc.LOGFATAL
+LOGNONE = xbmc.LOGNONE
 LOG_ENABLE_LEVEL = get_setting_int('logLevel')
+MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 
-def log(msg, name=None, level=xbmc.LOGDEBUG):
+def log(msg, name=None, level=LOGINFO):
     """Log information to the Kodi log"""
 
     # Log everything
     if LOG_ENABLE_LEVEL == 2:
-        log_enable = True
-        if level <= xbmc.LOGINFO:
-            # Kodi v19+ uses LOGINFO (=2) as minimum visible event log level.
-            if supports_python_api(19):
-                level = xbmc.LOGINFO
-            # Kodi v18 uses LOGNOTICE (=3) as minimum visible event log level.
-            # LOGNOTICE is deprecated in Kodi v19+
-            else:
-                level = xbmc.LOGINFO + 1
+        log_enable = level != LOGNONE
     # Only log important messages
     elif LOG_ENABLE_LEVEL == 1:
-        log_enable = level >= xbmc.LOGINFO
-        # Kodi v18 uses LOGNOTICE (=3) as minimum visible event log level.
-        # LOGNOTICE is deprecated in Kodi v19+
-        if not supports_python_api(19) and level == xbmc.LOGINFO:
-            level = xbmc.LOGINFO + 1
+        log_enable = LOGDEBUG < level < LOGNONE
     # Log nothing
     else:
         log_enable = False
 
     if not log_enable:
         return
+
+    if level < MIN_LOG_LEVEL:
+        level = MIN_LOG_LEVEL
 
     # Convert to unicode for string formatting with Unicode literal
     msg = statichelper.to_unicode(msg)
