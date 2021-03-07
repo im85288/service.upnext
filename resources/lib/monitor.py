@@ -198,6 +198,7 @@ class UpNextMonitor(xbmc.Monitor):
         sender = statichelper.to_unicode(sender)
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
+        self.log(' - '.join([sender, method, data]), 1)
 
         if (method == 'Player.OnAVStart' or not utils.supports_python_api(18)
                 and method == 'Player.OnPlay'):
