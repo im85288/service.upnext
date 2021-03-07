@@ -13,11 +13,19 @@ import utils
 
 
 PLAYER_MONITOR_EVENTS = {
-    'Player.OnPause',
-    'Player.OnResume',
-    'Player.OnSpeedChanged',
-    # 'Player.OnSeek',
-    'Player.OnAVChange'
+    'Player.OnPause': True,
+    'Player.OnResume': True,
+    'Player.OnSpeedChanged': True,
+    # Use OnAVChange if available. It is also fired when OnSeek fires, so only
+    # handle one event, not both
+    'Player.OnAVChange': True,
+    'Player.OnSeek': not utils.supports_python_api(18),
+    'stop': 'Player.OnStop',
+    # Use OnAVStart if available as OnPlay can fire too early for UpNext
+    'start': (
+        'Player.OnAVStart' if utils.supports_python_api(18)
+        else 'Player.OnPlay'
+    )
 }
 
 
@@ -166,13 +174,9 @@ class UpNextMonitor(xbmc.Monitor):
             self.log('Error: unable to seek in demo mode, nothing playing', 4)
 
     def run(self):
-        # Re-trigger player event if addon started mid playback
+        # Re-trigger player play/start event if addon started mid playback
         if self._trigger and self.player.isPlaying():
-            if utils.supports_python_api(18):
-                method = 'Player.OnAVStart'
-            else:
-                method = 'Player.OnPlay'
-            self.onNotification('UpNext', method)
+            self.onNotification('UpNext', PLAYER_MONITOR_EVENTS['start'])
 
         # Wait indefinitely until addon is terminated
         self.waitForAbort()
@@ -200,8 +204,8 @@ class UpNextMonitor(xbmc.Monitor):
         data = statichelper.to_unicode(data) if data else ''
         self.log(' - '.join([sender, method, data]), 1)
 
-        if (method == 'Player.OnAVStart' or not utils.supports_python_api(18)
-                and method == 'Player.OnPlay'):
+        # Start/Play event
+        if method == PLAYER_MONITOR_EVENTS['start']:
             # Update player state and remove remnants from previous operations
             self.player.state.set('time', force=False)
             self.tracker.stop()
@@ -219,7 +223,8 @@ class UpNextMonitor(xbmc.Monitor):
             # Check whether UpNext can start tracking
             self.check_video()
 
-        elif method == 'Player.OnStop':
+        # Stop event
+        elif method == PLAYER_MONITOR_EVENTS['stop']:
             # Remove remnants from previous operations
             self.tracker.stop()
 
@@ -229,7 +234,8 @@ class UpNextMonitor(xbmc.Monitor):
             if not self.state.playing_next:
                 self.state.reset()
 
-        elif method in PLAYER_MONITOR_EVENTS:
+        # All other events to be processed
+        elif PLAYER_MONITOR_EVENTS.get(method):
             # Restart tracking if previously tracking
             self.tracker.start()
 
