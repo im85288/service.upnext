@@ -237,7 +237,7 @@ class UpNextMonitor(xbmc.Monitor):
         elif method.endswith('upnext_data'):
             decoded_data, encoding = utils.decode_json(data)
             sender = sender.replace('.SIGNAL', '')
-            if not isinstance(decoded_data, dict) or not decoded_data:
+            if not decoded_data or not isinstance(decoded_data, dict):
                 self.log('Error: {0} addon, sent {1} as {2}'.format(
                     sender, decoded_data, data
                 ), 4)
