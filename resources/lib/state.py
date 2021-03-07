@@ -11,27 +11,27 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     __slots__ = (
         # Settings state variables
-        'disabled',
         'simple_mode',
         'skin_popup',
         'show_stop_button',
         'auto_play',
-        'enable_playlist',
-        'unwatched_only',
         'played_limit',
-        'mark_watched',
         'enable_resume',
+        'enable_playlist',
+        'mark_watched',
+        'unwatched_only',
         'next_season',
         'auto_play_delay',
+        'popup_durations',
         'detect_enabled',
         'detect_period',
         'detect_level',
+        'disabled',
         'enable_queue',
         'demo_mode',
         'demo_seek',
         'demo_cue',
         'demo_plugin',
-        'popup_durations',
         'detector_debug',
         'detector_profile',
         # Addon data
@@ -94,28 +94,24 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.__init__(reset=True)
 
     def update_settings(self):
-        self.disabled = utils.get_setting_bool('disableNextUp')
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
         self.skin_popup = utils.get_setting_bool('enablePopupSkin')
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')
+
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
-        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
-        self.unwatched_only = not utils.get_setting_bool('includeWatched')
         self.played_limit = (
             utils.get_setting_int('playedInARow')
             if utils.get_setting_bool('enableStillWatching') else 0
         )
-        self.mark_watched = utils.get_setting_int('markWatched')
-        self.enable_resume = utils.get_setting_bool('enableResume')
-        self.next_season = utils.get_setting_bool('nextSeason')
-        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
-        self.demo_mode = utils.get_setting_bool('enableDemoMode')
-        self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
-        self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
-        self.demo_plugin = (
-            self.demo_mode and utils.get_setting_bool('demoPlugin')
-        )
 
+        self.enable_resume = utils.get_setting_bool('enableResume')
+        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
+
+        self.mark_watched = utils.get_setting_int('markWatched')
+        self.unwatched_only = not utils.get_setting_bool('includeWatched')
+        self.next_season = utils.get_setting_bool('nextSeason')
+
+        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.popup_durations = {
             3600: utils.get_setting_int('autoPlayTimeXL'),
             2400: utils.get_setting_int('autoPlayTimeL'),
@@ -130,9 +126,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.detect_period = utils.get_setting_int('detectPeriod')
         self.detect_level = utils.get_setting_int('detectLevel')
 
+        self.disabled = utils.get_setting_bool('disableNextUp')
         utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
         self.enable_queue = utils.get_setting_bool('enableQueue')
 
+        self.demo_mode = utils.get_setting_bool('enableDemoMode')
+        self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
+        self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
+        self.demo_plugin = (
+            self.demo_mode and utils.get_setting_bool('demoPlugin')
+        )
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
         self.detector_profile = utils.get_setting_bool('detectorProfile')
