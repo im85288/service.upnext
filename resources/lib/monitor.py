@@ -246,7 +246,7 @@ class UpNextMonitor(xbmc.Monitor):
             if not decoded_data or not isinstance(decoded_data, dict):
                 self.log('Error: {0} addon, sent {1} as {2}'.format(
                     sender, decoded_data, data
-                ), 4)
+                ), utils.LOGWARNING)
                 return
             decoded_data.update(id='{0}_play_action'.format(sender))
 

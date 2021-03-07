@@ -369,7 +369,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.log('{0}/{1} matches'.format(
             self.match_count['hits'],
             self.match_number
-        ), 1)
+        ), utils.LOGDEBUG)
         self.credits_detected = self.match_count['hits'] >= self.match_number
         return self.credits_detected
 

@@ -535,4 +535,4 @@ def handle_just_watched(
         ', resume - {0} to 0'.format(actual_resume)
         if 'resume' in params else '',
         '' if params else ', no change'
-    ), 1)
+    ), utils.LOGDEBUG)

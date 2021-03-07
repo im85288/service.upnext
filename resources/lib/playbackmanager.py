@@ -191,7 +191,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             ' playlist' if source == 'playlist' else
             ' queue' if self.state.queued else
             ' direct'
-        ), 1)
+        ), utils.LOGDEBUG)
 
         play_next = True
         keep_playing = True
