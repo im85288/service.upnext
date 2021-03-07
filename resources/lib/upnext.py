@@ -97,7 +97,7 @@ def send_signal(sender, upnext_info):
                 ),
                 'runtime': (
                     val.getDuration() if utils.supports_python_api(18)
-                    else None
+                    else 0
                 )
             }
 
