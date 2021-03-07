@@ -65,20 +65,21 @@ def send_signal(sender, upnext_info):
     for key, val in upnext_info.items():
         thumb = ''
         fanart = ''
-        tvshowid = ''
+        tvshowid = '-1'
         if isinstance(val, xbmcgui.ListItem):
             thumb = val.getArt('thumb')
             fanart = val.getArt('fanart')
             tvshowid = val.getProperty('tvshowid')
-            if tvshowid == '-1':
-                tvshowid = ''
             val = val.getVideoInfoTag()
 
         if isinstance(val, xbmc.InfoTagVideo):
             upnext_info[key] = {
                 'episodeid': val.getDbId(),
                 # Use show title as substitute for missing ListItem tvshowid
-                'tvshowid': tvshowid or val.getTVShowTitle() or -1,
+                'tvshowid': (
+                    (tvshowid if tvshowid != '-1' else val.getTVShowTitle())
+                    or -1
+                ),
                 'title': val.getTitle(),
                 'art': {
                     'thumb': thumb,
