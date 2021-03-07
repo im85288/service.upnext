@@ -47,6 +47,7 @@
 		<setting label="30819" type="enum" id="demoCue" lvalues="30050|30051|30052" default="0" subsetting="true" enable="eq(-2,true)"/>
 		<setting label="30821" type="bool" id="demoPlugin" default="false" subsetting="true" enable="eq(-3,true)"/>
 		<setting label="30823" type="lsep"/> <!-- Detector debug settings -->
-		<setting label="30825" type="bool" id="detectDebugLogging" default="false"/>
+		<setting label="30825" type="bool" id="detectorDebug" default="false"/>
+		<setting label="30827" type="bool" id="detectorProfile" default="false"/>
     </category>
 </settings>

@@ -132,8 +132,6 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
 class Detector(object):  # pylint: disable=useless-object-inheritance
     """Detector class used to detect end credits in playing video"""
 
-    _profile = False
-
     __slots__ = (
         # Instances
         'capturer',
@@ -143,8 +141,6 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         'state',
         'thread',
         # Settings
-        'debug',
-        'detect_level',
         'match_number',
         'significance_level',
         # Variables
@@ -308,10 +304,10 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             image_hash
         )
         # Match if current hash (loosely) matches representative hash
-        if stats['credits'] >= self.detect_level - 10:
+        if stats['credits'] >= self.state.detect_level - 10:
             stats['is_match'] = True
         # Unless debugging, return if match found, otherwise continue checking
-        if stats['is_match'] and not self.debug:
+        if stats['is_match'] and not self.state.detector_debug:
             return stats
 
         # Calculate similarity between current hash and previous hash
@@ -323,13 +319,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         stats['significance'] = self.calc_significance(image_hash)
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
-        if stats['previous'] >= self.detect_level:
+        if stats['previous'] >= self.state.detect_level:
             stats['possible_match'] = True
             stats['is_match'] = (
                 stats['significance'] <= self.significance_level
             )
         # Unless debugging, return if match found, otherwise continue checking
-        if stats['is_match'] and not self.debug:
+        if stats['is_match'] and not self.state.detector_debug:
             return stats
 
         # Get all previous hash indexes for episodes other than the current
@@ -351,7 +347,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 image_hash
             )
             # Match if current hash matches other episode hashes
-            if stats['episodes'] >= self.detect_level:
+            if stats['episodes'] >= self.state.detect_level:
                 stats['is_match'] = True
                 break
         self.hash_index['episodes'] = old_hash_index
@@ -438,8 +434,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if self.hashes.is_valid():
             self.past_hashes.load(self.hashes.seasonid)
 
-        self.debug = utils.get_setting_bool('detectDebugLogging')
-        self.detect_level = utils.get_setting_int('detectLevel')
+        # Number of consecutive frame matches required for a positive detection
         self.match_number = 5
 
         self.match_count['hits'] = 0
@@ -460,7 +455,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.log('Started')
         self.running = True
 
-        if self._profile:
+        if self.state.detector_profile:
             import cProfile
             import pstats
             try:
@@ -541,7 +536,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 self.match_count['hits'] = 0
                 self.match_count['misses'] = 0
 
-            if self.debug:
+            if self.state.detector_debug:
                 self.print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
@@ -583,7 +578,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
 
-            if self._profile:
+            if self.state.detector_profile:
                 profiler.disable()
                 output_stream = StringIO()
                 pstats.Stats(

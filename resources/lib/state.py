@@ -25,12 +25,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'auto_play_delay',
         'detect_enabled',
         'detect_period',
+        'detect_level',
         'enable_queue',
         'demo_mode',
         'demo_seek',
         'demo_cue',
         'demo_plugin',
         'popup_durations',
+        'detector_debug',
+        'detector_profile',
         # Addon data
         'data',
         'encoding',
@@ -106,8 +109,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.enable_resume = utils.get_setting_bool('enableResume')
         self.next_season = utils.get_setting_bool('nextSeason')
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
-        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.detect_period = utils.get_setting_int('detectPeriod')
         self.demo_mode = utils.get_setting_bool('enableDemoMode')
         self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
         self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
@@ -125,8 +126,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             0: utils.get_setting_int('autoPlaySeasonTime')
         }
 
+        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
+        self.detect_period = utils.get_setting_int('detectPeriod')
+        self.detect_level = utils.get_setting_int('detectLevel')
+
         utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
         self.enable_queue = utils.get_setting_bool('enableQueue')
+
+
+        self.detector_debug = utils.get_setting_bool('detectorDebug')
+        self.detector_profile = utils.get_setting_bool('detectorProfile')
 
     def get_tracked_file(self):
         return self.filename

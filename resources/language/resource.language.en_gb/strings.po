@@ -300,5 +300,9 @@ msgid "Detector developer settings"
 msgstr ""
 
 msgctxt "#30825"
-msgid "Verbose output logging"
+msgid "Enable detector debug logging"
+msgstr ""
+
+msgctxt "#30827"
+msgid "Enable detector profiling"
 msgstr ""
