@@ -35,7 +35,7 @@ class UpNextMonitor(xbmc.Monitor):
     # Set True to force a playback event on addon start. Used for testing.
     # Set False for normal addon start
     # Default False
-    _trigger = False
+    _trigger = True
 
     def __init__(self):
         self.player = player.UpNextPlayer()
