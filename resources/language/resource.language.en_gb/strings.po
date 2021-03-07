@@ -39,7 +39,7 @@ msgid "Still there?"
 msgstr ""
 
 msgctxt "#30032"
-msgid "Enable on playlists"
+msgid "Enable UpNext when using a playlist"
 msgstr ""
 
 msgctxt "#30033"
@@ -156,7 +156,7 @@ msgid "Default action after UpNext popup is shown"
 msgstr ""
 
 msgctxt "#30605"
-msgid "Include already watched episodes"
+msgid "Include already watched episodes when searching for next episode to play"
 msgstr ""
 
 msgctxt "#30606"
@@ -228,7 +228,7 @@ msgid "Mark as watched after UpNext popup is shown [COLOR gray](override default
 msgstr ""
 
 msgctxt "#30642"
-msgid "Resume playback where possible [COLOR gray](disable to always play from start)[/COLOR]"
+msgid "Resume playback where possible [COLOR gray](disable to play next episode from start)[/COLOR]"
 msgstr ""
 
 msgctxt "#30643"
