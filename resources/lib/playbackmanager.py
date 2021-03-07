@@ -61,7 +61,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             return play_next, keep_playing
 
         # Add next file to playlist if existing playlist is not being used
-        if source != 'playlist':
+        if self.state.enable_queue and source != 'playlist':
             self.state.queued = api.queue_next_item(self.state.data, episode)
 
         # Only use Still Watching? popup if played limit has been reached

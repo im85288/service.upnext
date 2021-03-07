@@ -247,6 +247,10 @@ msgctxt "#30705"
 msgid "Log level"
 msgstr ""
 
+msgctxt "#30707"
+msgid "Enable UpNext queue [COLOR gray](use playlist to queue and play next episode)[/COLOR]"
+msgstr ""
+
 msgctxt "#30800"
 msgid "Developer"
 msgstr ""

@@ -25,6 +25,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'auto_play_delay',
         'detect_enabled',
         'detect_period',
+        'enable_queue',
         'demo_mode',
         'demo_seek',
         'demo_cue',
@@ -125,6 +126,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         }
 
         utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
+        self.enable_queue = utils.get_setting_bool('enableQueue')
 
     def get_tracked_file(self):
         return self.filename
