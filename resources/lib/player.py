@@ -147,7 +147,7 @@ class UpNextPlayer(xbmc.Player):
                 self.state.speed = 8
             elif xbmc.getCondVisibility('Player.Forwarding16x'):
                 self.state.speed = 16
-            elif xbmc.getCondVisibility('Player.Forwarding32x'):
+            else:  # xbmc.getCondVisibility('Player.Forwarding32x')
                 self.state.speed = 32
         elif xbmc.getCondVisibility('Player.Rewinding'):
             if xbmc.getCondVisibility('Player.Rewinding2x'):
@@ -158,7 +158,7 @@ class UpNextPlayer(xbmc.Player):
                 self.state.speed = -8
             elif xbmc.getCondVisibility('Player.Rewinding16x'):
                 self.state.speed = -16
-            elif xbmc.getCondVisibility('Player.Rewinding32x'):
+            else:  # xbmc.getCondVisibility('Player.Rewinding32x')
                 self.state.speed = -32
         else:
             self.state.speed = 0
