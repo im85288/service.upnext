@@ -37,7 +37,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=2):
+    def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
     def run(self):
@@ -72,7 +72,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 continue
             # New stream started without tracking being updated
             if tracked_file and tracked_file != current_file:
-                self.log('Error: unknown file playing', 4)
+                self.log('Error: unknown file playing', utils.LOGWARNING)
                 self.state.set_tracking(False)
                 continue
 
@@ -139,7 +139,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Exit tracking loop once all processing is complete
             break
         else:
-            self.log('Tracker: abort', 4)
+            self.log('Tracker: abort', utils.LOGWARNING)
 
         # Free resources
         del monitor

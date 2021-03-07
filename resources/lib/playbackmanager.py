@@ -21,7 +21,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=2):
+    def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
     def launch_upnext(self):

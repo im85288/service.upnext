@@ -132,14 +132,14 @@ def encode_data(data, encoding='base64'):
     encode_method = encode_methods.get(encoding)
 
     if not encode_method:
-        log('Unknown payload encoding type: {0}'.format(encoding), 4)
+        log('Unknown payload encoding type: {0}'.format(encoding), LOGWARNING)
         return None
 
     try:
         json_data = json.dumps(data).encode()
         encoded_data = encode_method(json_data)
     except (TypeError, ValueError, binascii.Error):
-        log('Unable to encode data as {0}: {1}'.format(encoding, data), 4)
+        log('{0} encode error: {1}'.format(encoding, data), LOGWARNING)
         return None
 
     if sys.version_info[0] > 2:

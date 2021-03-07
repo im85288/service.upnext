@@ -45,7 +45,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         return exc_type == AttributeError
 
     @classmethod
-    def log(cls, msg, level=2):
+    def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
     def onInit(self):  # pylint: disable=invalid-name

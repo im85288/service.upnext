@@ -8,7 +8,7 @@ import xbmcgui
 import utils
 
 
-def log(msg, level=2):
+def log(msg, level=utils.LOGINFO):
     utils.log(msg, name=__name__, level=level)
 
 
@@ -58,7 +58,8 @@ def send_signal(sender, upnext_info):
     # Exit if not enough addon information provided
     if (not upnext_info.get('play_url') and not upnext_info.get('play_info')
             or not upnext_info.get('current_episode')):
-        log('Error: Invalid UpNext info - {0}'.format(upnext_info), 4)
+        log('Error: Invalid UpNext info - {0}'.format(upnext_info),
+            utils.LOGWARNING)
         return
 
     # Extract ListItem or InfoTagVideo details for use by UpNext

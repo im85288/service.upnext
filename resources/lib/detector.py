@@ -43,7 +43,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         self.timestamps = kwargs.get('timestamps', {})
 
     @classmethod
-    def log(cls, msg, level=2):
+    def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
     @staticmethod
@@ -83,7 +83,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
             with open(target, mode='r') as target_file:
                 hashes = json.load(target_file)
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Could not load stored hashes from {0}'.format(target), 1)
+            self.log('Could not load stored hashes from {0}'.format(target),
+                     utils.LOGDEBUG)
             return False
 
         if not hashes:
@@ -125,7 +126,8 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
                 json.dump(output, target_file, indent=4)
                 self.log('Hashes saved to {0}'.format(target))
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Error: Could not save hashes to {0}'.format(target), 4)
+            self.log('Error: Could not save hashes to {0}'.format(target),
+                     utils.LOGWARNING)
         return output
 
 
@@ -175,7 +177,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=2):
+    def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
     @classmethod
@@ -282,7 +284,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     ['*' if bit else ' ' for bit in hash2[row:row + size[0]]]
                 )
             ) for row in range(0, num_pixels, size[0])]
-        ), 1)
+        ))
 
     def check_similarity(self, image_hash, index_offset):
         stats = {
@@ -567,7 +569,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
                 self.log('Hash compare: completed in {0:1.4f}s'.format(
                     timeit.default_timer() - now
-                ), 1)
+                ))
 
             # Store current hash for comparison with next video frame
             # But delete previous hash if not yet required to save it
@@ -585,7 +587,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                     profiler,
                     stream=output_stream
                 ).sort_stats('cumulative').print_stats()
-                self.log(output_stream.getvalue(), 1)
+                self.log(output_stream.getvalue())
                 output_stream.close()
 
         # Free resources

@@ -49,7 +49,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=2):
+    def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
     def check_video(self, data=None, encoding=None):
@@ -75,7 +75,7 @@ class UpNextMonitor(xbmc.Monitor):
             media_type = self.player.get_media_type()
             check_fail = False
         if check_fail:
-            self.log('Skip video check: nothing playing', 4)
+            self.log('Skip video check: nothing playing', utils.LOGWARNING)
             return
         self.log('Playing: {0} - {1}'.format(media_type, playing_file))
 
@@ -171,7 +171,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.player.seekTime(seek_time)
             check_fail = False
         if check_fail:
-            self.log('Error: unable to seek in demo mode, nothing playing', 4)
+            self.log('Error: demo seek, nothing playing', utils.LOGWARNING)
 
     def run(self):
         # Re-trigger player play/start event if addon started mid playback
@@ -202,7 +202,7 @@ class UpNextMonitor(xbmc.Monitor):
         sender = statichelper.to_unicode(sender)
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
-        self.log(' - '.join([sender, method, data]), 1)
+        self.log(' - '.join([sender, method, data]), utils.LOGDEBUG)
 
         # Start/Play event
         if method == PLAYER_MONITOR_EVENTS['start']:
@@ -258,10 +258,10 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker.start()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
-        self.log('Settings changed', 1)
+        self.log('Settings changed', utils.LOGDEBUG)
         self.state.update_settings()
 
         # Shutdown tracking loop if disabled
         if self.state.is_disabled():
-            self.log('UpNext disabled', 4)
+            self.log('UpNext disabled', utils.LOGWARNING)
             self.tracker.stop(terminate=True)

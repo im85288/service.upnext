@@ -63,7 +63,7 @@ TVSHOW_PROPERTIES = [
 ]
 
 
-def log(msg, level=2):
+def log(msg, level=utils.LOGDEBUG):
     """Log wrapper"""
 
     utils.log(msg, name=__name__, level=level)
@@ -186,7 +186,7 @@ def get_next_in_playlist(position):
 
     # Don't check if next item is an episode, just use it if it is there
     if not item:  # item.get('type') != 'episode':
-        log('Error: no next item found in playlist', 4)
+        log('Error: no next item found in playlist', utils.LOGWARNING)
         return None
     item = item[0]
 
@@ -233,7 +233,7 @@ def play_addon_item(data, encoding, resume=False):
         )
         return
 
-    log('Error: no addon data available for playback', 4)
+    log('Error: no addon data available for playback', utils.LOGWARNING)
 
 
 def get_player_id(player_type=None):
@@ -251,10 +251,10 @@ def get_player_id(player_type=None):
     ]
 
     if not result:
-        log('Error: no active player', 4)
+        log('Error: no active player', utils.LOGWARNING)
         return None
 
-    log('playerid: {0}'.format(result[0]), 1)
+    log('playerid: {0}'.format(result[0]))
     return result[0]
 
 
@@ -271,7 +271,7 @@ def get_now_playing():
     result = result.get('result', {}).get('item')
 
     if not result:
-        log('Error: now playing item info not found', 4)
+        log('Error: now playing item info not found', utils.LOGWARNING)
         return None
 
     log('Now playing: {0}'.format(result))
@@ -291,7 +291,8 @@ def get_next_from_library(
     episode = episode.copy() if episode else get_from_library(episodeid)
 
     if not episode:
-        log('Error: no next episode found, current episode not in library', 4)
+        log('Error: no next episode found, current episode not in library',
+            utils.LOGWARNING)
         episode = None
         new_season = False
         return episode, new_season
@@ -397,7 +398,7 @@ def get_from_library(episodeid, tvshowid=None):
     result = result.get('result', {}).get('episodedetails')
 
     if not result:
-        log('Error: episode info not found in library', 4)
+        log('Error: episode info not found in library', utils.LOGWARNING)
         return None
     episode = result
 
@@ -414,7 +415,7 @@ def get_from_library(episodeid, tvshowid=None):
     result = result.get('result', {}).get('tvshowdetails')
 
     if not result:
-        log('Error: show info not found in library', 4)
+        log('Error: show info not found in library', utils.LOGWARNING)
         return None
     result.update(episode)
 
@@ -440,7 +441,7 @@ def get_tvshowid(title):
     result = result.get('result', {}).get('tvshows')
 
     if not result:
-        log('Error: tvshowid not found in library', 4)
+        log('Error: tvshowid not found in library', utils.LOGWARNING)
         return -1
 
     return utils.get_int(result[0], 'tvshowid')
@@ -476,7 +477,7 @@ def get_episodeid(tvshowid, season, episode):
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Error: episodeid not found in library', 4)
+        log('Error: episodeid not found in library', utils.LOGWARNING)
         return -1
 
     return utils.get_int(result[0], 'episodeid')
