@@ -495,14 +495,14 @@ def handle_just_watched(
         method='VideoLibrary.GetEpisodeDetails',
         params={
             'episodeid': episodeid,
-            'properties': ['playcount'],
+            'properties': ['playcount', 'resume'],
         }
     )
     result = result.get('result', {}).get('episodedetails')
 
     if result:
         actual_playcount = utils.get_int(result, 'playcount', 0)
-        actual_resume = result.get('resume', {}).get('position')
+        actual_resume = utils.get_int(result.get('resume'), 'position', 0)
     else:
         return
 
