@@ -53,7 +53,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
         # Loop unless abort requested
         monitor = xbmc.Monitor()
-        while not monitor.abortRequested() and not self.sigterm:
+        while not (monitor.abortRequested() or self.sigterm):
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
                 self.log('Tracker: stopping')

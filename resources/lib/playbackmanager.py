@@ -126,7 +126,7 @@ class PlaybackManager(object):  # pylint: disable=useless-object-inheritance
             self.remove_popup()
             return play_next, keep_playing
 
-        if not auto_play and not play_now:
+        if not (auto_play or play_now):
             self.log('Exit launch_popup early: playback not selected')
             play_next = False
             # Keep playing if NAV_BACK or Cancel button was clicked on popup

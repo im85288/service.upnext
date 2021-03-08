@@ -469,8 +469,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             profiler.enable()
 
         monitor = xbmc.Monitor()
-        while (not monitor.abortRequested()
-               and not (self.sigterm or self.sigstop)):
+        while not (monitor.abortRequested() or self.sigterm or self.sigstop):
             now = timeit.default_timer()
 
             with self.player as check_fail:

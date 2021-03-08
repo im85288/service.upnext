@@ -41,7 +41,7 @@ def create_directory(path):
     """Create a directory from a path string"""
 
     try:
-        if not xbmcvfs.exists(path) and not xbmcvfs.mkdirs(path):
+        if not (xbmcvfs.exists(path) or xbmcvfs.mkdirs(path)):
             raise IOError
     except (IOError, OSError) as error:
         if error.errno != errno.EEXIST:
