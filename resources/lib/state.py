@@ -101,7 +101,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.played_limit = (
             utils.get_setting_int('playedInARow')
-            if utils.get_setting_bool('enableStillWatching') else 0
+            if self.auto_play and utils.get_setting_bool('enableStillWatching')
+            else 0
         )
 
         self.enable_resume = utils.get_setting_bool('enableResume')

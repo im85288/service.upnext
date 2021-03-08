@@ -168,15 +168,15 @@ msgid "Episodes to play before checking if still watching"
 msgstr ""
 
 msgctxt "#30609"
-msgid "When credits offset is known (e.g. Netflix) or detected"
+msgid "When credits time is known (e.g. Netflix) or detected"
 msgstr ""
 
 msgctxt "#30611"
-msgid "Duration for automatic default action (in seconds)"
+msgid "Delay before default action is taken (in seconds)"
 msgstr ""
 
 msgctxt "#30613"
-msgid "When credits offset is unknown (e.g. local media, other)"
+msgid "When credits time is unknown (e.g. local media, other)"
 msgstr ""
 
 msgctxt "#30615"
