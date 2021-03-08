@@ -134,34 +134,15 @@ class UpNextPlayer(xbmc.Player):
         # Return actual value or forced value if forced
         return self.state.playing_file
 
-    def get_speed(self):  # pylint: disable=too-many-branches
-        # There must be a better way to do this...
-        if xbmc.getCondVisibility('Player.Playing'):
-            self.state.speed = float(xbmc.getInfoLabel('Player.PlaySpeed'))
-        elif xbmc.getCondVisibility('Player.Forwarding'):
-            if xbmc.getCondVisibility('Player.Forwarding2x'):
-                self.state.speed = 2
-            elif xbmc.getCondVisibility('Player.Forwarding4x'):
-                self.state.speed = 4
-            elif xbmc.getCondVisibility('Player.Forwarding8x'):
-                self.state.speed = 8
-            elif xbmc.getCondVisibility('Player.Forwarding16x'):
-                self.state.speed = 16
-            else:  # xbmc.getCondVisibility('Player.Forwarding32x')
-                self.state.speed = 32
-        elif xbmc.getCondVisibility('Player.Rewinding'):
-            if xbmc.getCondVisibility('Player.Rewinding2x'):
-                self.state.speed = -2
-            elif xbmc.getCondVisibility('Player.Rewinding4x'):
-                self.state.speed = -4
-            elif xbmc.getCondVisibility('Player.Rewinding8x'):
-                self.state.speed = -8
-            elif xbmc.getCondVisibility('Player.Rewinding16x'):
-                self.state.speed = -16
-            else:  # xbmc.getCondVisibility('Player.Rewinding32x')
-                self.state.speed = -32
-        else:
-            self.state.speed = 0
+    def get_speed(self):
+        result = utils.jsonrpc(
+            method='Player.GetProperties',
+            params={
+                'playerid': 1,
+                'properties': ['speed'],
+            }
+        )
+        self.state.speed = utils.get_int(result.get('result'), 'speed', 0)
         return self.state.speed
 
     def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
