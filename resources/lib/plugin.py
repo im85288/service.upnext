@@ -13,6 +13,31 @@ except ImportError:
     from urlparse import parse_qs
 
 
+def generate_data(current_episode, addon_id, state=None):
+    if state:
+        next_episode, source = state.get_next()
+        if source != 'library':
+            return None, None
+    else:
+        next_episode, _ = api.get_next_from_library(episode=current_episode)
+
+    if not next_episode:
+        return None, None
+
+    next_dbid = next_episode.get('episodeid')
+    current_episode = upnext.create_listitem(current_episode)
+    next_episode = upnext.create_listitem(next_episode)
+
+    upnext_info = {
+        'current_episode': current_episode,
+        'next_episode': next_episode,
+        'play_url': 'plugin://{0}/?play={1}'.format(
+            addon_id, next_dbid
+        )
+    }
+    return upnext_info
+
+
 def handler(argv):
     base_url = argv[0]
     addon_id = base_url[9:-1]
@@ -24,22 +49,16 @@ def handler(argv):
         return
 
     current_episode = api.get_from_library(dbid)
-    next_episode, _ = api.get_next_from_library(
-        episode=current_episode
-    )
-
-    if not current_episode or not next_episode:
+    if not current_episode:
+        xbmcplugin.setResolvedUrl(addon_handle, False, None)
         return
 
-    next_dbid = next_episode.get('episodeid')
-    current_episode = upnext.create_listitem(current_episode)
-    next_episode = upnext.create_listitem(next_episode)
+    upnext_info = generate_data(current_episode, addon_id)
+    if not upnext_info:
+        xbmcplugin.setResolvedUrl(addon_handle, False, None)
+        return
 
-    xbmcplugin.setResolvedUrl(addon_handle, True, current_episode)
-
-    upnext_info = {
-        'current_episode': current_episode,
-        'next_episode': next_episode,
-        'play_url': '{0}?play={1}'.format(base_url, next_dbid)
-    }
+    xbmcplugin.setResolvedUrl(
+        addon_handle, True, upnext_info['current_episode']
+    )
     upnext.send_signal(addon_id, upnext_info)

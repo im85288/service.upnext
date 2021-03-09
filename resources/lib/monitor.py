@@ -4,11 +4,11 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import api
+import demo
 import player
 import state
 import statichelper
 import tracker
-import upnext
 import utils
 
 
@@ -121,7 +121,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.set_detect_time()
 
             # Handle demo mode functionality and notification
-            self.handle_demo_mode(now_playing_item)
+            demo.handle_demo_mode(self.state, self.player, now_playing_item)
             # Start tracking playback in order to launch popup at required time
             self.tracker.start()
             return
@@ -129,49 +129,6 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Skip video check: UpNext unable to handle playing item')
         if self.state.is_tracking():
             self.state.reset()
-
-    def handle_demo_mode(self, now_playing_item):
-        if self.state.demo_mode:
-            utils.notification('UpNext demo mode', 'Active')
-
-        # Force use of addon data method if demo plugin mode is enabled
-        if not self.state.has_addon_data() and self.state.demo_plugin:
-            next_episode, source = self.state.get_next()
-
-            if source == 'library':
-                next_dbid = next_episode.get('episodeid')
-                current_episode = upnext.create_listitem(now_playing_item)
-                next_episode = upnext.create_listitem(next_episode)
-
-                addon_id = utils.addon_id()
-                upnext_info = {
-                    'current_episode': current_episode,
-                    'next_episode': next_episode,
-                    'play_url': 'plugin://{0}/?play={1}'.format(
-                        addon_id, next_dbid
-                    )
-                }
-                upnext.send_signal(addon_id, upnext_info)
-
-        seek_time = 0
-        if not self.state.demo_seek:
-            return
-        # Seek to popup start time
-        if self.state.demo_seek == 2:
-            seek_time = self.state.get_popup_time()
-        # Seek to detector start time
-        elif self.state.demo_seek == 3:
-            seek_time = self.state.get_detect_time()
-
-        with self.player as check_fail:
-            # Seek to 15s before end of video if no other seek point set
-            if not seek_time:
-                total_time = self.player.getTotalTime()
-                seek_time = total_time - 15
-            self.player.seekTime(seek_time)
-            check_fail = False
-        if check_fail:
-            self.log('Error: demo seek, nothing playing', utils.LOGWARNING)
 
     def run(self):
         # Re-trigger player play/start event if addon started mid playback
