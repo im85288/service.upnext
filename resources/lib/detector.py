@@ -180,36 +180,25 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
     def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
-    @classmethod
-    def calc_quartiles(cls, vals):
-        """Method to calculate approximate quartiles for a list of values by
-           sorting and indexing the list"""
+    @staticmethod
+    def calc_median(vals):
+        """Method to calculate median value of a list of values by sorting and
+            indexing the list"""
 
         num_vals = len(vals)
-        pivots = [
-            int(num_vals * 0.25),
-            int(num_vals * 0.50),
-            int(num_vals * 0.75)
-        ]
+        pivot = num_vals // 2
         vals = sorted(vals)
         if num_vals % 2:
-            return [vals[pivot] for pivot in pivots]
-        return [sum(vals[pivot - 1:pivot + 1]) // 2 for pivot in pivots]
+            return vals[pivot]
+        return (vals[pivot] + vals[pivot - 1]) // 2
 
-    @classmethod
-    def calc_significance(cls, vals):
+    @staticmethod
+    def calc_significance(vals):
         return 100 * sum(vals) / len(vals)
 
-    @classmethod
-    def calc_similarity(
-            cls, hash1, hash2,
-            function=operator.eq,
-            do_zip=False,
-            target='all'
-    ):
-        """Method to compare the similarity between two image hashes.
-           By default checks whether each bit in the first hash is equal to the
-           corresponding bit in the second hash"""
+    @staticmethod
+    def calc_similarity(hash1, hash2):
+        """Method to compare the similarity between two image hashes"""
 
         # Check that hashes are not empty and that dimensions are equal
         if not hash1 or not hash2:
@@ -218,26 +207,13 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         if num_pixels != len(hash2):
             return 0
 
-        # Use zip if comparison function requires an iterator as an argument
-        if do_zip:
-            bit_compare = sum(map(function, zip(hash1, hash2)))
-        else:
-            bit_compare = sum(map(function, hash1, hash2))
-
+        # Check whether each pixel is equal
+        bit_compare = sum(map(operator.eq, hash1, hash2))
         # Evaluate similarity as a percentage of all pixels in the hash
-        if target == 'all':
-            similarity = 100 * bit_compare / num_pixels
-        # Or similarity as a percentage of all non-zero pixels in both hashes
-        elif target == 'both':
-            similarity = 100 * bit_compare / sum(map(any, zip(hash1, hash2)))
-        # Or similarity as count of matching pixels
-        elif target == 'none':
-            similarity = bit_compare
+        return 100 * bit_compare / num_pixels
 
-        return similarity
-
-    @classmethod
-    def capture_resolution(cls, max_size=None):
+    @staticmethod
+    def capture_resolution(max_size=None):
         """Method to detect playing video resolution and aspect ratio and
            return a scaled down resolution tuple and aspect ratio for use in
            capturing the video frame buffer at a specific size/resolution"""
@@ -504,7 +480,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 image = image.resize(self.hashes.hash_size, resample=Image.BOX)
 
             # Transform image to show absolute deviation from median pixel luma
-            median_pixel = self.calc_quartiles(image.getdata())[1]
+            median_pixel = self.calc_median(image.getdata())
             image_hash = image.point(
                 [abs(i - median_pixel) for i in range(256)]
             )
@@ -512,7 +488,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
             # Calculate median absolute deviation from the median to represent
             # significant pixels and use transformed image as the hash of the
             # current video frame
-            median_pixel = self.calc_quartiles(image_hash.getdata())[1]
+            median_pixel = self.calc_median(image_hash.getdata())
             image_hash = image_hash.point(
                 [i > median_pixel for i in range(256)]
             )
