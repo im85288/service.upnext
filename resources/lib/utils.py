@@ -218,7 +218,12 @@ LOGWARNING = xbmc.LOGWARNING
 LOGERROR = xbmc.LOGERROR
 LOGFATAL = xbmc.LOGFATAL
 LOGNONE = xbmc.LOGNONE
-LOG_ENABLE_LEVEL = get_setting_int('logLevel')
+
+
+# Set a default value. Cannot use get_setting_int('logLevel') as it raises an
+# exception when utils is imported by other addons - the call to getSettingInt
+# checks for the logLevel setting in the addon doing the import
+LOG_ENABLE_LEVEL = 1
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 
