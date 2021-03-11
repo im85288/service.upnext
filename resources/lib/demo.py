@@ -3,6 +3,7 @@
 """Implements UpNext demo mode functions used for runtime testing UpNext"""
 
 from __future__ import absolute_import, division, unicode_literals
+import xbmc
 import plugin
 import upnext
 import utils
@@ -27,7 +28,6 @@ def handle_demo_mode(state, player, now_playing_item):
         if upnext_info:
             upnext.send_signal(addon_id, upnext_info)
 
-    seek_time = 0
     if not state.demo_seek:
         return
     # Seek to popup start time
@@ -36,12 +36,17 @@ def handle_demo_mode(state, player, now_playing_item):
     # Seek to detector start time
     elif state.demo_seek == 3:
         seek_time = state.get_detect_time()
+    # Otherwise no specific seek point set
+    else:
+        seek_time = 0
 
+    # Need to wait for some time before seeking as otherwise Kodi playback can
+    # become desynced
+    xbmc.Monitor().waitForAbort(5)
     with player as check_fail:
-        # Seek to 15s before end of video if no other seek point set
+        # Seek to 15s before end of video if no seek point set
         if not seek_time:
-            total_time = player.getTotalTime()
-            seek_time = total_time - 15
+            seek_time = player.getTotalTime() - 15
         player.seekTime(seek_time)
         check_fail = False
     if check_fail:
