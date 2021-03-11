@@ -17,12 +17,12 @@ def generate_data(current_episode, addon_id, state=None):
     if state:
         next_episode, source = state.get_next()
         if source != 'library':
-            return None, None
+            return None
     else:
         next_episode, _ = api.get_next_from_library(episode=current_episode)
 
     if not next_episode:
-        return None, None
+        return None
 
     next_dbid = next_episode.get('episodeid')
     current_episode = upnext.create_listitem(current_episode)
@@ -31,9 +31,7 @@ def generate_data(current_episode, addon_id, state=None):
     upnext_info = {
         'current_episode': current_episode,
         'next_episode': next_episode,
-        'play_url': 'plugin://{0}/?play={1}'.format(
-            addon_id, next_dbid
-        )
+        'play_url': 'plugin://{0}/?play={1}'.format(addon_id, next_dbid)
     }
     return upnext_info
 
