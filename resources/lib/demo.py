@@ -42,14 +42,21 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
     else:
         seek_time = 0
 
-    # Need to wait for some time before seeking as otherwise Kodi playback can
-    # become desynced
-    xbmc.Monitor().waitForAbort(5)
+    monitor = xbmc.Monitor()
     with player as check_fail:
         # Seek to 15s before end of video if no seek point set
         if not seek_time:
             seek_time = player.getTotalTime() - 15
         player.seekTime(seek_time)
+
+        # Seek workaround required for AML HW decoder on certain problematic
+        # H.265 encodes to avoid buffer desync and playback hangs
+        monitor.waitForAbort(3)
+        if player.getTime() <= seek_time:
+            log('Seek workaround')
+            player.seekTime(seek_time + 3)
+
         check_fail = False
     if check_fail:
         log('Error: demo seek, nothing playing', utils.LOGWARNING)
+    del monitor
