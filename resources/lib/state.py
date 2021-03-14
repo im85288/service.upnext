@@ -247,9 +247,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         else:
             self.popup_time = 0
 
-    def set_detected_popup_time(self, time):
-        # Force popup time to specified time
-        self.popup_time = time
+    def set_detected_popup_time(self, play_time):
+        # Force popup time to specified play time
+        self.popup_time = play_time
         # Enable cue point unless forced off in demo mode
         self.popup_cue = self.demo_cue != 2
 

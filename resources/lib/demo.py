@@ -9,7 +9,7 @@ import upnext
 import utils
 
 
-def log(msg, level=utils.LOGINFO):
+def log(msg, level=utils.LOGDEBUG):
     utils.log(msg, name=__name__, level=level)
 
 
@@ -19,6 +19,7 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
         return
 
     utils.notification('UpNext demo mode', 'Active')
+    log('Active')
 
     # Force use of addon data method if demo plugin mode is enabled
     if not state.has_addon_data() and state.demo_plugin:
@@ -27,6 +28,7 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
             now_playing_item, addon_id, state
         )
         if upnext_info:
+            log('Plugin data sent')
             called[0] = True
             upnext.send_signal(addon_id, upnext_info)
 
@@ -44,6 +46,8 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
 
     monitor = xbmc.Monitor()
     with player as check_fail:
+        log('Seeking to end')
+
         # Seek to 15s before end of video if no seek point set
         if not seek_time:
             seek_time = player.getTotalTime() - 15
