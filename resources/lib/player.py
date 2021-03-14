@@ -30,6 +30,9 @@ class UpNextPlayer(Player):
     def disable_tracking(self):
         self.state.track = False
 
+    def enable_tracking(self):
+        self.state.track = True
+
     def reset_queue(self):
         if self.state.queued:
             self.api.reset_queue()
