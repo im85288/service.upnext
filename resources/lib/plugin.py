@@ -48,12 +48,16 @@ def handler(argv):
 
     current_episode = api.get_from_library(dbid)
     if not current_episode:
-        xbmcplugin.setResolvedUrl(addon_handle, False, None)
+        xbmcplugin.setResolvedUrl(
+            addon_handle, False, upnext.create_listitem({})
+        )
         return
 
     upnext_info = generate_data(current_episode, addon_id)
     if not upnext_info:
-        xbmcplugin.setResolvedUrl(addon_handle, False, None)
+        xbmcplugin.setResolvedUrl(
+            addon_handle, False, upnext.create_listitem({})
+        )
         return
 
     xbmcplugin.setResolvedUrl(
