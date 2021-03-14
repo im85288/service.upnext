@@ -114,10 +114,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             )
             can_play_next = self.playbackmanager.launch_upnext()
 
-            # Free up resources
-            del self.playbackmanager
-            self.playbackmanager = None
-
             # Stop detector and store hashes and timestamp for current video
             if self.detector:
                 # If credits were (in)correctly detected and popup is cancelled
