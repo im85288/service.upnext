@@ -13,8 +13,9 @@ def log(msg, level=utils.LOGINFO):
     utils.log(msg, name=__name__, level=level)
 
 
-def handle_demo_mode(state, player, now_playing_item):
-    if not state.demo_mode:
+def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
+    if not state.demo_mode or called[0]:
+        called[0] = False
         return
 
     utils.notification('UpNext demo mode', 'Active')
@@ -26,6 +27,7 @@ def handle_demo_mode(state, player, now_playing_item):
             now_playing_item, addon_id, state
         )
         if upnext_info:
+            called[0] = True
             upnext.send_signal(addon_id, upnext_info)
 
     if not state.demo_seek:
