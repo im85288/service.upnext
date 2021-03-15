@@ -167,6 +167,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 check_fail = False
             # Exit if not playing, paused, or rewinding
             if check_fail or speed < 1:
+                self.log('Skip tracker start: nothing playing')
                 called[0] = False
                 return
 
