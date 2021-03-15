@@ -62,6 +62,11 @@ TVSHOW_PROPERTIES = [
     # 'imdbnumber' # Not used
 ]
 
+PLAYER_TYPES = {
+    'video': xbmc.PLAYLIST_VIDEO,
+    'audio': xbmc.PLAYLIST_MUSIC
+}
+
 
 def log(msg, level=utils.LOGDEBUG):
     """Log wrapper"""
@@ -98,7 +103,7 @@ def queue_next_item(data=None, episode=None):
         log('Adding to queue: {0}'.format(next_item))
         utils.jsonrpc(
             method='Playlist.Add',
-            params={'playlistid': xbmc.PLAYLIST_VIDEO, 'item': next_item},
+            params={'playlistid': get_player_id(), 'item': next_item},
             no_response=True
         )
     else:
@@ -114,7 +119,7 @@ def reset_queue():
     log('Removing previously played item from queue')
     utils.jsonrpc(
         method='Playlist.Remove',
-        params={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 0},
+        params={'playlistid': get_player_id(), 'position': 0},
         no_response=True
     )
     return False
@@ -127,7 +132,7 @@ def dequeue_next_item():
     log('Removing unplayed next item from queue')
     utils.jsonrpc(
         method='Playlist.Remove',
-        params={'playlistid': xbmc.PLAYLIST_VIDEO, 'position': 1},
+        params={'playlistid': get_player_id(), 'position': 1},
         no_response=True
     )
     return False
@@ -148,10 +153,7 @@ def play_playlist_item(position=0, resume=False):
     # Unfortunately resuming from a playlist item does not seem to work...
     utils.jsonrpc(
         method='Player.Open',
-        params={'item': {
-            'playlistid': xbmc.PLAYLIST_VIDEO,
-            'position': position
-        }},
+        params={'item': {'playlistid': get_player_id(), 'position': position}},
         options={'resume': resume},
         no_response=True
     )
@@ -160,11 +162,20 @@ def play_playlist_item(position=0, resume=False):
 def get_playlist_position():
     """Function to get current playlist playback position"""
 
-    playlist = xbmc.PlayList(xbmc.PLAYLIST_VIDEO)
+    # Use actual playerid rather than xbmc.PLAYLIST_VIDEO as Kodi may sometimes
+    # play video content in a music playlist
+    playlist_id = get_player_id(player_id_cache=[None])
+    playlist = xbmc.PlayList(playlist_id)
+
+    playlist_size = playlist.size()
     position = playlist.getposition()
+
     # A playlist with only one element has no next item
     # PlayList().getposition() starts counting from zero
-    if playlist.size() > 1 and position < (playlist.size() - 1):
+    if playlist_size > 1 and position < (playlist_size - 1):
+        log('playlistid: {0}, position - {1}/{2}'.format(
+            playlist_id, position, playlist_size
+        ))
         # Return 1 based index value
         return position + 1
     return None
@@ -176,7 +187,7 @@ def get_next_in_playlist(position):
     result = utils.jsonrpc(
         method='Playlist.GetItems',
         params={
-            'playlistid': xbmc.PLAYLIST_VIDEO,
+            'playlistid': get_player_id(),
             # limits are zero indexed, position is one indexed
             'limits': {'start': position, 'end': position + 1},
             'properties': EPISODE_PROPERTIES
@@ -236,26 +247,35 @@ def play_addon_item(data, encoding, resume=False):
     log('Error: no addon data available for playback', utils.LOGWARNING)
 
 
-def get_player_id(player_type=None):
+def get_player_id(player_type=None, player_id_cache=[None]):   # pylint: disable=dangerous-default-value
     """Function to get active player ID"""
 
+    # We don't need to actually get playerid everytime, cache and reuse instead
+    if player_id_cache[0] is not None:
+        return player_id_cache[0]
+
+    # Sometimes Kodi gets confused and uses a music playlist for video content,
+    # so we use the first active player id instead.
     result = utils.jsonrpc(
-        method='Player.GetActivePlayers',
+        method='Player.GetActivePlayers'
     )
     result = result.get('result', [{}])
-    result = [
-        player.get('playerid') for player in result
-        if player.get('type') in (
-            {player_type} if player_type else {'video', 'audio', 'picture'}
-        )
-    ]
+    if player_type:
+        result = [
+            player for player in result if player.get('type') == player_type
+        ]
+    else:
+        result = [
+            player for player in result if player.get('type') in PLAYER_TYPES
+        ]
 
     if not result:
         log('Error: no active player', utils.LOGWARNING)
         return None
 
-    log('playerid: {0}'.format(result[0]))
-    return result[0]
+    player_id = result[0].get('playerid')
+    player_id_cache[0] = player_id
+    return player_id
 
 
 def get_now_playing():
@@ -264,7 +284,7 @@ def get_now_playing():
     result = utils.jsonrpc(
         method='Player.GetItem',
         params={
-            'playerid': get_player_id('video'),
+            'playerid': get_player_id(),
             'properties': EPISODE_PROPERTIES,
         }
     )
