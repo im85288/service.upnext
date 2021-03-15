@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import datetime
 import xbmc
+import api
 import statichelper
 import utils
 
@@ -135,14 +136,14 @@ class UpNextPlayer(xbmc.Player):
         return self.state.playing_file
 
     def get_speed(self):
-        result = utils.jsonrpc(
-            method='Player.GetProperties',
-            params={
-                'playerid': 1,
-                'properties': ['speed'],
-            }
-        )
-        self.state.speed = utils.get_int(result.get('result'), 'speed', 0)
+        # Use current stored value if playing forced
+        if self.state.playing and not self.state.actual('playing'):
+            actual = self.state.speed
+        # Use inbuilt method to store actual value if playing not forced
+        else:
+            actual = api.get_player_speed()
+        self.state.speed = actual
+        # Return actual value or forced value if forced
         return self.state.speed
 
     def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ

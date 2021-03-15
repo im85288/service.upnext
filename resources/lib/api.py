@@ -278,6 +278,21 @@ def get_player_id(player_type=None, player_id_cache=[None]):   # pylint: disable
     return player_id
 
 
+def get_player_speed():
+    """Function to get speed of active player"""
+
+    result = utils.jsonrpc(
+        method='Player.GetProperties',
+        params={
+            'playerid': get_player_id(),
+            'properties': ['speed'],
+        }
+    )
+    result = utils.get_int(result.get('result', {}), 'speed', 0)
+
+    return result
+
+
 def get_now_playing():
     """Function to get detail of currently playing item"""
 
