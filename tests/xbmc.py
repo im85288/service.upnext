@@ -44,7 +44,8 @@ REGIONS = {
 GLOBAL_SETTINGS = global_settings()
 PO = import_language(language=GLOBAL_SETTINGS.get('locale.language'))
 
-PLAYLIST_VIDEO = None
+PLAYLIST_MUSIC = 0
+PLAYLIST_VIDEO = 1
 
 
 class Keyboard:
@@ -152,6 +153,7 @@ class PlayList:
 
     def size(self):
         ''' A stub implementation for the xbmc PlayList class size() method '''
+        return 1
 
 
 class InfoTagVideo:
