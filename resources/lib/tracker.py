@@ -12,16 +12,6 @@ import utils
 class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
     """UpNext playback tracker class"""
 
-    # Set True to enable threading.Thread method for triggering a popup
-    # Will continuously poll playtime in a threading.Thread to track popup time
-    # Default True
-    _use_thread = True
-    # Set True to enable threading.Timer method for triggering a popup
-    # Will schedule a threading.Timer to start tracking when popup is required
-    # Overrides _use_thread if set True
-    # Default False
-    _use_timer = False
-
     def __init__(self, player, state):
         self.player = player
         self.state = state
@@ -154,8 +144,9 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.stop()
         called[0] = True
 
-        # threading.Timer method not used by default. More testing required
-        if self._use_timer:
+        # Schedule a threading.Timer to check playback details only when popup
+        # is expected to be shown. Experimental mode, more testing required.
+        if self.state.tracker_mode == 1:
             # Playtime needs some time to update correctly after seek/skip
             # Try waiting 1s for update, longer delay may be required
             xbmc.Monitor().waitForAbort(1)
@@ -186,15 +177,16 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.tracker = threading.Timer(delay, self.run)
             self.tracker.start()
 
-        # Use while not abortRequested() loop in a separate thread to allow for
-        # continued monitoring in main service thread
-        elif self._use_thread:
+        # Use while not abortRequested() loop in a separate threading.Thread to
+        # continuously poll playback details while callbacks continue to be
+        # processed in main service thread. Default mode.
+        elif self.state.tracker_mode == 2:
             self.tracker = threading.Thread(target=self.run)
             # Daemon threads may not work in Kodi, but enable it anyway
             self.tracker.daemon = True
             self.tracker.start()
 
-        # Use while not abortRequested() loop in main service thread
+        # Use while not abortRequested() loop in main service thread. Old mode.
         else:
             if self.running:
                 self.sigstop = False

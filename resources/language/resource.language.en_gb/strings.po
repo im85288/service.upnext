@@ -251,6 +251,22 @@ msgctxt "#30707"
 msgid "Enable UpNext queue [COLOR gray](use playlist to queue and play next episode)[/COLOR]"
 msgstr ""
 
+msgctxt "#30709"
+msgid "Playback tracker mode"
+msgstr ""
+
+msgctxt "#30710"
+msgid "Continuous loop in main service thread"
+msgstr ""
+
+msgctxt "#30711"
+msgid "Continuous loop in separate thread"
+msgstr ""
+
+msgctxt "#30712"
+msgid "On demand"
+msgstr ""
+
 msgctxt "#30800"
 msgid "Developer"
 msgstr ""

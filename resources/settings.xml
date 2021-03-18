@@ -34,6 +34,7 @@
         <setting label="30703" type="bool" id="disableNextUp" default="false"/>
         <setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
 		<setting label="30707" type="bool" id="enableQueue" default="true"/>
+		<setting label="30709" type="enum" id="trackerMode" lvalues="30710|30711|30712" default="1"/>
     </category>
     <category label="30800"> <!-- Developer -->
         <setting label="30801" type="lsep"/> <!-- Test the GUI -->
