@@ -6,7 +6,6 @@ import json
 import operator
 import os.path
 import threading
-import timeit
 from PIL import Image
 import xbmc
 import file_utils
@@ -433,9 +432,12 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.log('Started')
         self.running = True
 
-        if self.state.detector_profile:
+        monitor = xbmc.Monitor()
+
+        if self.state.detector_debug:
             import cProfile
             import pstats
+            import timeit
             try:
                 from StringIO import StringIO
             except ImportError:
@@ -443,11 +445,9 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             profiler = cProfile.Profile()
             profiler.enable()
-
-        monitor = xbmc.Monitor()
-        while not (monitor.abortRequested() or self.sigterm or self.sigstop):
             now = timeit.default_timer()
 
+        while not (monitor.abortRequested() or self.sigterm or self.sigstop):
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 self.hash_index['store'] = self.state.detect_time <= play_time
@@ -555,7 +555,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
 
             monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
 
-            if self.state.detector_profile:
+            if self.state.detector_debug:
                 profiler.disable()
                 output_stream = StringIO()
                 pstats.Stats(
@@ -564,6 +564,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
                 ).sort_stats('cumulative').print_stats()
                 self.log(output_stream.getvalue())
                 output_stream.close()
+                now = timeit.default_timer()
 
         # Free resources
         del monitor

@@ -296,13 +296,9 @@ msgid "Force use plugin data and playback method"
 msgstr ""
 
 msgctxt "#30823"
-msgid "Detector developer settings"
+msgid "Additional developer settings"
 msgstr ""
 
 msgctxt "#30825"
-msgid "Enable detector debug logging"
-msgstr ""
-
-msgctxt "#30827"
-msgid "Enable detector profiling"
+msgid "Enable detector debug logging and profiling"
 msgstr ""
