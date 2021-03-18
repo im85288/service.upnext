@@ -34,6 +34,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'demo_cue',
         'demo_plugin',
         'detector_debug',
+        'start_trigger',
         # Addon data
         'data',
         'encoding',
@@ -140,6 +141,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         )
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
+        self.start_trigger = utils.get_setting_bool('startTrigger')
 
     def get_tracked_file(self):
         return self.filename

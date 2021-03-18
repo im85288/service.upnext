@@ -32,11 +32,6 @@ PLAYER_MONITOR_EVENTS = {
 class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
-    # Set True to force a playback event on addon start. Used for testing.
-    # Set False for normal addon start
-    # Default False
-    _trigger = False
-
     def __init__(self):
         self.player = player.UpNextPlayer()
         self.state = state.UpNextState()
@@ -132,7 +127,7 @@ class UpNextMonitor(xbmc.Monitor):
 
     def run(self):
         # Re-trigger player play/start event if addon started mid playback
-        if self._trigger and self.player.isPlaying():
+        if self.state.start_trigger and self.player.isPlaying():
             self.onNotification('UpNext', PLAYER_MONITOR_EVENTS['start'])
 
         # Wait indefinitely until addon is terminated
