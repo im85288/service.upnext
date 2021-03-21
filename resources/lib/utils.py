@@ -13,7 +13,10 @@ import xbmcgui
 import statichelper
 
 
-ADDON = xbmcaddon.Addon()
+# Use hardcoded addon id, rather than relying on auto-detection as utils module
+# can be imported by other addons
+ADDON_ID = 'service.upnext'
+ADDON = xbmcaddon.Addon(ADDON_ID)
 KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion')[:4])
 
 
@@ -60,12 +63,14 @@ def clear_property(key, window_id=10000):
     return xbmcgui.Window(window_id).clearProperty(key)
 
 
-def get_setting(key, default=None):
+def get_setting(key, default=None, addon_id=ADDON_ID):
     """Get an addon setting as string"""
 
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
-        value = statichelper.to_unicode(xbmcaddon.Addon().getSetting(key))
+        value = statichelper.to_unicode(
+            xbmcaddon.Addon(addon_id).getSetting(key)
+        )
     # Occurs when the addon is disabled
     except RuntimeError:
         return default
@@ -74,11 +79,11 @@ def get_setting(key, default=None):
     return value
 
 
-def get_setting_bool(key, default=None):
+def get_setting_bool(key, default=None, addon_id=ADDON_ID):
     """Get an addon setting as boolean"""
 
     try:
-        return xbmcaddon.Addon().getSettingBool(key)
+        return xbmcaddon.Addon(addon_id).getSettingBool(key)
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
         value = get_setting(key, default)
@@ -90,11 +95,11 @@ def get_setting_bool(key, default=None):
         return default
 
 
-def get_setting_int(key, default=None):
+def get_setting_int(key, default=None, addon_id=ADDON_ID):
     """Get an addon setting as integer"""
 
     try:
-        return xbmcaddon.Addon().getSettingInt(key)
+        return xbmcaddon.Addon(addon_id).getSettingInt(key)
     # On Krypton or older, or when not an integer
     except (AttributeError, TypeError):
         value = get_setting(key, default)
@@ -220,10 +225,7 @@ LOGFATAL = xbmc.LOGFATAL
 LOGNONE = xbmc.LOGNONE
 
 
-# Set a default value. Cannot use get_setting_int('logLevel') as it raises an
-# exception when utils is imported by other addons - the call to getSettingInt
-# checks for the logLevel setting in the addon doing the import
-LOG_ENABLE_LEVEL = 1
+LOG_ENABLE_LEVEL = get_setting_int('logLevel')
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 
