@@ -24,7 +24,7 @@ SAVE_PATH = os.path.join(
 file_utils.create_directory(SAVE_PATH)
 
 
-class HashStore(object):  # pylint: disable=useless-object-inheritance
+class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
     __slots__ = (
         'version',
         'hash_size',
@@ -131,7 +131,7 @@ class HashStore(object):  # pylint: disable=useless-object-inheritance
         return output
 
 
-class Detector(object):  # pylint: disable=useless-object-inheritance
+class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     """Detector class used to detect end credits in playing video"""
 
     __slots__ = (
@@ -375,7 +375,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
         # Hashes for currently playing episode
-        self.hashes = HashStore(
+        self.hashes = UpNextHashStore(
             version='0.1',
             hash_size=hash_size,
             seasonid=self.state.season_identifier,
@@ -408,7 +408,7 @@ class Detector(object):  # pylint: disable=useless-object-inheritance
         self.significance_level = 25
 
         # Hashes from previously played episodes
-        self.past_hashes = HashStore(hash_size=hash_size)
+        self.past_hashes = UpNextHashStore(hash_size=hash_size)
         if self.hashes.is_valid():
             self.past_hashes.load(self.hashes.seasonid)
 

@@ -16,7 +16,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.player = player
         self.state = state
 
-        self.tracker = None
+        self.thread = None
         self.detector = None
         self.playbackmanager = None
 
@@ -70,7 +70,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             detect_time = self.state.get_detect_time()
             # Start detector if not already started
             if not self.detector and 0 < detect_time <= play_time:
-                self.detector = detector.Detector(
+                self.detector = detector.UpNextDetector(
                     player=self.player,
                     state=self.state
                 )
@@ -98,7 +98,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.log('Tracker: popup at {0}s of {1}s'.format(
                 popup_time, total_time
             ))
-            self.playbackmanager = playbackmanager.PlaybackManager(
+            self.playbackmanager = playbackmanager.UpNextPlaybackManager(
                 player=self.player,
                 state=self.state
             )
@@ -174,17 +174,17 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             ))
 
             # Schedule tracker to start when required
-            self.tracker = threading.Timer(delay, self.run)
-            self.tracker.start()
+            self.thread = threading.Timer(delay, self.run)
+            self.thread.start()
 
         # Use while not abortRequested() loop in a separate threading.Thread to
         # continuously poll playback details while callbacks continue to be
         # processed in main service thread. Default mode.
         elif self.state.tracker_mode == 1:
-            self.tracker = threading.Thread(target=self.run)
+            self.thread = threading.Thread(target=self.run)
             # Daemon threads may not work in Kodi, but enable it anyway
-            self.tracker.daemon = True
-            self.tracker.start()
+            self.thread.daemon = True
+            self.thread.start()
 
         # Use while not abortRequested() loop in main service thread. Old mode.
         else:
@@ -211,19 +211,19 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self.playbackmanager.remove_popup()
 
         # Exit if tracker thread has not been created
-        if not self.tracker:
+        if not self.thread:
             return
 
         # Wait for thread to complete
         if self.running:
-            self.tracker.join()
+            self.thread.join()
         # Or if tracker has not yet started on timer then cancel old timer
         elif self.state.tracker_mode == 2:
-            self.tracker.cancel()
+            self.thread.cancel()
 
         # Free resources
-        del self.tracker
-        self.tracker = None
+        del self.thread
+        self.thread = None
         del self.detector
         self.detector = None
         del self.playbackmanager
