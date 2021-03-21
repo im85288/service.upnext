@@ -119,8 +119,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                     continue
                 self.detector.store_data()
                 self.detector.stop(terminate=True)
-                del self.detector
-                self.detector = None
 
             # Exit tracking loop once all processing is complete
             break
