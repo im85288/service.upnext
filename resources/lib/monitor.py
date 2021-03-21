@@ -217,3 +217,5 @@ class UpNextMonitor(xbmc.Monitor):
         if self.state.is_disabled():
             self.log('UpNext disabled', utils.LOGWARNING)
             self.tracker.stop(terminate=True)
+        else:
+            self.log('UpNext enabled')
