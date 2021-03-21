@@ -75,7 +75,7 @@ def test_popup(popup_type, simple_style=False):
     test_player.state.set('stop', force=True)
 
     # Create a test playbackmanager and create an actual popup for testing
-    playbackmanager.PlaybackManager(
+    playbackmanager.UpNextPlaybackManager(
         player=test_player,
         state=test_state
     ).launch_popup(
