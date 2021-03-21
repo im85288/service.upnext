@@ -87,7 +87,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Create Kodi dialog to show UpNext or Still Watching? popup
         self.popup = dialog.UpNextPopup(
             filename,
-            utils.addon_path(),
+            utils.get_addon_path(),
             'default',
             '1080i',
             item=episode,

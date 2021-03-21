@@ -26,13 +26,13 @@ def get_addon_info(key):
     return statichelper.to_unicode(ADDON.getAddonInfo(key))
 
 
-def addon_id():
+def get_addon_id():
     """Return addon ID"""
 
     return get_addon_info('id')
 
 
-def addon_path():
+def get_addon_path():
     """Return addon path"""
 
     return get_addon_info('path')
@@ -201,7 +201,7 @@ def event(message, data=None, sender=None, encoding='base64'):
     """Send internal notification event"""
 
     data = data or {}
-    sender = sender or addon_id()
+    sender = sender or get_addon_id()
 
     encoded = encode_data(data, encoding=encoding)
     if not encoded:
@@ -250,7 +250,7 @@ def log(msg, name=None, level=LOGINFO):
 
     # Convert to unicode for string formatting with Unicode literal
     msg = statichelper.to_unicode(msg)
-    msg = '[{0}] {1} -> {2}'.format(addon_id(), name, msg)
+    msg = '[{0}] {1} -> {2}'.format(get_addon_id(), name, msg)
     # Convert back for older Kodi versions
     xbmc.log(statichelper.from_unicode(msg), level=level)
 

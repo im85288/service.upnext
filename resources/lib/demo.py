@@ -23,7 +23,7 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
 
     # Force use of addon data method if demo plugin mode is enabled
     if not state.has_addon_data() and state.demo_plugin:
-        addon_id = utils.addon_id()
+        addon_id = utils.get_addon_id()
         upnext_info = plugin.generate_data(
             now_playing_item, addon_id, state
         )
