@@ -147,7 +147,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             # video threads when the current file finishes
             if play_now or (auto_play and self.state.popup_cue):
                 api.play_playlist_item(
-                    position='next',
+                    # Use previously stored next playlist position if available
+                    position=next_item.get('playlist_position', 'next'),
                     resume=self.state.enable_resume
                 )
 
