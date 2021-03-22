@@ -59,12 +59,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         called[0] = False
         return True
 
-    def run(self, next_item, source=None):
-
-        # Add next file to playlist if existing playlist is not being used
-        if self.state.enable_queue and source != 'playlist':
-            self.state.queued = api.queue_next_item(self.state.data, next_item)
-
+    def create_popup(self, next_item, source=None):
         # Only use Still Watching? popup if played limit has been reached
         if self.state.played_limit:
             show_upnext = self.state.played_limit > self.state.played_in_a_row
@@ -72,12 +67,6 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # played in a row count has been set to zero for testing
         else:
             show_upnext = self.state.played_limit != self.state.played_in_a_row
-        # Allow auto play if enabled in settings and showing UpNext popup
-        auto_play = self.state.auto_play and show_upnext
-
-        self.log('Played in a row: {0} of {1}'.format(
-            self.state.played_in_a_row, self.state.played_limit
-        ))
 
         # Filename for dialog XML
         filename = 'script-upnext{0}{1}{2}.xml'.format(
@@ -85,7 +74,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             '-simple' if self.state.simple_mode else '',
             '' if self.state.skin_popup else '-original'
         )
-        # Create Kodi dialog to show UpNext or Still Watching? popup
+
         self.popup = dialog.UpNextPopup(
             filename,
             utils.get_addon_path(),
@@ -96,54 +85,79 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             stop_button=self.state.show_stop_button
         )
 
-        # Show popup and check that it has not been terminated early
-        abort_popup = not self.show_popup_and_wait(auto_play)
+        return show_upnext
 
-        # Update new popup action state details
-        if not abort_popup and self.popup:
-            with self.popup:
-                popup_state = {
-                    'cancel': self.popup.is_cancel(),
-                    'play_now': self.popup.is_playnow(),
-                    'shuffle': self.popup.is_shuffle(),
-                    'stop': self.popup.is_stop()
-                }
-            # Close dialog once we are done with it
-            self.remove_popup()
+    def run(self, next_item, source=None):
+        self.log('Started')
+        self.running = True
 
-        else:
-            self.log('Exiting: popup force closed')
-            play_next = False
-            # Stop if Still Watching? popup was shown to prevent unwanted
-            # playback that can occur if fast forwarding through popup
-            keep_playing = show_upnext
-            self.remove_popup()
-            return play_next, keep_playing
+        # Add next file to playlist if existing playlist is not being used
+        if self.state.enable_queue and source != 'playlist':
+            self.state.queued = api.queue_next_item(self.state.data, next_item)
 
-        # Check if auto_play was enabled and not cancelled
-        auto_play = auto_play and not popup_state['cancel']
+        self.log('Played in a row: {0} of {1}'.format(
+            self.state.played_in_a_row, self.state.played_limit
+        ))
+
+        # Create Kodi dialog to show UpNext or Still Watching? popup
+        show_upnext = self.create_popup(next_item, source)
+        # Allow auto play if enabled in settings and showing UpNext popup
+        auto_play = self.state.auto_play and show_upnext
+
+        # Show popup and get state of controls
+        popup_state = self.show_popup_and_wait(auto_play)
+        # Close dialog once we are done with it
+        self.remove_popup()
+
+        # Check if auto_play was enabled and not cancelled or play_now selected
+        auto_play = (
+            auto_play
+            and not popup_state['cancel']
+            and not popup_state['play_now']
+        )
         # Update played in a row count if auto_play otherwise reset
         self.state.played_in_a_row = (
             self.state.played_in_a_row + 1 if auto_play else 1
         )
 
+        # Popup closed prematurely
+        if not popup_state['done']:
+            self.log('Exiting: popup force closed')
+
         # Shuffle start request
-        if not self.state.shuffle and popup_state['shuffle']:
+        elif not self.state.shuffle and popup_state['shuffle']:
             self.log('Exiting: shuffle requested')
-            self.state.shuffle = True
-            play_next = False
-            keep_playing = True
-            return play_next, keep_playing
+            popup_state['done'] = False
+            popup_state['shuffle_start'] = True
+
+        elif not (auto_play or popup_state['play_now']):
+            self.log('Exiting: playback not selected')
+            popup_state['done'] = False
+
         # Update shuffle state
         self.state.shuffle = popup_state['shuffle']
 
-        if not (auto_play or popup_state['play_now']):
-            self.log('Exiting: playback not selected')
+        # Signal to Trakt that current item has been watched
+        utils.event(
+            message='NEXTUPWATCHEDSIGNAL',
+            data={'episodeid': self.state.episodeid},
+            encoding='base64'
+        )
+
+        if not popup_state['done']:
+            # Reset signals
+            self.sigstop = False
+            self.sigterm = False
+            self.running = False
 
             play_next = False
-            # Keep playing if NAV_BACK or Cancel button was clicked on popup
-            # Stop playing if Stop button was clicked on popup
-            keep_playing = popup_state['cancel'] and not popup_state['stop']
+            # Stop playing if Stop button was clicked on popup, or if Still
+            # Watching? popup was shown (to prevent unwanted playback that can
+            # occur if fast forwarding through popup), or if starting shuffle
+            keep_playing = (
+                not popup_state['stop']
+                and (show_upnext or popup_state['shuffle_start'])
+            )
             return play_next, keep_playing
 
         # Request playback of next file based on source and type
@@ -180,13 +194,6 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         else:
             api.play_kodi_item(next_item, self.state.enable_resume)
 
-        # Signal to Trakt that current item has been watched
-        utils.event(
-            message='NEXTUPWATCHEDSIGNAL',
-            data={'episodeid': self.state.episodeid},
-            encoding='base64'
-        )
-
         # Determine playback method. Used for logging purposes
         self.log('Playback requested: using{0}{1}{2} method'.format(
             # Playback action type
@@ -222,8 +229,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             play_time = self.player.getTime()
             check_fail = False
         if check_fail:
-            popup_done = False
-            return popup_done
+            return self.get_popup_state(False)
 
         # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
@@ -234,8 +240,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                 total_time = min(popup_start + popup_duration, total_time)
 
         if not self.show_popup():
-            popup_done = False
-            return popup_done
+            return self.get_popup_state(False)
 
         monitor = xbmc.Monitor()
         # Current file can stop, or next file can start, while update loop is
@@ -269,7 +274,25 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Free resources
         del monitor
 
-        return popup_done
+        return self.get_popup_state(popup_done)
+
+    def get_popup_state(self, done=False):
+        if not self.popup:
+            return {
+                'cancel': False,
+                'done': False,
+                'play_now': False,
+                'shuffle': False,
+                'stop': False
+            }
+
+        return {
+            'cancel': self.popup.is_cancel(),
+            'done': done,
+            'play_now': self.popup.is_playnow(),
+            'shuffle': self.popup.is_shuffle(),
+            'stop': self.popup.is_stop()
+        }
 
     def show_popup(self):
         if not self.popup:
