@@ -202,7 +202,7 @@ def get_next_in_playlist(position, unwatched_only=False):
         position_offset, item = next(
             (
                 (idx, item) for idx, item in enumerate(items)
-                if not utils.get_int(item, 'playcount', 0)
+                if utils.get_int(item, 'playcount') < 1
             ),
             (0, None)
         )
