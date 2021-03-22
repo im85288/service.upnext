@@ -10,11 +10,11 @@
         <setting label="30603" type="enum" id="autoPlayMode" lvalues="30040|30041" default="0"/>
 		<setting label="30606" type="bool" id="enableStillWatching" default="true" enable="eq(-1,0)"/>
 		<setting label="30607" type="slider" id="playedInARow" default="3" range="1,1,15" option="int" subsetting="true" enable="eq(-1,true)"/>
+		<setting label="30605" type="bool" id="includeWatched" default="false"/>
 		<setting label="30642" type="bool" id="enableResume" default="false"/>
         <setting label="30032" type="bool" id="enablePlaylist" default="false"/>
 		<setting label="30640" type="lsep"/> <!-- Library management -->
 		<setting label="30641" type="enum" id="markWatched" lvalues="30050|30051|30052" default="0"/>
-		<setting label="30605" type="bool" id="includeWatched" default="false"/>
 		<setting label="30643" type="bool" id="nextSeason" default="true"/> 
         <setting label="30609" type="lsep"/> <!-- When end credits time is known -->
         <setting label="30611" type="slider" id="autoPlayCountdown" default="5" range="0,5,120" option="int"/>

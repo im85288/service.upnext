@@ -59,7 +59,7 @@ msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seco
 msgstr ""
 
 msgctxt "#30037"
-msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgid "Next video in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30038"
@@ -71,7 +71,7 @@ msgid "Fancy"
 msgstr ""
 
 msgctxt "#30040"
-msgid "Play next episode automatically"
+msgid "Play next video automatically"
 msgstr ""
 
 msgctxt "#30041"
@@ -107,7 +107,7 @@ msgid "To detector start time"
 msgstr ""
 
 msgctxt "#30049"
-msgid "Next episode"
+msgid "Next video"
 msgstr ""
 
 msgctxt "#30050"
@@ -156,7 +156,7 @@ msgid "Default action after UpNext popup is shown"
 msgstr ""
 
 msgctxt "#30605"
-msgid "Include already watched episodes when searching for next episode to play"
+msgid "Play already watched videos"
 msgstr ""
 
 msgctxt "#30606"
@@ -164,7 +164,7 @@ msgid "Check if still watching [COLOR gray](stops auto playback if not still wat
 msgstr ""
 
 msgctxt "#30607"
-msgid "Episodes to play before checking if still watching"
+msgid "Videos to play before checking if still watching"
 msgstr ""
 
 msgctxt "#30609"
@@ -180,31 +180,31 @@ msgid "When credits time is unknown (e.g. local media, other)"
 msgstr ""
 
 msgctxt "#30615"
-msgid "Customize notification time (in seconds) by episode length"
+msgid "Customize notification time (in seconds) by video length"
 msgstr ""
 
 msgctxt "#30617"
-msgid "All episodes [COLOR gray]any length[/COLOR]"
+msgid "All videos [COLOR gray]any length[/COLOR]"
 msgstr ""
 
 msgctxt "#30619"
-msgid "Very short episodes [COLOR gray]< 10 mins[/COLOR]"
+msgid "Very short videos [COLOR gray]< 10 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30621"
-msgid "Short episodes [COLOR gray]> 10 mins[/COLOR]"
+msgid "Short videos [COLOR gray]> 10 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30623"
-msgid "Medium episodes [COLOR gray]> 20 mins[/COLOR]"
+msgid "Medium videos [COLOR gray]> 20 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30625"
-msgid "Long episodes [COLOR gray]> 40 mins[/COLOR]"
+msgid "Long videos [COLOR gray]> 40 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30627"
-msgid "Very long episodes [COLOR gray]> 60 mins[/COLOR]"
+msgid "Very long videos [COLOR gray]> 60 mins[/COLOR]"
 msgstr ""
 
 msgctxt "#30631"
@@ -228,7 +228,7 @@ msgid "Mark as watched after UpNext popup is shown [COLOR gray](override default
 msgstr ""
 
 msgctxt "#30642"
-msgid "Resume playback where possible [COLOR gray](disable to play next episode from start)[/COLOR]"
+msgid "Resume playback where possible [COLOR gray](disable to play next video from start)[/COLOR]"
 msgstr ""
 
 msgctxt "#30643"
@@ -248,7 +248,7 @@ msgid "Log level"
 msgstr ""
 
 msgctxt "#30707"
-msgid "Enable UpNext queue [COLOR gray](use playlist to queue and play next episode)[/COLOR]"
+msgid "Enable UpNext queue [COLOR gray](use playlist to queue and play next video)[/COLOR]"
 msgstr ""
 
 msgctxt "#30709"
