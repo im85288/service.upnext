@@ -77,6 +77,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self.detector.start()
             # Otherwise check whether credits have been detected
             elif 0 < detect_time <= play_time and self.detector.detected():
+                # Stop detector but keep processed hashes
                 self.detector.stop()
                 self.log('Credits detected')
                 self.state.set_detected_popup_time(
@@ -114,10 +115,12 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                         and not self.state.playing_next):
                     self.state.set_tracking(tracked_file)
                     self.sigstop = False
-                    self.detector.start(resume=True)
+                    # Re-start detector and reset match counts
+                    self.detector.start(reset=True)
                     self.state.set_popup_time(total_time)
                     continue
                 self.detector.store_data()
+                # Stop detector and release resources
                 self.detector.stop(terminate=True)
 
             # Exit tracking loop once all processing is complete
@@ -198,14 +201,18 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         if terminate:
             self.sigterm = self.running
             if self.detector:
+                # Stop detector and release resources
                 self.detector.stop(terminate=True)
             if self.playbackmanager:
+                # Stop playbackmanager, close popup and release resources
                 self.playbackmanager.stop(terminate=True)
         else:
             self.sigstop = self.running
             if self.detector:
-                self.detector.stop(reset=True)
+                # Stop detector and release resources
+                self.detector.stop(terminate=True)
             if self.playbackmanager:
+                # Stop playbackmanager and close popup
                 self.playbackmanager.stop()
 
         # Exit if tracker thread has not been created

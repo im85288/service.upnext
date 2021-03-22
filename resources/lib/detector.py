@@ -570,12 +570,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-    def start(self, restart=False, resume=False):
+    def start(self, restart=False, reset=False):
         """Method to run actual detection test loop in a separate thread"""
 
         if restart or self.running:
             self.stop()
-        if resume:
+        if reset:
             self.match_count['hits'] = 0
             self.match_count['misses'] = 0
             self.credits_detected = False
@@ -591,7 +591,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.thread.daemon = True
         self.thread.start()
 
-    def stop(self, reset=False, terminate=False):
+    def stop(self, terminate=False):
         # Exit if detector thread has not been created
         if not self.thread:
             return
@@ -610,11 +610,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         del self.thread
         self.thread = None
 
-        # Invalidate collected hashes if not needed for later use
-        if reset or terminate:
-            self.hashes.invalidate()
-        # Delete reference to instances if detector will not be restarted
         if terminate:
+            # Invalidate collected hashes if not needed for later use
+            self.hashes.invalidate()
+            # Delete reference to instances if detector will not be restarted
             del self.capturer
             self.capturer = None
             del self.player
