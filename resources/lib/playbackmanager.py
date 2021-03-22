@@ -9,7 +9,7 @@ import utils
 
 
 class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritance
-    """Controller for UpNext popup and playback of next episode"""
+    """Controller for UpNext popup and playback of next item"""
 
     __slots__ = ('player', 'state', 'popup', 'sigterm')
 
@@ -24,16 +24,16 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
     def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def launch_upnext(self):
-        episode, source = self.state.get_next()
+    def start(self):
+        next_item, source = self.state.get_next()
 
-        # No episode get out of here
-        if not episode:
-            self.log('Exiting: no next episode')
+        # No next item to play, get out of here
+        if not next_item:
+            self.log('Exiting: no next item to play')
             return False
 
         # Show popup and get new playback state
-        play_next, keep_playing = self.launch_popup(episode, source)
+        play_next, keep_playing = self.run(next_item, source)
         self.state.playing_next = play_next
 
         # Dequeue and stop playback if not playing next file
@@ -44,14 +44,11 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.player.stop()
         # Relaunch popup if shuffle enabled to get new random episode
         elif self.state.shuffle and not play_next:
-            return self.launch_upnext()
+            return self.start()
 
         self.sigterm = False
         self.log('Exit')
         return True
-
-    def launch_popup(self, episode, source=None):
-        episodeid = utils.get_int(episode, 'episodeid')
 
         # Checked if next episode has been watched and if it should be skipped
         if self.state.unwatched_only and self.state.playcount:
@@ -59,10 +56,11 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             play_next = False
             keep_playing = True
             return play_next, keep_playing
+    def run(self, next_item, source=None):
 
         # Add next file to playlist if existing playlist is not being used
         if self.state.enable_queue and source != 'playlist':
-            self.state.queued = api.queue_next_item(self.state.data, episode)
+            self.state.queued = api.queue_next_item(self.state.data, next_item)
 
         # Only use Still Watching? popup if played limit has been reached
         if self.state.played_limit:
@@ -90,7 +88,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             utils.get_addon_path(),
             'default',
             '1080i',
-            item=episode,
+            item=next_item,
             shuffle=self.state.shuffle if source == 'library' else None,
             stop_button=self.state.show_stop_button
         )
@@ -169,9 +167,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
 
         # Fallback library playback method, not normally used
         else:
-            api.play_kodi_item(episode, self.state.enable_resume)
+            api.play_kodi_item(next_item, self.state.enable_resume)
 
-        # Signal to trakt previous episode watched
+        # Signal to Trakt that current item has been watched
         utils.event(
             message='NEXTUPWATCHEDSIGNAL',
             data={'episodeid': self.state.episodeid},
@@ -186,7 +184,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             ' play_url' if (has_addon_data == 2) else
             ' play_info' if (has_addon_data == 3) else
             ' missing_addon_data' if (has_addon_data == 1) else
-            ' library' if (isinstance(episodeid, int) and episodeid != -1) else
+            ' library' if (utils.get_int(next_item, 'episodeid') != -1) else
             ' file',
             ' playlist' if source == 'playlist' else
             ' queue' if self.state.queued else
@@ -261,14 +259,19 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             utils.set_property('service.upnext.dialog', 'true')
             return True
 
-    def remove_popup(self, terminate=False):
+    def remove_popup(self):
         if not self.popup:
-            return
-
-        if terminate or self.sigterm:
-            self.sigterm = True
             return
 
         with self.popup:
             self.popup.close()
             utils.clear_property('service.upnext.dialog')
+
+        del self.popup
+        self.popup = None
+
+    def stop(self, terminate=False):
+        self.sigterm = self.running
+
+        if terminate:
+            self.remove_popup()

@@ -76,12 +76,8 @@ def test_popup(popup_type, simple_style=False):
 
     # Create a test playbackmanager and create an actual popup for testing
     playbackmanager.UpNextPlaybackManager(
-        player=test_player,
-        state=test_state
-    ).launch_popup(
-        episode=test_episode,
-        source='library'
-    )
+        player=test_player, state=test_state
+    ).run(next_item=test_episode, source='library')
 
 
 def open_settings():

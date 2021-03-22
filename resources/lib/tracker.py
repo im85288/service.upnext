@@ -102,7 +102,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 player=self.player,
                 state=self.state
             )
-            can_play_next = self.playbackmanager.launch_upnext()
+            can_play_next = self.playbackmanager.start()
 
             # Stop detector and store hashes and timestamp for current video
             if self.detector:
@@ -200,13 +200,13 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             if self.detector:
                 self.detector.stop(terminate=True)
             if self.playbackmanager:
-                self.playbackmanager.remove_popup(terminate=True)
+                self.playbackmanager.stop(terminate=True)
         else:
             self.sigstop = self.running
             if self.detector:
                 self.detector.stop(reset=True)
             if self.playbackmanager:
-                self.playbackmanager.remove_popup()
+                self.playbackmanager.stop()
 
         # Exit if tracker thread has not been created
         if not self.thread:
