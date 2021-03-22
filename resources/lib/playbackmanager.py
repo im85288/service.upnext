@@ -90,8 +90,20 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Show popup and check that it has not been terminated early
         abort_popup = not self.show_popup_and_wait(auto_play)
 
-        if abort_popup:
-            self.log('Exit launch_popup early: tracked video not playing')
+        # Update new popup action state details
+        if not abort_popup and self.popup:
+            with self.popup:
+                popup_state = {
+                    'cancel': self.popup.is_cancel(),
+                    'play_now': self.popup.is_playnow(),
+                    'shuffle': self.popup.is_shuffle(),
+                    'stop': self.popup.is_stop()
+                }
+            # Close dialog once we are done with it
+            self.remove_popup()
+
+        else:
+            self.log('Exiting: popup force closed')
             play_next = False
             # Stop if Still Watching? popup was shown to prevent unwanted
             # playback that can occur if fast forwarding through popup
@@ -99,36 +111,31 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.remove_popup()
             return play_next, keep_playing
 
-        # Update new playback state details
-        shuffle_start = not self.state.shuffle and self.popup.is_shuffle()
-        self.state.shuffle = self.popup.is_shuffle()
-        auto_play = auto_play and not self.popup.is_cancel()
-        play_now = self.popup.is_playnow()
-
-        # Update played in a row count
+        # Check if auto_play was enabled and not cancelled
+        auto_play = auto_play and not popup_state['cancel']
+        # Update played in a row count if auto_play otherwise reset
         self.state.played_in_a_row = (
-            self.state.played_in_a_row + 1
-            if auto_play else 1
+            self.state.played_in_a_row + 1 if auto_play else 1
         )
 
-        if shuffle_start:
-            self.log('Exit launch_popup early: shuffle requested')
+        # Shuffle start request
+        if not self.state.shuffle and popup_state['shuffle']:
+            self.log('Exiting: shuffle requested')
+            self.state.shuffle = True
             play_next = False
             keep_playing = True
-            self.remove_popup()
             return play_next, keep_playing
+        # Update shuffle state
+        self.state.shuffle = popup_state['shuffle']
 
-        if not (auto_play or play_now):
-            self.log('Exit launch_popup early: playback not selected')
+        if not (auto_play or popup_state['play_now']):
+            self.log('Exiting: playback not selected')
+
             play_next = False
             # Keep playing if NAV_BACK or Cancel button was clicked on popup
             # Stop playing if Stop button was clicked on popup
-            keep_playing = self.popup.is_cancel() and not self.popup.is_stop()
-            self.remove_popup()
+            keep_playing = popup_state['cancel'] and not popup_state['stop']
             return play_next, keep_playing
-
-        # Close dialog once we are done with it
-        self.remove_popup()
 
         # Request playback of next file based on source and type
         has_addon_data = self.state.has_addon_data()
@@ -145,7 +152,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             # - Will sometimes work just fine
             # Can't just wait for next file to play as VideoPlayer closes all
             # video threads when the current file finishes
-            if play_now or (auto_play and self.state.popup_cue):
+            if popup_state['play_now'] or (auto_play and self.state.popup_cue):
                 api.play_playlist_item(
                     # Use previously stored next playlist position if available
                     position=next_item.get('playlist_position', 'next'),
@@ -173,14 +180,17 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
 
         # Determine playback method. Used for logging purposes
         self.log('Playback requested: using{0}{1}{2} method'.format(
-            ' play_now' if play_now else
+            # Playback action type
+            ' play_now' if popup_state['play_now'] else
             ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
             ' auto_play',
+            # Item information source
             ' play_url' if (has_addon_data == 2) else
             ' play_info' if (has_addon_data == 3) else
             ' missing_addon_data' if (has_addon_data == 1) else
             ' library' if (utils.get_int(next_item, 'episodeid') != -1) else
             ' file',
+            # Playback method
             ' playlist' if source == 'playlist' else
             ' queue' if self.state.queued else
             ' direct'
