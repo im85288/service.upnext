@@ -167,27 +167,30 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             self.queued = api.reset_queue()
 
     def get_next(self):
-        """Get next episode to play, based on current video source"""
+        """Get next video to play, based on current video source"""
 
-        episode = None
+        next_item = None
         source = None
         position = api.get_playlist_position()
         has_addon_data = self.has_addon_data()
 
-        # Next video from addon data
+        # Next episode from addon data
         if has_addon_data:
-            episode = self.data.get('next_episode')
+            next_item = self.data.get('next_episode')
             source = 'addon' if not position else 'playlist'
-            self.log('Addon next_episode: {0}'.format(episode))
+            self.log('Addon next_episode: {0}'.format(next_item))
 
-        # Next video from non-addon playlist
+        # Next item from non-addon playlist
         elif position and not self.shuffle:
-            episode = api.get_next_in_playlist(position)
+            next_item = api.get_next_in_playlist(
+                position,
+                self.state.unwatched_only
+            )
             source = 'playlist'
 
-        # Next video from Kodi library
+        # Next episode from Kodi library
         else:
-            episode, new_season = api.get_next_from_library(
+            next_item, new_season = api.get_next_from_library(
                 self.episodeid,
                 self.tvshowid,
                 self.unwatched_only,
@@ -199,7 +202,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             if new_season:
                 self.played_in_a_row = self.played_limit
 
-        return episode, source
+        return next_item, source
 
     def get_detect_time(self):
         # Don't use detection time period if an addon cue point was provided,
