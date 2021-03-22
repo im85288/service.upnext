@@ -160,7 +160,8 @@ def play_playlist_item(position=0, resume=False):
 
 
 def get_playlist_position():
-    """Function to get current playlist playback position"""
+    """Function to get current playlist playback position, where the first item
+       in the playlist is position 1"""
 
     # Use actual playerid rather than xbmc.PLAYLIST_VIDEO as Kodi may sometimes
     # play video content in a music playlist
@@ -181,7 +182,7 @@ def get_playlist_position():
     return None
 
 
-def get_next_in_playlist(position):
+def get_next_in_playlist(position, unwatched_only=False):
     """Function to get details of next episode in playlist"""
 
     result = utils.jsonrpc(
@@ -189,17 +190,30 @@ def get_next_in_playlist(position):
         params={
             'playlistid': get_player_id(),
             # limits are zero indexed, position is one indexed
-            'limits': {'start': position, 'end': position + 1},
+            'limits': {
+                'start': position,
+                'end': -1 if unwatched_only else position + 1
+            },
             'properties': EPISODE_PROPERTIES
         }
     )
-    item = result.get('result', {}).get('items')
+    items = result.get('result', {}).get('items')
+    if unwatched_only and items:
+        position_offset, item = next(
+            (
+                (idx, item) for idx, item in enumerate(items)
+                if not utils.get_int(item, 'playcount', 0)
+            ),
+            (0, None)
+        )
+        position += position_offset
+    else:
+        item = items[0] if items else None
 
     # Don't check if next item is an episode, just use it if it is there
     if not item:  # item.get('type') != 'episode':
         log('Error: no next item found in playlist', utils.LOGWARNING)
         return None
-    item = item[0]
 
     # Playlist item may not have had video info details set
     # Try and populate required details if missing
@@ -214,7 +228,9 @@ def get_next_in_playlist(position):
     if utils.get_int(item, 'episode') == -1:
         item['episode'] = ''
 
-    log('Next item in playlist: {0}'.format(item))
+    item['playlist_position'] = position
+
+    log('Next item in playlist at position {0}: {1}'.format(position, item))
     return item
 
 
