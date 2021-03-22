@@ -112,7 +112,7 @@ def get_setting_int(key, default=None, addon_id=ADDON_ID):
         return default
 
 
-def get_int(obj, key=None, default=-1):
+def get_int(obj, key=None, default=-1, strict=False):
     """Returns an object or value for the given key in object, as an integer.
        Returns default value if key or object is not available.
        Returns value if value cannot be converted to integer."""
@@ -124,7 +124,7 @@ def get_int(obj, key=None, default=-1):
     try:
         return int(val)
     except (ValueError, TypeError):
-        return val if val else default
+        return default if strict or not val else val
 
 
 def encode_data(data, encoding='base64'):
