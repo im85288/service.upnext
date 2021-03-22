@@ -34,12 +34,15 @@ def test_popup(popup_type, simple_style=False):
         'firstaired': 2012,
         'runtime': 3000,
     }
+
     # Create test state object
     test_state = state.UpNextState()
     # Simulate after file has started
     test_state.starting = 0
     # And while it is playing
     test_state.playing = 1
+    # Use test episode for getting next episode
+    test_state.test_episode = test_episode
 
     # Choose popup style
     test_state.simple_mode = bool(simple_style)
@@ -77,7 +80,7 @@ def test_popup(popup_type, simple_style=False):
     # Create a test playbackmanager and create an actual popup for testing
     playbackmanager.UpNextPlaybackManager(
         player=test_player, state=test_state
-    ).run(next_item=test_episode, source='library')
+    ).start()
 
 
 def open_settings():

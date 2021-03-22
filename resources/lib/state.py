@@ -35,6 +35,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'demo_plugin',
         'detector_debug',
         'start_trigger',
+        'test_episode',
         # Addon data
         'data',
         'encoding',
@@ -142,6 +143,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
         self.start_trigger = utils.get_setting_bool('startTrigger')
+        self.test_episode = None
 
     def get_tracked_file(self):
         return self.filename
@@ -168,6 +170,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def get_next(self):
         """Get next video to play, based on current video source"""
+
+        if self.test_episode:
+            return self.test_episode, 'library'
 
         next_item = None
         source = None
