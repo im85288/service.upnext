@@ -11,12 +11,14 @@ import utils
 class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritance
     """Controller for UpNext popup and playback of next item"""
 
-    __slots__ = ('player', 'state', 'popup', 'sigterm')
+    __slots__ = ('player', 'state', 'popup', 'running', 'sigstop', 'sigterm')
 
     def __init__(self, player, state):
         self.player = player
         self.state = state
         self.popup = None
+        self.running = False
+        self.sigstop = False
         self.sigterm = False
         self.log('Init')
 
@@ -24,12 +26,19 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
     def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def start(self):
-        next_item, source = self.state.get_next()
+    def start(self, called=[False]):  # pylint: disable=dangerous-default-value
+        # Exit if playbackmanager previously requested
+        if called[0]:
+            return False
+        # Stop any existing playbackmanager
+        self.stop()
+        called[0] = True
 
+        next_item, source = self.state.get_next()
         # No next item to play, get out of here
         if not next_item:
             self.log('Exiting: no next item to play')
+            called[0] = False
             return False
 
         # Show popup and get new playback state
@@ -44,10 +53,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.player.stop()
         # Relaunch popup if shuffle enabled to get new random episode
         elif self.state.shuffle and not play_next:
+            called[0] = False
             return self.start()
 
-        self.sigterm = False
-        self.log('Exit')
+        called[0] = False
         return True
 
     def run(self, next_item, source=None):
@@ -196,6 +205,12 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             ' direct'
         ), utils.LOGDEBUG)
 
+        # Reset signals
+        self.log('Stopped')
+        self.sigstop = False
+        self.sigterm = False
+        self.running = False
+
         play_next = True
         keep_playing = True
         return play_next, keep_playing
@@ -230,6 +245,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                and isinstance(self.popup, dialog.UpNextPopup)
                and not self.state.starting
                and self.state.playing
+               and not self.sigstop
                and not self.sigterm):
             remaining = total_time - self.player.getTime()
             self.popup.update_progress(round(remaining))
@@ -276,7 +292,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.popup = None
 
     def stop(self, terminate=False):
-        self.sigterm = self.running
+        if terminate:
+            self.sigterm = self.running
+        else:
+            self.sigstop = self.running
 
         if terminate:
             self.remove_popup()
