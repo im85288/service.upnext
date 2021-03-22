@@ -178,6 +178,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         if has_addon_data:
             next_item = self.data.get('next_episode')
             source = 'addon' if not position else 'playlist'
+            if (self.state.unwatched_only
+                    and utils.get_int(next_item, 'playcount') > 0):
+                next_item = None
             self.log('Addon next_episode: {0}'.format(next_item))
 
         # Next item from non-addon playlist
