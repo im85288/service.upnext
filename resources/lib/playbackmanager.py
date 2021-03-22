@@ -125,10 +125,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.log('Exiting: popup force closed')
 
         # Shuffle start request
-        elif not self.state.shuffle and popup_state['shuffle']:
+        elif popup_state['shuffle_start']:
             self.log('Exiting: shuffle requested')
             popup_state['done'] = False
-            popup_state['shuffle_start'] = True
 
         elif not (auto_play or popup_state['play_now']):
             self.log('Exiting: playback not selected')
@@ -282,6 +281,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             'done': False,
             'play_now': False,
             'shuffle': False,
+            'shuffle_start': False,
             'stop': False
         }
 
@@ -294,6 +294,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                 'done': done,
                 'play_now': self.popup.is_playnow(),
                 'shuffle': self.popup.is_shuffle(),
+                'shuffle_start': (
+                    not self.state.shuffle and self.popup.is_shuffle()
+                ),
                 'stop': self.popup.is_stop()
             }
             check_fail = False
