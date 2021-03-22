@@ -277,22 +277,29 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         return self.get_popup_state(popup_done)
 
     def get_popup_state(self, done=False):
-        if not self.popup:
-            return {
-                'cancel': False,
-                'done': False,
-                'play_now': False,
-                'shuffle': False,
-                'stop': False
-            }
-
-        return {
-            'cancel': self.popup.is_cancel(),
-            'done': done,
-            'play_now': self.popup.is_playnow(),
-            'shuffle': self.popup.is_shuffle(),
-            'stop': self.popup.is_stop()
+        default_state = {
+            'cancel': False,
+            'done': False,
+            'play_now': False,
+            'shuffle': False,
+            'stop': False
         }
+
+        if not self.popup:
+            return default_state
+
+        with self.popup as check_fail:
+            current_state = {
+                'cancel': self.popup.is_cancel(),
+                'done': done,
+                'play_now': self.popup.is_playnow(),
+                'shuffle': self.popup.is_shuffle(),
+                'stop': self.popup.is_stop()
+            }
+            check_fail = False
+        if check_fail:
+            return default_state
+        return current_state
 
     def show_popup(self):
         if not self.popup:
