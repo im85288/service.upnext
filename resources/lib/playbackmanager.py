@@ -50,12 +50,6 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.log('Exit')
         return True
 
-        # Checked if next episode has been watched and if it should be skipped
-        if self.state.unwatched_only and self.state.playcount:
-            self.log('Exit launch_popup early: video already watched')
-            play_next = False
-            keep_playing = True
-            return play_next, keep_playing
     def run(self, next_item, source=None):
 
         # Add next file to playlist if existing playlist is not being used
