@@ -34,7 +34,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Only track playback if old tracker is not running
         if self.running:
             return
-        self.log('Tracker: started')
+        self.log('Started')
         self.running = True
 
         # If tracker was (re)started, ensure detector is also restarted
@@ -46,7 +46,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         while not (monitor.abortRequested() or self.sigterm):
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
-                self.log('Tracker: stopping')
+                self.log('Stopping')
                 break
 
             # Get video details, exit if nothing playing
@@ -57,7 +57,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 play_time = self.player.getTime()
                 check_fail = False
             if check_fail:
-                self.log('Tracker: no file is playing')
+                self.log('No file is playing')
                 self.state.set_tracking(False)
                 continue
             # New stream started without tracking being updated
@@ -78,7 +78,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Otherwise check whether credits have been detected
             elif 0 < detect_time <= play_time and self.detector.detected():
                 self.detector.stop()
-                self.log('Tracker: credits detected')
+                self.log('Credits detected')
                 self.state.set_detected_popup_time(
                     self.detector.update_timestamp(play_time)
                 )
@@ -95,7 +95,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.sigstop = True
 
             # Start UpNext to handle playback of next file
-            self.log('Tracker: popup at {0}s of {1}s'.format(
+            self.log('Popup at {0}s of {1}s'.format(
                 popup_time, total_time
             ))
             self.playbackmanager = playbackmanager.UpNextPlaybackManager(
@@ -123,13 +123,13 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Exit tracking loop once all processing is complete
             break
         else:
-            self.log('Tracker: abort', utils.LOGWARNING)
+            self.log('Abort', utils.LOGWARNING)
 
         # Free resources
         del monitor
 
         # Reset thread signals
-        self.log('Tracker: stopped')
+        self.log('Stopped')
         self.running = False
         self.sigstop = False
         self.sigterm = False
@@ -167,7 +167,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Convert to delay and scale to real time minus a 10s offset
             delay = (detect_time if detect_time else popup_time) - play_time
             delay = max(0, delay // speed - 10)
-            self.log('Tracker: starting at {0}s in {1}s'.format(
+            self.log('Starting at {0}s in {1}s'.format(
                 detect_time if detect_time else popup_time, delay
             ))
 
