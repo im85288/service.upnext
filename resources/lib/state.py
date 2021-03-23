@@ -182,7 +182,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Next episode from addon data
         if has_addon_data:
             next_item = self.data.get('next_episode')
-            source = 'addon' if not position else 'playlist'
+            if has_addon_data == 2:
+                source = 'addon_play_url'
+            elif has_addon_data == 3:
+                source = 'addon_play_info'
+            else:
+                source = 'addon_missing_data'
+            if position:
+                source += '_playlist'
+
             if (self.unwatched_only
                     and utils.get_int(next_item, 'playcount') > 0):
                 next_item = None

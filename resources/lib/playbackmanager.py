@@ -164,9 +164,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         return current_state
 
     def play_next_video(self, next_item, source, popup_state):
-        has_addon_data = self.state.has_addon_data()
         # Primary method is to play next playlist item
-        if source == 'playlist' or self.state.queued:
+        if source[-8:] == 'playlist' or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
             # behaviour:
             # - Will sometimes continue playing past the end of the file
@@ -186,7 +185,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                 )
 
         # Fallback addon playback method, used if addon provides play_info
-        elif has_addon_data:
+        elif source[:5] == 'addon':
             api.play_addon_item(
                 self.state.data,
                 self.state.encoding,
@@ -198,21 +197,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             api.play_kodi_item(next_item, self.state.enable_resume)
 
         # Determine playback method. Used for logging purposes
-        self.log('Playback requested: using{0}{1}{2} method'.format(
-            # Playback action type
-            ' play_now' if popup_state['play_now'] else
-            ' auto_play_on_cue' if popup_state['play_on_cue'] else
-            ' auto_play',
-            # Item information source
-            ' play_url' if (has_addon_data == 2) else
-            ' play_info' if (has_addon_data == 3) else
-            ' missing_addon_data' if (has_addon_data == 1) else
-            ' library' if (utils.get_int(next_item, 'episodeid') != -1) else
-            ' file',
-            # Playback method
-            ' playlist' if source == 'playlist' else
-            ' queue' if self.state.queued else
-            ' direct'
+        self.log('Playback requested: {0}, from {1}{2}'.format(
+            popup_state, source, ' using queue' if self.state.queued else ''
         ), utils.LOGDEBUG)
 
     def remove_popup(self):
@@ -231,7 +217,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.running = True
 
         # Add next file to playlist if existing playlist is not being used
-        if self.state.enable_queue and source != 'playlist':
+        if self.state.enable_queue and source[-8:] != 'playlist':
             self.state.queued = api.queue_next_item(self.state.data, next_item)
 
         # Create Kodi dialog to show UpNext or Still Watching? popup
