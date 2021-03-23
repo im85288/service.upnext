@@ -68,6 +68,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         else:
             show_upnext = self.state.played_limit != self.state.played_in_a_row
 
+        self.log('Auto played in a row: {0} of {1}'.format(
+            self.state.played_in_a_row, self.state.played_limit
+        ))
+
         # Filename for dialog XML
         filename = 'script-upnext{0}{1}{2}.xml'.format(
             '-upnext' if show_upnext else '-stillwatching',
@@ -85,7 +89,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             stop_button=self.state.show_stop_button
         )
 
-        return show_upnext
+        return self.get_popup_state(show_upnext=show_upnext)
 
     def run(self, next_item, source=None):
         self.log('Started')
@@ -95,29 +99,26 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         if self.state.enable_queue and source != 'playlist':
             self.state.queued = api.queue_next_item(self.state.data, next_item)
 
-        self.log('Played in a row: {0} of {1}'.format(
-            self.state.played_in_a_row, self.state.played_limit
-        ))
-
         # Create Kodi dialog to show UpNext or Still Watching? popup
-        show_upnext = self.create_popup(next_item, source)
-        # Allow auto play if enabled in settings and showing UpNext popup
-        auto_play = self.state.auto_play and show_upnext
-
-        # Show popup and get state of controls
-        popup_state = self.show_popup_and_wait(auto_play)
+        popup_state = self.create_popup(next_item, source)
+        # Show popup and update state of controls
+        popup_state = self.show_popup_and_wait(popup_state)
         # Close dialog once we are done with it
         self.remove_popup()
 
-        # Check if auto_play was enabled and not cancelled or play_now selected
-        auto_play = (
-            auto_play
-            and not popup_state['cancel']
-            and not popup_state['play_now']
-        )
         # Update played in a row count if auto_play otherwise reset
         self.state.played_in_a_row = (
-            self.state.played_in_a_row + 1 if auto_play else 1
+            self.state.played_in_a_row + 1 if popup_state['auto_play'] else 1
+        )
+
+        # Update shuffle state
+        self.state.shuffle = popup_state['shuffle']
+
+        # Signal to Trakt that current item has been watched
+        utils.event(
+            message='NEXTUPWATCHEDSIGNAL',
+            data={'episodeid': self.state.episodeid},
+            encoding='base64'
         )
 
         # Popup closed prematurely
@@ -129,19 +130,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.log('Exiting: shuffle requested')
             popup_state['done'] = False
 
-        elif not (auto_play or popup_state['play_now']):
+        elif not (popup_state['auto_play'] or popup_state['play_now']):
             self.log('Exiting: playback not selected')
             popup_state['done'] = False
-
-        # Update shuffle state
-        self.state.shuffle = popup_state['shuffle']
-
-        # Signal to Trakt that current item has been watched
-        utils.event(
-            message='NEXTUPWATCHEDSIGNAL',
-            data={'episodeid': self.state.episodeid},
-            encoding='base64'
-        )
 
         if not popup_state['done']:
             # Reset signals
@@ -155,7 +146,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             # occur if fast forwarding through popup), or if starting shuffle
             keep_playing = (
                 not popup_state['stop']
-                and (show_upnext or popup_state['shuffle_start'])
+                and (
+                    popup_state['show_upnext']
+                    or popup_state['shuffle_start']
+                )
             )
             return play_next, keep_playing
 
@@ -174,7 +168,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             # - Will sometimes work just fine
             # Can't just wait for next file to play as VideoPlayer closes all
             # video threads when the current file finishes
-            if popup_state['play_now'] or (auto_play and self.state.popup_cue):
+            if popup_state['play_now'] or popup_state['play_on_cue']:
                 api.play_playlist_item(
                     # Use previously stored next playlist position if available
                     position=next_item.get('playlist_position', 'next'),
@@ -197,7 +191,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.log('Playback requested: using{0}{1}{2} method'.format(
             # Playback action type
             ' play_now' if popup_state['play_now'] else
-            ' auto_play_on_cue' if (auto_play and self.state.popup_cue) else
+            ' auto_play_on_cue' if popup_state['play_on_cue'] else
             ' auto_play',
             # Item information source
             ' play_url' if (has_addon_data == 2) else
@@ -221,25 +215,25 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         keep_playing = True
         return play_next, keep_playing
 
-    def show_popup_and_wait(self, auto_play):
+    def show_popup_and_wait(self, popup_state):
         # Get video details, exit if no video playing
         with self.player as check_fail:
             total_time = self.player.getTotalTime()
             play_time = self.player.getTime()
             check_fail = False
         if check_fail:
-            return self.get_popup_state(False)
+            return self.get_popup_state(popup_state, done=False)
 
         # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
-        if auto_play and self.state.popup_cue:
+        if popup_state['play_on_cue']:
             popup_duration = self.state.auto_play_delay
             if popup_duration:
                 popup_start = max(play_time, self.state.get_popup_time())
                 total_time = min(popup_start + popup_duration, total_time)
 
         if not self.show_popup():
-            return self.get_popup_state(False)
+            return self.get_popup_state(popup_state, done=False)
 
         monitor = xbmc.Monitor()
         # Current file can stop, or next file can start, while update loop is
@@ -273,29 +267,51 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Free resources
         del monitor
 
-        return self.get_popup_state(popup_done)
+        return self.get_popup_state(popup_state, done=popup_done)
 
-    def get_popup_state(self, done=False):
-        default_state = {
+    def get_popup_state(self, old_state=None, **kwargs):
+        default_state = old_state if old_state else {
+            'auto_play': self.state.auto_play,
             'cancel': False,
             'done': False,
             'play_now': False,
+            'play_on_cue': self.state.auto_play and self.state.popup_cue,
+            'show_upnext': False,
             'shuffle': False,
             'shuffle_start': False,
             'stop': False
         }
+
+        for keyword in kwargs:
+            if keyword in default_state:
+                default_state[keyword] = kwargs[keyword]
 
         if not self.popup:
             return default_state
 
         with self.popup as check_fail:
             current_state = {
+                'auto_play': (
+                    self.state.auto_play
+                    and default_state['show_upnext']
+                    and not self.popup.is_cancel()
+                    and not self.popup.is_playnow()
+                ),
                 'cancel': self.popup.is_cancel(),
-                'done': done,
+                'done': default_state['done'],
                 'play_now': self.popup.is_playnow(),
+                'play_on_cue': (
+                    self.state.auto_play
+                    and default_state['show_upnext']
+                    and not self.popup.is_cancel()
+                    and not self.popup.is_playnow()
+                    and self.state.popup_cue
+                ),
+                'show_upnext': default_state['show_upnext'],
                 'shuffle': self.popup.is_shuffle(),
                 'shuffle_start': (
-                    not self.state.shuffle and self.popup.is_shuffle()
+                    not self.state.shuffle
+                    and self.popup.is_shuffle()
                 ),
                 'stop': self.popup.is_stop()
             }
