@@ -8,7 +8,7 @@ import xbmcgui
 import utils
 
 
-def log(msg, level=utils.LOGINFO):
+def log(msg, level=utils.LOGWARNING):
     utils.log(msg, name=__name__, level=level)
 
 
@@ -58,8 +58,7 @@ def send_signal(sender, upnext_info):
     # Exit if not enough addon information provided
     if not (upnext_info.get('current_episode')
             and (upnext_info.get('play_url') or upnext_info.get('play_info'))):
-        log('Error: Invalid UpNext info - {0}'.format(upnext_info),
-            utils.LOGWARNING)
+        log('Error: Invalid UpNext info - {0}'.format(upnext_info))
         return
 
     # Extract ListItem or InfoTagVideo details for use by UpNext
@@ -67,6 +66,7 @@ def send_signal(sender, upnext_info):
         thumb = ''
         fanart = ''
         tvshowid = '-1'
+
         if isinstance(val, xbmcgui.ListItem):
             thumb = val.getArt('thumb')
             fanart = val.getArt('fanart')
@@ -74,13 +74,24 @@ def send_signal(sender, upnext_info):
             val = val.getVideoInfoTag()
 
         if isinstance(val, xbmc.InfoTagVideo):
+            # Use show title as substitute for missing ListItem tvshowid
+            tvshowid = (
+                (tvshowid if tvshowid != '-1' else val.getTVShowTitle()) or -1
+            )
+            firstaired = (
+                val.getFirstAired()
+                or val.getPremiered()
+                or val.getYear()
+            )
+            runtime = (
+                val.getDuration() if utils.supports_python_api(18) else 0
+            )
+            plot = val.getPlotOutline() or val.getPlot()
+            rating = val.getUserRating() or int(val.getRating())
+
             upnext_info[key] = {
                 'episodeid': val.getDbId(),
-                # Use show title as substitute for missing ListItem tvshowid
-                'tvshowid': (
-                    (tvshowid if tvshowid != '-1' else val.getTVShowTitle())
-                    or -1
-                ),
+                'tvshowid': tvshowid,
                 'title': val.getTitle(),
                 'art': {
                     'thumb': thumb,
@@ -89,18 +100,11 @@ def send_signal(sender, upnext_info):
                 'season': val.getSeason(),
                 'episode': val.getEpisode(),
                 'showtitle': val.getTVShowTitle(),
-                'plot': val.getPlotOutline() or val.getPlot(),
+                'plot': plot,
                 'playcount': val.getPlayCount(),
-                'rating': val.getUserRating() or int(val.getRating()),
-                'firstaired': (
-                    val.getFirstAired()
-                    or val.getPremiered()
-                    or val.getYear()
-                ),
-                'runtime': (
-                    val.getDuration() if utils.supports_python_api(18)
-                    else 0
-                )
+                'rating': rating,
+                'firstaired': firstaired,
+                'runtime': runtime
             }
 
     # If next episode information is not provided, fake it
