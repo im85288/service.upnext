@@ -45,15 +45,17 @@ jobs:
       run: coverage run -a resources/lib/service_entry.py &
       if: always()
     - name: Upload code coverage to CodeCov
+      if: matrix.python-version == '3.8'
       uses: codecov/codecov-action@v1
       continue-on-error: true
     - name: Analyze with SonarCloud
+      if: matrix.python-version == '3.8'
       uses: SonarSource/sonarcloud-github-action@master
       with:
         args: >
           -Dsonar.organization=moojmidge
           -Dsonar.projectKey=MoojMidge_service.upnext
-          -Dsonar.sources=resources/lib/
+          -Dsonar.sources=.
           -Dsonar.tests=tests/
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
