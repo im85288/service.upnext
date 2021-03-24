@@ -198,6 +198,8 @@ def get_next_in_playlist(position, unwatched_only=False):
         }
     )
     items = result.get('result', {}).get('items')
+
+    # Get first unwatched item in the list of remaining playlist entries
     if unwatched_only and items:
         position_offset, item = next(
             (
@@ -207,6 +209,7 @@ def get_next_in_playlist(position, unwatched_only=False):
             (0, None)
         )
         position += position_offset
+    # Or just get the first item in the list of remaining playlist entries
     else:
         item = items[0] if items else None
 
@@ -228,6 +231,7 @@ def get_next_in_playlist(position, unwatched_only=False):
     if utils.get_int(item, 'episode') == -1:
         item['episode'] = ''
 
+    # Store current playlist position for later use
     item['playlist_position'] = position
 
     log('Next item in playlist at position {0}: {1}'.format(position, item))
