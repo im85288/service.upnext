@@ -51,8 +51,8 @@ jobs:
       uses: SonarSource/sonarcloud-github-action@v1.4
       with:
         args: >
-          -Dsonar.organization=im85288
-          -Dsonar.projectKey=im85288_service.upnext
+          -Dsonar.organization=MoojMidge
+          -Dsonar.projectKey=MoojMidge_service.upnext
           -Dsonar.sources=resources/lib/
           -Dsonar.tests=tests/
       env:
