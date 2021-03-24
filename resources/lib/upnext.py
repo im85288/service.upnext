@@ -73,39 +73,39 @@ def send_signal(sender, upnext_info):
             tvshowid = val.getProperty('tvshowid')
             val = val.getVideoInfoTag()
 
-        if isinstance(val, xbmc.InfoTagVideo):
-            # Use show title as substitute for missing ListItem tvshowid
-            tvshowid = (
-                (tvshowid if tvshowid != '-1' else val.getTVShowTitle()) or -1
-            )
-            firstaired = (
-                val.getFirstAired()
-                or val.getPremiered()
-                or val.getYear()
-            )
-            runtime = (
-                val.getDuration() if utils.supports_python_api(18) else 0
-            )
-            plot = val.getPlotOutline() or val.getPlot()
-            rating = val.getUserRating() or int(val.getRating())
+        if not isinstance(val, xbmc.InfoTagVideo):
+            continue
 
-            upnext_info[key] = {
-                'episodeid': val.getDbId(),
-                'tvshowid': tvshowid,
-                'title': val.getTitle(),
-                'art': {
-                    'thumb': thumb,
-                    'tvshow.fanart': fanart,
-                },
-                'season': val.getSeason(),
-                'episode': val.getEpisode(),
-                'showtitle': val.getTVShowTitle(),
-                'plot': plot,
-                'playcount': val.getPlayCount(),
-                'rating': rating,
-                'firstaired': firstaired,
-                'runtime': runtime
-            }
+        # Use show title as substitute for missing ListItem tvshowid
+        tvshowid = (
+            tvshowid if tvshowid != '-1' else val.getTVShowTitle()
+        ) or -1
+        # Fallback for available date information
+        firstaired = val.getFirstAired() or val.getPremiered() or val.getYear()
+        # Runtime used to evaluate endtime in UpNext popup, if available
+        runtime = val.getDuration() if utils.supports_python_api(18) else 0
+        # Prefer outline over full plot for UpNext popup
+        plot = val.getPlotOutline() or val.getPlot()
+        # Prefer user rating over scraped rating
+        rating = val.getUserRating() or val.getRating()
+
+        upnext_info[key] = {
+            'episodeid': val.getDbId(),
+            'tvshowid': tvshowid,
+            'title': val.getTitle(),
+            'art': {
+                'thumb': thumb,
+                'tvshow.fanart': fanart,
+            },
+            'season': val.getSeason(),
+            'episode': val.getEpisode(),
+            'showtitle': val.getTVShowTitle(),
+            'plot': plot,
+            'playcount': val.getPlayCount(),
+            'rating': rating,
+            'firstaired': firstaired,
+            'runtime': runtime
+        }
 
     # If next episode information is not provided, fake it
     if not upnext_info.get('next_episode'):
