@@ -37,7 +37,7 @@ INFO_LABELS = {
 }
 
 REGIONS = {
-    'datelong': '%A, %e %B %Y' if random.randint(0, 1) else '%C'
+    'datelong': '%A, %e %B %Y' if random.randint(0, 1) else '%C',
     'dateshort': '%Y-%m-%d' if random.randint(0, 1) else '%x',
     'time': '%-I:%M %p' if random.randint(0, 1) else '%X'
 }
