@@ -276,9 +276,9 @@ class WindowXMLDialog(WindowXML):
             defaultRes="720p"
     ):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
-        super(WindowXMLDialog, self).__init__(
+        super(WindowXMLDialog, self).__init__(  # pylint: disable=super-with-arguments
             xmlFilename,
             scriptPath,
             defaultSkin,
             defaultRes
-        )  # pylint: disable=super-with-arguments
+        )
