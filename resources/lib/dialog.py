@@ -30,11 +30,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.current_progress_percent = 100
         self.progress_control = None
 
-        # TODO: Figure out why this is required. Issues with iOS?
-        if OS_MACHINE[0:len('armv7')] == 'armv7':
-            xbmcgui.WindowXMLDialog.__init__(self)
-        else:
-            xbmcgui.WindowXMLDialog.__init__(self, *args)
+        xbmcgui.WindowXMLDialog.__init__(self, *args)
         self.log('Init: {0}'.format(args[0]))
 
     # __enter__ and __exit__ allows UpNextPopup to be used as a contextmanager
