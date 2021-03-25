@@ -450,7 +450,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
-                self.hash_index['store'] = self.state.detect_time <= play_time
+                self.hash_index['store'] = (
+                    play_time >= self.state.get_detect_time()
+                )
                 self.hash_index['current'] = (
                     int(self.player.getTotalTime() - play_time),
                     self.hashes.episode

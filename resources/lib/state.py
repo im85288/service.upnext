@@ -220,18 +220,17 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         return next_item, source
 
     def get_detect_time(self):
-        # Don't use detection time period if an addon cue point was provided,
-        # or end credits detection is disabled
-        if self.popup_cue or not self.detect_enabled:
-            return None
         return self.detect_time
 
     def set_detect_time(self):
+        # Don't use detection time period if an addon cue point was provided,
+        # or end credits detection is disabled
+        if self.popup_cue or not self.detect_enabled:
+            self.detect_time = None
+            return
+
         # Detection time period starts before normal popup time
-        self.detect_time = max(
-            0,
-            self.popup_time - self.detect_period
-        )
+        self.detect_time = max(0, self.popup_time - self.detect_period)
 
     def get_popup_time(self):
         return self.popup_time
