@@ -216,7 +216,7 @@ class ListItem:
         return
 
 
-class Window:
+class Window(object):  # pylint: disable=useless-object-inheritance
     ''' A reimplementation of the xbmcgui Window '''
 
     def __init__(self, existingwindowId=-1):
