@@ -37,8 +37,9 @@ INFO_LABELS = {
 }
 
 REGIONS = {
-    'datelong': '%A, %e %B %Y',
-    'dateshort': '%Y-%m-%d',
+    'datelong': '%A, %e %B %Y' if random.randint(0, 1) else '%C'
+    'dateshort': '%Y-%m-%d' if random.randint(0, 1) else '%x',
+    'time': '%-I:%M %p' if random.randint(0, 1) else '%X'
 }
 
 GLOBAL_SETTINGS = global_settings()
