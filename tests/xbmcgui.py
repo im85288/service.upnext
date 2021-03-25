@@ -253,7 +253,14 @@ class Window:
 class WindowXML(Window):
     ''' A reimplementation of the xbmcgui WindowXML '''
 
-    def __init__(self):
+    def __init__(
+            self,
+            xmlFilename,
+            scriptPath,
+            defaultSkin="Default",
+            defaultRes="720p",
+            isMedia=False
+    ):
         ''' A stub constructor for the xbmcgui WindowXML class '''
         super(WindowXML, self).__init__()  # pylint: disable=super-with-arguments
 
@@ -261,6 +268,12 @@ class WindowXML(Window):
 class WindowXMLDialog(WindowXML):
     ''' A reimplementation of the xbmcgui WindowXMLDialog '''
 
-    def __init__(self):
+    def __init__(
+            self,
+            xmlFilename,
+            scriptPath,
+            defaultSkin="Default",
+            defaultRes="720p"
+    ):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
         super(WindowXMLDialog, self).__init__()  # pylint: disable=super-with-arguments
