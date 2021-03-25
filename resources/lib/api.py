@@ -309,7 +309,7 @@ def get_player_speed():
             'properties': ['speed'],
         }
     )
-    result = utils.get_int(result.get('result', {}), 'speed', 0)
+    result = utils.get_int(result.get('result', {}), 'speed', 1)
 
     return result
 
