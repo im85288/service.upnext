@@ -264,7 +264,7 @@ def log(msg, level):
         print('\033[31;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
         if level == LOGFATAL:
             raise Exception(msg)
-    elif level == LOGWARNING or not __KODI_MATRIX__ and level == LOGINFO + 1):
+    elif level == LOGWARNING or (not __KODI_MATRIX__ and level == LOGINFO + 1):
         print('\033[33;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
     elif level == LOGDEBUG:
         print('\033[32;1m%s: \033[30;1m%s\033[39;0m' % (level, to_unicode(msg)))
