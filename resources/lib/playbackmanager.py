@@ -165,7 +165,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
 
     def play_next_video(self, next_item, source, popup_state):
         # Primary method is to play next playlist item
-        if source[-8:] == 'playlist' or self.state.queued:
+        if source[-len('playlist'):] == 'playlist' or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
             # behaviour:
             # - Will sometimes continue playing past the end of the file
@@ -185,7 +185,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                 )
 
         # Fallback addon playback method, used if addon provides play_info
-        elif source[:5] == 'addon':
+        elif source[:len('addon')] == 'addon':
             api.play_addon_item(
                 self.state.data,
                 self.state.encoding,
@@ -217,7 +217,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.running = True
 
         # Add next file to playlist if existing playlist is not being used
-        if self.state.enable_queue and source[-8:] != 'playlist':
+        if self.state.enable_queue and source[-len('playlist'):] != 'playlist':
             self.state.queued = api.queue_next_item(self.state.data, next_item)
 
         # Create Kodi dialog to show UpNext or Still Watching? popup

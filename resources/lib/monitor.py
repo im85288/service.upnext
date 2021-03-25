@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import api
+import constants
 import demo
 import player
 import state
@@ -100,12 +101,12 @@ class UpNextMonitor(xbmc.Monitor):
         # Note this may cause played in a row count to reset incorrectly if
         # playlist of mixed non-addon and addon content is used
         self.state.set_addon_data(data, encoding)
-        has_addon_data = self.state.has_addon_data()
+        addon_type = self.state.get_addon_type()
 
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
         now_playing_item = self.state.process_now_playing(
-            is_playlist, has_addon_data, media_type
+            is_playlist, addon_type, media_type
         )
         if now_playing_item:
             self.state.set_tracking(playing_file)
@@ -167,7 +168,9 @@ class UpNextMonitor(xbmc.Monitor):
                 api.handle_just_watched(
                     episodeid=self.state.episodeid,
                     playcount=self.state.playcount,
-                    reset_playcount=(self.state.mark_watched == 2),
+                    reset_playcount=(
+                        self.state.mark_watched == constants.SETTING_FORCED_OFF
+                    ),
                     reset_resume=True
                 )
             self.state.playing_next = False

@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import threading
 import xbmc
+import constants
 import detector
 import playbackmanager
 import utils
@@ -147,7 +148,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
         # Schedule a threading.Timer to check playback details only when popup
         # is expected to be shown. Experimental mode, more testing required.
-        if self.state.tracker_mode == 2:
+        if self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
             # Playtime needs some time to update correctly after seek/skip
             # Try waiting 1s for update, longer delay may be required
             xbmc.Monitor().waitForAbort(1)
@@ -181,7 +182,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Use while not abortRequested() loop in a separate threading.Thread to
         # continuously poll playback details while callbacks continue to be
         # processed in main service thread. Default mode.
-        elif self.state.tracker_mode == 1:
+        elif self.state.tracker_mode == constants.TRACKER_MODE_THREAD:
             self.thread = threading.Thread(target=self.run)
             # Daemon threads may not work in Kodi, but enable it anyway
             self.thread.daemon = True
@@ -223,7 +224,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         if self.running:
             self.thread.join()
         # Or if tracker has not yet started on timer then cancel old timer
-        elif self.state.tracker_mode == 2:
+        elif self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
             self.thread.cancel()
 
         # Free resources

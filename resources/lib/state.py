@@ -3,6 +3,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import api
+import constants
 import utils
 
 
@@ -130,7 +131,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.detect_level = utils.get_setting_int('detectLevel')
 
         self.disabled = utils.get_setting_bool('disableNextUp')
-        utils.LOG_ENABLE_LEVEL = utils.get_setting_int('logLevel')
+        utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
         self.enable_queue = utils.get_setting_bool('enableQueue')
         self.tracker_mode = utils.get_setting_int('trackerMode')
 
@@ -177,15 +178,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         next_item = None
         source = None
         position = api.get_playlist_position()
-        has_addon_data = self.has_addon_data()
+        addon_type = self.get_addon_type()
 
         # Next episode from addon data
-        if has_addon_data:
+        if addon_type:
             next_item = self.data.get('next_episode')
             source = 'addon'
-            if has_addon_data == 2:
+            if addon_type == constants.ADDON_PLAY_URL:
                 source += '_play_url'
-            elif has_addon_data == 3:
+            elif addon_type == constants.ADDON_PLAY_INFO:
                 source += '_play_info'
             if position:
                 source += '_playlist'
@@ -237,12 +238,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def set_popup_time(self, total_time):
         # Alway use addon data, when available
-        if self.has_addon_data():
+        if self.get_addon_type():
             # Some addons send the time from video end
             popup_duration = utils.get_int(self.data, 'notification_time')
             if 0 < popup_duration < total_time:
                 # Enable cue point unless forced off in demo mode
-                self.popup_cue = self.demo_cue != 2
+                self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
                 self.popup_time = total_time - popup_duration
                 return
 
@@ -250,7 +251,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             popup_time = utils.get_int(self.data, 'notification_offset')
             if 0 < popup_time < total_time:
                 # Enable cue point unless forced off in demo mode
-                self.popup_cue = self.demo_cue != 2
+                self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
                 self.popup_time = popup_time
                 return
 
@@ -260,7 +261,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             if total_time > idx
         ])]
         # Disable cue point unless forced on in demo mode
-        self.popup_cue = self.demo_cue == 1
+        self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
         if 0 < popup_duration < total_time:
             self.popup_time = total_time - popup_duration
         else:
@@ -270,7 +271,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Force popup time to specified play time
         self.popup_time = play_time
         # Enable cue point unless forced off in demo mode
-        self.popup_cue = self.demo_cue != 2
+        self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
 
     def process_now_playing(self, is_playlist, has_addon_data, media_type):
         if has_addon_data:
@@ -287,7 +288,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         showtitle = item.get('showtitle')
         season = item.get('season')
-        if not showtitle or not season or season == -1:
+        if not showtitle or not season or season == constants.UNKNOWN_DATA:
             self.season_identifier = None
         else:
             self.season_identifier = '_'.join((str(showtitle), str(season)))
@@ -323,12 +324,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         # Get current tvshowid or search in library if detail missing
         tvshowid = utils.get_int(item, 'tvshowid')
-        if tvshowid == -1:
+        if tvshowid == constants.UNKNOWN_DATA:
             title = item.get('showtitle')
             tvshowid = api.get_tvshowid(title)
             self.log('Fetched tvshowid: {0}'.format(tvshowid))
         # Now playing show not found in library
-        if tvshowid == -1:
+        if tvshowid == constants.UNKNOWN_DATA:
             return None
 
         # Reset played in a row count if new show playing
@@ -341,7 +342,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         # Get current episodeid or search in library if detail missing
         self.episodeid = utils.get_int(item, 'id')
-        if self.episodeid == -1:
+        if self.episodeid == constants.UNKNOWN_DATA:
             self.episodeid = api.get_episodeid(
                 tvshowid,
                 item.get('season'),
@@ -349,7 +350,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             )
             self.log('Fetched episodeid: {0}'.format(self.episodeid))
         # Now playing episode not found in library
-        if self.episodeid == -1:
+        if self.episodeid == constants.UNKNOWN_DATA:
             return None
 
         self.episode = utils.get_int(item, 'episode')
@@ -369,14 +370,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         return item
 
-    def has_addon_data(self):
+    def get_addon_type(self):
         if self.data:
             if self.data.get('play_url'):
-                return 2
+                return constants.ADDON_PLAY_URL
             if self.data.get('play_info'):
-                return 3
-            return 1
-        return 0
+                return constants.ADDON_PLAY_INFO
+            return constants.ADDON_MISSING_DATA
+        return None
 
     def set_addon_data(self, data, encoding='base64'):
         if data:

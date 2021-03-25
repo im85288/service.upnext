@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmcaddon
+import constants
 import playbackmanager
 import player
 import state
@@ -12,8 +13,8 @@ import state
 def test_popup(popup_type, simple_style=False):
     # Create dummy episode to show in popup
     test_episode = {
-        'episodeid': -1,
-        'tvshowid': -1,
+        'episodeid': constants.UNKNOWN_DATA,
+        'tvshowid': constants.UNKNOWN_DATA,
         'title': 'Garden of Bones',
         'art': {
             'thumb': 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-556979e5eda6b.jpg',
@@ -90,6 +91,10 @@ def open_settings():
 def run(argv):
     """Route to API method"""
 
+    # RunScript(service.upnext,test_window,upnext)
+    # RunScript(service.upnext,test_window,stillwatching)
+    # RunScript(service.upnext,test_window,upnext,simple)
+    # RunScript(service.upnext,test_window,stillwatching,simple)
     if len(argv) > 2 and argv[1] == 'test_window':
         # Fancy style popup
         if len(argv) == 3:

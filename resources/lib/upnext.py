@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import xbmcgui
+import constants
 import utils
 
 
@@ -27,13 +28,13 @@ def create_listitem(episode):
     listitem.setInfo(
         type='Video',
         infoLabels={
-            'dbid': episode.get('episodeid', -1),
+            'dbid': episode.get('episodeid', constants.UNKNOWN_DATA),
             'path': episode.get('file', ''),
             'title': episode.get('title', ''),
             'plot': episode.get('plot', ''),
             'tvshowtitle': episode.get('showtitle', ''),
-            'season': episode.get('season', -1),
-            'episode': episode.get('episode', -1),
+            'season': episode.get('season', constants.UNKNOWN_DATA),
+            'episode': episode.get('episode', constants.UNKNOWN_DATA),
             'rating': str(float(episode.get('rating', 0.0))),
             'premiered': episode.get('firstaired', ''),
             'dateadded': episode.get('dateadded', ''),
@@ -42,7 +43,9 @@ def create_listitem(episode):
             'mediatype': 'episode'
         }
     )
-    listitem.setProperty('tvshowid', str(episode.get('tvshowid', -1)))
+    listitem.setProperty(
+        'tvshowid', str(episode.get('tvshowid', constants.UNKNOWN_DATA))
+    )
     listitem.setArt(episode.get('art', {}))
     listitem.setProperty('isPlayable', 'true')
     listitem.setPath(episode.get('file', ''))
@@ -65,7 +68,7 @@ def send_signal(sender, upnext_info):
     for key, val in upnext_info.items():
         thumb = ''
         fanart = ''
-        tvshowid = '-1'
+        tvshowid = str(constants.UNKNOWN_DATA)
 
         if isinstance(val, xbmcgui.ListItem):
             thumb = val.getArt('thumb')
@@ -78,8 +81,9 @@ def send_signal(sender, upnext_info):
 
         # Use show title as substitute for missing ListItem tvshowid
         tvshowid = (
-            tvshowid if tvshowid != '-1' else val.getTVShowTitle()
-        ) or -1
+            tvshowid if tvshowid != str(constants.UNKNOWN_DATA)
+            else val.getTVShowTitle()
+        ) or constants.UNKNOWN_DATA
         # Fallback for available date information
         firstaired = val.getFirstAired() or val.getPremiered() or val.getYear()
         # Runtime used to evaluate endtime in UpNext popup, if available
@@ -110,13 +114,13 @@ def send_signal(sender, upnext_info):
     # If next episode information is not provided, fake it
     if not upnext_info.get('next_episode'):
         episode = upnext_info['current_episode']
-        episode['episodeid'] = -1
+        episode['episodeid'] = constants.UNKNOWN_DATA
         episode['art'] = {}
         # Next provided episode may not be the next consecutive episode so we
         # can't assume that the episode can simply be incremented, instead set
         # title to indicate the next episode in the UpNext popup
         # episode['episode'] = utils.get_int(episode, 'episode') + 1
-        episode['title'] = utils.localize(30049)
+        episode['title'] = utils.localize(constants.NEXT_STRING_ID)
         # Change season and episode info to empty string to avoid episode
         # formatting issues ("S-1E-1") in UpNext popup
         episode['season'] = ''

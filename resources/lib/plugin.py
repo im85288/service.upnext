@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmcplugin
 import api
+import constants
 import upnext
 
 try:
@@ -38,12 +39,13 @@ def generate_data(current_episode, addon_id, state=None):
 
 def handler(argv):
     base_url = argv[0]
-    addon_id = base_url[9:-1]
+    addon_id = base_url[len('plugin://'):-1]
     addon_handle = int(argv[1])
+    # Query string in form ?field1=value1&field2=value2&field3=value3...
     args = parse_qs(argv[2][1:])
 
-    dbid = int(args.get('play', [-1])[0])
-    if dbid == -1:
+    dbid = int(args.get('play', [constants.UNKNOWN_DATA])[0])
+    if dbid == constants.UNKNOWN_DATA:
         return
 
     current_episode = api.get_from_library(dbid)

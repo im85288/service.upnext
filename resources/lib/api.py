@@ -6,6 +6,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import os.path
 import xbmc
+import constants
 import utils
 
 
@@ -96,7 +97,7 @@ def queue_next_item(data=None, episode=None):
     if play_url:
         next_item.update(file=play_url)
 
-    elif episode and episodeid != -1:
+    elif episode and episodeid != constants.UNKNOWN_DATA:
         next_item.update(episodeid=episodeid)
 
     if next_item:
@@ -226,9 +227,9 @@ def get_next_in_playlist(position, unwatched_only=False):
     item['tvshowid'] = utils.get_int(item, 'tvshowid')
     # If missing season/episode, change to empty string to avoid episode
     # formatting issues ("S-1E-1") in UpNext popup
-    if utils.get_int(item, 'season') == -1:
+    if utils.get_int(item, 'season') == constants.UNKNOWN_DATA:
         item['season'] = ''
-    if utils.get_int(item, 'episode') == -1:
+    if utils.get_int(item, 'episode') == constants.UNKNOWN_DATA:
         item['episode'] = ''
 
     # Store current playlist position for later use
@@ -497,7 +498,7 @@ def get_tvshowid(title):
 
     if not result:
         log('Error: tvshowid not found in library', utils.LOGWARNING)
-        return -1
+        return constants.UNKNOWN_DATA
 
     return utils.get_int(result[0], 'tvshowid')
 
@@ -533,7 +534,7 @@ def get_episodeid(tvshowid, season, episode):
 
     if not result:
         log('Error: episodeid not found in library', utils.LOGWARNING)
-        return -1
+        return constants.UNKNOWN_DATA
 
     return utils.get_int(result[0], 'episodeid')
 

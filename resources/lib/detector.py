@@ -9,6 +9,7 @@ import threading
 import timeit
 from PIL import Image
 import xbmc
+import constants
 import file_utils
 import utils
 
@@ -38,7 +39,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (8, 8))
         self.seasonid = kwargs.get('seasonid', '')
-        self.episode = kwargs.get('episode', -1)
+        self.episode = kwargs.get('episode', constants.UNKNOWN_DATA)
         self.data = kwargs.get('data', {})
         self.timestamps = kwargs.get('timestamps', {})
 
@@ -62,7 +63,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
 
     def is_valid(self, seasonid=None, episode=None):
         # Non-episodic video is being played
-        if not self.seasonid or self.episode == -1:
+        if not self.seasonid or self.episode == constants.UNKNOWN_DATA:
             return False
 
         # New episode is being played, invalidate old hashes
@@ -74,7 +75,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
 
     def invalidate(self):
         self.seasonid = ''
-        self.episode = -1
+        self.episode = constants.UNKNOWN_DATA
 
     def load(self, identifier):
         filename = file_utils.make_legal_filename(identifier, suffix='.json')

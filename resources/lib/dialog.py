@@ -5,6 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import datetime
 import platform
 import xbmcgui
+import constants
 import statichelper
 import utils
 
@@ -30,7 +31,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.progress_control = None
 
         # TODO: Figure out why this is required. Issues with iOS?
-        if OS_MACHINE[0:5] == 'armv7':
+        if OS_MACHINE[0:len('armv7')] == 'armv7':
             xbmcgui.WindowXMLDialog.__init__(self)
         else:
             xbmcgui.WindowXMLDialog.__init__(self, *args)
@@ -50,7 +51,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
 
     def onInit(self):  # pylint: disable=invalid-name
         try:
-            self.progress_control = self.getControl(3014)
+            self.progress_control = self.getControl(
+                constants.PROGRESS_CONTROL_ID
+            )
         # Occurs when skin does not include progress control
         except RuntimeError:
             self.progress_control = None
@@ -65,7 +68,10 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
 
         self.setProperty(
             'stop_close_label',
-            utils.localize(30033 if self.stop_enable else 30034)
+            utils.localize(
+                constants.STOP_STRING_ID if self.stop_enable
+                else constants.CLOSE_STRING_ID
+            )
         )
         self.setProperty('shuffle_enable', str(self.shuffle is not None))
         self.setProperty('shuffle_on', str(self.shuffle))
@@ -155,17 +161,17 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
         # Play now - Watch now / Still Watching
-        if controlId == 3012:
+        if controlId == constants.PLAY_CONTROL_ID:
             self.set_playnow(True)
             self.close()
         # Cancel - Close / Stop
-        elif controlId == 3013:
+        elif controlId == constants.CLOSE_CONTROL_ID:
             self.set_cancel(True)
             if self.stop_enable:
                 self.set_stop(True)
             self.close()
         # Shuffle play
-        elif controlId == 3015:
+        elif controlId == constants.SHUFFLE_CONTROL_ID:
             if self.is_shuffle():
                 self.set_shuffle(False)
             else:

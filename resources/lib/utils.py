@@ -10,14 +10,12 @@ import sys
 import xbmc
 import xbmcaddon
 import xbmcgui
+import constants
 import statichelper
 
 
-# Use hardcoded addon id, rather than relying on auto-detection as utils module
-# can be imported by other addons
-ADDON_ID = 'service.upnext'
-ADDON = xbmcaddon.Addon(ADDON_ID)
-KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion')[:4])
+ADDON = xbmcaddon.Addon(constants.ADDON_ID)
+KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
 
 
 def get_addon_info(key):
@@ -44,26 +42,26 @@ def supports_python_api(version):
     return KODI_VERSION >= version
 
 
-def get_property(key, window_id=10000):
+def get_property(key, window_id=constants.WINDOW_HOME):
     """Get a Window property"""
 
     return statichelper.to_unicode(xbmcgui.Window(window_id).getProperty(key))
 
 
-def set_property(key, value, window_id=10000):
+def set_property(key, value, window_id=constants.WINDOW_HOME):
     """Set a Window property"""
 
     value = statichelper.from_unicode(str(value))
     return xbmcgui.Window(window_id).setProperty(key, value)
 
 
-def clear_property(key, window_id=10000):
+def clear_property(key, window_id=constants.WINDOW_HOME):
     """Clear a Window property"""
 
     return xbmcgui.Window(window_id).clearProperty(key)
 
 
-def get_setting(key, default=None, addon_id=ADDON_ID):
+def get_setting(key, default='', addon_id=constants.ADDON_ID):
     """Get an addon setting as string"""
 
     # We use Addon() here to ensure changes in settings are reflected instantly
@@ -74,28 +72,26 @@ def get_setting(key, default=None, addon_id=ADDON_ID):
     # Occurs when the addon is disabled
     except RuntimeError:
         return default
-    if value == '' and default is not None:
+    if not value and default != '':
         return default
     return value
 
 
-def get_setting_bool(key, default=None, addon_id=ADDON_ID):
+def get_setting_bool(key, default=None, addon_id=constants.ADDON_ID):
     """Get an addon setting as boolean"""
 
     try:
         return xbmcaddon.Addon(addon_id).getSettingBool(key)
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
-        value = get_setting(key, default)
-        if value not in {'false', 'true'}:
-            return default
-        return value == 'true'
+        value = get_setting(key, '' if default is None else default).lower()
+        return constants.BOOL_STRING_VALUES.get(value, default)
     # Occurs when the addon is disabled
     except RuntimeError:
         return default
 
 
-def get_setting_int(key, default=None, addon_id=ADDON_ID):
+def get_setting_int(key, default=None, addon_id=constants.ADDON_ID):
     """Get an addon setting as integer"""
 
     try:
@@ -224,8 +220,7 @@ LOGERROR = xbmc.LOGERROR
 LOGFATAL = xbmc.LOGFATAL
 LOGNONE = xbmc.LOGNONE
 
-
-LOG_ENABLE_LEVEL = get_setting_int('logLevel')
+LOG_ENABLE_SETTING = get_setting_int('logLevel')
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 
@@ -233,10 +228,10 @@ def log(msg, name=None, level=LOGINFO):
     """Log information to the Kodi log"""
 
     # Log everything
-    if LOG_ENABLE_LEVEL == 2:
+    if LOG_ENABLE_SETTING == constants.LOG_ENABLE_DEBUG:
         log_enable = level != LOGNONE
     # Only log important messages
-    elif LOG_ENABLE_LEVEL == 1:
+    elif LOG_ENABLE_SETTING == constants.LOG_ENABLE_INFO:
         log_enable = LOGDEBUG < level < LOGNONE
     # Log nothing
     else:
