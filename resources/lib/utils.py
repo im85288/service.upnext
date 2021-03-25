@@ -98,7 +98,7 @@ def get_setting_int(key, default=None, addon_id=constants.ADDON_ID):
         return xbmcaddon.Addon(addon_id).getSettingInt(key)
     # On Krypton or older, or when not an integer
     except (AttributeError, TypeError):
-        value = get_setting(key, default)
+        value = get_setting(key, '' if default is None else default)
         try:
             return int(value)
         except ValueError:
