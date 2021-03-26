@@ -42,7 +42,7 @@ def create_directory(path):
 
     try:
         if not (xbmcvfs.exists(path) or xbmcvfs.mkdirs(path)):
-            raise IOError
+            raise IOError(path)
     except (IOError, OSError) as error:
         if error.errno != errno.EEXIST:
             raise
