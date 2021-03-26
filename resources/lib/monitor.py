@@ -92,8 +92,8 @@ class UpNextMonitor(xbmc.Monitor):
             return
 
         # Exit if UpNext playlist handling has not been enabled
-        is_playlist = api.get_playlist_position()
-        if is_playlist and not self.state.enable_playlist:
+        playlist_position = api.get_playlist_position()
+        if playlist_position and not self.state.enable_playlist:
             self.log('Skip video check: playlist handling not enabled')
             return
 
@@ -106,7 +106,7 @@ class UpNextMonitor(xbmc.Monitor):
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
         now_playing_item = self.state.process_now_playing(
-            is_playlist, addon_type, media_type
+            playlist_position, addon_type, media_type
         )
         if now_playing_item:
             self.state.set_tracking(playing_file)
