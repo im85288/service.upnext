@@ -238,7 +238,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Signal to Trakt that current item has been watched
         utils.event(
             message='NEXTUPWATCHEDSIGNAL',
-            data={'episodeid': self.state.episodeid},
+            data={'episodeid': self.state.get_episodeid()},
             encoding='base64'
         )
 

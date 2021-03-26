@@ -166,8 +166,8 @@ class UpNextMonitor(xbmc.Monitor):
             # Update playcount and reset resume point of previous file
             if self.state.playing_next and self.state.mark_watched:
                 api.handle_just_watched(
-                    episodeid=self.state.episodeid,
-                    playcount=self.state.playcount,
+                    episodeid=self.state.get_episodeid(),
+                    playcount=self.state.get_playcount(),
                     reset_playcount=(
                         self.state.mark_watched == constants.SETTING_FORCED_OFF
                     ),
