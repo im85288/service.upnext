@@ -159,7 +159,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 speed = self.player.get_speed()
                 check_fail = False
             # Exit if not playing, paused, or rewinding
-            if check_fail or speed < 1:
+            if check_fail or not play_time or speed < 1:
                 self.log('Skip tracker start: nothing playing')
                 called[0] = False
                 return
