@@ -167,8 +167,10 @@ def get_playlist_position():
     # Use actual playerid rather than xbmc.PLAYLIST_VIDEO as Kodi may sometimes
     # play video content in a music playlist
     playlist_id = get_player_id(player_id_cache=[None])
-    playlist = xbmc.PlayList(playlist_id)
+    if playlist_id is None:
+        return None
 
+    playlist = xbmc.PlayList(playlist_id)
     playlist_size = playlist.size()
     position = playlist.getposition()
 
