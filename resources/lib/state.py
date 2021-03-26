@@ -348,8 +348,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Now playing show not found in library
         if tvshowid == constants.UNKNOWN_DATA:
             return None
-        else:
-            item['tvshowid'] = tvshowid
+        item['tvshowid'] = tvshowid
 
         # Get current episodeid or search in library if detail missing
         episodeid = self.get_episodeid(item)
@@ -363,8 +362,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         # Now playing episode not found in library
         if episodeid == constants.UNKNOWN_DATA:
             return None
-        else:
-            item['episodeid'] = episodeid
+        item['episodeid'] = episodeid
 
         return item
 
