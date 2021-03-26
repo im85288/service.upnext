@@ -225,7 +225,10 @@ def get_next_in_playlist(position, unwatched_only=False):
     # Try and populate required details if missing
     if not item.get('title'):
         item['title'] = item.get('label', '')
-    item['episodeid'] = utils.get_int(item, 'id')
+    item['episodeid'] = utils.get_int(
+        item, 'episodeid',
+        utils.get_int(item, 'id')
+    )
     item['tvshowid'] = utils.get_int(item, 'tvshowid')
     # If missing season/episode, change to empty string to avoid episode
     # formatting issues ("S-1E-1") in UpNext popup
