@@ -36,7 +36,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'demo_plugin',
         'detector_debug',
         'start_trigger',
-        'test_episode',
         # Addon data
         'data',
         'encoding',
@@ -49,6 +48,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         'episode',
         'playcount',
         # Popup state variables
+        'next_item',
         'popup_time',
         'popup_cue',
         'detect_time',
@@ -77,6 +77,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.episode = None
         self.playcount = 0
         # Popup state variables
+        self.next_item = None
         self.popup_time = 0
         self.popup_cue = False
         self.detect_time = 0
@@ -146,7 +147,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
         self.start_trigger = utils.get_setting_bool('startTrigger')
-        self.test_episode = None
 
     def get_tracked_file(self):
         return self.filename
@@ -173,9 +173,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def get_next(self):
         """Get next video to play, based on current video source"""
-
-        if self.test_episode:
-            return self.test_episode, 'library'
 
         next_item = None
         source = None
@@ -220,7 +217,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             if new_season:
                 self.played_in_a_row = self.played_limit
 
-        return next_item, source
+        if next_item and source:
+            self.next_item = {
+                'item': next_item,
+                'source': source
+            }
+        if not self.next_item:
+            return None, None
+
+        return self.next_item['item'], self.next_item['source']
 
     def get_detect_time(self):
         return self.detect_time
