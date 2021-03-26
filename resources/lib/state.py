@@ -282,7 +282,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
     def process_now_playing(self, playlist_position, addon_type, media_type):
         if addon_type:
-            item = self.get_addon_now_playing()
+            item = self._get_addon_now_playing()
             source = 'addon'
             if addon_type == constants.ADDON_PLAY_URL:
                 source += '_play_url'
@@ -296,7 +296,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             source = 'playlist'
 
         elif media_type == 'episode':
-            item = self.get_library_now_playing()
+            item = self._get_library_now_playing()
             source = 'library'
 
         else:
@@ -319,15 +319,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             ))
             self.played_in_a_row = 1
 
-        self.set_tvshowid()
-        self.set_episodeid()
-        self.set_episode()
-        self.set_playcount()
-        self.set_season_identifier()
+        self._set_tvshowid()
+        self._set_episodeid()
+        self._set_episode()
+        self._set_playcount()
+        self._set_season_identifier()
 
         return self.item['item']
 
-    def get_addon_now_playing(self):
+    def _get_addon_now_playing(self):
         item = self.data.get('current_episode') if self.data else None
         self.log('Addon current_episode: {0}'.format(item))
         if not item:
@@ -335,7 +335,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
 
         return item
 
-    def get_library_now_playing(self):
+    def _get_library_now_playing(self):
         item = api.get_now_playing()
         if not item:
             return None
@@ -390,7 +390,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
         self.data = data
         self.encoding = encoding
 
-    def set_tvshowid(self, item=None):
+    def _set_tvshowid(self):
         self.tvshowid = utils.get_int(self.item['item'], 'tvshowid')
 
     def get_tvshowid(self, item=None):
@@ -398,7 +398,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             return utils.get_int(item, 'tvshowid')
         return self.tvshowid
 
-    def set_episodeid(self):
+    def _set_episodeid(self):
         self.episodeid = utils.get_int(
             self.item['item'], 'episodeid',
             utils.get_int(self.item['item'], 'id')
@@ -412,19 +412,19 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             )
         return self.episodeid
 
-    def set_episode(self):
+    def _set_episode(self):
         self.episode = utils.get_int(self.item['item'], 'episode')
 
     def get_episode(self):
         return self.episode
 
-    def set_playcount(self):
+    def _set_playcount(self):
         self.playcount = utils.get_int(self.item['item'], 'playcount', 0)
 
     def get_playcount(self):
         return self.playcount
 
-    def set_season_identifier(self):
+    def _set_season_identifier(self):
         showtitle = self.item['item'].get('showtitle')
         season = self.item['item'].get('season')
         if not showtitle or not season or season == constants.UNKNOWN_DATA:
