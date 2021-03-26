@@ -292,7 +292,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
                 source += '_playlist'
 
         elif playlist_position:
-            item = self.get_playlist_now_playing()
+            item = api.get_now_playing()
             source = 'playlist'
 
         elif media_type == 'episode':
@@ -365,13 +365,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance
             return None
         else:
             item['episodeid'] = episodeid
-
-        return item
-
-    def get_playlist_now_playing(self):
-        item = api.get_now_playing()
-        if not item:
-            return None
 
         return item
 
