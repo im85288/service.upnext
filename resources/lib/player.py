@@ -112,7 +112,7 @@ class UpNextPlayer(xbmc.Player):
 
     def get_media_type(self):
         # Use current stored value if playing forced
-        if self.state.playing and not self.state.actual('playing'):
+        if self.state.forced('playing') or self.state.forced('media_type'):
             actual = self.state.media_type
         # Use inbuilt method to store actual value if playing not forced
         else:
@@ -125,7 +125,7 @@ class UpNextPlayer(xbmc.Player):
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
         # Use current stored value if playing forced
-        if self.state.playing and not self.state.actual('playing'):
+        if self.state.forced('playing') or self.state.forced('playing_file'):
             actual = self.state.playing_file
         # Use inbuilt method to store actual value if playing not forced
         else:
@@ -137,7 +137,7 @@ class UpNextPlayer(xbmc.Player):
 
     def get_speed(self):
         # Use current stored value if playing forced
-        if self.state.playing and not self.state.actual('playing'):
+        if self.state.forced('playing') or self.state.forced('speed'):
             actual = self.state.speed
         # Use inbuilt method to store actual value if playing not forced
         else:
@@ -148,7 +148,7 @@ class UpNextPlayer(xbmc.Player):
 
     def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
-        if self.state.playing and not self.state.actual('playing'):
+        if self.state.forced('playing') or self.state.forced('time'):
             actual = self.state.time
         # Use inbuilt method to store actual value if playing not forced
         else:
@@ -184,7 +184,7 @@ class UpNextPlayer(xbmc.Player):
 
     def getTotalTime(self):  # pylint: disable=invalid-name
         # Use current stored value if playing forced
-        if self.state.playing and not self.state.actual('playing'):
+        if self.state.forced('playing') or self.state.forced('total_time'):
             actual = self.state.total_time
         # Use inbuilt method to store actual value if playing not forced
         else:
@@ -195,7 +195,9 @@ class UpNextPlayer(xbmc.Player):
 
     def playnext(self):
         # Simulate playing next file if forced
-        if self.state.forced('playnext'):
+        if (self.state.forced('playing')
+                or self.state.forced('playnext')
+                or self.state.forced('next_file')):
             next_file = self.state.next_file
             self.state.set('next_file', None, force=True)
             self.state.set('playing_file', next_file, force=True)
@@ -206,7 +208,7 @@ class UpNextPlayer(xbmc.Player):
 
     def stop(self):
         # Set fake value if forced
-        if self.state.forced('stop'):
+        if self.state.forced('playing') or self.state.forced('stop'):
             self.state.set('playing', False, force=True)
         # Use inbuilt method if not forced
         else:
