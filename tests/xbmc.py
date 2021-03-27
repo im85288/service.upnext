@@ -79,13 +79,22 @@ class Monitor:
 
     def waitForAbort(self, timeout=None):
         ''' A stub implementation for the xbmc Monitor class waitForAbort() method '''
+        abort_times = [10, 30, 60, 5 * 60]
+        abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
+        aborted = False
+
+        if not timeout or timeout >= abort_time:
+            timeout = abort_time
+            aborted = True
+        else:
+            aborted = False
+
         try:
             time.sleep(timeout * 1000)
-        except KeyboardInterrupt:
-            return True
-        except Exception:  # pylint: disable=broad-except
-            return True
-        return False
+        except (KeyboardInterrupt, Exception):  # pylint: disable=broad-except
+            aborted = True
+
+        return aborted
 
 
 class Player:
