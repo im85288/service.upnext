@@ -74,12 +74,10 @@ def mkdirs(path):
         return True
     except OSError:
         return False
-        
 
 
 def rmdir(path, force=False):
     ''' A reimplementation of the xbmcvfs rmdir() function '''
-    
     try:
         if force:
             for dirpath, dirnames, filenames in os.walk(path, topdown=False):
