@@ -7,7 +7,7 @@ import constants
 import utils
 
 
-class UpNextState(object):  # pylint: disable=useless-object-inheritance
+class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-many-public-methods
     """Class encapsulating all state variables and methods"""
 
     __slots__ = (

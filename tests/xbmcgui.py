@@ -224,7 +224,6 @@ class Window(object):  # pylint: disable=useless-object-inheritance
     def __init__(self, existingwindowId=-1):
         ''' A stub constructor for the xbmcgui Window class '''
         self.__window_properties__ = {}
-        return None
 
     def clearProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class clearProperty() method '''
@@ -247,7 +246,6 @@ class Window(object):  # pylint: disable=useless-object-inheritance
     def setProperty(self, key, value):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''
         self.__window_properties__[key] = value
-        return
 
     def show(self):
         ''' A stub implementation for the xbmcgui Window class show() method '''
