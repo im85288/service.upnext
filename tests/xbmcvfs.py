@@ -36,8 +36,9 @@ def delete(path):
     ''' A reimplementation of the xbmcvfs delete() function '''
     try:
         os.remove(path)
+        return True
     except OSError:
-        pass
+        return False
 
 
 def exists(path):
@@ -59,17 +60,37 @@ def listdir(path):
 
 def mkdir(path):
     ''' A reimplementation of the xbmcvfs mkdir() function '''
-    return os.mkdir(path)
+    try:
+        os.mkdir(path)
+        return True
+    except OSError:
+        return False
 
 
 def mkdirs(path):
     ''' A reimplementation of the xbmcvfs mkdirs() function '''
-    return os.makedirs(path)
+    try:
+        os.makedirs(path)
+        return True
+    except OSError:
+        return False
+        
 
 
-def rmdir(path):
+def rmdir(path, force=False):
     ''' A reimplementation of the xbmcvfs rmdir() function '''
-    return os.rmdir(path)
+    
+    try:
+        if force:
+            for dirpath, dirnames, filenames in os.walk(path, topdown=False):
+                for filename in filenames:
+                    os.remove(os.path.join(dirpath, filename))
+                for dirname in dirnames:
+                    os.rmdir(os.path.join(dirpath, dirname))
+        os.rmdir(path)
+        return True
+    except OSError:
+        return False
 
 
 if __KODI_MATRIX__:
