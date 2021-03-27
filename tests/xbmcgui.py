@@ -219,12 +219,16 @@ class ListItem:
 class Window(object):  # pylint: disable=useless-object-inheritance
     ''' A reimplementation of the xbmcgui Window '''
 
+    __window_properties__ = {}
+
     def __init__(self, existingwindowId=-1):
         ''' A stub constructor for the xbmcgui Window class '''
+        self.__window_properties__ = {}
         return None
 
-    def clearProperty(self):
+    def clearProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class clearProperty() method '''
+        self.__window_properties__.pop(key, '')
 
     def close(self):
         ''' A stub implementation for the xbmcgui Window class close() method '''
@@ -236,14 +240,13 @@ class Window(object):  # pylint: disable=useless-object-inheritance
             return ControlProgress()
         return ControlLabel()
 
-    @staticmethod
-    def getProperty():
+    def getProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class getProperty() method '''
-        return ''
+        return self.__window_properties__.get(key, '')
 
-    @staticmethod
-    def setProperty(key, value):
+    def setProperty(self, key, value):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''
+        self.__window_properties__[key] = value
         return
 
     def show(self):

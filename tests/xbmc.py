@@ -39,7 +39,7 @@ INFO_LABELS = {
 REGIONS = {
     'datelong': '%A, %e %B %Y' if random.randint(0, 1) else '%C',
     'dateshort': '%Y-%m-%d' if random.randint(0, 1) else '%x',
-    'time': '%-I:%M %p' if random.randint(0, 1) else '%X'
+    'time': '%I:%M %p' if random.randint(0, 1) else '%X'
 }
 
 GLOBAL_SETTINGS = global_settings()
@@ -79,7 +79,7 @@ class Monitor:
 
     def waitForAbort(self, timeout=None):
         ''' A stub implementation for the xbmc Monitor class waitForAbort() method '''
-        abort_times = [10, 30, 60, 5 * 60]
+        abort_times = [5, 10, 20, 30]
         abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
         aborted = False
 
@@ -90,7 +90,7 @@ class Monitor:
             aborted = False
 
         try:
-            time.sleep(timeout * 1000)
+            time.sleep(timeout)
         except (KeyboardInterrupt, Exception):  # pylint: disable=broad-except
             aborted = True
 
@@ -154,7 +154,7 @@ class Player:
 class PlayList:
     ''' A stub implementation of the xbmc PlayList class '''
 
-    def __init__(self):
+    def __init__(self, playList):
         ''' A stub constructor for the xbmc PlayList class '''
 
     def getposition(self):
@@ -237,6 +237,10 @@ def executeJSONRPC(jsonrpccommand):
         return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(textures=[dict(cachedurl="", imagehash="", lasthashcheck="", textureid=4837, url="")])))
     if command.get('method') == 'Textures.RemoveTexture':
         return json.dumps(dict(id=1, jsonrpc='2.0', result="OK"))
+    if command.get('method') == 'Player.GetActivePlayers':
+        return json.dumps(dict(id=1, jsonrpc='2.0', result=[[dict(type='video', playerid=1)], [dict(type='audio', playerid=0)], []][random.randint(0, 2)]))
+    if command.get('method') == 'Player.GetProperties' and command.get('params', {}).get('properties') == ['speed']:
+        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(speed=random.randint(0, 1))))
     log("executeJSONRPC does not implement method '{method}'".format(**command), LOGERROR)
     return json.dumps(dict(error=dict(code=-1, message='Not implemented'), id=1, jsonrpc='2.0'))
 
