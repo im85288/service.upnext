@@ -163,11 +163,8 @@ class UpNextPlayer(xbmc.Player):
         if self.state.forced('time'):
             now = datetime.datetime.now()
 
-            # Don't update if paused
-            if self.is_paused():
-                delta = 0
             # Change in time from previously forced time to now
-            elif isinstance(self.state.forced('time'), datetime.datetime):
+            if isinstance(self.state.forced('time'), datetime.datetime):
                 delta = (self.state.forced('time') - now).total_seconds()
                 # No need to check actual speed, just use forced speed value
                 delta = delta * self.state.speed
