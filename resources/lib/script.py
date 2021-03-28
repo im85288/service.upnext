@@ -177,6 +177,8 @@ def test_upnext(popup_type, simple_style=False):
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
 
+    test_state.set_log_level(constants.LOG_ENABLE_DEBUG)
+    test_state.start_trigger = True
     monitor.UpNextMonitor(test_player=test_player, test_state=test_state).run()
 
 
@@ -192,12 +194,16 @@ def run(argv):
     #   RunScript(service.upnext,test_window,stillwatching)
     #   RunScript(service.upnext,test_window,upnext,simple)
     #   RunScript(service.upnext,test_window,stillwatching,simple)
-    if len(argv) > 2 and argv[1] == 'test_window':
+    if len(argv) > 2:
+        if argv[1] == 'test_window':
+            test_method = test_popup
+        else:
+            test_method = test_upnext
         # Fancy style popup
         if len(argv) == 3:
-            test_popup(argv[2])
+            test_method(argv[2])
         # Simple style popup
         elif len(argv) == 4:
-            test_popup(argv[2], argv[3])
+            test_method(argv[2], argv[3])
     else:
         open_settings()
