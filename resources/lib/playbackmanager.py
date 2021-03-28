@@ -89,21 +89,20 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                and not self.sigstop
                and not self.sigterm):
             remaining = total_time - self.player.getTime()
-            self.popup.update_progress(round(remaining))
+            self.popup.update_progress(remaining)
 
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
-            wait_time = 0.1 / max(1, self.player.get_speed())
-            remaining -= wait_time
+            wait_time = 0.5 / max(1, self.player.get_speed())
+            monitor.waitForAbort(min(wait_time, remaining))
 
             # If end of file or user has closed popup then exit update loop
-            if (remaining <= 1
+            remaining -= wait_time
+            if (remaining <= 0
                     or self.popup.is_cancel()
                     or self.popup.is_playnow()):
                 popup_done = True
                 break
-
-            monitor.waitForAbort(min(wait_time, remaining))
         else:
             popup_done = False
 
