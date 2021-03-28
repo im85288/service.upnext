@@ -38,8 +38,11 @@ jobs:
     - name: Run unit tests
       run: coverage run -m unittest discover
       if: always()
-    - name: Run script entry
+    - name: Run script entry - popup
       run: coverage run -a resources/lib/script_entry.py 'test_window' 'upnext'
+      if: always()
+    - name: Run script entry - overall
+      run: coverage run -a resources/lib/script_entry.py 'test_upnext' 'upnext'
       if: always()
     - name: Run service entry
       run: coverage run -a resources/lib/service_entry.py
