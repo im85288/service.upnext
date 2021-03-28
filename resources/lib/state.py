@@ -134,7 +134,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.detect_level = utils.get_setting_int('detectLevel')
 
         self.disabled = utils.get_setting_bool('disableNextUp')
-        utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
+        self.set_log_level()
         self.enable_queue = utils.get_setting_bool('enableQueue')
         self.tracker_mode = utils.get_setting_int('trackerMode')
 
@@ -425,3 +425,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def get_season_identifier(self):
         return self.season_identifier
+
+    @staticmethod
+    def set_log_level(level=None):
+        if level is None:
+            utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
+        else:
+            utils.LOG_ENABLE_SETTING = level
