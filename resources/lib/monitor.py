@@ -159,8 +159,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Start/Play event
         if method == PLAYER_MONITOR_EVENTS['start']:
-            # Update player state and remove remnants from previous operations
-            self.player.state.set('time', force=False)
+            # Remove remnants from previous operations
             self.tracker.stop()
 
             # Update playcount and reset resume point of previous file
