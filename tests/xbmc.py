@@ -6,12 +6,16 @@
 # pylint: disable=invalid-name,no-self-use
 
 from __future__ import absolute_import, division, print_function, unicode_literals
-
 import os
+import array
 import json
 import random
+import sys
+import threading
 import time
+from weakref import WeakValueDictionary
 from xbmcextra import global_settings, import_language, __KODI_MATRIX__
+from dummydata import LIBRARY
 from statichelper import to_unicode
 
 
@@ -34,6 +38,9 @@ else:
 
 INFO_LABELS = {
     'System.BuildVersion': '18.9' if __KODI_MATRIX__ else '19.0',
+    'Player.Process(VideoWidth)': 1920,
+    'Player.Process(VideoHeight)': 1080,
+    'Player.Process(VideoDAR)': 1.78
 }
 
 REGIONS = {
@@ -69,32 +76,46 @@ class Keyboard:
 
 class Monitor:
     ''' A stub implementation of the xbmc Monitor class '''
+    _instances = WeakValueDictionary()
+    _instance_number = 0
+    _aborted = False
 
-    def __init__(self, line='', heading=''):
+    def __init__(self):
         ''' A stub constructor for the xbmc Monitor class '''
+        if not Monitor._instance_number:
+            abort_timer = threading.Thread(target=self._timer)
+            abort_timer.daemon = True
+            abort_timer.start()
+
+        Monitor._instances[Monitor._instance_number] = self
+        Monitor._instance_number += 1
+
+    def _timer(self):
+        abort_times = [10, 30, 60]
+        abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
+
+        time.sleep(abort_time)
+        Monitor._aborted = True
+        sys.exit()
 
     def abortRequested(self):
         ''' A stub implementation for the xbmc Monitor class abortRequested() method '''
-        return False
+        return Monitor._aborted
 
     def waitForAbort(self, timeout=None):
         ''' A stub implementation for the xbmc Monitor class waitForAbort() method '''
-        abort_times = [5, 10, 20, 30]
-        abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
-        aborted = False
-
-        if not timeout or timeout >= abort_time:
-            timeout = abort_time
-            aborted = True
-        else:
-            aborted = False
+        sleep_time = timeout if timeout else 1
+        timed_out = False
 
         try:
-            time.sleep(timeout)
-        except (KeyboardInterrupt, Exception):  # pylint: disable=broad-except
-            aborted = True
+            while not timed_out and not Monitor._aborted:
+                time.sleep(sleep_time)
+                if timeout:
+                    timed_out = True
+        except (KeyboardInterrupt, SystemExit, Exception):  # pylint: disable=broad-except
+            pass
 
-        return aborted
+        return Monitor._aborted
 
 
 class Player:
@@ -212,10 +233,10 @@ class RenderCapture:
 
     def getImage(self):
         ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
-        return [
-            random.randint(0, 255)
-            for _ in range(self._width * self._height * 4)
-        ]
+        return array.array('B', [
+            random.randint(0, 255) if i % 4 != 3 else 255
+            for i in range(self._width * self._height * 4)
+        ])
 
 
 def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
@@ -226,21 +247,114 @@ def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
 def executeJSONRPC(jsonrpccommand):
     ''' A reimplementation of the xbmc executeJSONRPC() function '''
     command = json.loads(jsonrpccommand)
-    if command.get('method') == 'Settings.GetSettingValue':
-        key = command.get('params').get('setting')
+    method = command.get('method') if command else None
+    params = command.get('params', {}) if command else {}
+
+    if method == 'Settings.GetSettingValue':
+        key = params.get('setting')
         return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(value=GLOBAL_SETTINGS.get(key))))
-    if command.get('method') == 'Addons.GetAddonDetails':
-        if command.get('params', {}).get('addonid') == 'script.module.inputstreamhelper':
+
+    if method == 'Addons.GetAddonDetails':
+        if params.get('addonid') == 'script.module.inputstreamhelper':
             return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(addon=dict(enabled='true', version='0.3.5'))))
         return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(addon=dict(enabled='true', version='1.2.3'))))
-    if command.get('method') == 'Textures.GetTextures':
+
+    if method == 'Textures.GetTextures':
         return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(textures=[dict(cachedurl="", imagehash="", lasthashcheck="", textureid=4837, url="")])))
-    if command.get('method') == 'Textures.RemoveTexture':
+
+    if method == 'Textures.RemoveTexture':
         return json.dumps(dict(id=1, jsonrpc='2.0', result="OK"))
-    if command.get('method') == 'Player.GetActivePlayers':
+
+    if method == 'Player.GetActivePlayers':
         return json.dumps(dict(id=1, jsonrpc='2.0', result=[[dict(type='video', playerid=1)], [dict(type='audio', playerid=0)], []][random.randint(0, 2)]))
-    if command.get('method') == 'Player.GetProperties' and command.get('params', {}).get('properties') == ['speed']:
+
+    if method == 'Player.GetProperties' and params.get('properties') == ['speed']:
         return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(speed=random.randint(0, 1))))
+
+    if method == 'Player.GetItem':
+        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(item=LIBRARY['episodes'][0])))
+
+    if method == 'VideoLibrary.GetTVShows':
+        tvshow_filter = params.get('filter')
+        if tvshow_filter:
+            filter_field = tvshow_filter.get('field')
+            filter_operator = tvshow_filter.get('operator')
+            filter_value = tvshow_filter.get('value')
+            if filter_field == 'title' and filter_operator == 'is':
+                tvshowid = LIBRARY['tvshows'].get(filter_value, {}).get('tvshowid')
+                episodes = [episode for episode in LIBRARY['episodes'] if episode['showtitle'] == filter_value]
+                for episode in episodes:
+                    episode['tvshowid'] = tvshowid
+                return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(tvshows=[dict(tvshowid=tvshowid)])))
+
+    if method == 'VideoLibrary.GetEpisodes':
+        episode_filter = params.get('filter', {})
+        tvshowid = params.get('tvshowid')
+        if tvshowid is not None and episode_filter:
+            def filter_walker(filter_object, seeking):
+                for level in filter_object:
+                    if isinstance(filter_object, dict) and filter_object[level] == seeking:
+                        return filter_object
+                    elif isinstance(level, dict):
+                        found = filter_walker(level, seeking)
+                        if found:
+                            return found
+                    elif isinstance(filter_object[level], list):
+                        found = filter_walker(filter_object[level], seeking)
+                        if found:
+                            return found
+                    elif isinstance(filter_object[level], dict):
+                        found = filter_walker(filter_object[level], seeking)
+                        if found:
+                            return found
+
+            season = filter_walker(episode_filter, 'season')
+            episode_number = filter_walker(episode_filter, 'episode')
+            if season and episode_number:
+                episodes = [
+                    episode for episode in LIBRARY['episodes']
+                    if episode['tvshowid'] == tvshowid
+                    and episode['season'] == int(season.get('value'))
+                    and episode['episode'] >= int(episode_number.get('value'))
+                ]
+                if episode_number.get('operator') == 'greaterthan':
+                    episodes = episodes[1:]
+                return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(episodes=episodes)))
+
+    if method == 'VideoLibrary.GetEpisodeDetails':
+        episodeid = params.get('episodeid')
+        if episodeid is not None:
+            episodes = [
+                episode for episode in LIBRARY['episodes']
+                if episode['episodeid'] == episodeid
+            ]
+            return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(episodedetails=episodes[0])))
+
+    if method == 'VideoLibrary.GetTVShowDetails':
+        tvshowid = params.get('tvshowid')
+        if tvshowid is not None:
+            tvshows = [
+                details for tvshow, details in LIBRARY['tvshows'].items()
+                if details['tvshowid'] == tvshowid
+            ]
+            return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(tvshowdetails=tvshows[0])))
+
+    if method == 'JSONRPC.NotifyAll':
+        for ref in Monitor._instances.valuerefs():
+            notification_handler = getattr(ref, "onNotification", None)
+            if callable(notification_handler):
+                notification_handler(ref, params.get('sender'), params.get('message'), params.get('data'))
+        return json.dumps(dict(id=1, jsonrpc='2.0', result="OK"))
+
+    if method == 'Player.Open':
+        pass
+
+    if method == 'Playlist.Add':
+        pass
+
+    if method == 'Playlist.Add':
+        pass
+
     log("executeJSONRPC does not implement method '{method}'".format(**command), LOGERROR)
     return json.dumps(dict(error=dict(code=-1, message='Not implemented'), id=1, jsonrpc='2.0'))
 
@@ -254,7 +368,7 @@ def getCondVisibility(string):
 
 def getInfoLabel(key):
     ''' A reimplementation of the xbmc getInfoLabel() function '''
-    return INFO_LABELS.get(key)
+    return INFO_LABELS.get(key, '')
 
 
 def getLocalizedString(msgctxt):
