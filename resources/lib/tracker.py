@@ -69,15 +69,16 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
             # Detector starts before normal popup request time
             detect_time = self.state.get_detect_time()
+            detect_time = detect_time and detect_time <= play_time
             # Start detector if not already started
-            if not self.detector and 0 < detect_time <= play_time:
+            if not self.detector and detect_time:
                 self.detector = detector.UpNextDetector(
                     player=self.player,
                     state=self.state
                 )
                 self.detector.start()
             # Otherwise check whether credits have been detected
-            elif 0 < detect_time <= play_time and self.detector.detected():
+            elif detect_time and self.detector.detected():
                 # Stop detector but keep processed hashes
                 self.detector.stop()
                 self.log('Credits detected')
