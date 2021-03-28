@@ -4,66 +4,17 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmcaddon
-import constants
+import dummydata
 import monitor
 import playbackmanager
 import player
 import state
 
 
-# Dummy episode to simulate now playing info
-TEST_EPISODE = {
-    'episodeid': constants.UNKNOWN_DATA,
-    'tvshowid': constants.UNKNOWN_DATA,
-    'title': 'Garden of Bones',
-    'art': {
-        'thumb': 'https://artworks.thetvdb.com/banners/episodes/121361/4245773.jpg',
-        'tvshow.fanart': 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg',
-        'tvshow.clearart': 'https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png',
-        'tvshow.clearlogo': 'https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png',
-        'tvshow.landscape': 'https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg',
-        'tvshow.poster': 'https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg',
-    },
-    'season': 2,
-    'episode': 4,
-    'showtitle': 'Game of Thrones',
-    'plot': 'Lord Baelish arrives at Renly\'s camp just before he faces off against Stannis. '
-            'Daenerys and her company are welcomed into the city of Qarth. Arya, Gendry, and '
-            'Hot Pie find themselves imprisoned at Harrenhal.',
-    'playcount': 1,
-    'rating': 8.8,
-    'firstaired': 2012,
-    'runtime': 3000,
-    'file': 'Game of Thrones - S02E04 - Garden of Bones.mkv'
-}
-# Dummy episode to simulate next episode to show in popup
-TEST_NEXT_EPISODE = {
-    'episodeid': constants.UNKNOWN_DATA,
-    'tvshowid': constants.UNKNOWN_DATA,
-    'title': 'The Ghost of Harrenhal',
-    'art': {
-        'thumb': 'https://artworks.thetvdb.com/banners/episodes/121361/4245774.jpg',
-        'tvshow.fanart': 'https://fanart.tv/fanart/tv/121361/showbackground/game-of-thrones-4fd5fa8ed5e1b.jpg',
-        'tvshow.clearart': 'https://fanart.tv/fanart/tv/121361/clearart/game-of-thrones-4fa1349588447.png',
-        'tvshow.clearlogo': 'https://fanart.tv/fanart/tv/121361/hdtvlogo/game-of-thrones-504c49ed16f70.png',
-        'tvshow.landscape': 'https://fanart.tv/detailpreview/fanart/tv/121361/tvthumb/game-of-thrones-4f78ce73d617c.jpg',
-        'tvshow.poster': 'https://fanart.tv/fanart/tv/121361/tvposter/game-of-thrones-521441fd9b45b.jpg',
-    },
-    'season': 2,
-    'episode': 5,
-    'showtitle': 'Game of Thrones',
-    'plot': 'Tyrion investigates a secret weapon that King Joffrey plans to use against Stannis. '
-            'Meanwhile, as a token for saving his life, Jaqen H\'ghar offers to kill three people '
-            'that Arya chooses.',
-    'playcount': 0,
-    'rating': 8.8,
-    'firstaired': 2012,
-    'runtime': 3300,
-    'file': 'Game of Thrones - S02E05 - The Ghost of Harrenhal.mkv'
-}
-
-
 def test_popup(popup_type, simple_style=False):
+    test_episode = dummydata.LIBRARY['episodes'][0]
+    test_next_episode = dummydata.LIBRARY['episodes'][1]
+
     # Create test state object
     test_state = state.UpNextState()
     # Simulate after file has started
@@ -72,7 +23,7 @@ def test_popup(popup_type, simple_style=False):
     test_state.playing = 1
     # Use test episode to simulate next playing episode used for popup display
     test_state.next_item = {
-        'item': TEST_NEXT_EPISODE,
+        'item': test_next_episode,
         'source': 'library'
     }
 
@@ -91,13 +42,13 @@ def test_popup(popup_type, simple_style=False):
         'playing': {'value': True, 'force': True},
         # 'paused': {'value': False, 'force': False},
         # Simulate dummy file name
-        'playing_file': {'value': TEST_EPISODE['file'], 'force': True},
-        'next_file': {'value': TEST_NEXT_EPISODE['file'], 'force': True},
+        'playing_file': {'value': test_episode['file'], 'force': True},
+        'next_file': {'value': test_next_episode['file'], 'force': True},
         'speed': {'value': 1, 'force': True},
         # Simulate runtime of endtime minus 10s
-        'time': {'value': TEST_EPISODE['runtime'] - 10, 'force': True},
+        'time': {'value': test_episode['runtime'] - 10, 'force': True},
         # Simulate endtime based on dummy episode
-        'total_time': {'value': TEST_EPISODE['runtime'], 'force': True},
+        'total_time': {'value': test_episode['runtime'], 'force': True},
         # 'next_file': {'value': None, 'force': False},
         # Simulate episode media type is being played based on dummy episode
         'media_type': {'value': 'episode', 'force': True},
@@ -107,11 +58,11 @@ def test_popup(popup_type, simple_style=False):
     })
     # Simulate player state could also be done using the following
     test_player.state.set('playing', True, force=True)
-    test_player.state.set('playing_file', TEST_EPISODE['file'], force=True)
-    test_player.state.set('next_file', TEST_NEXT_EPISODE['file'], force=True)
+    test_player.state.set('playing_file', test_episode['file'], force=True)
+    test_player.state.set('next_file', test_next_episode['file'], force=True)
     test_player.state.set('speed', 1, force=True)
-    test_player.state.set('time', (TEST_EPISODE['runtime'] - 10), force=True)
-    test_player.state.set('total_time', TEST_EPISODE['runtime'], force=True)
+    test_player.state.set('time', (test_episode['runtime'] - 10), force=True)
+    test_player.state.set('total_time', test_episode['runtime'], force=True)
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
 
@@ -122,6 +73,9 @@ def test_popup(popup_type, simple_style=False):
 
 
 def test_upnext(popup_type, simple_style=False):
+    test_episode = dummydata.LIBRARY['episodes'][0]
+    test_next_episode = dummydata.LIBRARY['episodes'][1]
+
     # Create test state object
     test_state = state.UpNextState()
     # Simulate after file has started
@@ -129,14 +83,14 @@ def test_upnext(popup_type, simple_style=False):
     # And while it is playing
     test_state.playing = 1
     # Use test episodes to simulate currently/next playing episodes for testing
-    test_state.item = {
-        'item': TEST_EPISODE,
-        'source': 'library'
-    }
-    test_state.next_item = {
-        'item': TEST_NEXT_EPISODE,
-        'source': 'library'
-    }
+    # test_state.item = {
+    #     'item': test_episode,
+    #     'source': 'library'
+    # }
+    # test_state.next_item = {
+    #     'item': test_next_episode,
+    #     'source': 'library'
+    # }
 
     # Choose popup style
     test_state.simple_mode = bool(simple_style)
@@ -153,13 +107,13 @@ def test_upnext(popup_type, simple_style=False):
         'playing': {'value': True, 'force': True},
         # 'paused': {'value': False, 'force': False},
         # Simulate dummy file name
-        'playing_file': {'value': TEST_EPISODE['file'], 'force': True},
-        'next_file': {'value': TEST_NEXT_EPISODE['file'], 'force': True},
+        'playing_file': {'value': test_episode['file'], 'force': True},
+        'next_file': {'value': test_next_episode['file'], 'force': True},
         'speed': {'value': 1, 'force': True},
         # Simulate runtime of endtime minus 10s
-        'time': {'value': TEST_EPISODE['runtime'] - 10, 'force': True},
+        'time': {'value': test_episode['runtime'] - 30, 'force': True},
         # Simulate endtime based on dummy episode
-        'total_time': {'value': TEST_EPISODE['runtime'], 'force': True},
+        'total_time': {'value': test_episode['runtime'], 'force': True},
         # 'next_file': {'value': None, 'force': False},
         # Simulate episode media type is being played based on dummy episode
         'media_type': {'value': 'episode', 'force': True},
@@ -169,16 +123,14 @@ def test_upnext(popup_type, simple_style=False):
     })
     # Simulate player state could also be done using the following
     test_player.state.set('playing', True, force=True)
-    test_player.state.set('playing_file', TEST_EPISODE['file'], force=True)
-    test_player.state.set('next_file', TEST_NEXT_EPISODE['file'], force=True)
+    test_player.state.set('playing_file', test_episode['file'], force=True)
+    test_player.state.set('next_file', test_next_episode['file'], force=True)
     test_player.state.set('speed', 1, force=True)
-    test_player.state.set('time', (TEST_EPISODE['runtime'] - 10), force=True)
-    test_player.state.set('total_time', TEST_EPISODE['runtime'], force=True)
+    test_player.state.set('time', (test_episode['runtime'] - 30), force=True)
+    test_player.state.set('total_time', test_episode['runtime'], force=True)
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
 
-    test_state.set_log_level(constants.LOG_ENABLE_DEBUG)
-    test_state.start_trigger = True
     monitor.UpNextMonitor(test_player=test_player, test_state=test_state).run()
 
 
