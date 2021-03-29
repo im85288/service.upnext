@@ -14,7 +14,7 @@
 		"demoSeek": "0",
 		"detectLevel": "90",
 		"detectorDebug": "false",
-		"detectPeriod": "90",
+		"detectPeriod": "30",
 		"detectPlayTime": "true",
 		"disableNextUp": "false",
 		"enableDemoMode": "false",
@@ -31,6 +31,6 @@
 		"simpleMode": "1",
 		"startTrigger": "true",
 		"stopAfterClose": "true",
-		"trackerMode": "1"
+		"trackerMode": "2"
 	}
 }
