@@ -250,15 +250,11 @@ def _filter_walker(filter_object, seeking):
     for level in filter_object:
         if isinstance(filter_object, dict) and filter_object[level] == seeking:
             return filter_object
-        elif isinstance(level, dict):
+        if isinstance(level, dict):
             found = _filter_walker(level, seeking)
             if found:
                 return found
-        elif isinstance(filter_object[level], list):
-            found = _filter_walker(filter_object[level], seeking)
-            if found:
-                return found
-        elif isinstance(filter_object[level], dict):
+        elif isinstance(filter_object[level], (dict, list)):
             found = _filter_walker(filter_object[level], seeking)
             if found:
                 return found
@@ -274,7 +270,7 @@ def _Settings_GetSettingValue(params):
     ))
 
 
-def _Player_GetActivePlayers(params):
+def _Player_GetActivePlayers(params):  # pylint: disable=unused-argument
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
@@ -297,7 +293,7 @@ def _Player_GetProperties(params):
     ))
 
 
-def _Player_GetItem(params):
+def _Player_GetItem(params):  # pylint: disable=unused-argument
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
@@ -406,15 +402,15 @@ def _JSONRPC_NotifyAll(params):
     return True
 
 
-def _Player_Open(params):
+def _Player_Open(params):  # pylint: disable=unused-argument
     return True
 
 
-def _Playlist_Add(params):
+def _Playlist_Add(params):  # pylint: disable=unused-argument
     return True
 
 
-def _Playlist_Remove(params):
+def _Playlist_Remove(params):  # pylint: disable=unused-argument
     return True
 
 
@@ -447,7 +443,7 @@ def executeJSONRPC(jsonrpccommand):
             jsonrpc='2.0',
             result="OK"
         ))
-    elif return_val:
+    if return_val:
         return return_val
 
     log("executeJSONRPC does not implement method '{method}'".format(**command), LOGERROR)
