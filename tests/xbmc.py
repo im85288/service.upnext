@@ -114,8 +114,8 @@ class Monitor:
                 time.sleep(sleep_time)
                 if timeout:
                     timed_out = True
-        except (KeyboardInterrupt, SystemExit, Exception):  # pylint: disable=broad-except
-            pass
+        except (KeyboardInterrupt, SystemExit, Exception) as error:  # pylint: disable=broad-except
+            raise error
 
         return Monitor._aborted
 
