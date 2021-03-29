@@ -261,7 +261,7 @@ def _filter_walker(filter_object, seeking):
     return None
 
 
-def _Settings_GetSettingValue(params):
+def _settings_getsettingvalue(params):
     key = params.get('setting')
     return json.dumps(dict(
         id=1,
@@ -270,7 +270,7 @@ def _Settings_GetSettingValue(params):
     ))
 
 
-def _Player_GetActivePlayers(params):  # pylint: disable=unused-argument
+def _player_getactiveplayers(params):  # pylint: disable=unused-argument
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
@@ -282,7 +282,7 @@ def _Player_GetActivePlayers(params):  # pylint: disable=unused-argument
     ))
 
 
-def _Player_GetProperties(params):
+def _player_getproperties(params):
     if params.get('properties') != ['speed']:
         return False
 
@@ -293,7 +293,7 @@ def _Player_GetProperties(params):
     ))
 
 
-def _Player_GetItem(params):  # pylint: disable=unused-argument
+def _player_getitem(params):  # pylint: disable=unused-argument
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
@@ -301,7 +301,7 @@ def _Player_GetItem(params):  # pylint: disable=unused-argument
     ))
 
 
-def _VideoLibrary_GetTVShows(params):
+def _videolibrary_gettvshows(params):
     tvshow_filter = params.get('filter')
     if not tvshow_filter:
         return False
@@ -327,7 +327,7 @@ def _VideoLibrary_GetTVShows(params):
     ))
 
 
-def _VideoLibrary_GetEpisodes(params):
+def _videolibrary_getepisodes(params):
     episode_filter = params.get('filter', {})
     tvshowid = params.get('tvshowid')
     if tvshowid is None or not episode_filter:
@@ -354,7 +354,7 @@ def _VideoLibrary_GetEpisodes(params):
     ))
 
 
-def _VideoLibrary_GetEpisodeDetails(params):
+def _videolibrary_getepisodedetails(params):
     episodeid = params.get('episodeid')
     if episodeid is None:
         return False
@@ -371,7 +371,7 @@ def _VideoLibrary_GetEpisodeDetails(params):
     ))
 
 
-def _VideoLibrary_GetTVShowDetails(params):
+def _videolibrary_gettvshowdetails(params):
     tvshowid = params.get('tvshowid')
     if tvshowid is None:
         return False
@@ -388,7 +388,7 @@ def _VideoLibrary_GetTVShowDetails(params):
     ))
 
 
-def _JSONRPC_NotifyAll(params):
+def _jsonrpc_notifyall(params):
     for ref in _monitor_instances.valuerefs():
         notification_handler = getattr(ref, "onNotification", None)
         if callable(notification_handler):
@@ -402,31 +402,31 @@ def _JSONRPC_NotifyAll(params):
     return True
 
 
-def _Player_Open(params):  # pylint: disable=unused-argument
+def _player_open(params):  # pylint: disable=unused-argument
     return True
 
 
-def _Playlist_Add(params):  # pylint: disable=unused-argument
+def _playlist_add(params):  # pylint: disable=unused-argument
     return True
 
 
-def _Playlist_Remove(params):  # pylint: disable=unused-argument
+def _playlist_remove(params):  # pylint: disable=unused-argument
     return True
 
 
 _JSONRPC_methods = {
-    'Settings.GetSettingValue': _Settings_GetSettingValue,
-    'Player.GetActivePlayers': _Player_GetActivePlayers,
-    'Player.GetProperties': _Player_GetProperties,
-    'Player.GetItem': _Player_GetItem,
-    'VideoLibrary.GetTVShows': _VideoLibrary_GetTVShows,
-    'VideoLibrary.GetEpisodes': _VideoLibrary_GetEpisodes,
-    'VideoLibrary.GetEpisodeDetails': _VideoLibrary_GetEpisodeDetails,
-    'VideoLibrary.GetTVShowDetails': _VideoLibrary_GetTVShowDetails,
-    'JSONRPC.NotifyAll': _JSONRPC_NotifyAll,
-    'Player.Open': _Player_Open,
-    'Playlist.Add': _Playlist_Add,
-    'Playlist.Remove': _Playlist_Remove
+    'Settings.GetSettingValue': _settings_getsettingvalue,
+    'Player.GetActivePlayers': _player_getactiveplayers,
+    'Player.GetProperties': _player_getproperties,
+    'Player.GetItem': _player_getitem,
+    'VideoLibrary.GetTVShows': _videolibrary_gettvshows,
+    'VideoLibrary.GetEpisodes': _videolibrary_getepisodes,
+    'VideoLibrary.GetEpisodeDetails': _videolibrary_getepisodedetails,
+    'VideoLibrary.GetTVShowDetails': _videolibrary_gettvshowdetails,
+    'JSONRPC.NotifyAll': _jsonrpc_notifyall,
+    'Player.Open': _player_open,
+    'Playlist.Add': _playlist_add,
+    'Playlist.Remove': _playlist_remove
 }
 
 
