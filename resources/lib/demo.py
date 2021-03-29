@@ -4,6 +4,7 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
+import constants
 import plugin
 import upnext
 import utils
@@ -32,25 +33,21 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
             called[0] = True
             upnext.send_signal(addon_id, upnext_info)
 
-    if not state.demo_seek:
-        return
+    # Seek to 15s before end of video
+    if state.demo_seek == constants.DEMO_SEEK_15S:
+        seek_time = player.getTotalTime() - 15
     # Seek to popup start time
-    if state.demo_seek == 2:
+    if state.demo_seek == constants.DEMO_SEEK_POPUP_TIME:
         seek_time = state.get_popup_time()
     # Seek to detector start time
-    elif state.demo_seek == 3:
+    elif state.demo_seek == constants.DEMO_SEEK_DETECT_TIME:
         seek_time = state.get_detect_time()
-    # Otherwise no specific seek point set
     else:
-        seek_time = 0
+        return
 
     monitor = xbmc.Monitor()
     with player as check_fail:
         log('Seeking to end')
-
-        # Seek to 15s before end of video if no seek point set
-        if not seek_time:
-            seek_time = player.getTotalTime() - 15
         player.seekTime(seek_time)
 
         # Seek workaround required for AML HW decoder on certain problematic
