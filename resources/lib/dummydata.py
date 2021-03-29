@@ -43,7 +43,7 @@ LIBRARY = {
                     'Hot Pie find themselves imprisoned at Harrenhal.',
             'playcount': 1,
             'rating': 8.8,
-            'firstaired': 2012,
+            'firstaired': 'April 22, 2012',
             'runtime': 3000,
             'file': 'Game of Thrones - S02E04 - Garden of Bones.mkv'
         },
@@ -67,7 +67,7 @@ LIBRARY = {
                     'that Arya chooses.',
             'playcount': 0,
             'rating': 8.8,
-            'firstaired': 2012,
+            'firstaired': 'April 29, 2012',
             'runtime': 3300,
             'file': 'Game of Thrones - S02E05 - The Ghost of Harrenhal.mkv'
         }

@@ -91,7 +91,15 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
                 'seasonepisode',
                 '{0}x{1}'.format(season, episode) if season else episode
             )
-            self.setProperty('year', str(self.item.get('firstaired', '')))
+            firstaired_date, firstaired_string = utils.localize_date(
+                self.item.get('firstaired', '')
+            )
+            self.setProperty('firstaired', firstaired_string)
+            self.setProperty('premiered', firstaired_string)
+            self.setProperty(
+                'year',
+                firstaired_date.year if firstaired_date else firstaired_string
+            )
             self.setProperty('rating', rating)
             self.setProperty('playcount', str(self.item.get('playcount', 0)))
             self.setProperty('runtime', str(self.item.get('runtime', '')))
