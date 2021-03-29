@@ -74,9 +74,11 @@ class Keyboard:
         return 'test'
 
 
+_monitor_instances = WeakValueDictionary()
+
+
 class Monitor:
     ''' A stub implementation of the xbmc Monitor class '''
-    _instances = WeakValueDictionary()
     _instance_number = 0
     _aborted = False
 
@@ -87,7 +89,7 @@ class Monitor:
             abort_timer.daemon = True
             abort_timer.start()
 
-        Monitor._instances[Monitor._instance_number] = self
+        _monitor_instances[Monitor._instance_number] = self
         Monitor._instance_number += 1
 
     def _timer(self):
@@ -244,119 +246,216 @@ def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
     return
 
 
+def _filter_walker(filter_object, seeking):
+    for level in filter_object:
+        if isinstance(filter_object, dict) and filter_object[level] == seeking:
+            return filter_object
+        elif isinstance(level, dict):
+            found = _filter_walker(level, seeking)
+            if found:
+                return found
+        elif isinstance(filter_object[level], list):
+            found = _filter_walker(filter_object[level], seeking)
+            if found:
+                return found
+        elif isinstance(filter_object[level], dict):
+            found = _filter_walker(filter_object[level], seeking)
+            if found:
+                return found
+    return None
+
+
+def _Settings_GetSettingValue(params):
+    key = params.get('setting')
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(value=GLOBAL_SETTINGS.get(key))
+    ))
+
+
+def _Player_GetActivePlayers(params):
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=[
+            [dict(type='video', playerid=1)],
+            [dict(type='audio', playerid=0)],
+            []
+        ][random.randint(0, 2)]
+    ))
+
+
+def _Player_GetProperties(params):
+    if params.get('properties') != ['speed']:
+        return False
+
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(speed=random.randint(0, 1))
+    ))
+
+
+def _Player_GetItem(params):
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(item=LIBRARY['episodes'][0])
+    ))
+
+
+def _VideoLibrary_GetTVShows(params):
+    tvshow_filter = params.get('filter')
+    if not tvshow_filter:
+        return False
+
+    filter_field = tvshow_filter.get('field')
+    filter_operator = tvshow_filter.get('operator')
+    filter_value = tvshow_filter.get('value')
+    if filter_field != 'title' or filter_operator != 'is':
+        return False
+
+    tvshowid = LIBRARY['tvshows'].get(filter_value, {}).get('tvshowid')
+    episodes = [
+        episode for episode in LIBRARY['episodes']
+        if episode['showtitle'] == filter_value
+    ]
+    for episode in episodes:
+        episode['tvshowid'] = tvshowid
+
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(tvshows=[dict(tvshowid=tvshowid)])
+    ))
+
+
+def _VideoLibrary_GetEpisodes(params):
+    episode_filter = params.get('filter', {})
+    tvshowid = params.get('tvshowid')
+    if tvshowid is None or not episode_filter:
+        return False
+
+    season = _filter_walker(episode_filter, 'season')
+    episode_number = _filter_walker(episode_filter, 'episode')
+    if not season or not episode_number:
+        return False
+
+    episodes = [
+        episode for episode in LIBRARY['episodes']
+        if episode['tvshowid'] == tvshowid
+        and episode['season'] == int(season.get('value'))
+        and episode['episode'] >= int(episode_number.get('value'))
+    ]
+    if episode_number.get('operator') == 'greaterthan':
+        episodes = episodes[1:]
+
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(episodes=episodes)
+    ))
+
+
+def _VideoLibrary_GetEpisodeDetails(params):
+    episodeid = params.get('episodeid')
+    if episodeid is None:
+        return False
+
+    episodes = [
+        episode for episode in LIBRARY['episodes']
+        if episode['episodeid'] == episodeid
+    ]
+
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(episodedetails=episodes[0])
+    ))
+
+
+def _VideoLibrary_GetTVShowDetails(params):
+    tvshowid = params.get('tvshowid')
+    if tvshowid is None:
+        return False
+
+    tvshows = [
+        details for _, details in LIBRARY['tvshows'].items()
+        if details['tvshowid'] == tvshowid
+    ]
+
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        result=dict(tvshowdetails=tvshows[0])
+    ))
+
+
+def _JSONRPC_NotifyAll(params):
+    for ref in _monitor_instances.valuerefs():
+        notification_handler = getattr(ref, "onNotification", None)
+        if callable(notification_handler):
+            notification_handler(
+                ref,
+                params.get('sender'),
+                params.get('message'),
+                params.get('data')
+            )
+
+    return True
+
+
+def _Player_Open(params):
+    return True
+
+
+def _Playlist_Add(params):
+    return True
+
+
+def _Playlist_Remove(params):
+    return True
+
+
+_JSONRPC_methods = {
+    'Settings.GetSettingValue': _Settings_GetSettingValue,
+    'Player.GetActivePlayers': _Player_GetActivePlayers,
+    'Player.GetProperties': _Player_GetProperties,
+    'Player.GetItem': _Player_GetItem,
+    'VideoLibrary.GetTVShows': _VideoLibrary_GetTVShows,
+    'VideoLibrary.GetEpisodes': _VideoLibrary_GetEpisodes,
+    'VideoLibrary.GetEpisodeDetails': _VideoLibrary_GetEpisodeDetails,
+    'VideoLibrary.GetTVShowDetails': _VideoLibrary_GetTVShowDetails,
+    'JSONRPC.NotifyAll': _JSONRPC_NotifyAll,
+    'Player.Open': _Player_Open,
+    'Playlist.Add': _Playlist_Add,
+    'Playlist.Add': _Playlist_Add
+}
+
+
 def executeJSONRPC(jsonrpccommand):
     ''' A reimplementation of the xbmc executeJSONRPC() function '''
     command = json.loads(jsonrpccommand)
-    method = command.get('method') if command else None
+    method = _JSONRPC_methods.get(command.get('method')) if command else None
     params = command.get('params', {}) if command else {}
 
-    if method == 'Settings.GetSettingValue':
-        key = params.get('setting')
-        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(value=GLOBAL_SETTINGS.get(key))))
-
-    if method == 'Addons.GetAddonDetails':
-        if params.get('addonid') == 'script.module.inputstreamhelper':
-            return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(addon=dict(enabled='true', version='0.3.5'))))
-        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(addon=dict(enabled='true', version='1.2.3'))))
-
-    if method == 'Textures.GetTextures':
-        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(textures=[dict(cachedurl="", imagehash="", lasthashcheck="", textureid=4837, url="")])))
-
-    if method == 'Textures.RemoveTexture':
-        return json.dumps(dict(id=1, jsonrpc='2.0', result="OK"))
-
-    if method == 'Player.GetActivePlayers':
-        return json.dumps(dict(id=1, jsonrpc='2.0', result=[[dict(type='video', playerid=1)], [dict(type='audio', playerid=0)], []][random.randint(0, 2)]))
-
-    if method == 'Player.GetProperties' and params.get('properties') == ['speed']:
-        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(speed=random.randint(0, 1))))
-
-    if method == 'Player.GetItem':
-        return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(item=LIBRARY['episodes'][0])))
-
-    if method == 'VideoLibrary.GetTVShows':
-        tvshow_filter = params.get('filter')
-        if tvshow_filter:
-            filter_field = tvshow_filter.get('field')
-            filter_operator = tvshow_filter.get('operator')
-            filter_value = tvshow_filter.get('value')
-            if filter_field == 'title' and filter_operator == 'is':
-                tvshowid = LIBRARY['tvshows'].get(filter_value, {}).get('tvshowid')
-                episodes = [episode for episode in LIBRARY['episodes'] if episode['showtitle'] == filter_value]
-                for episode in episodes:
-                    episode['tvshowid'] = tvshowid
-                return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(tvshows=[dict(tvshowid=tvshowid)])))
-
-    if method == 'VideoLibrary.GetEpisodes':
-        episode_filter = params.get('filter', {})
-        tvshowid = params.get('tvshowid')
-        if tvshowid is not None and episode_filter:
-            def filter_walker(filter_object, seeking):
-                for level in filter_object:
-                    if isinstance(filter_object, dict) and filter_object[level] == seeking:
-                        return filter_object
-                    elif isinstance(level, dict):
-                        found = filter_walker(level, seeking)
-                        if found:
-                            return found
-                    elif isinstance(filter_object[level], list):
-                        found = filter_walker(filter_object[level], seeking)
-                        if found:
-                            return found
-                    elif isinstance(filter_object[level], dict):
-                        found = filter_walker(filter_object[level], seeking)
-                        if found:
-                            return found
-
-            season = filter_walker(episode_filter, 'season')
-            episode_number = filter_walker(episode_filter, 'episode')
-            if season and episode_number:
-                episodes = [
-                    episode for episode in LIBRARY['episodes']
-                    if episode['tvshowid'] == tvshowid
-                    and episode['season'] == int(season.get('value'))
-                    and episode['episode'] >= int(episode_number.get('value'))
-                ]
-                if episode_number.get('operator') == 'greaterthan':
-                    episodes = episodes[1:]
-                return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(episodes=episodes)))
-
-    if method == 'VideoLibrary.GetEpisodeDetails':
-        episodeid = params.get('episodeid')
-        if episodeid is not None:
-            episodes = [
-                episode for episode in LIBRARY['episodes']
-                if episode['episodeid'] == episodeid
-            ]
-            return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(episodedetails=episodes[0])))
-
-    if method == 'VideoLibrary.GetTVShowDetails':
-        tvshowid = params.get('tvshowid')
-        if tvshowid is not None:
-            tvshows = [
-                details for tvshow, details in LIBRARY['tvshows'].items()
-                if details['tvshowid'] == tvshowid
-            ]
-            return json.dumps(dict(id=1, jsonrpc='2.0', result=dict(tvshowdetails=tvshows[0])))
-
-    if method == 'JSONRPC.NotifyAll':
-        for ref in Monitor._instances.valuerefs():
-            notification_handler = getattr(ref, "onNotification", None)
-            if callable(notification_handler):
-                notification_handler(ref, params.get('sender'), params.get('message'), params.get('data'))
-        return json.dumps(dict(id=1, jsonrpc='2.0', result="OK"))
-
-    if method == 'Player.Open':
-        pass
-
-    if method == 'Playlist.Add':
-        pass
-
-    if method == 'Playlist.Add':
-        pass
+    return_val = method(params) if callable(method) else False
+    if return_val is True:
+        return json.dumps(dict(
+            id=1,
+            jsonrpc='2.0',
+            result="OK"
+        ))
+    elif return_val:
+        return return_val
 
     log("executeJSONRPC does not implement method '{method}'".format(**command), LOGERROR)
-    return json.dumps(dict(error=dict(code=-1, message='Not implemented'), id=1, jsonrpc='2.0'))
+    return json.dumps(dict(
+        id=1,
+        jsonrpc='2.0',
+        error=dict(code=-1, message='Not implemented')
+    ))
 
 
 def getCondVisibility(string):
