@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import base64
 import binascii
+import dateutil.parser
 import json
 import sys
 import xbmc
@@ -278,7 +279,31 @@ def localize(string_id):
     return ADDON.getLocalizedString(string_id)
 
 
-def localize_time(time_str):
+def get_year(date_string):
+    """Extract year from a date string. Returns year, or input if unable to
+    parse"""
+
+    try:
+        date_object = dateutil.parser.parse(date_string)
+        return date_object.year
+    except ValueError:
+        return date_string
+
+
+def localize_date(date_string):
+    """Localize date format"""
+
+    date_format = xbmc.getRegion('dateshort')
+
+    try:
+        date_object = dateutil.parser.parse(date_string)
+    except ValueError:
+        return None, date_string
+
+    return date_object, date_object.strftime(date_format)
+
+
+def localize_time(time_object):
     """Localize time format"""
 
     time_format = xbmc.getRegion('time')
@@ -290,7 +315,7 @@ def localize_time(time_str):
     # Strip off seconds
     time_format = time_format.replace(':%S', '')
 
-    return time_str.strftime(time_format)
+    return time_object.strftime(time_format)
 
 
 def notification(
