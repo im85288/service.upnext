@@ -12,14 +12,14 @@
 		<setting label="30607" type="slider" id="playedInARow" default="3" range="1,1,15" option="int" subsetting="true" enable="eq(-1,true)"/>
 		<setting label="30605" type="bool" id="includeWatched" default="false"/>
 		<setting label="30642" type="bool" id="enableResume" default="false"/>
-        <setting label="30032" type="bool" id="enablePlaylist" default="false"/>
+        <setting label="30032" type="bool" id="enablePlaylist" default="true"/>
 		<setting label="30640" type="lsep"/> <!-- Library management -->
 		<setting label="30641" type="enum" id="markWatched" lvalues="30050|30051|30052" default="0"/>
 		<setting label="30643" type="bool" id="nextSeason" default="true"/> 
         <setting label="30609" type="lsep"/> <!-- When end credits time is known -->
         <setting label="30611" type="slider" id="autoPlayCountdown" default="5" range="0,5,120" option="int"/>
         <setting label="30613" type="lsep"/> <!-- When end credits time is unknown -->
-        <setting label="30615" type="bool" id="customAutoPlayTime" default="false"/>
+        <setting label="30615" type="bool" id="customAutoPlayTime" default="true"/>
         <setting label="30617" type="slider" id="autoPlaySeasonTime" default="30" range="0,5,120" option="int" subsetting="true" visible="eq(-1,false)"/>
         <setting label="30619" type="slider" id="autoPlayTimeXS" default="15" range="0,5,120" option="int" subsetting="true" visible="eq(-2,true)"/>
         <setting label="30621" type="slider" id="autoPlayTimeS" default="30" range="0,5,120" option="int" subsetting="true" visible="eq(-3,true)"/>
@@ -34,7 +34,7 @@
         <setting label="30703" type="bool" id="disableNextUp" default="false"/>
         <setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
 		<setting label="30707" type="bool" id="enableQueue" default="true"/>
-		<setting label="30709" type="enum" id="trackerMode" lvalues="30710|30711|30712" default="1"/>
+		<setting label="30709" type="enum" id="trackerMode" lvalues="30710|30711|30712" default="2"/>
     </category>
     <category label="30800"> <!-- Developer -->
         <setting label="30801" type="lsep"/> <!-- Test the GUI -->
