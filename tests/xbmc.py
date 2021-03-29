@@ -430,7 +430,7 @@ _JSONRPC_methods = {
     'JSONRPC.NotifyAll': _JSONRPC_NotifyAll,
     'Player.Open': _Player_Open,
     'Playlist.Add': _Playlist_Add,
-    'Playlist.Add': _Playlist_Add
+    'Playlist.Remove': _Playlist_Remove
 }
 
 
