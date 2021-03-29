@@ -45,7 +45,7 @@ def test_popup(popup_type, simple_style=False):
         'playing_file': {'value': test_episode['file'], 'force': True},
         'next_file': {'value': test_next_episode['file'], 'force': True},
         'speed': {'value': 1, 'force': True},
-        # Simulate runtime of endtime minus 10s
+        # Simulate playtime of endtime minus 10s
         'time': {'value': test_episode['runtime'] - 10, 'force': True},
         # Simulate endtime based on dummy episode
         'total_time': {'value': test_episode['runtime'], 'force': True},
@@ -110,8 +110,8 @@ def test_upnext(popup_type, simple_style=False):
         'playing_file': {'value': test_episode['file'], 'force': True},
         'next_file': {'value': test_next_episode['file'], 'force': True},
         'speed': {'value': 1, 'force': True},
-        # Simulate runtime of endtime minus 10s
-        'time': {'value': test_episode['runtime'] - 30, 'force': True},
+        # Simulate playtime to start of dummy episode
+        'time': {'value': 0, 'force': True},
         # Simulate endtime based on dummy episode
         'total_time': {'value': test_episode['runtime'], 'force': True},
         # 'next_file': {'value': None, 'force': False},
@@ -126,7 +126,7 @@ def test_upnext(popup_type, simple_style=False):
     test_player.state.set('playing_file', test_episode['file'], force=True)
     test_player.state.set('next_file', test_next_episode['file'], force=True)
     test_player.state.set('speed', 1, force=True)
-    test_player.state.set('time', (test_episode['runtime'] - 120), force=True)
+    test_player.state.set('time', 0, force=True)
     test_player.state.set('total_time', test_episode['runtime'], force=True)
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
