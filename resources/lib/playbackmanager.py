@@ -56,7 +56,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             stop_button=self.state.show_stop_button
         )
 
-        return self.get_popup_state(show_upnext=show_upnext)
+        return self.get_popup_state(done=True, show_upnext=show_upnext)
 
     def display_popup(self, popup_state):
         # Get video details, exit if no video playing
@@ -83,13 +83,17 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # running. Check state and abort popup update if required
         while (not monitor.abortRequested()
                and self.player.isPlaying()
-               and isinstance(self.popup, dialog.UpNextPopup)
+               and popup_state['done']
                and not self.state.starting
                and self.state.playing
                and not self.sigstop
                and not self.sigterm):
             remaining = total_time - self.player.getTime()
-            self.popup.update_progress(remaining)
+            popup_state = self.get_popup_state(
+                popup_state,
+                done=self.has_popup(),
+                remaining=remaining
+            )
 
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
@@ -99,8 +103,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             # If end of file or user has closed popup then exit update loop
             remaining -= wait_time
             if (remaining <= 0
-                    or self.popup.is_cancel()
-                    or self.popup.is_playnow()):
+                    or popup_state['cancel']
+                    or popup_state['play_now']):
                 popup_done = True
                 break
         else:
@@ -128,10 +132,14 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             if keyword in default_state:
                 default_state[keyword] = kwargs[keyword]
 
-        if not self.popup:
+        if not self.has_popup():
             return default_state
 
         with self.popup as check_fail:
+            remaining = kwargs.get('remaining')
+            if remaining is not None:
+                self.popup.update_progress(remaining)
+
             current_state = {
                 'auto_play': (
                     self.state.auto_play
@@ -161,6 +169,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         if check_fail:
             return default_state
         return current_state
+
+    def has_popup(self):
+        return hasattr(self, 'popup') and self.popup
 
     def play_next_video(self, next_item, source, popup_state):
         # Primary method is to play next playlist item
@@ -201,7 +212,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         ), utils.LOGDEBUG)
 
     def remove_popup(self):
-        if not self.popup:
+        if not self.has_popup():
             return
 
         with self.popup:
@@ -287,7 +298,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         return play_next, keep_playing
 
     def show_popup(self):
-        if not self.popup:
+        if not self.has_popup():
             return False
 
         with self.popup:
