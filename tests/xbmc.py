@@ -93,7 +93,7 @@ class Monitor:
         Monitor._instance_number += 1
 
     def _timer(self):
-        abort_times = [10, 30, 60]
+        abort_times = [5, 10, 30, 60, 120]
         abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
 
         time.sleep(abort_time)
