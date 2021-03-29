@@ -36,24 +36,24 @@ else:
     LOGFATAL = 6
     LOGNONE = 7
 
-INFO_LABELS = {
+PLAYLIST_MUSIC = 0
+PLAYLIST_VIDEO = 1
+
+_INFO_LABELS = {
     'System.BuildVersion': '18.9' if __KODI_MATRIX__ else '19.0',
     'Player.Process(VideoWidth)': 1920,
     'Player.Process(VideoHeight)': 1080,
     'Player.Process(VideoDAR)': 1.78
 }
 
-REGIONS = {
+_REGIONS = {
     'datelong': '%A, %e %B %Y' if random.randint(0, 1) else '%C',
     'dateshort': '%Y-%m-%d' if random.randint(0, 1) else '%x',
     'time': '%I:%M %p' if random.randint(0, 1) else '%X'
 }
 
-GLOBAL_SETTINGS = global_settings()
-PO = import_language(language=GLOBAL_SETTINGS.get('locale.language'))
-
-PLAYLIST_MUSIC = 0
-PLAYLIST_VIDEO = 1
+_GLOBAL_SETTINGS = global_settings()
+_PO = import_language(language=_GLOBAL_SETTINGS.get('locale.language'))
 
 
 class Keyboard:
@@ -270,7 +270,7 @@ def _Settings_GetSettingValue(params):
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
-        result=dict(value=GLOBAL_SETTINGS.get(key))
+        result=dict(value=_GLOBAL_SETTINGS.get(key))
     ))
 
 
@@ -467,12 +467,12 @@ def getCondVisibility(string):
 
 def getInfoLabel(key):
     ''' A reimplementation of the xbmc getInfoLabel() function '''
-    return INFO_LABELS.get(key, '')
+    return _INFO_LABELS.get(key, '')
 
 
 def getLocalizedString(msgctxt):
     ''' A reimplementation of the xbmc getLocalizedString() function '''
-    for entry in PO:
+    for entry in _PO:
         if entry.msgctxt == '#%s' % msgctxt:
             return entry.msgstr or entry.msgid
     if int(msgctxt) >= 30000:
@@ -482,7 +482,7 @@ def getLocalizedString(msgctxt):
 
 def getRegion(key):
     ''' A reimplementation of the xbmc getRegion() function '''
-    return REGIONS.get(key)
+    return _REGIONS.get(key)
 
 
 def log(msg, level):
