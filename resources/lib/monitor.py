@@ -135,6 +135,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.waitForAbort()
 
         # Cleanup when abort requested
+        self.log('UpNext exiting')
         self.tracker.stop(terminate=True)
         del self.tracker
         self.tracker = None
