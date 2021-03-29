@@ -122,7 +122,6 @@ class Monitor:
                 pass
         except SystemExit:
             Monitor._aborted = True
-            pass
 
         return Monitor._aborted
 
