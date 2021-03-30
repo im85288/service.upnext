@@ -176,19 +176,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         next_item = None
         source = None
-        position = api.get_playlist_position()
-        addon_type = self.get_addon_type()
+        playlist_position = api.get_playlist_position()
+        addon_type = self.get_addon_type(playlist_position)
 
         # Next episode from addon data
         if addon_type:
             next_item = self.data.get('next_episode')
-            source = 'addon'
-            if addon_type == constants.ADDON_PLAY_URL:
-                source += '_play_url'
-            elif addon_type == constants.ADDON_PLAY_INFO:
-                source += '_play_info'
-            if position:
-                source += '_playlist'
+            source = constants.ADDON_TYPES[addon_type]
 
             if (self.unwatched_only
                     and utils.get_int(next_item, 'playcount') > 0):
@@ -196,9 +190,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.log('Addon next_episode: {0}'.format(next_item))
 
         # Next item from non-addon playlist
-        elif position and not self.shuffle:
+        elif playlist_position and not self.shuffle:
             next_item = api.get_next_in_playlist(
-                position,
+                playlist_position,
                 self.unwatched_only
             )
             source = 'playlist'
@@ -283,13 +277,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def process_now_playing(self, playlist_position, addon_type, media_type):
         if addon_type:
             item = self._get_addon_now_playing()
-            source = 'addon'
-            if addon_type == constants.ADDON_PLAY_URL:
-                source += '_play_url'
-            elif addon_type == constants.ADDON_PLAY_INFO:
-                source += '_play_info'
-            if playlist_position:
-                source += '_playlist'
+            source = constants.ADDON_TYPES[addon_type]
 
         elif playlist_position:
             item = api.get_now_playing()
@@ -366,13 +354,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         return item
 
-    def get_addon_type(self):
+    def get_addon_type(self, playlist_position=None):
         if self.data:
+            addon_type = constants.ADDON_DATA_ERROR
+            if playlist_position:
+                addon_type += constants.ADDON_PLAYLIST
             if self.data.get('play_url'):
-                return constants.ADDON_PLAY_URL
-            if self.data.get('play_info'):
-                return constants.ADDON_PLAY_INFO
-            return constants.ADDON_MISSING_DATA
+                addon_type += constants.ADDON_PLAY_URL
+            elif self.data.get('play_info'):
+                addon_type += constants.ADDON_PLAY_INFO
+            return addon_type
         return None
 
     def set_addon_data(self, data, encoding='base64'):

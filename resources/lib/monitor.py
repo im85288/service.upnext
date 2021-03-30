@@ -101,7 +101,7 @@ class UpNextMonitor(xbmc.Monitor):
         # Note this may cause played in a row count to reset incorrectly if
         # playlist of mixed non-addon and addon content is used
         self.state.set_addon_data(data, encoding)
-        addon_type = self.state.get_addon_type()
+        addon_type = self.state.get_addon_type(playlist_position)
 
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
