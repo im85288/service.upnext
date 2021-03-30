@@ -37,7 +37,7 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
     if state.demo_seek == constants.DEMO_SEEK_15S:
         seek_time = player.getTotalTime() - 15
     # Seek to popup start time
-    if state.demo_seek == constants.DEMO_SEEK_POPUP_TIME:
+    elif state.demo_seek == constants.DEMO_SEEK_POPUP_TIME:
         seek_time = state.get_popup_time()
     # Seek to detector start time
     elif state.demo_seek == constants.DEMO_SEEK_DETECT_TIME:
