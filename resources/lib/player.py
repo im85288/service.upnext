@@ -203,13 +203,13 @@ class UpNextPlayer(xbmc.Player):
         else:
             getattr(xbmc.Player, 'playnext')(self)
 
-    def seekTime(self, seek_time):  # pylint: disable=invalid-name
+    def seekTime(self, seekTime):  # pylint: disable=invalid-name
         # Set fake value if playing forced
         if self.state.forced('playing') or self.state.forced('time'):
-            self.state.set('time', seek_time, force=True)
+            self.state.set('time', seekTime, force=True)
         # Use inbuilt method if not forced
         else:
-            getattr(xbmc.Player, 'seekTime')(self, seek_time)
+            getattr(xbmc.Player, 'seekTime')(self, seekTime)
 
     def stop(self):
         # Set fake value if playing forced
