@@ -5,9 +5,9 @@
 from __future__ import absolute_import, division, unicode_literals
 import base64
 import binascii
-import dateutil.parser
 import json
 import sys
+import dateutil.parser
 import xbmc
 import xbmcaddon
 import xbmcgui
