@@ -6,6 +6,7 @@
 # pylint: disable=invalid-name,too-many-arguments,unused-argument
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+from xbmc import InfoTagVideo
 from xbmcextra import kodi_to_ansi
 
 ACTION_NAV_BACK = 92
@@ -165,6 +166,12 @@ class ListItem:
         self.label = kodi_to_ansi(label)
         self.label2 = kodi_to_ansi(label2)
         self.path = path
+        self._info = {
+            'type': None,
+            'infoLabels': InfoTagVideo(),
+            'art': {},
+            'properties': {}
+        }
 
     @staticmethod
     def addContextMenuItems(items, replaceItems=False):
@@ -176,20 +183,26 @@ class ListItem:
         ''' A stub implementation for the xbmcgui LitItem class addStreamInfo() method '''
         return
 
-    @staticmethod
-    def setArt(key):
+    def getArt(self, key):
+        ''' A stub implementation for the xbmcgui ListItem class getArt() method '''
+        return self._info['art'].get(key, '')
+
+    def setArt(self, values):
         ''' A stub implementation for the xbmcgui ListItem class setArt() method '''
-        return
+        self._info['art'] = values
 
     @staticmethod
     def setContentLookup(enable):
         ''' A stub implementation for the xbmcgui ListItem class setContentLookup() method '''
         return
 
-    @staticmethod
-    def setInfo(type, infoLabels):  # pylint: disable=redefined-builtin
+    def getVideoInfoTag(self):
+        ''' A stub implementation for the xbmcgui ListItem class getVideoInfoTag() method '''
+        return self._info['infoLabels']
+
+    def setInfo(self, type, infoLabels):  # pylint: disable=redefined-builtin
         ''' A stub implementation for the xbmcgui ListItem class setInfo() method '''
-        return
+        self._info['infoLabels'] = InfoTagVideo(infoLabels)
 
     @staticmethod
     def setIsFolder(is_folder):
@@ -205,10 +218,13 @@ class ListItem:
         ''' A stub implementation for the xbmcgui ListItem class setPath() method '''
         self.path = path
 
-    @staticmethod
-    def setProperty(key, value):
+    def getProperty(self, key):
+        ''' A stub implementation for the xbmcgui ListItem class getProperty() method '''
+        return self._info['properties'].get(key, '')
+
+    def setProperty(self, key, value):
         ''' A stub implementation for the xbmcgui ListItem class setProperty() method '''
-        return
+        self._info['properties'][key] = value
 
     @staticmethod
     def setSubtitles(subtitleFiles):
