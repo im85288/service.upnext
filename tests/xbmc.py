@@ -195,35 +195,72 @@ class PlayList:
         return 1
 
 
-class InfoTagVideo:
+class InfoTagVideo():
     ''' A stub implementation of the xbmc InfoTagVideo class '''
 
-    def __init__(self):
+    def __init__(self, tags=None):
         ''' A stub constructor for the xbmc InfoTagVideo class '''
+        self._tags = tags if tags else {}
+
+    def getDbId(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getDbId() method '''
+        return self._tags.get('dbid', -1)
+
+    def getTitle(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getTitle() method '''
+        return self._tags.get('title', '')
 
     def getSeason(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getSeason() method '''
-        return 0
+        return self._tags.get('season', -1)
 
     def getEpisode(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getEpisode() method '''
-        return 0
+        return self._tags.get('episode', -1)
 
     def getTVShowTitle(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getTVShowTitle() method '''
-        return ''
+        return self._tags.get('tvshowtitle', '')
+
+    def getFirstAired(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getFirstAired() method '''
+        return self._tags.get('aired', '')
+
+    def getPremiered(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getPremiered() method '''
+        return self._tags.get('premiered', '')
+
+    def getYear(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getYear() method '''
+        return self._tags.get('year', 1900)
+
+    def getDuration(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getDuration() method '''
+        return self._tags.get('duration', 0)
+
+    def getPlotOutline(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getPlotOutline() method '''
+        return self._tags.get('plotoutline', '')
+
+    def getPlot(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getPlot() method '''
+        return self._tags.get('plot', '')
+
+    def getUserRating(self):
+        ''' A stub implementation for the xbmc InfoTagVideo class getUserRating() method '''
+        return self._tags.get('userrating', 0)
 
     def getPlayCount(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getPlayCount() method '''
-        return 0
+        return self._tags.get('playcount', 0)
 
     def getRating(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getRating() method '''
-        return 0
+        return self._tags.get('rating', 0.0)
 
     def getMediaType(self):
         ''' A stub implementation for the xbmc InfoTagVideo class getMediaType() method '''
-        return ''
+        return self._tags.get('mediatype', '')
 
 
 class RenderCapture:
