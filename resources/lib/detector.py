@@ -366,9 +366,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Other episodes hash index
             'episodes': None,
             # Detected end credits timestamp from end of file
-            'detected_at': None,
-            # Storing enabled flag
-            'store': False
+            'detected_at': None
         }
 
         # Hash size as (width, height)
@@ -450,12 +448,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             now = timeit.default_timer()
 
             with self.player as check_fail:
-                play_time = self.player.getTime()
-                self.hash_index['store'] = (
-                    play_time >= self.state.get_detect_time()
-                )
                 self.hash_index['current'] = (
-                    int(self.player.getTotalTime() - play_time),
+                    int(self.player.getTotalTime() - self.player.getTime()),
                     self.hashes.episode
                 )
                 # Only capture if playing at normal speed
@@ -546,9 +540,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 )
 
             # Store current hash for comparison with next video frame
-            # But delete previous hash if not yet required to save it
-            if not self.hash_index['store'] and self.hash_index['previous']:
-                del self.hashes.data[self.hash_index['previous']]
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
