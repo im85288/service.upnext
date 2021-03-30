@@ -433,13 +433,12 @@ def _videolibrary_gettvshowdetails(params):
 
 def _jsonrpc_notifyall(params):
     for ref in _monitor_instances.valuerefs():
-        notification_handler = getattr(ref, "onNotification", None)
+        notification_handler = getattr(ref(), "onNotification", None)
         if callable(notification_handler):
             notification_handler(
-                ref,
                 params.get('sender'),
                 params.get('message'),
-                params.get('data')
+                json.dumps(params.get('data'))
             )
 
     return True
