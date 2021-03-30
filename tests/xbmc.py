@@ -93,8 +93,9 @@ class Monitor:
         Monitor._instance_number += 1
 
     def _timer(self):
-        abort_times = [5, 30, 60, 120, 150]
+        abort_times = [90, 120]
         abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
+        log('Test exit in {0}s'.format(abort_time), LOGINFO)
 
         time.sleep(abort_time)
         Monitor._aborted = True
