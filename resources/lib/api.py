@@ -144,10 +144,6 @@ def play_playlist_item(position=0, resume=False):
 
     log('Playing from playlist position: {0}'.format(position))
     if position == 'next':
-        # xbmc.Player().playnext() does not allow for control of resume
-        if not resume:
-            xbmc.Player().playnext()
-            return
         position = get_playlist_position()
 
     # JSON Player.Open can be too slow but is needed if resuming is enabled
