@@ -51,7 +51,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 break
 
             # Get video details, exit if nothing playing
-            tracked_file = self.state.get_tracked_file()
             with self.player as check_fail:
                 current_file = self.player.getPlayingFile()
                 total_time = self.player.getTotalTime()
@@ -62,23 +61,25 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self.state.set_tracking(False)
                 continue
             # New stream started without tracking being updated
-            if tracked_file and tracked_file != current_file:
+            if self.state.get_tracked_file() != current_file:
                 self.log('Error: unknown file playing', utils.LOGWARNING)
                 self.state.set_tracking(False)
                 continue
 
             # Detector starts before normal popup request time
             detect_time = self.state.get_detect_time()
-            detect_time = detect_time and detect_time <= play_time
+            detect_time = detect_time and play_time >= detect_time
+            if not detect_time:
+                pass
             # Start detector if not already started
-            if not self.detector and detect_time:
+            elif not self.detector:
                 self.detector = detector.UpNextDetector(
                     player=self.player,
                     state=self.state
                 )
                 self.detector.start()
             # Otherwise check whether credits have been detected
-            elif detect_time and self.detector.detected():
+            elif self.detector.detected():
                 # Stop detector but keep processed hashes
                 self.detector.stop()
                 self.log('Credits detected')
@@ -107,20 +108,21 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             )
             can_play_next = self.playbackmanager.start()
 
+            if not self.detector:
+                pass
+            # If credits were (in)correctly detected and popup is cancelled
+            # by the user, then restart tracking loop to allow detector to
+            # restart, or to launch popup at default time
+            elif (self.detector.credits_detected
+                    and can_play_next != self.state.playing_next):
+                self.state.set_tracking(current_file)
+                self.sigstop = False
+                # Re-start detector and reset match counts
+                self.detector.start(reset=True)
+                self.state.set_popup_time(total_time)
+                continue
             # Stop detector and store hashes and timestamp for current video
-            if self.detector:
-                # If credits were (in)correctly detected and popup is cancelled
-                # by the user, then restart tracking loop to allow detector to
-                # restart, or to launch popup at default time
-                if (self.detector.credits_detected
-                        and can_play_next
-                        and not self.state.playing_next):
-                    self.state.set_tracking(tracked_file)
-                    self.sigstop = False
-                    # Re-start detector and reset match counts
-                    self.detector.start(reset=True)
-                    self.state.set_popup_time(total_time)
-                    continue
+            else:
                 self.detector.store_data()
                 # Stop detector and release resources
                 self.detector.stop(terminate=True)
