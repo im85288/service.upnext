@@ -169,7 +169,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             'misses': 0
         }
         self.credits_detected = False
-        self.init_hashes()
+        self._init_hashes()
 
         self.running = False
         self.sigstop = False
@@ -263,7 +263,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             ) for row in range(0, num_pixels, size[0])]
         ))
 
-    def check_similarity(self, image_hash, index_offset):
+    def _check_similarity(self, image_hash, index_offset):
         stats = {
             'is_match': False,
             'possible_match': False,
@@ -287,6 +287,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             stats['is_match'] = True
         # Unless debugging, return if match found, otherwise continue checking
         if stats['is_match'] and not self.state.detector_debug:
+            self._hash_match_hit()
             return stats
 
         # Calculate similarity between current hash and previous hash
@@ -305,6 +306,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             )
         # Unless debugging, return if match found, otherwise continue checking
         if stats['is_match'] and not self.state.detector_debug:
+            self._hash_match_hit()
             return stats
 
         # Get all previous hash indexes for episodes other than the current
@@ -331,26 +333,31 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 break
         self.hash_index['episodes'] = old_hash_index
 
+        # Increment the number of matches
+        if stats['is_match']:
+            self._hash_match_hit()
+        # Otherwise increment number of mismatches
+        elif not stats['possible_match']:
+            self._hash_match_miss()
+
         return stats
 
-    def detected(self):
-        # Ignore invalidated hash data
-        if not self.hashes.is_valid():
-            return False
+    def _hash_match_hit(self):
+        self.match_count['hits'] += 1
+        self.match_count['misses'] = 0
 
-        # If a previously detected timestamp exists then indicate that credits
-        # have been detected
-        if self.past_hashes.timestamps.get(self.hashes.episode):
-            return True
+    def _hash_match_miss(self):
+        self.match_count['misses'] += 1
+        # If 3 mismatches in a row (to account for bad frame capture), then
+        # reset match count
+        if self.match_count['misses'] >= 3:
+            self._hash_match_reset()
 
-        self.log('{0}/{1} matches'.format(
-            self.match_count['hits'],
-            self.match_number
-        ), utils.LOGDEBUG)
-        self.credits_detected = self.match_count['hits'] >= self.match_number
-        return self.credits_detected
+    def _hash_match_reset(self):
+        self.match_count['hits'] = 0
+        self.match_count['misses'] = 0
 
-    def init_hashes(self):
+    def _init_hashes(self):
         # Limit captured data to 16 kB
         self.capture_size, self.capture_ar = self.capture_resolution(
             max_size=16
@@ -414,11 +421,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Number of consecutive frame matches required for a positive detection
         self.match_number = 5
 
-        self.match_count['hits'] = 0
-        self.match_count['misses'] = 0
+        self._hash_match_reset()
         self.credits_detected = False
 
-    def run(self):
+    def _run(self):
         """Detection loop captures Kodi render buffer every 1s to create an
            image hash. Hash is compared to the previous hash to determine
            whether current frame of video is similar to the previous frame.
@@ -493,22 +499,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            stats = self.check_similarity(
-                image_hash, self.match_number
-            )
-
-            # Increment the number of matches
-            if stats['is_match']:
-                self.match_count['hits'] += 1
-                self.match_count['misses'] = 0
-            # Otherwise increment number of mismatches
-            elif not stats['possible_match']:
-                self.match_count['misses'] += 1
-            # If 3 mismatches in a row (to account for bad frame capture), then
-            # reset match count
-            if self.match_count['misses'] > 2:
-                self.match_count['hits'] = 0
-                self.match_count['misses'] = 0
+            stats = self._check_similarity(image_hash, self.match_number)
 
             if self.state.detector_debug:
                 self.print_hash(
@@ -564,6 +555,23 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
+    def detected(self):
+        # Ignore invalidated hash data
+        if not self.hashes.is_valid():
+            return False
+
+        # If a previously detected timestamp exists then indicate that credits
+        # have been detected
+        if self.past_hashes.timestamps.get(self.hashes.episode):
+            return True
+
+        self.log('{0}/{1} matches'.format(
+            self.match_count['hits'],
+            self.match_number
+        ), utils.LOGDEBUG)
+        self.credits_detected = self.match_count['hits'] >= self.match_number
+        return self.credits_detected
+
     def start(self, restart=False, reset=False):
         """Method to run actual detection test loop in a separate thread"""
 
@@ -578,9 +586,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 self.state.get_season_identifier(),
                 utils.get_int(self.state.get_episode())
         ):
-            self.init_hashes()
+            self._init_hashes()
 
-        self.thread = threading.Thread(target=self.run)
+        self.thread = threading.Thread(target=self._run)
         # Daemon threads may not work in Kodi, but enable it anyway
         self.thread.daemon = True
         self.thread.start()
