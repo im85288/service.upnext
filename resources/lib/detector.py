@@ -530,13 +530,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['episodes'])
                 )
 
-            # Store current hash for comparison with next video frame
-            self.hashes.data[self.hash_index['current']] = image_hash
-            self.hash_index['previous'] = self.hash_index['current']
-
-            monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
-
-            if self.state.detector_debug:
                 profiler.disable()
                 output_stream = StringIO()
                 pstats.Stats(
@@ -545,6 +538,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 ).sort_stats('cumulative').print_stats()
                 self.log(output_stream.getvalue())
                 output_stream.close()
+
+            # Store current hash for comparison with next video frame
+            self.hashes.data[self.hash_index['current']] = image_hash
+            self.hash_index['previous'] = self.hash_index['current']
+
+            monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
 
         # Free resources
         del monitor
