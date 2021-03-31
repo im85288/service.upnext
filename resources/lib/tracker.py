@@ -34,8 +34,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
     def _check_detector(self, play_time):
         # Detector starts before normal popup request time
         detect_time = self.state.get_detect_time()
-        detect_time = detect_time and play_time >= detect_time
-        if not detect_time:
+        if not detect_time or play_time < detect_time:
             return
 
         # Start detector if not already started
@@ -111,6 +110,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self.state.set_tracking(False)
                 continue
 
+            # Check detector status and update detected popup time
             self._check_detector(play_time)
 
             popup_time = self.state.get_popup_time()
@@ -132,9 +132,13 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 player=self.player,
                 state=self.state
             )
+            # Check if there was a video to play next
             can_play_next = self.playbackmanager.start()
+            # And whether playback was cancelled by the user
             playback_cancelled = can_play_next and not self.state.playing_next
 
+            # Cleanup detector and restart tracker if credits were incorrectly
+            # detected
             tracker_restart = self._cleanup_detector(playback_cancelled)
             if tracker_restart:
                 self.state.set_popup_time(total_time)
