@@ -53,6 +53,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.state.set_detected_popup_time(
                 self.detector.update_timestamp(play_time)
             )
+            self.state.set_detect_time()
 
     def _cleanup_detector(self, playback_cancelled):
         if not self.detector:
