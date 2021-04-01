@@ -92,7 +92,10 @@ def queue_next_item(data=None, episode=None):
 
     next_item = {}
     play_url = data.get('play_url') if data else None
-    episodeid = utils.get_int(episode, 'episodeid') if episode else None
+    episodeid = (
+        utils.get_int(episode, 'episodeid') if episode
+        else constants.UNKNOWN_DATA
+    )
 
     if play_url:
         next_item.update(file=play_url)
@@ -336,7 +339,7 @@ def get_now_playing():
 
 
 def get_next_from_library(
-        episodeid=None,
+        episodeid=constants.UNKNOWN_DATA,
         tvshowid=None,
         unwatched_only=False,
         next_season=True,
@@ -413,7 +416,7 @@ def get_next_from_library(
     filters = {'and': filters}
 
     if not tvshowid:
-        tvshowid = episode.get('tvshowid')
+        tvshowid = episode.get('tvshowid', constants.UNKNOWN_DATA)
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
@@ -460,7 +463,7 @@ def get_from_library(episodeid, tvshowid=None):
     episode = result
 
     if not tvshowid:
-        tvshowid = episode.get('tvshowid')
+        tvshowid = episode.get('tvshowid', constants.UNKNOWN_DATA)
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShowDetails',

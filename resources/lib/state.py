@@ -71,8 +71,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Current file details
         self.item = None
         self.filename = None
-        self.tvshowid = None
-        self.episodeid = None
+        self.tvshowid = constants.UNKNOWN_DATA
+        self.episodeid = constants.UNKNOWN_DATA
         self.season_identifier = None
         self.episode = None
         self.playcount = 0
