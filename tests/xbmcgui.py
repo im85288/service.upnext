@@ -257,10 +257,16 @@ class Window(object):  # pylint: disable=useless-object-inheritance
 
     def getProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class getProperty() method '''
+        if not isinstance(key, str):
+            raise TypeError('Property name is not str or unicode')
         return self.__window_properties__.get(key, '')
 
     def setProperty(self, key, value):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''
+        if not isinstance(key, str):
+            raise TypeError('Property name is not str or unicode')
+        if not isinstance(value, str):
+            raise TypeError('Property value is not str or unicode')
         self.__window_properties__[key] = value
 
     def show(self):
