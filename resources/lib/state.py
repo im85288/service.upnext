@@ -316,7 +316,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         return self.item['item']
 
     def _get_addon_now_playing(self):
-        item = self.data.get('current_episode') if self.data else None
+        if self.data:
+            # Fallback to now playing info if addon does not provide current
+            # episode details
+            item = self.data.get('current_episode', api.get_now_playing())
+        else:
+            item = None
+
         self.log('Addon current_episode: {0}'.format(item))
         if not item:
             return None

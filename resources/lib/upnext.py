@@ -13,6 +13,46 @@ def log(msg, level=utils.LOGWARNING):
     utils.log(msg, name=__name__, level=level)
 
 
+def _copy_episode_details(upnext_info):
+    # If next episode information is not provided, fake it
+    if not upnext_info.get('next_episode'):
+        episode = upnext_info['current_episode']
+        episode['episodeid'] = constants.UNKNOWN_DATA
+        episode['art'] = {}
+        # Next provided episode may not be the next consecutive episode so we
+        # can't assume that the episode can simply be incremented, instead set
+        # title to indicate the next episode in the UpNext popup
+        # episode['episode'] = utils.get_int(episode, 'episode') + 1
+        episode['title'] = utils.localize(constants.NEXT_STRING_ID)
+        # Change season and episode info to empty string to avoid episode
+        # formatting issues ("S-1E-1") in UpNext popup
+        episode['season'] = ''
+        episode['episode'] = ''
+        episode['plot'] = ''
+        episode['playcount'] = 0
+        episode['rating'] = 0
+        episode['firstaired'] = ''
+        episode['runtime'] = 0
+        upnext_info['next_episode'] = episode
+
+    # If current episode information is not provided, fake it
+    elif not upnext_info.get('current_episode'):
+        episode = upnext_info['next_episode']
+        episode['episodeid'] = constants.UNKNOWN_DATA
+        episode['art'] = {}
+        episode['title'] = ''
+        episode['season'] = ''
+        episode['episode'] = ''
+        episode['plot'] = ''
+        episode['playcount'] = 0
+        episode['rating'] = 0
+        episode['firstaired'] = ''
+        episode['runtime'] = 0
+        upnext_info['current_episode'] = episode
+
+    return upnext_info
+
+
 def create_listitem(episode):
     """Create a xbmcgui.ListItem from provided episode details"""
 
@@ -61,8 +101,10 @@ def send_signal(sender, upnext_info):
     """Helper function for addons to send data to UpNext"""
 
     # Exit if not enough addon information provided
-    if not (upnext_info.get('current_episode')
-            and (upnext_info.get('play_url') or upnext_info.get('play_info'))):
+    required_episode_info = ['current_episode', 'next_episode']
+    required_addon_info = ['play_url', 'play_info']
+    if not (any(info in upnext_info for info in required_episode_info)
+            and any(info in upnext_info for info in required_addon_info)):
         log('Error: Invalid UpNext info - {0}'.format(upnext_info))
         return
 
@@ -113,26 +155,7 @@ def send_signal(sender, upnext_info):
             'runtime': runtime
         }
 
-    # If next episode information is not provided, fake it
-    if not upnext_info.get('next_episode'):
-        episode = upnext_info['current_episode']
-        episode['episodeid'] = constants.UNKNOWN_DATA
-        episode['art'] = {}
-        # Next provided episode may not be the next consecutive episode so we
-        # can't assume that the episode can simply be incremented, instead set
-        # title to indicate the next episode in the UpNext popup
-        # episode['episode'] = utils.get_int(episode, 'episode') + 1
-        episode['title'] = utils.localize(constants.NEXT_STRING_ID)
-        # Change season and episode info to empty string to avoid episode
-        # formatting issues ("S-1E-1") in UpNext popup
-        episode['season'] = ''
-        episode['episode'] = ''
-        episode['plot'] = ''
-        episode['playcount'] = 0
-        episode['rating'] = 0
-        episode['firstaired'] = ''
-        episode['runtime'] = 0
-        upnext_info['next_episode'] = episode
+    upnext_info = _copy_episode_details(upnext_info)
 
     utils.event(
         sender=sender,
