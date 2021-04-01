@@ -7,12 +7,12 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import os
-import random
+import sys
 import xml.etree.ElementTree as ET
 import polib
 
 
-__KODI_MATRIX__ = bool(random.randint(0, 1))
+__KODI_MATRIX__ = sys.version_info.major == 3
 
 
 def kodi_to_ansi(string):

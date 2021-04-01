@@ -7,7 +7,7 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 from xbmc import InfoTagVideo
-from xbmcextra import kodi_to_ansi
+from xbmcextra import kodi_to_ansi, __KODI_MATRIX__
 
 ACTION_NAV_BACK = 92
 ACTION_STOP = 13
@@ -257,15 +257,15 @@ class Window(object):  # pylint: disable=useless-object-inheritance
 
     def getProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class getProperty() method '''
-        if not isinstance(key, str):
+        if not isinstance(key, str if __KODI_MATRIX__ else (str, unicode)):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
             raise TypeError('Property name is not str or unicode')
         return self.__window_properties__.get(key, '')
 
     def setProperty(self, key, value):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''
-        if not isinstance(key, str):
+        if not isinstance(key, str if __KODI_MATRIX__ else (str, unicode)):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
             raise TypeError('Property name is not str or unicode')
-        if not isinstance(value, str):
+        if not isinstance(key, str if __KODI_MATRIX__ else (str, unicode)):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
             raise TypeError('Property value is not str or unicode')
         self.__window_properties__[key] = value
 
