@@ -31,7 +31,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
     def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def _check_detector(self, play_time):
+    def _detector_check(self, play_time):
         # Detector starts before normal popup request time
         detect_time = self.state.get_detect_time()
         if not detect_time or play_time < detect_time:
@@ -55,7 +55,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             )
             self.state.set_detect_time()
 
-    def _cleanup_detector(self, playback_cancelled):
+    def _detector_post_run(self, playback_cancelled):
         if not self.detector:
             tracker_restart = False
             return tracker_restart
@@ -112,7 +112,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 continue
 
             # Check detector status and update detected popup time
-            self._check_detector(play_time)
+            self._detector_check(play_time)
 
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
@@ -140,7 +140,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
             # Cleanup detector and restart tracker if credits were incorrectly
             # detected
-            tracker_restart = self._cleanup_detector(playback_cancelled)
+            tracker_restart = self._detector_post_run(playback_cancelled)
             if tracker_restart:
                 self.state.set_popup_time(total_time)
                 self.state.set_tracking(current_file)

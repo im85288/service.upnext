@@ -26,7 +26,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
     def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def create_popup(self, next_item, source=None):
+    def _create_popup(self, next_item, source=None):
         # Only use Still Watching? popup if played limit has been reached
         if self.state.played_limit:
             show_upnext = self.state.played_limit > self.state.played_in_a_row
@@ -56,16 +56,16 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             stop_button=self.state.show_stop_button
         )
 
-        return self.get_popup_state(done=True, show_upnext=show_upnext)
+        return self._get_popup_state(done=True, show_upnext=show_upnext)
 
-    def display_popup(self, popup_state):
+    def _display_popup(self, popup_state):
         # Get video details, exit if no video playing
         with self.player as check_fail:
             total_time = self.player.getTotalTime()
             play_time = self.player.getTime()
             check_fail = False
         if check_fail:
-            return self.get_popup_state(popup_state, done=False)
+            return self._get_popup_state(popup_state, done=False)
 
         # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
@@ -75,8 +75,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                 popup_start = max(play_time, self.state.get_popup_time())
                 total_time = min(popup_start + popup_duration, total_time)
 
-        if not self.show_popup():
-            return self.get_popup_state(popup_state, done=False)
+        if not self._show_popup():
+            return self._get_popup_state(popup_state, done=False)
 
         monitor = xbmc.Monitor()
         # Current file can stop, or next file can start, while update loop is
@@ -89,9 +89,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                and not self.sigstop
                and not self.sigterm):
             remaining = total_time - self.player.getTime()
-            popup_state = self.get_popup_state(
+            popup_state = self._get_popup_state(
                 popup_state,
-                done=self.has_popup(),
+                done=self._has_popup(),
                 remaining=remaining
             )
 
@@ -113,9 +113,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Free resources
         del monitor
 
-        return self.get_popup_state(popup_state, done=popup_done)
+        return self._get_popup_state(popup_state, done=popup_done)
 
-    def get_popup_state(self, old_state=None, **kwargs):
+    def _get_popup_state(self, old_state=None, **kwargs):
         default_state = old_state if old_state else {
             'auto_play': self.state.auto_play,
             'cancel': False,
@@ -132,7 +132,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             if keyword in default_state:
                 default_state[keyword] = kwargs[keyword]
 
-        if not self.has_popup():
+        if not self._has_popup():
             return default_state
 
         with self.popup as check_fail:
@@ -170,10 +170,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             return default_state
         return current_state
 
-    def has_popup(self):
+    def _has_popup(self):
         return hasattr(self, 'popup') and self.popup
 
-    def play_next_video(self, next_item, source, popup_state):
+    def _play_next_video(self, next_item, source, popup_state):
         # Primary method is to play next playlist item
         if source[-len('playlist'):] == 'playlist' or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
@@ -211,8 +211,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             popup_state, source, ' using queue' if self.state.queued else ''
         ), utils.LOGDEBUG)
 
-    def remove_popup(self):
-        if not self.has_popup():
+    def _remove_popup(self):
+        if not self._has_popup():
             return
 
         with self.popup:
@@ -222,7 +222,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         del self.popup
         self.popup = None
 
-    def run(self, next_item, source=None):
+    def _run(self, next_item, source=None):
         self.log('Started')
         self.running = True
 
@@ -231,11 +231,11 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.state.queued = api.queue_next_item(self.state.data, next_item)
 
         # Create Kodi dialog to show UpNext or Still Watching? popup
-        popup_state = self.create_popup(next_item, source)
+        popup_state = self._create_popup(next_item, source)
         # Display popup and update state of controls
-        popup_state = self.display_popup(popup_state)
+        popup_state = self._display_popup(popup_state)
         # Close dialog once we are done with it
-        self.remove_popup()
+        self._remove_popup()
 
         # Update played in a row count if auto_play otherwise reset
         self.state.played_in_a_row = (
@@ -285,7 +285,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             return play_next, keep_playing
 
         # Request playback of next file based on source and type
-        self.play_next_video(next_item, source, popup_state)
+        self._play_next_video(next_item, source, popup_state)
 
         # Reset signals
         self.log('Stopped')
@@ -297,8 +297,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         keep_playing = True
         return play_next, keep_playing
 
-    def show_popup(self):
-        if not self.has_popup():
+    def _show_popup(self):
+        if not self._has_popup():
             return False
 
         with self.popup:
@@ -322,7 +322,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             return False
 
         # Show popup and get new playback state
-        play_next, keep_playing = self.run(next_item, source)
+        play_next, keep_playing = self._run(next_item, source)
         self.state.playing_next = play_next
 
         # Dequeue and stop playback if not playing next file
@@ -346,4 +346,4 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.sigstop = self.running
 
         if terminate:
-            self.remove_popup()
+            self._remove_popup()
