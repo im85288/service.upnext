@@ -50,8 +50,8 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Stop detector but keep processed hashes
             self.detector.stop()
             self.log('Credits detected')
-            self.state.set_detected_popup_time(
-                self.detector.update_timestamp(play_time)
+            self.state.set_popup_time(
+                detected_time=self.detector.update_timestamp(play_time)
             )
             self.state.set_detect_time()
 
@@ -143,6 +143,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             tracker_restart = self._detector_post_run(playback_cancelled)
             if tracker_restart:
                 self.state.set_popup_time(total_time)
+                self.state.set_detect_time()
                 self.state.set_tracking(current_file)
                 self.sigstop = False
                 continue

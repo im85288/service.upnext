@@ -237,7 +237,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def get_popup_time(self):
         return self.popup_time
 
-    def set_popup_time(self, total_time):
+    def set_popup_time(self, total_time=0, detected_time=0):
+        if detected_time:
+            # Force popup time to specified play time
+            self.popup_time = detected_time
+            # Enable cue point unless forced off in demo mode
+            self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
+            return
+
         # Alway use addon data, when available
         if self.get_addon_type():
             # Some addons send the time from video end
@@ -267,12 +274,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.popup_time = total_time - popup_duration
         else:
             self.popup_time = 0
-
-    def set_detected_popup_time(self, play_time):
-        # Force popup time to specified play time
-        self.popup_time = play_time
-        # Enable cue point unless forced off in demo mode
-        self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
 
     def process_now_playing(self, playlist_position, addon_type, media_type):
         if addon_type:
