@@ -24,7 +24,7 @@ msgstr "Katso nyt"
 
 msgctxt "#30008"
 msgid "Up Next"
-msgstr ""
+msgstr "Seuraavaksi"
 
 msgctxt "#30009"
 msgid "Ends at: $INFO[Window.Property(endtime)]"
