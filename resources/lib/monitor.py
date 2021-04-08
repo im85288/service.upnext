@@ -37,6 +37,7 @@ class UpNextMonitor(xbmc.Monitor):
         'player',
         'state',
         'tracker',
+        'running',
     )
 
     def __init__(self, test_player=None, test_state=None):
@@ -47,6 +48,10 @@ class UpNextMonitor(xbmc.Monitor):
             player=self.player,
             state=self.state
         )
+
+        self.running = False
+        # Create pseudo callback triggered when abort is requested
+        utils.run_threaded(self.onAbort)
 
         xbmc.Monitor.__init__(self)
         self.log('Init')
@@ -138,17 +143,28 @@ class UpNextMonitor(xbmc.Monitor):
         if self.state.is_tracking():
             self.state.reset()
 
-    def run(self):
+    def start(self):
+        self.log('UpNext starting')
+        self.player = self.player if self.player else player.UpNextPlayer()
+        self.state = self.state if self.state else state.UpNextState()
+        self.tracker = self.tracker if self.tracker else tracker.UpNextTracker(
+            monitor=self,
+            player=self.player,
+            state=self.state
+        )
+        self.running = True
+
         # Re-trigger player play/start event if addon started mid playback
         if self.state.start_trigger and self.player.isPlaying():
             self.onNotification('UpNext', PLAYER_MONITOR_EVENTS['start'])
 
-        # Wait indefinitely until addon is terminated
-        self.waitForAbort()
-
-        # Cleanup when abort requested
+    def stop(self):
         self.log('UpNext exiting')
-        self.tracker.stop(terminate=True)
+        self.running = False
+
+        # Free references/resources
+        if self.tracker:
+            self.tracker.stop(terminate=True)
         del self.tracker
         self.tracker = None
         self.log('Cleanup tracker')
@@ -159,10 +175,16 @@ class UpNextMonitor(xbmc.Monitor):
         self.player = None
         self.log('Cleanup player')
 
+    def onAbort(self):  # pylint: disable=invalid-name
+        # Wait indefinitely until addon is terminated
+        self.waitForAbort()
+        # Cleanup when abort requested
+        self.stop()
+
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
 
-        if self.state.is_disabled():
+        if not self.running:
             return
 
         sender = statichelper.to_unicode(sender)
@@ -221,16 +243,23 @@ class UpNextMonitor(xbmc.Monitor):
             self.check_video(decoded_data, encoding)
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
+        if not self.running:
+            return
+
         # Restart tracking if previously tracking
         self.tracker.start()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
         self.log('Settings changed', utils.LOGDEBUG)
-        self.state.update_settings()
 
-        # Shutdown tracking loop if disabled
-        if self.state.is_disabled():
-            self.log('UpNext disabled', utils.LOGWARNING)
-            self.tracker.stop(terminate=True)
+        if not self.state:
+            new_state = state.UpNextState()
+            if not new_state.is_disabled():
+                self.state = new_state
+                self.log('UpNext enabled', utils.LOGWARNING)
+                self.start()
         else:
-            self.log('UpNext enabled')
+            self.state.update_settings()
+            if self.state.is_disabled():
+                self.log('UpNext disabled', utils.LOGWARNING)
+                self.stop()

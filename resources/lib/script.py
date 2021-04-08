@@ -131,7 +131,9 @@ def test_upnext(popup_type, simple_style=False):
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
 
-    monitor.UpNextMonitor(test_player=test_player, test_state=test_state).run()
+    monitor.UpNextMonitor(
+        test_player=test_player, test_state=test_state
+    ).start()
 
 
 def open_settings():
