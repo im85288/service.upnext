@@ -3,6 +3,7 @@
 """This is the actual UpNext script"""
 
 from __future__ import absolute_import, division, unicode_literals
+import xbmc
 import xbmcaddon
 import dummydata
 import monitor
@@ -68,7 +69,7 @@ def test_popup(popup_type, simple_style=False):
 
     # Create a test playbackmanager and create an actual popup for testing
     playbackmanager.UpNextPlaybackManager(
-        player=test_player, state=test_state
+        monitor=xbmc.Monitor(), player=test_player, state=test_state
     ).start()
 
 
