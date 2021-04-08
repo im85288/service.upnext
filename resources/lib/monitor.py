@@ -37,6 +37,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.player = test_player if test_player else player.UpNextPlayer()
         self.state = test_state if test_state else state.UpNextState()
         self.tracker = tracker.UpNextTracker(
+            monitor=self,
             player=self.player,
             state=self.state
         )
@@ -117,7 +118,12 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.set_detect_time()
 
             # Handle demo mode functionality and notification
-            demo.handle_demo_mode(self.state, self.player, now_playing_item)
+            demo.handle_demo_mode(
+                monitor=self,
+                player=self.player,
+                state=self.state,
+                now_playing_item=now_playing_item
+            )
             # Start tracking playback in order to launch popup at required time
             self.tracker.start()
             return

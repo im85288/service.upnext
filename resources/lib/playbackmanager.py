@@ -2,7 +2,6 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
 import api
 import dialog
 import utils
@@ -11,9 +10,18 @@ import utils
 class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritance
     """Controller for UpNext popup and playback of next item"""
 
-    __slots__ = ('player', 'state', 'popup', 'running', 'sigstop', 'sigterm')
+    __slots__ = (
+        'monitor',
+        'player',
+        'state',
+        'popup',
+        'running',
+        'sigstop',
+        'sigterm'
+    )
 
-    def __init__(self, player, state):
+    def __init__(self, monitor, player, state):
+        self.monitor = monitor
         self.player = player
         self.state = state
         self.popup = None
@@ -78,10 +86,9 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         if not self._show_popup():
             return self._get_popup_state(popup_state, done=False)
 
-        monitor = xbmc.Monitor()
         # Current file can stop, or next file can start, while update loop is
         # running. Check state and abort popup update if required
-        while (not monitor.abortRequested()
+        while (not self.monitor.abortRequested()
                and self.player.isPlaying()
                and popup_state['done']
                and not self.state.starting
@@ -98,7 +105,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
             wait_time = 1 / max(1, self.player.get_speed())
-            monitor.waitForAbort(max(0.1, min(wait_time, remaining)))
+            self.monitor.waitForAbort(max(0.1, min(wait_time, remaining)))
 
             # If end of file or user has closed popup then exit update loop
             remaining -= wait_time
@@ -109,9 +116,6 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                 break
         else:
             popup_done = False
-
-        # Free resources
-        del monitor
 
         return self._get_popup_state(popup_state, done=popup_done)
 

@@ -139,6 +139,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'capturer',
         'hashes',
         'past_hashes',
+        'monitor',
         'player',
         'state',
         'thread',
@@ -157,8 +158,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'sigterm'
     )
 
-    def __init__(self, player, state):
+    def __init__(self, monitor, player, state):
         self.capturer = xbmc.RenderCapture()
+        self.monitor = monitor
         self.player = player
         self.state = state
         self.thread = None
@@ -448,8 +450,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             profiler = cProfile.Profile()
             profiler.enable()
 
-        monitor = xbmc.Monitor()
-        while not (monitor.abortRequested() or self.sigterm or self.sigstop):
+        while not (self.monitor.abortRequested()
+                   or self.sigterm or self.sigstop):
             now = timeit.default_timer()
 
             with self.player as check_fail:
@@ -542,10 +544,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            monitor.waitForAbort(max(0.1, 1 - timeit.default_timer() + now))
-
-        # Free resources
-        del monitor
+            self.monitor.waitForAbort(
+                max(0.1, 1 - timeit.default_timer() + now)
+            )
 
         # Reset thread signals
         self.log('Stopped')
@@ -603,7 +604,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         if self.running:
             self.thread.join()
 
-        # Free resources
+        # Free references/resources
         del self.thread
         self.thread = None
 
@@ -613,6 +614,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Delete reference to instances if detector will not be restarted
             del self.capturer
             self.capturer = None
+            del self.monitor
+            self.monitor = None
             del self.player
             self.player = None
             del self.state

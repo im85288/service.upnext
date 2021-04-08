@@ -2,7 +2,6 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
 import constants
 import detector
 import playbackmanager
@@ -12,7 +11,8 @@ import utils
 class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
     """UpNext playback tracker class"""
 
-    def __init__(self, player, state):
+    def __init__(self, monitor, player, state):
+        self.monitor = monitor
         self.player = player
         self.state = state
 
@@ -39,6 +39,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Start detector if not already started
         if not self.detector:
             self.detector = detector.UpNextDetector(
+                monitor=self.monitor,
                 player=self.player,
                 state=self.state
             )
@@ -87,8 +88,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.detector.start(restart=True)
 
         # Loop unless abort requested
-        monitor = xbmc.Monitor()
-        while not (monitor.abortRequested() or self.sigterm):
+        while not (self.monitor.abortRequested() or self.sigterm):
             # Exit loop if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
                 self.log('Stopping')
@@ -116,7 +116,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             popup_time = self.state.get_popup_time()
             # Media hasn't reach popup time yet, waiting a bit longer
             if play_time < popup_time:
-                monitor.waitForAbort(min(1, popup_time - play_time))
+                self.monitor.waitForAbort(min(1, popup_time - play_time))
                 continue
 
             # Stop second thread and popup from being created after next file
@@ -129,6 +129,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 popup_time, total_time
             ))
             self.playbackmanager = playbackmanager.UpNextPlaybackManager(
+                monitor=self.monitor,
                 player=self.player,
                 state=self.state
             )
@@ -152,9 +153,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         else:
             self.log('Abort', utils.LOGWARNING)
 
-        # Free resources
-        del monitor
-
         # Reset thread signals
         self.log('Stopped')
         self.running = False
@@ -174,7 +172,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         if self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
             # Playtime needs some time to update correctly after seek/skip
             # Try waiting 1s for update, longer delay may be required
-            xbmc.Monitor().waitForAbort(1)
+            self.monitor.waitForAbort(1)
             with self.player as check_fail:
                 # Use VideoPlayer.Time infolabel over xbmc.Player.getTime(), as
                 # the infolabel appears to update quicker

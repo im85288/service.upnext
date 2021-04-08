@@ -3,7 +3,6 @@
 """Implements UpNext demo mode functions used for runtime testing UpNext"""
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
 import constants
 import plugin
 import upnext
@@ -14,7 +13,7 @@ def log(msg, level=utils.LOGDEBUG):
     utils.log(msg, name=__name__, level=level)
 
 
-def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
+def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
     if not state.demo_mode or called[0]:
         called[0] = False
         return
@@ -45,7 +44,6 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
     else:
         return
 
-    monitor = xbmc.Monitor()
     with player as check_fail:
         log('Seeking to end')
         player.seekTime(seek_time)
@@ -60,4 +58,3 @@ def handle_demo_mode(state, player, now_playing_item, called=[False]):  # pylint
         check_fail = False
     if check_fail:
         log('Error: demo seek, nothing playing', utils.LOGWARNING)
-    del monitor
