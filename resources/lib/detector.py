@@ -607,7 +607,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Free references/resources
         del self.thread
         self.thread = None
-
         if terminate:
             # Invalidate collected hashes if not needed for later use
             self.hashes.invalidate()

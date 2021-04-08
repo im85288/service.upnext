@@ -257,6 +257,12 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.thread.cancel()
 
         # Free references/resources
+        del self.thread
+        self.thread = None
+        del self.detector
+        self.detector = None
+        del self.playbackmanager
+        self.playbackmanager = None
         if terminate:
             del self.monitor
             self.monitor = None
@@ -264,9 +270,3 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.player = None
             del self.state
             self.state = None
-        del self.thread
-        self.thread = None
-        del self.detector
-        self.detector = None
-        del self.playbackmanager
-        self.playbackmanager = None
