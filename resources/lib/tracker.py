@@ -11,6 +11,18 @@ import utils
 class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
     """UpNext playback tracker class"""
 
+    __slots__ = (
+        'monitor',
+        'player',
+        'state',
+        'thread',
+        'detector',
+        'playbackmanager',
+        'running',
+        'sigstop',
+        'sigterm'
+    )
+
     def __init__(self, monitor, player, state):
         self.monitor = monitor
         self.player = player
@@ -244,7 +256,14 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         elif self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
             self.thread.cancel()
 
-        # Free resources
+        # Free references/resources
+        if terminate:
+            del self.monitor
+            self.monitor = None
+            del self.player
+            self.player = None
+            del self.state
+            self.state = None
         del self.thread
         self.thread = None
         del self.detector

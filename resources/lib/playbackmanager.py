@@ -349,5 +349,12 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         else:
             self.sigstop = self.running
 
+        # Free references/resources
         if terminate:
             self._remove_popup()
+            del self.monitor
+            self.monitor = None
+            del self.player
+            self.player = None
+            del self.state
+            self.state = None
