@@ -2,7 +2,6 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import threading
 import xbmc
 import constants
 import detector
@@ -200,17 +199,13 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             ))
 
             # Schedule tracker to start when required
-            self.thread = threading.Timer(delay, self._run)
-            self.thread.start()
+            self.thread = utils.run_after(self._run, delay)
 
         # Use while not abortRequested() loop in a separate threading.Thread to
         # continuously poll playback details while callbacks continue to be
         # processed in main service thread. Default mode.
         elif self.state.tracker_mode == constants.TRACKER_MODE_THREAD:
-            self.thread = threading.Thread(target=self._run)
-            # Daemon threads may not work in Kodi, but enable it anyway
-            self.thread.daemon = True
-            self.thread.start()
+            self.thread = utils.run_threaded(self._run)
 
         # Use while not abortRequested() loop in main service thread. Old mode.
         else:

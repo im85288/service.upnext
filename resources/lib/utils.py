@@ -7,6 +7,7 @@ import base64
 import binascii
 import json
 import sys
+import threading
 import dateutil.parser
 import xbmc
 import xbmcaddon
@@ -325,6 +326,25 @@ def notification(
     """Display a notification in Kodi with notification sound off by default"""
 
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
+
+
+def run_threaded(target):
+    """Executes the target in a separate thread"""
+
+    thread = threading.Thread(target=target)
+    # Daemon threads may not work in Kodi, but enable it anyway
+    thread.daemon = True
+    thread.start()
+    return thread
+
+
+def run_after(target, delay):
+    """Executes the target in a separate thread after time delay (in seconds)
+       has passed"""
+
+    timer = threading.Timer(delay, target)
+    timer.start()
+    return timer
 
 
 def time_to_seconds(time_str):

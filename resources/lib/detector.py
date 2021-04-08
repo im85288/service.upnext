@@ -5,7 +5,6 @@ from __future__ import absolute_import, division, unicode_literals
 import json
 import operator
 import os.path
-import threading
 import timeit
 from PIL import Image
 import xbmc
@@ -587,10 +586,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ):
             self._init_hashes()
 
-        self.thread = threading.Thread(target=self._run)
-        # Daemon threads may not work in Kodi, but enable it anyway
-        self.thread.daemon = True
-        self.thread.start()
+        self.thread = utils.run_threaded(self._run)
 
     def stop(self, terminate=False):
         # Exit if detector thread has not been created
