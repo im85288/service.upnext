@@ -328,21 +328,21 @@ def notification(
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 
-def run_threaded(target):
+def run_threaded(target, *args, **kwargs):
     """Executes the target in a separate thread"""
 
-    thread = threading.Thread(target=target)
+    thread = threading.Thread(target=target, args=args, kwargs=kwargs)
     # Daemon threads may not work in Kodi, but enable it anyway
     thread.daemon = True
     thread.start()
     return thread
 
 
-def run_after(target, delay):
+def run_after(delay, target, *args, **kwargs):
     """Executes the target in a separate thread after time delay (in seconds)
        has passed"""
 
-    timer = threading.Timer(delay, target)
+    timer = threading.Timer(delay, target, args=args, kwargs=kwargs)
     timer.start()
     return timer
 

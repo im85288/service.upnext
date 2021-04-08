@@ -209,7 +209,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             ))
 
             # Schedule tracker to start when required
-            self.thread = utils.run_after(self._run, delay)
+            self.thread = utils.run_after(delay, self._run)
 
         # Use while not abortRequested() loop in a separate threading.Thread to
         # continuously poll playback details while callbacks continue to be
