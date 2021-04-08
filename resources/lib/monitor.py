@@ -33,13 +33,6 @@ PLAYER_MONITOR_EVENTS = {
 class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
-    __slots__ = (
-        'player',
-        'state',
-        'tracker',
-        'running',
-    )
-
     def __init__(self, test_player=None, test_state=None):
         self.player = test_player if test_player else player.UpNextPlayer()
         self.state = test_state if test_state else state.UpNextState()
