@@ -183,7 +183,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         utils.log(msg, name=cls.__name__, level=level)
 
     @staticmethod
-    def calc_median(vals):
+    def _calc_median(vals):
         """Method to calculate median value of a list of values by sorting and
             indexing the list"""
 
@@ -195,11 +195,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return (vals[pivot] + vals[pivot - 1]) // 2
 
     @staticmethod
-    def calc_significance(vals):
+    def _calc_significance(vals):
         return 100 * sum(vals) / len(vals)
 
     @staticmethod
-    def calc_similarity(hash1, hash2):
+    def _calc_similarity(hash1, hash2):
         """Method to compare the similarity between two image hashes"""
 
         # Check that hashes are not empty and that dimensions are equal
@@ -215,7 +215,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return 100 * bit_compare / num_pixels
 
     @staticmethod
-    def capture_resolution(max_size=None):
+    def _capture_resolution(max_size=None):
         """Method to detect playing video resolution and aspect ratio and
            return a scaled down resolution tuple and aspect ratio for use in
            capturing the video frame buffer at a specific size/resolution"""
@@ -238,7 +238,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return (width, height), aspect_ratio
 
     @classmethod
-    def print_hash(cls, hash1, hash2, size=None, prefix=None):
+    def _print_hash(cls, hash1, hash2, size=None, prefix=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
 
         if not hash1 or not hash2:
@@ -279,7 +279,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         }
 
         # Calculate similarity between current hash and representative hash
-        stats['credits'] = self.calc_similarity(
+        stats['credits'] = self._calc_similarity(
             self.hashes.data.get(self.hash_index['credits']),
             image_hash
         )
@@ -292,12 +292,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             return stats
 
         # Calculate similarity between current hash and previous hash
-        stats['previous'] = self.calc_similarity(
+        stats['previous'] = self._calc_similarity(
             self.hashes.data.get(self.hash_index['previous']),
             image_hash
         )
         # Calculate percentage of significant pixels
-        stats['significance'] = self.calc_significance(image_hash)
+        stats['significance'] = self._calc_significance(image_hash)
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
         if stats['previous'] >= self.state.detect_level:
@@ -324,7 +324,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ]
         old_hash_index = None
         for old_hash_index in old_hash_indexes:
-            stats['episodes'] = self.calc_similarity(
+            stats['episodes'] = self._calc_similarity(
                 self.past_hashes.data[old_hash_index],
                 image_hash
             )
@@ -360,7 +360,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
     def _init_hashes(self):
         # Limit captured data to 16 kB
-        self.capture_size, self.capture_ar = self.capture_resolution(
+        self.capture_size, self.capture_ar = self._capture_resolution(
             max_size=16
         )
 
@@ -484,7 +484,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 image = image.resize(self.hashes.hash_size, resample=Image.BOX)
 
             # Transform image to show absolute deviation from median pixel luma
-            median_pixel = self.calc_median(image.getdata())
+            median_pixel = self._calc_median(image.getdata())
             image_hash = image.point(
                 [abs(i - median_pixel) for i in range(256)]
             )
@@ -492,7 +492,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Calculate median absolute deviation from the median to represent
             # significant pixels and use transformed image as the hash of the
             # current video frame
-            median_pixel = self.calc_median(image_hash.getdata())
+            median_pixel = self._calc_median(image_hash.getdata())
             image_hash = image_hash.point(
                 [i > median_pixel for i in range(256)]
             )
@@ -503,7 +503,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             stats = self._check_similarity(image_hash, self.match_number)
 
             if self.state.detector_debug:
-                self.print_hash(
+                self._print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
                     self.hashes.hash_size,
@@ -512,7 +512,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['credits'])
                 )
 
-                self.print_hash(
+                self._print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size,
@@ -522,7 +522,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['previous'], stats['significance'])
                 )
 
-                self.print_hash(
+                self._print_hash(
                     self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
                     self.hashes.hash_size,

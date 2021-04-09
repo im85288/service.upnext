@@ -53,7 +53,7 @@ class UpNextMonitor(xbmc.Monitor):
     def log(cls, msg, level=utils.LOGINFO):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def check_video(self, data=None, encoding=None):
+    def _check_video(self, data=None, encoding=None):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
             return
@@ -203,7 +203,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.playing_next = False
 
             # Check whether UpNext can start tracking
-            self.check_video()
+            self._check_video()
 
         # Stop event
         elif method == PLAYER_MONITOR_EVENTS['stop']:
@@ -233,7 +233,7 @@ class UpNextMonitor(xbmc.Monitor):
             decoded_data.update(id='{0}_play_action'.format(sender))
 
             # Initial processing of data to start tracking
-            self.check_video(decoded_data, encoding)
+            self._check_video(decoded_data, encoding)
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         if not self.running:
