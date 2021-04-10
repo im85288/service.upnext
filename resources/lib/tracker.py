@@ -98,6 +98,21 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         )
         self.detector.start()
 
+    def _launch_playbackmanager(self, playback):
+        self.log('Popup at {0}s of {1}s'.format(
+            playback['play_time'], playback['total_time']
+        ))
+        self.playbackmanager = playbackmanager.UpNextPlaybackManager(
+            monitor=self.monitor,
+            player=self.player,
+            state=self.state
+        )
+        # Check if playbackmanager found a video to play next
+        has_next_item = self.playbackmanager.start()
+        # And whether playback was cancelled by the user
+        playback_cancelled = has_next_item and not self.state.playing_next
+        return playback_cancelled
+
     def _run(self):
         # Only track playback if old tracker is not running
         if self.running:
@@ -129,13 +144,12 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self.sigterm = False
                 return
 
-            # Start detector if start time is due
-            if playback.get('detector_wait_time', 1) <= 0.1:
-                self._launch_detector()
-
             # Exit loop if popup is due
             if playback['popup_wait_time'] <= 0.1:
                 break
+            # Or start detector if start time is due
+            elif playback.get('detector_wait_time', 1) <= 0.1:
+                self._launch_detector()
 
             # Media hasn't reach popup time yet, waiting a bit longer
             self.monitor.waitForAbort(min(1, playback['popup_wait_time']))
@@ -157,18 +171,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.detector.stop()
 
         # Start playbackmanager to show popup and handle playback of next file
-        self.log('Popup at {0}s of {1}s'.format(
-            playback['play_time'], playback['total_time']
-        ))
-        self.playbackmanager = playbackmanager.UpNextPlaybackManager(
-            monitor=self.monitor,
-            player=self.player,
-            state=self.state
-        )
-        # Check if playbackmanager found a video to play next
-        has_next_item = self.playbackmanager.start()
-        # And whether playback was cancelled by the user
-        playback_cancelled = has_next_item and not self.state.playing_next
+        playback_cancelled = self._launch_playbackmanager(playback)
 
         # Cleanup detector data and check if tracker needs to be reset if
         # credits were incorrectly detected
@@ -244,26 +247,18 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Set terminate or stop signals if tracker is running
         if terminate:
             self.sigterm = self.running
-
-            # If detector has been started
-            if isinstance(self.detector, detector.UpNextDetector):
-                # Stop detector and release resources
-                self.detector.stop(terminate=True)
-
-            # Stop playbackmanager, force close popup and release resources
-            if self.playbackmanager:
-                self.playbackmanager.stop(terminate=True)
         else:
             self.sigstop = self.running
 
-            # If detector has been started
-            if isinstance(self.detector, detector.UpNextDetector):
-                # Stop detector
-                self.detector.stop()
+        # If detector has been started
+        if isinstance(self.detector, detector.UpNextDetector):
+            # Stop detector and release resources if terminating tracker
+            self.detector.stop(terminate=terminate)
 
-            # Stop playbackmanager and close popup
-            if self.playbackmanager:
-                self.playbackmanager.stop()
+        # Stop playbackmanager, force close popup and release resources if
+        # terminating tracker
+        if self.playbackmanager:
+            self.playbackmanager.stop(terminate=terminate)
 
         # Exit if tracker thread has not been created
         if not self.thread:
