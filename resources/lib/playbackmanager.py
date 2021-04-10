@@ -357,8 +357,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             self.sigstop = self.running
 
         # playbackmanager does not run in a separate thread, but stop() can be
-        # called from another thread. Wait until execution has finished.
+        # called from another thread
         while self.running:
+            # Wait until execution has finished to ensure references/resources
+            # can be safely released
             pass
 
         # Free references/resources
