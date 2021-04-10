@@ -119,7 +119,6 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Store popup time and check if cue point was provided
             self.state.set_popup_time(total_time)
-            self.state.set_detect_time()
 
             # Handle demo mode functionality and notification
             demo.handle_demo_mode(

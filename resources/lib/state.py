@@ -224,7 +224,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def get_detect_time(self):
         return self.detect_time
 
-    def set_detect_time(self):
+    def _set_detect_time(self):
         # Don't use detection time period if an addon cue point was provided,
         # or end credits detection is disabled
         if self.popup_cue or not self.detect_enabled:
@@ -243,6 +243,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.popup_time = detected_time
             # Enable cue point unless forced off in demo mode
             self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
+            self._set_detect_time()
             return
 
         # Alway use addon data, when available
@@ -253,6 +254,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
                 self.popup_time = total_time - popup_duration
+                self._set_detect_time()
                 return
 
             # Some addons send the time from video start (e.g. Netflix)
@@ -261,6 +263,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
                 self.popup_time = popup_time
+                self._set_detect_time()
                 return
 
         # Use addon settings for duration
@@ -274,6 +277,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.popup_time = total_time - popup_duration
         else:
             self.popup_time = 0
+        self._set_detect_time()
 
     def process_now_playing(self, playlist_position, addon_type, media_type):
         if addon_type:
