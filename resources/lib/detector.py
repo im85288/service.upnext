@@ -455,8 +455,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             now = timeit.default_timer()
 
             with self.player as check_fail:
+                play_time = self.player.getTime()
                 self.hash_index['current'] = (
-                    int(self.player.getTotalTime() - self.player.getTime()),
+                    int(self.player.getTotalTime() - play_time),
                     self.hashes.episode
                 )
                 # Only capture if playing at normal speed
@@ -544,6 +545,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
+            if self.check_credits_detected():
+                self.log('Credits detected')
+                self.update_timestamp(play_time)
+                self.state.set_popup_time(detected_time=play_time)
+                break
+
             self.monitor.waitForAbort(
                 max(0.1, 1 - timeit.default_timer() + now)
             )
@@ -554,21 +561,17 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-    def detected(self):
+    def check_credits_detected(self):
         # Ignore invalidated hash data
         if not self.hashes.is_valid():
             return False
-
-        # If a previously detected timestamp exists then indicate that credits
-        # have been detected
-        if self.past_hashes.timestamps.get(self.hashes.episode):
-            return True
 
         self.log('{0}/{1} matches'.format(
             self.match_count['hits'],
             self.match_number
         ), utils.LOGDEBUG)
         self.credits_detected = self.match_count['hits'] >= self.match_number
+
         return self.credits_detected
 
     def start(self, restart=False, reset=False):
@@ -587,7 +590,15 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ):
             self._init_hashes()
 
-        self.thread = utils.run_threaded(self._run)
+        # If a previously detected timestamp exists then use it
+        stored_timestamp = self.past_hashes.timestamps.get(self.hashes.episode)
+        if stored_timestamp and not reset:
+            self.log('Stored credits timestamp found')
+            self.state.set_popup_time(detected_time=stored_timestamp)
+
+        # Otherwise run the detector in a new thread
+        else:
+            self.thread = utils.run_threaded(self._run)
 
     def stop(self, terminate=False):
         # Exit if detector thread has not been created
@@ -644,10 +655,5 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
-        # Return current playtime if credits were detected
-        if self.credits_detected:
-            self.hash_index['detected_at'] = self.hash_index['current'][0]
-            self.hashes.timestamps[self.hashes.episode] = play_time
-            return play_time
-        # Otherwise return previously detected timestamp
-        return self.past_hashes.timestamps.get(self.hashes.episode)
+        self.hash_index['detected_at'] = self.hash_index['current'][0]
+        self.hashes.timestamps[self.hashes.episode] = play_time
