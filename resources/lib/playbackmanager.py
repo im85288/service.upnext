@@ -215,6 +215,22 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             popup_state, source, ' using queue' if self.state.queued else ''
         ), utils.LOGDEBUG)
 
+    def _post_run(self, play_next, keep_playing):
+        # Update playback state
+        self.state.playing_next = play_next
+
+        # Dequeue and stop playback if not playing next file
+        if not play_next and self.state.queued:
+            self.state.queued = api.dequeue_next_item()
+        if not keep_playing:
+            self.log('Stopping playback')
+            self.player.stop()
+
+        # Reset signals
+        self.sigstop = False
+        self.sigterm = False
+        self.running = False
+
     def _remove_popup(self):
         if not self._has_popup():
             return
@@ -226,9 +242,20 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         del self.popup
         self.popup = None
 
-    def _run(self, next_item, source=None):
+    def _run(self):
         self.log('Started')
         self.running = True
+
+        next_item, source = self.state.get_next()
+        # No next item to play, get out of here
+        if not next_item:
+            self.log('Exiting: no next item to play')
+
+            play_next = False
+            keep_playing = True
+            self._post_run(play_next, keep_playing)
+            has_next_item = False
+            return has_next_item
 
         # Add next file to playlist if existing playlist is not being used
         if self.state.enable_queue and source[-len('playlist'):] != 'playlist':
@@ -270,15 +297,10 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
             popup_state['done'] = False
 
         if not popup_state['done']:
-            # Reset signals
-            self.sigstop = False
-            self.sigterm = False
-            self.running = False
-
             play_next = False
             # Stop playing if Stop button was clicked on popup, or if Still
             # Watching? popup was shown (to prevent unwanted playback that can
-            # occur if fast forwarding through popup), or if starting shuffle
+            # occur if fast forwarding through popup), or not starting shuffle
             keep_playing = (
                 not popup_state['stop']
                 and (
@@ -286,20 +308,23 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
                     or popup_state['shuffle_start']
                 )
             )
-            return play_next, keep_playing
+            self._post_run(play_next, keep_playing)
+
+            # Run again if shuffle started to get new random episode
+            if popup_state['shuffle_start']:
+                return self._run()
+
+            has_next_item = True
+            return has_next_item
 
         # Request playback of next file based on source and type
         self._play_next_video(next_item, source, popup_state)
 
-        # Reset signals
-        self.log('Stopped')
-        self.sigstop = False
-        self.sigterm = False
-        self.running = False
-
         play_next = True
         keep_playing = True
-        return play_next, keep_playing
+        self._post_run(play_next, keep_playing)
+        has_next_item = True
+        return has_next_item
 
     def _show_popup(self):
         if not self._has_popup():
@@ -313,41 +338,28 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
     def start(self, called=[False]):  # pylint: disable=dangerous-default-value
         # Exit if playbackmanager previously requested
         if called[0]:
-            return False
+            has_next_item = False
+            return has_next_item
         # Stop any existing playbackmanager
         self.stop()
         called[0] = True
 
-        next_item, source = self.state.get_next()
-        # No next item to play, get out of here
-        if not next_item:
-            self.log('Exiting: no next item to play')
-            called[0] = False
-            return False
-
         # Show popup and get new playback state
-        play_next, keep_playing = self._run(next_item, source)
-        self.state.playing_next = play_next
-
-        # Dequeue and stop playback if not playing next file
-        if not play_next and self.state.queued:
-            self.state.queued = api.dequeue_next_item()
-        if not keep_playing:
-            self.log('Stopping playback')
-            self.player.stop()
-        # Relaunch popup if shuffle enabled to get new random episode
-        elif self.state.shuffle and not play_next:
-            called[0] = False
-            return self.start()
+        has_next_item = self._run()
 
         called[0] = False
-        return True
+        return has_next_item
 
     def stop(self, terminate=False):
         if terminate:
             self.sigterm = self.running
         else:
             self.sigstop = self.running
+
+        # playbackmanager does not run in a separate thread, but stop() can be
+        # called from another thread. Wait until execution has finished.
+        while self.running:
+            pass
 
         # Free references/resources
         if terminate:
