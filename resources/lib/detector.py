@@ -599,15 +599,15 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.thread = utils.run_threaded(self._run)
 
     def stop(self, terminate=False):
-        # Exit if detector thread has not been created
-        if not self.thread:
-            return
-
         # Set terminate or stop signals if detector is running
         if terminate:
             self.sigterm = self.running
         else:
             self.sigstop = self.running
+
+        # Exit if detector thread has not been created
+        if not self.thread:
+            return
 
         # Wait for thread to complete
         if self.running:
