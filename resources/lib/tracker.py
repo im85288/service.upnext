@@ -50,7 +50,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # If credits were (in)correctly detected and popup is cancelled
         # by the user, then restart tracking loop to allow detector to
         # restart, or to launch popup at default time
-        if self.detector.credits_detected and playback_cancelled:
+        if self.detector.credits_detected() and playback_cancelled:
             # Re-start detector and reset match counts
             self.detector.start(reset=True)
             tracker_restart = True

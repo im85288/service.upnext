@@ -150,8 +150,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'capture_size',
         'capture_ar',
         'hash_index',
-        'match_count',
-        'credits_detected',
+        'match_counts',
         # Signals
         'running',
         'sigstop',
@@ -165,11 +164,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.state = state
         self.thread = None
 
-        self.match_count = {
+        self.match_counts = {
             'hits': 0,
             'misses': 0
         }
-        self.credits_detected = False
         self._init_hashes()
 
         self.running = False
@@ -344,19 +342,27 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return stats
 
     def _hash_match_hit(self):
-        self.match_count['hits'] += 1
-        self.match_count['misses'] = 0
+        self.match_counts['hits'] += 1
+        self.match_counts['misses'] = 0
+        self.match_counts['detected'] = (
+            self.match_counts['hits'] >= self.match_number
+        )
+
+        if self.credits_detected():
+            self.log('Credits detected')
+            self.sigstop = self.running
 
     def _hash_match_miss(self):
-        self.match_count['misses'] += 1
+        self.match_counts['misses'] += 1
         # If 3 mismatches in a row (to account for bad frame capture), then
         # reset match count
-        if self.match_count['misses'] >= 3:
+        if self.match_counts['misses'] >= 3:
             self._hash_match_reset()
 
     def _hash_match_reset(self):
-        self.match_count['hits'] = 0
-        self.match_count['misses'] = 0
+        self.match_counts['hits'] = 0
+        self.match_counts['misses'] = 0
+        self.match_counts['detected'] = False
 
     def _init_hashes(self):
         # Limit captured data to 16 kB
@@ -421,9 +427,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Number of consecutive frame matches required for a positive detection
         self.match_number = 5
-
         self._hash_match_reset()
-        self.credits_detected = False
 
     def _run(self):
         """Detection loop captures Kodi render buffer every 1s to create an
@@ -504,6 +508,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             stats = self._check_similarity(image_hash, self.match_number)
 
             if self.state.detector_debug:
+                self.log('{0[hits]}/{1} matches, {0[misses]}'.format(
+                    self.match_counts, self.match_number
+                ))
+
                 self._print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
@@ -545,15 +553,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            if self.check_credits_detected():
-                self.log('Credits detected')
-                self.update_timestamp(play_time)
-                self.state.set_popup_time(detected_time=play_time)
-                break
-
             self.monitor.waitForAbort(
                 max(0.1, 1 - timeit.default_timer() + now)
             )
+
+        self.update_timestamp(play_time)
 
         # Reset thread signals
         self.log('Stopped')
@@ -561,18 +565,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
-    def check_credits_detected(self):
+    def credits_detected(self):
         # Ignore invalidated hash data
         if not self.hashes.is_valid():
             return False
 
-        self.log('{0}/{1} matches'.format(
-            self.match_count['hits'],
-            self.match_number
-        ), utils.LOGDEBUG)
-        self.credits_detected = self.match_count['hits'] >= self.match_number
-
-        return self.credits_detected
+        return self.match_counts['detected']
 
     def start(self, restart=False, reset=False):
         """Method to run actual detection test loop in a separate thread"""
@@ -580,9 +578,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         if restart or self.running:
             self.stop()
         if reset:
-            self.match_count['hits'] = 0
-            self.match_count['misses'] = 0
-            self.credits_detected = False
+            self._hash_match_reset()
         # Reset detector data if episode has changed
         if not self.hashes.is_valid(
                 self.state.get_season_identifier(),
@@ -640,7 +636,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.past_hashes.hash_size = self.hashes.hash_size
         # If credit were detected only store the previous 5s worth of hashes to
         # reduce false positives when comparing to other episodes
-        if self.credits_detected:
+        if self.match_counts['detected']:
             detect_offset = self.hash_index['detected_at'] + self.match_number
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
@@ -655,5 +651,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
+        if not self.credits_detected():
+            return
+
         self.hash_index['detected_at'] = self.hash_index['current'][0]
         self.hashes.timestamps[self.hashes.episode] = play_time
+        self.state.set_popup_time(detected_time=play_time)
