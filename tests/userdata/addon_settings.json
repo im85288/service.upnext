@@ -13,7 +13,7 @@
 		"demoPlugin": "true",
 		"demoSeek": "3",
 		"detectLevel": "90",
-		"detectorDebug": "false",
+		"detectorDebug": "true",
 		"detectPeriod": "30",
 		"detectPlayTime": "true",
 		"disableNextUp": "false",
