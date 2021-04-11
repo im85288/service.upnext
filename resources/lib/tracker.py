@@ -148,7 +148,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             if playback['popup_wait_time'] <= 0.1:
                 break
             # Or start detector if start time is due
-            elif playback.get('detector_wait_time', 1) <= 0.1:
+            if playback.get('detector_wait_time', 1) <= 0.1:
                 self._launch_detector()
 
             # Media hasn't reach popup time yet, waiting a bit longer
