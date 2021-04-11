@@ -262,7 +262,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             ) for row in range(0, num_pixels, size[0])]
         ))
 
-    def _check_similarity(self, image_hash, index_offset):
+    def _check_similarity(self, image_hash):
         stats = {
             'is_match': False,
             'possible_match': False,
@@ -312,6 +312,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # episode and where the hash timestamps are approximately equal (+/- an
         # index_offset)
         episode_idx = self.hash_index['current'][1]
+        # Offset equal to the number of matches required for detection
+        index_offset = self.match_number
         min_time_idx = self.hash_index['current'][0] - index_offset
         max_time_idx = self.hash_index['current'][0] + index_offset
         old_hash_indexes = [
@@ -505,7 +507,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            stats = self._check_similarity(image_hash, self.match_number)
+            stats = self._check_similarity(image_hash)
 
             if self.state.detector_debug:
                 self.log('{0[hits]}/{1} matches, {0[misses]}'.format(
