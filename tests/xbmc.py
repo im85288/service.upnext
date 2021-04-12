@@ -99,7 +99,10 @@ class Monitor:
 
         time.sleep(abort_time)
         Monitor._aborted = True
-        sys.exit()
+        try:
+            sys.exit()
+        except SystemExit:
+            pass
 
     def abortRequested(self):
         ''' A stub implementation for the xbmc Monitor class abortRequested() method '''
@@ -107,13 +110,14 @@ class Monitor:
 
     def waitForAbort(self, timeout=None):
         ''' A stub implementation for the xbmc Monitor class waitForAbort() method '''
-        sleep_time = timeout if timeout else 1
+        sleep_time = 0
         timed_out = False
 
         try:
             while not timed_out and not Monitor._aborted:
-                time.sleep(sleep_time)
-                if timeout:
+                time.sleep(1)
+                sleep_time += 1
+                if timeout is not None and sleep_time >= timeout:
                     timed_out = True
         except KeyboardInterrupt:
             Monitor._aborted = True
@@ -279,10 +283,10 @@ class RenderCapture:
 
     def getImage(self):
         ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
-        return array.array('B', [
+        return array.array('B', (
             random.randint(0, 255) if i % 4 != 3 else 255
             for i in range(self._width * self._height * 4)
-        ])
+        ))
 
 
 def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
