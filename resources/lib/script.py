@@ -163,5 +163,5 @@ def run(argv):
         # Simple style popup
         if len(argv) == 4:
             return test_method(argv[2], argv[3])
-    else:
-        return open_settings()
+        return False
+    return open_settings()
