@@ -6,3 +6,4 @@ kodi-addon-checker; python_version >= '3.5'
 polib
 pylint
 tox
+pytest-cov

@@ -23,7 +23,6 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get install gettext
-        sudo pip install coverage --install-option="--install-scripts=/usr/bin"
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run tox
@@ -35,9 +34,10 @@ jobs:
     - name: Compare translations
       run: make check-translations
       if: always()
-    - name: Run unit tests
-      run: coverage run -m unittest discover
+    - name: Run pytest
+      run: pytest
       if: always()
+      continue-on-error: true
     - name: Upload code coverage to CodeCov
       if: matrix.python-version == '3.8'
       uses: codecov/codecov-action@v1
