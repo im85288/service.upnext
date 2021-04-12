@@ -83,7 +83,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
         # Determine time until detector is required, scaled to real time
         detect_time = self.state.get_detect_time()
-        if detect_time and not self.detector:
+        if detect_time and not (self.detector and self.detector.is_alive()):
             playback['detector_wait_time'] = (
                 (detect_time - playback['play_time']) // playback['speed']
             )
@@ -91,11 +91,12 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         return playback
 
     def _launch_detector(self):
-        self.detector = detector.UpNextDetector(
-            monitor=self.monitor,
-            player=self.player,
-            state=self.state
-        )
+        if not isinstance(self.detector, detector.UpNextDetector):
+            self.detector = detector.UpNextDetector(
+                monitor=self.monitor,
+                player=self.player,
+                state=self.state
+            )
         self.detector.start()
 
     def _launch_playbackmanager(self, playback):
@@ -270,10 +271,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Or if tracker has not yet started on timer then cancel old timer
         elif self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
             self.thread.cancel()
-            if not isinstance(self.detector, detector.UpNextDetector):
-                self.detector.cancel()
-                del self.detector
-                self.detector = None
+            self.detector.cancel()
 
         # Free references/resources
         del self.thread

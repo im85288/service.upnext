@@ -570,6 +570,13 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.sigstop = False
         self.sigterm = False
 
+    def is_alive(self):
+        return self.running
+
+    def cancel(self):
+        # Dummy method to match threading/timer object method
+        pass
+
     def credits_detected(self):
         # Ignore invalidated hash data
         if not self.hashes.is_valid():
