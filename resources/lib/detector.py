@@ -145,6 +145,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'thread',
         # Settings
         'match_number',
+        'mismatch_number',
         'significance_level',
         # Variables
         'capture_size',
@@ -356,9 +357,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
     def _hash_match_miss(self):
         self.match_counts['misses'] += 1
-        # If 3 mismatches in a row (to account for bad frame capture), then
-        # reset match count
-        if self.match_counts['misses'] >= 3:
+
+        if self.match_counts['misses'] >= self.mismatch_number:
             self._hash_match_reset()
 
     def _hash_match_reset(self):
@@ -429,6 +429,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Number of consecutive frame matches required for a positive detection
         self.match_number = 5
+        # Number of consecutive frame mismatches required to reset match count
+        # Set to 3 to account for bad frame capture
+        self.mismatch_number = 3
         self._hash_match_reset()
 
     def _run(self):
@@ -510,8 +513,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             stats = self._check_similarity(image_hash)
 
             if self.state.detector_debug:
-                self.log('{0[hits]}/{1} matches, {0[misses]}'.format(
-                    self.match_counts, self.match_number
+                self.log('Match: {0[hits]}/{1}, Miss: {0[misses]}/{2}'.format(
+                    self.match_counts, self.match_number, self.mismatch_number
                 ))
 
                 self._print_hash(
