@@ -157,15 +157,15 @@ class UpNextMonitor(xbmc.Monitor):
         # Free references/resources
         if self.tracker:
             self.tracker.stop(terminate=True)
-        del self.tracker
-        self.tracker = None
-        self.log('Cleanup tracker')
         del self.state
         self.state = None
         self.log('Cleanup state')
         del self.player
         self.player = None
         self.log('Cleanup player')
+        del self.tracker
+        self.tracker = None
+        self.log('Cleanup tracker')
 
     def onAbort(self):  # pylint: disable=invalid-name
         # Wait indefinitely until addon is terminated
