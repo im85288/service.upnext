@@ -46,23 +46,24 @@ def handler(argv):
 
     dbid = int(args.get('play', [constants.UNKNOWN_DATA])[0])
     if dbid == constants.UNKNOWN_DATA:
-        return
+        return False
 
     current_episode = api.get_from_library(dbid)
     if not current_episode:
         xbmcplugin.setResolvedUrl(
             addon_handle, False, upnext.create_listitem({})
         )
-        return
+        return False
 
     upnext_info = generate_data(current_episode, addon_id)
     if not upnext_info:
         xbmcplugin.setResolvedUrl(
             addon_handle, False, upnext.create_listitem({})
         )
-        return
+        return False
 
     xbmcplugin.setResolvedUrl(
         addon_handle, True, upnext_info['current_episode']
     )
     upnext.send_signal(addon_id, upnext_info)
+    return True

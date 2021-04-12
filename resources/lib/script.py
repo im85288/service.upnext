@@ -68,7 +68,7 @@ def test_popup(popup_type, simple_style=False):
     test_player.state.set('stop', force=True)
 
     # Create a test playbackmanager and create an actual popup for testing
-    playbackmanager.UpNextPlaybackManager(
+    return playbackmanager.UpNextPlaybackManager(
         monitor=xbmc.Monitor(), player=test_player, state=test_state
     ).start()
 
@@ -132,13 +132,16 @@ def test_upnext(popup_type, simple_style=False):
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
 
-    monitor.UpNextMonitor(
+    test_monitor = monitor.UpNextMonitor(
         test_player=test_player, test_state=test_state
-    ).start()
+    )
+    test_monitor.start()
+    return test_monitor
 
 
 def open_settings():
     xbmcaddon.Addon().openSettings()
+    return True
 
 
 def run(argv):
@@ -156,9 +159,9 @@ def run(argv):
             test_method = test_upnext
         # Fancy style popup
         if len(argv) == 3:
-            test_method(argv[2])
+            return test_method(argv[2])
         # Simple style popup
-        elif len(argv) == 4:
-            test_method(argv[2], argv[3])
+        if len(argv) == 4:
+            return test_method(argv[2], argv[3])
     else:
-        open_settings()
+        return open_settings()
