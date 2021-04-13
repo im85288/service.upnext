@@ -73,3 +73,9 @@ LIBRARY = {
         }
     ]
 }
+
+for episode in LIBRARY['episodes']:
+    episode['tvshowid'] = (
+        LIBRARY['tvshows'].get(episode['showtitle'], {}).get('tvshowid', -1)
+    )
+del episode

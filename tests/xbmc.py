@@ -361,12 +361,6 @@ def _videolibrary_gettvshows(params):
         return False
 
     tvshowid = LIBRARY['tvshows'].get(filter_value, {}).get('tvshowid')
-    episodes = [
-        episode for episode in LIBRARY['episodes']
-        if episode['showtitle'] == filter_value
-    ]
-    for episode in episodes:
-        episode['tvshowid'] = tvshowid
 
     return json.dumps(dict(
         id=1,
