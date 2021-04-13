@@ -432,7 +432,7 @@ def _videolibrary_gettvshowdetails(params):
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
-        result=dict(tvshowdetails=tvshows[0])
+        result=dict(tvshowdetails=tvshows[0] if tvshows else {})
     ))
 
 
