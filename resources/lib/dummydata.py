@@ -74,9 +74,8 @@ LIBRARY = {
     ]
 }
 
-_episode = None
-for _episode in LIBRARY['episodes']:
-    _episode['tvshowid'] = (
-        LIBRARY['tvshows'].get(_episode['showtitle'], {}).get('tvshowid', -1)
+for episode in LIBRARY['episodes']:
+    episode['tvshowid'] = (
+        LIBRARY['tvshows'].get(episode['showtitle'], {}).get('tvshowid', -1)
     )
-del _episode
+del episode  # pylint: disable=undefined-loop-variable
