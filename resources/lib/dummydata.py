@@ -45,7 +45,7 @@ LIBRARY = {
             'rating': 8.8,
             'firstaired': 'April 22, 2012',
             'runtime': 3000,
-            'file': 'Game of Thrones - S02E04 - Garden of Bones.mkv'
+            'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E04 - Garden of Bones.mkv'
         },
         {
             'episodeid': random.randint(10, 19),
@@ -69,7 +69,7 @@ LIBRARY = {
             'rating': 8.8,
             'firstaired': 'April 29, 2012',
             'runtime': 3300,
-            'file': 'Game of Thrones - S02E05 - The Ghost of Harrenhal.mkv'
+            'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E05 - The Ghost of Harrenhal.mkv'
         }
     ]
 }

@@ -85,6 +85,8 @@ def setPluginCategory(handle, category):
 
 def setResolvedUrl(handle, succeeded, listitem):
     ''' A stub implementation of the xbmcplugin setResolvedUrl() function '''
+    if not succeeded or listitem.path[:len('file://')] == 'file://':
+        return
     request = Request(listitem.path)
     request.get_method = lambda: 'HEAD'
     try:
