@@ -74,11 +74,9 @@ LIBRARY = {
     ]
 }
 
-for episode in LIBRARY['episodes']:
-    episode['tvshowid'] = (
-        LIBRARY['tvshows'].get(episode['showtitle'], {}).get('tvshowid', -1)
+_episode = None
+for _episode in LIBRARY['episodes']:
+    _episode['tvshowid'] = (
+        LIBRARY['tvshows'].get(_episode['showtitle'], {}).get('tvshowid', -1)
     )
-try:
-    del episode
-except NameError:
-    pass
+del _episode
