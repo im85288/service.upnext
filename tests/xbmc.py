@@ -434,11 +434,11 @@ def _jsonrpc_notifyall(params):
     for ref in _monitor_instances.valuerefs():
         notification_handler = getattr(ref(), "onNotification", None)
         if callable(notification_handler):
-            notification_handler(
+            threading.Thread(target=notification_handler, args=(
                 params.get('sender'),
                 params.get('message'),
                 json.dumps(params.get('data'))
-            )
+            ))
 
     return True
 
