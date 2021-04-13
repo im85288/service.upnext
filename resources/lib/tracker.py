@@ -99,10 +99,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             )
         self.detector.start()
 
-    def _launch_playbackmanager(self, playback):
-        self.log('Popup at {0}s of {1}s'.format(
-            playback['play_time'], playback['total_time']
-        ))
+    def _launch_playbackmanager(self):
         self.playbackmanager = playbackmanager.UpNextPlaybackManager(
             monitor=self.monitor,
             player=self.player,
@@ -139,7 +136,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
             # Exit tracker if stop requested or if tracking stopped
             if self.sigstop or not self.state.is_tracking():
-                self.log('Stopping')
+                self.log('Stopped')
                 self.running = False
                 self.sigstop = False
                 self.sigterm = False
@@ -172,7 +169,10 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.detector.stop()
 
         # Start playbackmanager to show popup and handle playback of next file
-        playback_cancelled = self._launch_playbackmanager(playback)
+        self.log('Popup at {0}s of {1}s'.format(
+            playback['play_time'], playback['total_time']
+        ))
+        playback_cancelled = self._launch_playbackmanager()
 
         # Cleanup detector data and check if tracker needs to be reset if
         # credits were incorrectly detected
