@@ -283,10 +283,10 @@ class RenderCapture:
 
     def getImage(self):
         ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
-        return array.array('B', (
-            random.randint(0, 255) if i % 4 != 3 else 255
+        return array.array('B', [
+            random.getrandbits(8) if i % 4 != 3 else 255
             for i in range(self._width * self._height * 4)
-        ))
+        ])
 
 
 def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
