@@ -43,7 +43,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         self.timestamps = kwargs.get('timestamps', {})
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     @staticmethod
@@ -83,8 +83,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
             with open(target, mode='r') as target_file:
                 hashes = json.load(target_file)
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Could not load stored hashes from {0}'.format(target),
-                     utils.LOGDEBUG)
+            self.log('Could not load stored hashes from {0}'.format(target))
             return False
 
         if not hashes:
@@ -178,7 +177,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     @staticmethod

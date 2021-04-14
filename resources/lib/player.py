@@ -82,7 +82,7 @@ class UpNextPlayer(xbmc.Player):
         return exc_type == RuntimeError
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     def isExternalPlayer(self):  # pylint: disable=invalid-name

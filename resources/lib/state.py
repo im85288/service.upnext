@@ -93,7 +93,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.log('Reset' if reset else 'Init')
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     def reset(self):

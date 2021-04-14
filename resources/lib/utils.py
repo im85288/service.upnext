@@ -63,51 +63,59 @@ def clear_property(key, window_id=constants.WINDOW_HOME):
     return xbmcgui.Window(window_id).clearProperty(key)
 
 
-def get_setting(key, default='', addon_id=constants.ADDON_ID):
+def get_setting(key, default='', echo=True):
     """Get an addon setting as string"""
 
+    value = default
     # We use Addon() here to ensure changes in settings are reflected instantly
     try:
-        value = statichelper.to_unicode(
-            xbmcaddon.Addon(addon_id).getSetting(key)
-        )
+        value = xbmcaddon.Addon(constants.ADDON_ID).getSetting(key)
+        value = statichelper.to_unicode(value)
     # Occurs when the addon is disabled
     except RuntimeError:
-        return default
-    if not value and default != '':
-        return default
+        value = default
+
+    if echo:
+        log('{0}: {1}'.format(key, value), 'Settings', LOGDEBUG)
     return value
 
 
-def get_setting_bool(key, default=None, addon_id=constants.ADDON_ID):
+def get_setting_bool(key, default=None, echo=True):
     """Get an addon setting as boolean"""
 
+    value = default
     try:
-        return xbmcaddon.Addon(addon_id).getSettingBool(key)
+        value = xbmcaddon.Addon(constants.ADDON_ID).getSettingBool(key)
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
-        value = get_setting(key, '' if default is None else default).lower()
-        return constants.BOOL_STRING_VALUES.get(value, default)
+        value = get_setting(key, echo=False)
+        value = constants.BOOL_STRING_VALUES.get(value.lower(), default)
     # Occurs when the addon is disabled
     except RuntimeError:
-        return default
+        value = default
+
+    if echo:
+        log('{0}: {1}'.format(key, value), 'Settings', LOGDEBUG)
+    return value
 
 
-def get_setting_int(key, default=None, addon_id=constants.ADDON_ID):
+def get_setting_int(key, default=None, echo=True):
     """Get an addon setting as integer"""
 
+    value = default
     try:
-        return xbmcaddon.Addon(addon_id).getSettingInt(key)
+        value = xbmcaddon.Addon(constants.ADDON_ID).getSettingInt(key)
     # On Krypton or older, or when not an integer
     except (AttributeError, TypeError):
-        value = get_setting(key, '' if default is None else default)
-        try:
-            return int(value)
-        except ValueError:
-            return default
+        value = get_setting(key, echo=False)
+        value = get_int(value, default=default, strict=True)
     # Occurs when the addon is disabled
     except RuntimeError:
-        return default
+        value = default
+
+    if echo:
+        log('{0}: {1}'.format(key, value), 'Settings', LOGDEBUG)
+    return value
 
 
 def get_int(obj, key=None, default=-1, strict=False):
@@ -222,7 +230,7 @@ LOGERROR = xbmc.LOGERROR
 LOGFATAL = xbmc.LOGFATAL
 LOGNONE = xbmc.LOGNONE
 
-LOG_ENABLE_SETTING = get_setting_int('logLevel')
+LOG_ENABLE_SETTING = get_setting_int('logLevel', echo=False)
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 

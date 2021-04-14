@@ -50,7 +50,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     def _check_video(self, data=None, encoding=None):
@@ -136,7 +136,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset()
 
     def start(self):
-        self.log('UpNext starting')
+        self.log('UpNext starting', utils.LOGINFO)
         self.player = self.player if self.player else player.UpNextPlayer()
         self.state = self.state if self.state else state.UpNextState()
         self.tracker = self.tracker if self.tracker else tracker.UpNextTracker(
@@ -151,7 +151,7 @@ class UpNextMonitor(xbmc.Monitor):
             self.onNotification('UpNext', PLAYER_MONITOR_EVENTS['start'])
 
     def stop(self):
-        self.log('UpNext exiting')
+        self.log('UpNext exiting', utils.LOGINFO)
         self.running = False
 
         # Free references/resources
@@ -182,7 +182,7 @@ class UpNextMonitor(xbmc.Monitor):
         sender = statichelper.to_unicode(sender)
         method = statichelper.to_unicode(method)
         data = statichelper.to_unicode(data) if data else ''
-        self.log(' - '.join([sender, method, data]), utils.LOGDEBUG)
+        self.log(' - '.join([sender, method, data]))
 
         # Start/Play event
         if method == PLAYER_MONITOR_EVENTS['start']:
@@ -242,16 +242,16 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker.start()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
-        self.log('Settings changed', utils.LOGDEBUG)
+        self.log('Settings changed')
 
         if not self.state:
             new_state = state.UpNextState()
             if not new_state.is_disabled():
                 self.state = new_state
-                self.log('UpNext enabled', utils.LOGWARNING)
+                self.log('UpNext enabled', utils.LOGINFO)
                 self.start()
         else:
             self.state.update_settings()
             if self.state.is_disabled():
-                self.log('UpNext disabled', utils.LOGWARNING)
+                self.log('UpNext disabled', utils.LOGINFO)
                 self.stop()

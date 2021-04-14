@@ -42,7 +42,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         return exc_type == AttributeError
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     def onInit(self):  # pylint: disable=invalid-name
@@ -118,10 +118,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
 
         # Remaining time countdown for current episode
         remaining_str = '{0:02.0f}'.format(remaining)
-        self.log(remaining_str, utils.LOGDEBUG)
+        self.log(remaining_str)
         self.setProperty(
-            'remaining',
-            statichelper.from_unicode(remaining_str)
+            'remaining', statichelper.from_unicode(remaining_str)
         )
 
         if not self.progress_control:

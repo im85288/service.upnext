@@ -39,7 +39,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     def _detector_post_run(self, playback_cancelled):
@@ -126,7 +126,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
             # Stop tracking if nothing playing
             if not playback:
-                self.log('No file is playing')
+                self.log('No file is playing', utils.LOGINFO)
                 self.state.set_tracking(False)
 
             # Stop tracking if new stream started
@@ -210,7 +210,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
             # Exit if not playing, paused, or rewinding
             if not playback or playback['speed'] < 1:
-                self.log('Skip tracker start: nothing playing')
+                self.log('Skip tracker start: nothing playing', utils.LOGINFO)
                 called[0] = False
                 return
 

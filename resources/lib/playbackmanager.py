@@ -31,7 +31,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.log('Init')
 
     @classmethod
-    def log(cls, msg, level=utils.LOGINFO):
+    def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
     def _create_popup(self, next_item, source=None):
@@ -213,7 +213,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         # Determine playback method. Used for logging purposes
         self.log('Playback requested: {0}, from {1}{2}'.format(
             popup_state, source, ' using queue' if self.state.queued else ''
-        ), utils.LOGDEBUG)
+        ))
 
     def _post_run(self, play_next, keep_playing):
         # Update playback state
@@ -223,7 +223,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         if not play_next and self.state.queued:
             self.state.queued = api.dequeue_next_item()
         if not keep_playing:
-            self.log('Stopping playback')
+            self.log('Stopping playback', utils.LOGINFO)
             self.player.stop()
 
         # Reset signals
@@ -285,7 +285,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
 
         # Popup closed prematurely
         if not popup_state['done']:
-            self.log('Exiting: popup force closed')
+            self.log('Exiting: popup force closed', utils.LOGWARNING)
             has_next_item = False
 
         # Shuffle start request
