@@ -271,7 +271,8 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Or if tracker has not yet started on timer then cancel old timer
         elif self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
             self.thread.cancel()
-            self.detector.cancel()
+            if self.detector:
+                self.detector.cancel()
 
         # Free references/resources
         del self.thread
