@@ -41,10 +41,7 @@ class UpNextMonitor(xbmc.Monitor):
             player=self.player,
             state=self.state
         )
-
         self.running = False
-        # Create pseudo callback triggered when abort is requested
-        utils.run_threaded(self.onAbort)
 
         xbmc.Monitor.__init__(self)
         self.log('Init')
@@ -144,15 +141,21 @@ class UpNextMonitor(xbmc.Monitor):
             player=self.player,
             state=self.state
         )
-        self.running = True
 
         # Re-trigger player play/start event if addon started mid playback
         if self.state.start_trigger and self.player.isPlaying():
             self.onNotification('UpNext', PLAYER_MONITOR_EVENTS['start'])
 
+        if not self.running:
+            self.running = True
+
+            # Wait indefinitely until addon is terminated
+            self.waitForAbort()
+            # Cleanup when abort requested
+            self.stop()
+
     def stop(self):
         self.log('UpNext exiting', utils.LOGINFO)
-        self.running = False
 
         # Free references/resources
         if self.tracker:
@@ -167,16 +170,10 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker = None
         self.log('Cleanup tracker')
 
-    def onAbort(self):  # pylint: disable=invalid-name
-        # Wait indefinitely until addon is terminated
-        self.waitForAbort()
-        # Cleanup when abort requested
-        self.stop()
-
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
 
-        if not self.running:
+        if self.state.is_disabled():
             return
 
         sender = statichelper.to_unicode(sender)
@@ -235,7 +232,7 @@ class UpNextMonitor(xbmc.Monitor):
             self._check_video(decoded_data, encoding)
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
-        if not self.running:
+        if self.state.is_disabled():
             return
 
         # Restart tracking if previously tracking
