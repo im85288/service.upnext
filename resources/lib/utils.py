@@ -76,7 +76,7 @@ def get_setting(key, default='', echo=True):
         value = default
 
     if echo:
-        log('{0}: {1}'.format(key, value), 'Settings', LOGDEBUG)
+        log('{0}: {1}'.format(key, value), 'Settings', level=LOGDEBUG)
     return value
 
 
@@ -95,7 +95,7 @@ def get_setting_bool(key, default=None, echo=True):
         value = default
 
     if echo:
-        log('{0}: {1}'.format(key, value), 'Settings', LOGDEBUG)
+        log('{0}: {1}'.format(key, value), 'Settings', level=LOGDEBUG)
     return value
 
 
@@ -114,7 +114,7 @@ def get_setting_int(key, default=None, echo=True):
         value = default
 
     if echo:
-        log('{0}: {1}'.format(key, value), 'Settings', LOGDEBUG)
+        log('{0}: {1}'.format(key, value), 'Settings', level=LOGDEBUG)
     return value
 
 
@@ -143,14 +143,15 @@ def encode_data(data, encoding='base64'):
     encode_method = encode_methods.get(encoding)
 
     if not encode_method:
-        log('Unknown payload encoding type: {0}'.format(encoding), LOGWARNING)
+        log('Unknown payload encoding type: {0}'.format(encoding),
+            level=LOGWARNING)
         return None
 
     try:
         json_data = json.dumps(data).encode()
         encoded_data = encode_method(json_data)
     except (TypeError, ValueError, binascii.Error):
-        log('{0} encode error: {1}'.format(encoding, data), LOGWARNING)
+        log('{0} encode error: {1}'.format(encoding, data), level=LOGWARNING)
         return None
 
     if sys.version_info[0] > 2:
@@ -234,7 +235,7 @@ LOG_ENABLE_SETTING = get_setting_int('logLevel', echo=False)
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 
-def log(msg, name=None, level=LOGINFO):
+def log(msg, name=__name__, level=LOGINFO):
     """Log information to the Kodi log"""
 
     # Log everything
