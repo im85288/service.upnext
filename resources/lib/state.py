@@ -239,45 +239,45 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def set_popup_time(self, total_time=0, detected_time=0):
         if detected_time:
-            # Force popup time to specified play time
-            self.popup_time = detected_time
             # Enable cue point unless forced off in demo mode
             self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
-            self._set_detect_time()
-            return
+            # Force popup time to specified play time
+            self.popup_time = detected_time
 
         # Alway use addon data, when available
-        if self.get_addon_type():
+        elif self.get_addon_type():
             # Some addons send the time from video end
             popup_duration = utils.get_int(self.data, 'notification_time')
+            # Some addons send the time from video start (e.g. Netflix)
+            popup_time = utils.get_int(self.data, 'notification_offset')
+
             if 0 < popup_duration < total_time:
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
                 self.popup_time = total_time - popup_duration
-                self._set_detect_time()
-                return
 
-            # Some addons send the time from video start (e.g. Netflix)
-            popup_time = utils.get_int(self.data, 'notification_offset')
-            if 0 < popup_time < total_time:
+            elif 0 < popup_time < total_time:
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
                 self.popup_time = popup_time
-                self._set_detect_time()
-                return
 
-        # Use addon settings for duration
-        popup_duration = self.popup_durations[max(0, 0, *[
-            idx for idx in self.popup_durations
-            if total_time > idx
-        ])]
-        # Disable cue point unless forced on in demo mode
-        self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
-        if 0 < popup_duration < total_time:
-            self.popup_time = total_time - popup_duration
-        else:
-            self.popup_time = 0
+        # Use addon settings as fallback option
+        if not self.popup_time:
+            popup_duration = self.popup_durations[max(0, 0, *[
+                duration for duration in self.popup_durations
+                if total_time > duration
+            ])]
+            # Disable cue point unless forced on in demo mode
+            self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
+            if 0 < popup_duration < total_time:
+                self.popup_time = total_time - popup_duration
+            else:
+                self.popup_time = 0
+
         self._set_detect_time()
+        self.log('Popup due at {0}s of {1}s'.format(
+            self.popup_time, total_time
+        ), utils.LOGINFO)
 
     def process_now_playing(self, playlist_position, addon_type, media_type):
         if addon_type:
