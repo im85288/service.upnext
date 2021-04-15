@@ -29,8 +29,11 @@ jobs:
     - name: Rewrite addon.xml for Matrix
       run: |
         xmlstarlet ed -L -u '/addon/requires/import[@addon="xbmc.python"]/@version' -v "3.0.0" addon.xml
-        version=$(xmlstarlet sel -t -v 'string(/addon/@version)' addon.xml)
-        xmlstarlet ed -L -u '/addon/@version' -v "${version}+matrix.99" addon.xml
+        full_version=$(xmlstarlet sel -t -v 'string(/addon/@version)' addon.xml)
+        version=${full_version%%+*}
+        localversion_identifier=${full_version:${#version}}
+        localversion_identifier=${localversion_identifier/+/_}
+        xmlstarlet ed -L -u '/addon/@version' -v "$version+matrix$localversion_identifier" addon.xml
       working-directory: ${{ github.repository }}
       if: matrix.kodi-branch == 'matrix'
     - name: Run kodi-addon-checker
