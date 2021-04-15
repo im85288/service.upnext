@@ -207,7 +207,7 @@ class UpNextMonitor(xbmc.Monitor):
         # Stop event
         elif method == PLAYER_MONITOR_EVENTS['stop']:
             # Remove remnants from previous operations
-            self.tracker.stop(terminate=True)
+            self.tracker.stop()
 
             self.state.reset_queue()
             # OnStop can occur before/after the next file has started playing
