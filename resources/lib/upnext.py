@@ -105,7 +105,8 @@ def send_signal(sender, upnext_info):
     required_addon_info = ['play_url', 'play_info']
     if not (any(info in upnext_info for info in required_episode_info)
             and any(info in upnext_info for info in required_addon_info)):
-        log('Error: Invalid UpNext info - {0}'.format(upnext_info))
+        log('Error: Invalid UpNext info - {0}'.format(upnext_info),
+            utils.LOGWARNING)
         return
 
     # Extract ListItem or InfoTagVideo details for use by UpNext

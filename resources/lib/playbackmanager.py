@@ -45,7 +45,7 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
 
         self.log('Auto played in a row: {0} of {1}'.format(
             self.state.played_in_a_row, self.state.played_limit
-        ))
+        ), utils.LOGINFO)
 
         # Filename for dialog XML
         filename = 'script-upnext{0}{1}{2}.xml'.format(

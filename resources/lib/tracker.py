@@ -171,7 +171,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         # Start playbackmanager to show popup and handle playback of next file
         self.log('Popup at {0}s of {1}s'.format(
             playback['play_time'], playback['total_time']
-        ))
+        ), utils.LOGINFO)
         playback_cancelled = self._launch_playbackmanager()
 
         # Cleanup detector data and check if tracker needs to be reset if

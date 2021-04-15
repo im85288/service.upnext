@@ -161,7 +161,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         if filename:
             self.track = True
             self.filename = filename
-            self.log('Tracking enabled: {0}'.format(filename))
+            self.log('Tracking enabled: {0}'.format(filename), utils.LOGINFO)
         else:
             self.track = False
             self.filename = None

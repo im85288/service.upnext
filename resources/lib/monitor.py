@@ -226,6 +226,7 @@ class UpNextMonitor(xbmc.Monitor):
                     sender, decoded_data, data
                 ), utils.LOGWARNING)
                 return
+            self.log('Data received from {0}'.format(sender), utils.LOGINFO)
             decoded_data.update(id='{0}_play_action'.format(sender))
 
             # Initial processing of data to start tracking
