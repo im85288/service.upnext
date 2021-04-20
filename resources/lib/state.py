@@ -95,9 +95,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     @staticmethod
     def set_log_level(level=None):
         if level is None:
-            utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
-        else:
-            utils.LOG_ENABLE_SETTING = level
+            level = utils.get_setting_int('logLevel', echo=False)
+        utils.LOG_ENABLE_SETTING = level
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
@@ -107,6 +106,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.__init__(reset=True)
 
     def update_settings(self):
+        self.set_log_level()
+        utils.log('', 'Settings', level=utils.LOGDEBUG)
+        utils.log(
+            'logLevel: {0}'.format(utils.LOG_ENABLE_SETTING),
+            'Settings',
+            level=utils.LOGDEBUG
+        )
+
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
         self.skin_popup = utils.get_setting_bool('enablePopupSkin')
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')
@@ -141,7 +148,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.detect_level = utils.get_setting_int('detectLevel')
 
         self.disabled = utils.get_setting_bool('disableNextUp')
-        self.set_log_level()
         self.enable_queue = utils.get_setting_bool('enableQueue')
         self.tracker_mode = utils.get_setting_int('trackerMode')
 

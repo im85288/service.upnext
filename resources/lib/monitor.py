@@ -234,8 +234,6 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker.start()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
-        self.log('Settings changed')
-
         if not self.state:
             new_state = state.UpNextState()
             if not new_state.is_disabled():
