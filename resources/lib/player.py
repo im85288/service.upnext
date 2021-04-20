@@ -56,6 +56,8 @@ class UpNextPlayer(xbmc.Player):
     """Inbuilt player function overrides"""
 
     def __init__(self):
+        self.log('Init')
+
         # Used to override player state for testing
         self.state = UpNextPlayerState()
         self.state.external_player = False
@@ -71,7 +73,6 @@ class UpNextPlayer(xbmc.Player):
         self.state.stop = None
 
         xbmc.Player.__init__(self)
-        self.log('Init')
 
     # __enter__ and __exit__ allow UpNextPlayer to be used as a contextmanager
     # to check whether video is actually playing when getting video details

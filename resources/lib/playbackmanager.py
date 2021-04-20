@@ -21,6 +21,8 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
     )
 
     def __init__(self, monitor, player, state):
+        self.log('Init')
+
         self.monitor = monitor
         self.player = player
         self.state = state
@@ -28,7 +30,6 @@ class UpNextPlaybackManager(object):  # pylint: disable=useless-object-inheritan
         self.running = False
         self.sigstop = False
         self.sigterm = False
-        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):

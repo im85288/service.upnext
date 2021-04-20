@@ -63,6 +63,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     )
 
     def __init__(self, reset=None):
+        self.log('Reset' if reset else 'Init')
+
         # Settings state variables
         self.update_settings()
         # Addon data
@@ -89,8 +91,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
-
-        self.log('Reset' if reset else 'Init')
 
     @staticmethod
     def set_log_level(level=None):

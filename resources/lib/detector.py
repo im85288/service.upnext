@@ -158,6 +158,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     )
 
     def __init__(self, monitor, player, state):
+        self.log('Init')
+
         self.capturer = xbmc.RenderCapture()
         self.monitor = monitor
         self.player = player
@@ -173,8 +175,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.running = False
         self.sigstop = False
         self.sigterm = False
-
-        self.log('Init')
 
     @staticmethod
     def _calc_median(vals):

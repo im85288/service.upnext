@@ -24,6 +24,8 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
     )
 
     def __init__(self, monitor, player, state):
+        self.log('Init')
+
         self.monitor = monitor
         self.player = player
         self.state = state
@@ -35,8 +37,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.running = False
         self.sigstop = False
         self.sigterm = False
-
-        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):

@@ -16,6 +16,8 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     """Class for UpNext popup state variables and methods"""
 
     def __init__(self, *args, **kwargs):
+        self.log('Init: {0}'.format(args[0]))
+
         self.item = kwargs.get('item')
         self.shuffle = kwargs.get('shuffle')
         self.stop_enable = kwargs.get('stop_button')
@@ -31,7 +33,6 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.progress_control = None
 
         xbmcgui.WindowXMLDialog.__init__(self, *args)
-        self.log('Init: {0}'.format(args[0]))
 
     # __enter__ and __exit__ allows UpNextPopup to be used as a contextmanager
     # to check whether popup is still open before accessing attributes

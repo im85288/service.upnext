@@ -34,6 +34,8 @@ class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
     def __init__(self, test_player=None, test_state=None):
+        self.log('Init')
+        
         self.player = test_player if test_player else player.UpNextPlayer()
         self.state = test_state if test_state else state.UpNextState()
         self.tracker = tracker.UpNextTracker(
@@ -44,7 +46,6 @@ class UpNextMonitor(xbmc.Monitor):
         self.running = False
 
         xbmc.Monitor.__init__(self)
-        self.log('Init')
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
