@@ -189,13 +189,12 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.state.set_tracking(playback['current_file'])
             self._run()
 
-    def start(self, called=[False]):  # pylint: disable=dangerous-default-value
-        # Exit if tracking disabled or start tracking previously requested
-        if not self.state.is_tracking() or called[0]:
+    def start(self):
+        # Exit if tracking disabled
+        if not self.state.is_tracking():
             return
         # Stop any existing tracker loop/thread/timer
         self.stop()
-        called[0] = True
 
         # Schedule a threading.Timer to check playback details only when popup
         # is expected to be shown. Experimental mode, more testing required.
@@ -211,7 +210,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             # Exit if not playing, paused, or rewinding
             if not playback or playback['speed'] < 1:
                 self.log('Skip tracker start: nothing playing', utils.LOGINFO)
-                called[0] = False
                 return
 
             # Schedule detector to start when required
@@ -241,8 +239,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self.sigstop = False
             else:
                 self._run()
-
-        called[0] = False
 
     def stop(self, terminate=False):
         # Set terminate or stop signals if tracker is running
