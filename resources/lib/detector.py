@@ -193,7 +193,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return 100 * sum(vals) / len(vals)
 
     @staticmethod
-    def _calc_similarity(hash1, hash2):
+    def calc_similarity(hash1, hash2):
         """Method to compare the similarity between two image hashes"""
 
         # Check that hashes are not empty and that dimensions are equal
@@ -232,7 +232,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return (width, height), aspect_ratio
 
     @staticmethod
-    def _generate_initial_hash(hash_size):
+    def generate_initial_hash(hash_size):
         return (
             [0] * hash_size[0]
             + (
@@ -265,7 +265,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return image
 
     @classmethod
-    def _calc_image_hash(cls, image):
+    def calc_image_hash(cls, image):
         # Transform image to show absolute deviation from median pixel luma
         median_pixel = cls._calc_median(image.getdata())
         image_hash = image.point(
@@ -284,7 +284,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return image_hash
 
     @classmethod
-    def _print_hash(cls, hash1, hash2, size=None, prefix=None):
+    def print_hash(cls, hash1, hash2, size=None, prefix=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
 
         if not hash1 or not hash2:
@@ -329,7 +329,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         }
 
         # Calculate similarity between current hash and representative hash
-        stats['credits'] = self._calc_similarity(
+        stats['credits'] = self.calc_similarity(
             self.hashes.data.get(self.hash_index['credits']),
             image_hash
         )
@@ -342,7 +342,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             return stats
 
         # Calculate similarity between current hash and previous hash
-        stats['previous'] = self._calc_similarity(
+        stats['previous'] = self.calc_similarity(
             self.hashes.data.get(self.hash_index['previous']),
             image_hash
         )
@@ -376,7 +376,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ]
         old_hash_index = None
         for old_hash_index in old_hash_indexes:
-            stats['episodes'] = self._calc_similarity(
+            stats['episodes'] = self.calc_similarity(
                 self.past_hashes.data[old_hash_index],
                 image_hash
             )
@@ -449,7 +449,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
             data={
-                self.hash_index['credits']: self._generate_initial_hash(
+                self.hash_index['credits']: self.generate_initial_hash(
                     hash_size
                 )
             },
@@ -531,7 +531,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             )
 
             # Generate median absolute deviation from median hash
-            image_hash = self._calc_image_hash(image)
+            image_hash = self.calc_image_hash(image)
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
@@ -542,7 +542,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     self.match_counts, self.match_number, self.mismatch_number
                 ))
 
-                self._print_hash(
+                self.print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
                     image_hash,
                     self.hashes.hash_size,
@@ -551,7 +551,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['credits'])
                 )
 
-                self._print_hash(
+                self.print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size,
@@ -561,7 +561,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['previous'], stats['significance'])
                 )
 
-                self._print_hash(
+                self.print_hash(
                     self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
                     self.hashes.hash_size,
