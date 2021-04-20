@@ -42,10 +42,6 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         self.data = kwargs.get('data', {})
         self.timestamps = kwargs.get('timestamps', {})
 
-    @classmethod
-    def log(cls, msg, level=utils.LOGDEBUG):
-        utils.log(msg, name=cls.__name__, level=level)
-
     @staticmethod
     def int_to_hash(val, hash_size):
         return tuple([  # pylint: disable=consider-using-generator
@@ -59,6 +55,10 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
             bit_val << i
             for i, bit_val in enumerate(reversed(image_hash))
         )
+
+    @classmethod
+    def log(cls, msg, level=utils.LOGDEBUG):
+        utils.log(msg, name=cls.__name__, level=level)
 
     def is_valid(self, seasonid=None, episode=None):
         # Non-episodic video is being played
@@ -176,10 +176,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         self.log('Init')
 
-    @classmethod
-    def log(cls, msg, level=utils.LOGDEBUG):
-        utils.log(msg, name=cls.__name__, level=level)
-
     @staticmethod
     def _calc_median(vals):
         """Method to calculate median value of a list of values by sorting and
@@ -235,6 +231,58 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         return (width, height), aspect_ratio
 
+    @staticmethod
+    def _generate_initial_hash(hash_size):
+        return (
+            [0] * hash_size[0]
+            + (
+                (
+                    [0] * (4 * hash_size[0] // 16)
+                    + [1] * (hash_size[0] - 2 * (4 * hash_size[0] // 16))
+                    + [0] * (4 * hash_size[0] // 16)
+                )
+                + (
+                    [0] * (6 * hash_size[0] // 16)
+                    + [1] * (hash_size[0] - 2 * (6 * hash_size[0] // 16))
+                    + [0] * (6 * hash_size[0] // 16)
+                )
+            ) * ((hash_size[1] - 2) // 2)
+            + [0] * hash_size[0]
+        )
+
+    @staticmethod
+    def _pre_process_image(image, input_size, output_size):
+        # Convert captured image data from BGRA to RGBA
+        image[0::4], image[2::4] = image[2::4], image[0::4]
+        # Convert to greyscale to reduce size of data by a factor of 4
+        image = Image.frombuffer(
+            'RGBA', input_size, image, 'raw', 'RGBA', 0, 1
+        ).convert('L')
+        # Resize to reduce number of pixels processed for hashing
+        if output_size != input_size:
+            image = image.resize(output_size, resample=Image.BOX)
+
+        return image
+
+    @classmethod
+    def _calc_image_hash(cls, image):
+        # Transform image to show absolute deviation from median pixel luma
+        median_pixel = cls._calc_median(image.getdata())
+        image_hash = image.point(
+            [abs(i - median_pixel) for i in range(256)]
+        )
+
+        # Calculate median absolute deviation from the median to represent
+        # significant pixels and use transformed image as the hash of the
+        # current video frame
+        median_pixel = cls._calc_median(image_hash.getdata())
+        image_hash = image_hash.point(
+            [i > median_pixel for i in range(256)]
+        )
+        image_hash = tuple(image_hash.getdata())
+
+        return image_hash
+
     @classmethod
     def _print_hash(cls, hash1, hash2, size=None, prefix=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
@@ -261,6 +309,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 )
             ) for row in range(0, num_pixels, size[0])]
         ))
+
+    @classmethod
+    def log(cls, msg, level=utils.LOGDEBUG):
+        utils.log(msg, name=cls.__name__, level=level)
 
     def _check_similarity(self, image_hash):
         stats = {
@@ -396,22 +448,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             episode=utils.get_int(self.state.get_episode()),
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
-            data={self.hash_index['credits']: (
-                [0] * hash_size[0]
-                + (
-                    (
-                        [0] * (4 * hash_size[0] // 16)
-                        + [1] * (hash_size[0] - 2 * (4 * hash_size[0] // 16))
-                        + [0] * (4 * hash_size[0] // 16)
-                    )
-                    + (
-                        [0] * (6 * hash_size[0] // 16)
-                        + [1] * (hash_size[0] - 2 * (6 * hash_size[0] // 16))
-                        + [0] * (6 * hash_size[0] // 16)
-                    )
-                ) * ((hash_size[1] - 2) // 2)
-                + [0] * hash_size[0]
-            )},
+            data={
+                self.hash_index['credits']: self._generate_initial_hash(
+                    hash_size
+                )
+            },
             timestamps={}
         )
 
@@ -458,6 +499,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             profiler = cProfile.Profile()
             profiler.enable()
 
+        play_time = 0
         while not (self.monitor.abortRequested()
                    or self.sigterm or self.sigstop):
             now = timeit.default_timer()
@@ -482,30 +524,14 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             if not image or image[-1] != 255:
                 continue
 
-            # Convert captured image data from BGRA to RGBA
-            image[0::4], image[2::4] = image[2::4], image[0::4]
-            # Convert to greyscale to reduce size of data by a factor of 4
-            image = Image.frombuffer(
-                'RGBA', self.capture_size, image, 'raw', 'RGBA', 0, 1
-            ).convert('L')
-            # Resize to reduce number of pixels processed for hashing
-            if self.hashes.hash_size != self.capture_size:
-                image = image.resize(self.hashes.hash_size, resample=Image.BOX)
-
-            # Transform image to show absolute deviation from median pixel luma
-            median_pixel = self._calc_median(image.getdata())
-            image_hash = image.point(
-                [abs(i - median_pixel) for i in range(256)]
+            # Convert captured video frame from a nominal default 484x272 BGRA
+            # image to a 14x8 greyscale image, depending on video aspect ratio
+            image = self._pre_process_image(
+                image, self.capture_size, self.hashes.hash_size
             )
 
-            # Calculate median absolute deviation from the median to represent
-            # significant pixels and use transformed image as the hash of the
-            # current video frame
-            median_pixel = self._calc_median(image_hash.getdata())
-            image_hash = image_hash.point(
-                [i > median_pixel for i in range(256)]
-            )
-            image_hash = tuple(image_hash.getdata())
+            # Generate median absolute deviation from median hash
+            image_hash = self._calc_image_hash(image)
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
