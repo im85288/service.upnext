@@ -133,7 +133,7 @@ def test_upnext(popup_type, simple_style=False):
     test_player.state.set('stop', force=True)
 
     test_monitor = monitor.UpNextMonitor(
-        test_player=test_player, test_state=test_state
+        player=test_player, state=test_state
     )
     test_monitor.start()
     return test_monitor

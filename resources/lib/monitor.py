@@ -33,17 +33,17 @@ PLAYER_MONITOR_EVENTS = {
 class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
-    def __init__(self, test_player=None, test_state=None):
-        self.log('Init')
-        
-        self.player = test_player if test_player else player.UpNextPlayer()
-        self.state = test_state if test_state else state.UpNextState()
+    def __init__(self, restart=False, **kwargs):
+        self.log('Restart' if restart else 'Init')
+
+        self.player = kwargs.get('player', player.UpNextPlayer())
+        self.state = kwargs.get('state', state.UpNextState())
         self.tracker = tracker.UpNextTracker(
             monitor=self,
             player=self.player,
             state=self.state
         )
-        self.running = False
+        self.running = restart
 
         xbmc.Monitor.__init__(self)
 
@@ -135,13 +135,6 @@ class UpNextMonitor(xbmc.Monitor):
 
     def start(self):
         self.log('UpNext starting', utils.LOGINFO)
-        self.player = self.player if self.player else player.UpNextPlayer()
-        self.state = self.state if self.state else state.UpNextState()
-        self.tracker = self.tracker if self.tracker else tracker.UpNextTracker(
-            monitor=self,
-            player=self.player,
-            state=self.state
-        )
 
         # Re-trigger player play/start event if addon started mid playback
         if self.state.start_trigger and self.player.isPlaying():
@@ -246,8 +239,8 @@ class UpNextMonitor(xbmc.Monitor):
         if not self.state:
             new_state = state.UpNextState()
             if not new_state.is_disabled():
-                self.state = new_state
                 self.log('UpNext enabled', utils.LOGINFO)
+                self.__init__(restart=True, state=new_state)
                 self.start()
         else:
             self.state.update_settings()
