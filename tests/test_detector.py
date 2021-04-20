@@ -163,7 +163,7 @@ def test_representative_hash():
     assert test_complete is True
 
 
-def test_hash_compare():
+def test_hash_compare():  # pylint: disable=too-many-locals
     test_image_path = 'tests/images/'
     match_level = 80
     matches = 0
@@ -178,7 +178,7 @@ def test_hash_compare():
         try:
             image1 = Image.open(test_image_path + file1)
             image2 = Image.open(test_image_path + file2)
-        except:
+        except (IOError, OSError):
             continue
 
         aspect_ratio = image1.width / image1.height
@@ -200,9 +200,7 @@ def test_hash_compare():
             hash1,
             hash2,
             hash_size,
-            ('Comparing: {0} & {1}, '
-             'similarity: {2:2.1f}%, '
-             'matched: {3} ({4})').format(
+            'Comparing: {0} & {1}, similarity: {2:2.1f}%, matched: {3} ({4})'.format(
                 file1,
                 file2,
                 similarity,
@@ -220,9 +218,7 @@ def test_hash_compare():
 
     num_pairs = len(IMAGE_PAIRS)
     percent_matched_correctly = 100 * matches / len(IMAGE_PAIRS)
-    print(('Correct matches: {0}/{1} ({2:2.1f}%), '
-           '{3} false positives, '
-           '{4} false negatives').format(
+    print('Correct matches: {0}/{1} ({2:2.1f}%), {3} false positives, {4} false negatives'.format(
         matches,
         num_pairs,
         percent_matched_correctly,
