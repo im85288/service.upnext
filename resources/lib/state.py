@@ -66,7 +66,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.log('Reset' if reset else 'Init')
 
         # Settings state variables
-        self.update_settings()
+        if not reset:
+            self.update_settings()
         # Addon data
         self.data = None
         self.encoding = 'base64'
