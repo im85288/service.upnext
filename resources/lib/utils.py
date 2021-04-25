@@ -251,7 +251,8 @@ def log(msg, name=__name__, level=LOGINFO):
     if not log_enable:
         return
 
-    if level < MIN_LOG_LEVEL:
+    # Force minimum required log level to display in Kodi event log
+    if level < MIN_LOG_LEVEL:  # pylint: disable=consider-using-max-builtin
         level = MIN_LOG_LEVEL
 
     # Convert to unicode for string formatting with Unicode literal
