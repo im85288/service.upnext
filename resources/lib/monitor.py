@@ -13,23 +13,6 @@ import tracker
 import utils
 
 
-PLAYER_MONITOR_EVENTS = {
-    'Player.OnPause': True,
-    'Player.OnResume': True,
-    'Player.OnSpeedChanged': True,
-    # Use OnAVChange if available. It is also fired when OnSeek fires, so only
-    # handle one event, not both
-    'Player.OnAVChange': True,
-    'Player.OnSeek': not utils.supports_python_api(18),
-    'stop': 'Player.OnStop',
-    # Use OnAVStart if available as OnPlay can fire too early for UpNext
-    'start': (
-        'Player.OnAVStart' if utils.supports_python_api(18)
-        else 'Player.OnPlay'
-    )
-}
-
-
 class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
@@ -133,12 +116,66 @@ class UpNextMonitor(xbmc.Monitor):
         if self.state.is_tracking():
             self.state.reset()
 
+    def _event_handler_player_general(self, **_kwargs):
+        # Restart tracking if previously tracking
+        self.tracker.start()
+
+    def _event_handler_player_start(self, **_kwargs):
+        # Remove remnants from previous operations
+        self.tracker.stop()
+
+        # Playback can start without triggering a stop callback on previous
+        # video. Reset state if playback was not requested by UpNext
+        if not self.state.playing_next and not self.state.starting:
+            self.state.reset()
+        # Update playcount and reset resume point of previous file
+        if self.state.playing_next and self.state.mark_watched:
+            api.handle_just_watched(
+                episodeid=self.state.get_episodeid(),
+                playcount=self.state.get_playcount(),
+                reset_playcount=(
+                    self.state.mark_watched == constants.SETTING_FORCED_OFF
+                ),
+                reset_resume=True
+            )
+        self.state.playing_next = False
+
+        # Check whether UpNext can start tracking
+        self._check_video()
+
+    def _event_handler_player_stop(self, **_kwargs):
+        # Remove remnants from previous operations
+        self.tracker.stop()
+
+        self.state.reset_queue()
+        # OnStop can occur before/after the next video has started playing
+        # Reset state if UpNext has not requested the next file to play
+        if not self.state.playing_next:
+            self.state.reset()
+
+    def _event_handler_upnext_signal(self, **kwargs):
+        sender = kwargs.get('sender').replace('.SIGNAL', '')
+        data = kwargs.get('data')
+
+        decoded_data, encoding = utils.decode_json(data)
+        if not decoded_data or not isinstance(decoded_data, dict):
+            self.log('Error: {0} addon, sent {1} as {2}'.format(
+                sender, decoded_data, data
+            ), utils.LOGWARNING)
+            return
+        self.log('Data received from {0}'.format(sender), utils.LOGINFO)
+        decoded_data.update(id='{0}_play_action'.format(sender))
+
+        # Initial processing of data to start tracking
+        self._check_video(decoded_data, encoding)
+
     def start(self):
         self.log('UpNext starting', utils.LOGINFO)
 
         # Re-trigger player play/start event if addon started mid playback
         if self.state.start_trigger and self.player.isPlaying():
-            self.onNotification('UpNext', PLAYER_MONITOR_EVENTS['start'])
+            # This is a fake event, use Player.OnAVStart even if not supported
+            self.onNotification('UpNext', 'Player.OnAVStart')
 
         if not self.running:
             self.running = True
@@ -164,6 +201,29 @@ class UpNextMonitor(xbmc.Monitor):
         self.tracker = None
         self.log('Cleanup tracker')
 
+    EVENTS_MAP = {
+        'Other.upnext_data': _event_handler_upnext_signal,
+        'Player.OnPause': _event_handler_player_general,
+        'Player.OnResume': _event_handler_player_general,
+        'Player.OnSpeedChanged': _event_handler_player_general,
+        # Use OnAVChange if available. It is also fired when OnSeek fires, so
+        # only handle one event, not both
+        'Player.OnAVChange': _event_handler_player_general,
+        'Player.OnSeek': (
+            _event_handler_player_general
+            if not utils.supports_python_api(18)
+            else None
+        ),
+        # Use OnAVStart if available as OnPlay can fire too early for UpNext
+        'Player.OnAVStart': _event_handler_player_start,
+        'Player.OnPlay': (
+            _event_handler_player_start
+            if not utils.supports_python_api(18)
+            else None
+        ),
+        'Player.OnStop': _event_handler_player_stop
+    }
+
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
 
@@ -175,60 +235,9 @@ class UpNextMonitor(xbmc.Monitor):
         data = statichelper.to_unicode(data) if data else ''
         self.log(' - '.join([sender, method, data]))
 
-        # Start/Play event
-        if method == PLAYER_MONITOR_EVENTS['start']:
-            # Remove remnants from previous operations
-            self.tracker.stop()
-
-            # Playback can start without triggering a stop callback on previous
-            # video. Reset state if playback was not requested by UpNext
-            if not self.state.playing_next and not self.state.starting:
-                self.state.reset()
-            # Update playcount and reset resume point of previous file
-            if self.state.playing_next and self.state.mark_watched:
-                api.handle_just_watched(
-                    episodeid=self.state.get_episodeid(),
-                    playcount=self.state.get_playcount(),
-                    reset_playcount=(
-                        self.state.mark_watched == constants.SETTING_FORCED_OFF
-                    ),
-                    reset_resume=True
-                )
-            self.state.playing_next = False
-
-            # Check whether UpNext can start tracking
-            self._check_video()
-
-        # Stop event
-        elif method == PLAYER_MONITOR_EVENTS['stop']:
-            # Remove remnants from previous operations
-            self.tracker.stop()
-
-            self.state.reset_queue()
-            # OnStop can occur before/after the next video has started playing
-            # Reset state if UpNext has not requested the next file to play
-            if not self.state.playing_next:
-                self.state.reset()
-
-        # All other events to be processed
-        elif PLAYER_MONITOR_EVENTS.get(method):
-            # Restart tracking if previously tracking
-            self.tracker.start()
-
-        # Data transfer from addons
-        elif method.endswith('upnext_data'):
-            decoded_data, encoding = utils.decode_json(data)
-            sender = sender.replace('.SIGNAL', '')
-            if not decoded_data or not isinstance(decoded_data, dict):
-                self.log('Error: {0} addon, sent {1} as {2}'.format(
-                    sender, decoded_data, data
-                ), utils.LOGWARNING)
-                return
-            self.log('Data received from {0}'.format(sender), utils.LOGINFO)
-            decoded_data.update(id='{0}_play_action'.format(sender))
-
-            # Initial processing of data to start tracking
-            self._check_video(decoded_data, encoding)
+        handler = UpNextMonitor.EVENTS_MAP.get(method)
+        if handler:
+            handler(self, sender=sender, data=data)
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         if self.state.is_disabled():
