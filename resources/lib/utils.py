@@ -160,48 +160,43 @@ def encode_data(data, encoding='base64'):
     return encoded_data
 
 
-def decode_data(encoded):
-    """Decode data coming from a notification event"""
-
-    decode_methods = {
-        'hex': binascii.unhexlify,
-        'base64': base64.b64decode
-    }
-    encoding = None
-    json_data = None
-    for encoding, decode_method in decode_methods.items():
-        try:
-            json_data = decode_method(encoded)
-            break
-        except (TypeError, binascii.Error):
-            pass
-    else:
-        return None, None
-
-    if not encoding or not json_data:
-        return None, None
-
-    # NOTE: With Python 3.5 and older json.loads() does not support bytes
-    # or bytearray, so we convert to unicode
-    try:
-        return json.loads(statichelper.to_unicode(json_data)), encoding
-    except (TypeError, ValueError):
-        return None, None
-
-
-def decode_json(data):
+def decode_json(encoded_data):
     """Decode JSON data coming from a notification event"""
 
-    encoded = None
+    decoded_json = None
+    decoded_data = None
+    encoding = None
+
     try:
-        encoded = json.loads(data)
-    except (TypeError, ValueError):
-        pass
+        encoded_data = json.loads(encoded_data)[0]
+    except (IndexError, TypeError, ValueError):
+        encoded_data = None
 
-    if not encoded:
-        return None, None
+    if encoded_data:
+        decode_methods = {
+            'hex': binascii.unhexlify,
+            'base64': base64.b64decode
+        }
 
-    return decode_data(encoded[0])
+        for encoding, decode_method in decode_methods.items():
+            try:
+                decoded_json = decode_method(encoded_data)
+                break
+            except (TypeError, binascii.Error):
+                pass
+        else:
+            encoding = None
+
+    if decoded_json:
+        try:
+            # NOTE: With Python 3.5 and older json.loads() does not support
+            # bytes or bytearray, so we convert to unicode
+            decoded_json = statichelper.to_unicode(decoded_json)
+            decoded_data = json.loads(decoded_json)
+        except (TypeError, ValueError):
+            pass
+
+    return decoded_data, encoding
 
 
 def event(message, data=None, sender=None, encoding='base64'):
@@ -210,8 +205,8 @@ def event(message, data=None, sender=None, encoding='base64'):
     data = data or {}
     sender = sender or get_addon_id()
 
-    encoded = encode_data(data, encoding=encoding)
-    if not encoded:
+    encoded_data = encode_data(data, encoding=encoding)
+    if not encoded_data:
         return
 
     jsonrpc(
@@ -219,7 +214,7 @@ def event(message, data=None, sender=None, encoding='base64'):
         params={
             'sender': '{0}.SIGNAL'.format(sender),
             'message': message,
-            'data': [encoded],
+            'data': [encoded_data],
         }
     )
 
