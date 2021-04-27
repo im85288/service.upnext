@@ -157,7 +157,7 @@ class UpNextMonitor(xbmc.Monitor):
         sender = kwargs.get('sender').replace('.SIGNAL', '')
         data = kwargs.get('data')
 
-        decoded_data, encoding = utils.decode_json(data)
+        decoded_data, encoding = utils.decode_data(data)
         if not decoded_data or not isinstance(decoded_data, dict):
             self.log('Error: {0} addon, sent {1} as {2}'.format(
                 sender, decoded_data, data
