@@ -160,17 +160,20 @@ def encode_data(data, encoding='base64'):
     return encoded_data
 
 
-def decode_json(encoded_data):
+def decode_data(encoded_data, compat_mode=True):
     """Decode JSON data coming from a notification event"""
 
     decoded_json = None
     decoded_data = None
     encoding = None
 
-    try:
-        encoded_data = json.loads(encoded_data)[0]
-    except (IndexError, TypeError, ValueError):
-        encoded_data = None
+    # Compatibility with Addon Signals which wraps serialised data in square
+    # brackets to generate an array/list
+    if compat_mode:
+        try:
+            encoded_data = json.loads(encoded_data)[0]
+        except (IndexError, TypeError, ValueError):
+            encoded_data = None
 
     if encoded_data:
         decode_methods = {

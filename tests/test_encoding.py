@@ -23,14 +23,14 @@ class TestEncoding(unittest.TestCase):
         hex_encoded_data = '22465c75303066325c7530306636625c75303065307222'
         encoded_data = utils.encode_data(data, 'hex')
         self.assertEqual(encoded_data, hex_encoded_data)
-        decoded_data, encoding = utils.decode_data(encoded_data)
+        decoded_data, encoding = utils.decode_data(encoded_data, compat_mode=False)
         self.assertEqual(decoded_data, data)
         self.assertEqual(encoding, 'hex')
 
         base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='
         encoded_data = utils.encode_data(data, 'base64')
         self.assertEqual(encoded_data, base64_encoded_data)
-        decoded_data, encoding = utils.decode_data(encoded_data)
+        decoded_data, encoding = utils.decode_data(encoded_data, compat_mode=False)
         self.assertEqual(decoded_data, data)
         self.assertEqual(encoding, 'base64')
 
@@ -40,14 +40,14 @@ class TestEncoding(unittest.TestCase):
         hex_encoded_json = '["22465c75303066325c7530306636625c75303065307222"]'
         encoded_json = '["%s"]' % utils.encode_data(data, 'hex')
         self.assertEqual(encoded_json, hex_encoded_json)
-        decoded_data, encoding = utils.decode_json(encoded_json)
+        decoded_data, encoding = utils.decode_data(encoded_json)
         self.assertEqual(decoded_data, data)
         self.assertEqual(encoding, 'hex')
 
         base64_encoded_json = '["IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI="]'
         encoded_json = '["%s"]' % utils.encode_data(data, 'base64')
         self.assertEqual(encoded_json, base64_encoded_json)
-        decoded_data, encoding = utils.decode_json(encoded_json)
+        decoded_data, encoding = utils.decode_data(encoded_json)
         self.assertEqual(decoded_data, data)
         self.assertEqual(encoding, 'base64')
 
@@ -57,7 +57,7 @@ class TestEncoding(unittest.TestCase):
         base64_encoded_data = 'IkZcdTAwZjJcdTAwZjZiXHUwMGUwciI='
         encoded_data = AddonSignals._encodeData(data)  # pylint: disable=protected-access
         self.assertEqual(encoded_data, base64_encoded_data)
-        decoded_data, encoding = utils.decode_data(encoded_data)
+        decoded_data, encoding = utils.decode_data(encoded_data, compat_mode=False)
         self.assertEqual(decoded_data, data)
         self.assertEqual(encoding, 'base64')
 
