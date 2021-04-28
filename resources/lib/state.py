@@ -252,11 +252,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         return self.popup_time
 
     def set_popup_time(self, total_time=0, detected_time=0):
+        popup_time = 0
+
         if detected_time:
             # Enable cue point unless forced off in demo mode
             self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
             # Force popup time to specified play time
-            self.popup_time = detected_time
+            popup_time = detected_time
 
         # Alway use addon data, when available
         elif self.get_addon_type():
@@ -268,15 +270,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             if 0 < popup_duration < total_time:
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
-                self.popup_time = total_time - popup_duration
+                popup_time = total_time - popup_duration
 
             elif 0 < popup_time < total_time:
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
-                self.popup_time = popup_time
 
         # Use addon settings as fallback option
-        if not self.popup_time:
+        if not popup_time:
             popup_duration = self.popup_durations[max(0, 0, *[
                 duration for duration in self.popup_durations
                 if total_time > duration
@@ -284,10 +285,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             # Disable cue point unless forced on in demo mode
             self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
             if 0 < popup_duration < total_time:
-                self.popup_time = total_time - popup_duration
+                popup_time = total_time - popup_duration
             else:
-                self.popup_time = 0
+                popup_time = 0
 
+        self.popup_time = popup_time
         self._set_detect_time()
         self.log('Popup due at {0}s of {1}s'.format(
             self.popup_time, total_time
