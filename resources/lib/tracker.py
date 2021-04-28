@@ -99,7 +99,20 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             )
         self.detector.start()
 
-    def _launch_playbackmanager(self):
+    def _launch_popup(self, playback):
+        # Stop second thread and popup from being created after next video
+        # has been requested but not yet loaded
+        self.state.set_tracking(False)
+        self.sigstop = True
+
+        # Stop detector once popup is shown
+        if self.detector:
+            self.detector.stop()
+
+        # Start playbackmanager to show popup and handle playback of next video
+        self.log('Popup at {0}s of {1}s'.format(
+            playback['play_time'], playback['total_time']
+        ), utils.LOGINFO)
         self.playbackmanager = playbackmanager.UpNextPlaybackManager(
             monitor=self.monitor,
             player=self.player,
@@ -109,7 +122,11 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         has_next_item = self.playbackmanager.start()
         # And whether playback was cancelled by the user
         playback_cancelled = has_next_item and not self.state.playing_next
-        return playback_cancelled
+
+        # Cleanup detector data and check if tracker needs to be reset if
+        # credits were incorrectly detected
+        tracker_restart = self._detector_post_run(playback_cancelled)
+        return tracker_restart
 
     def _run(self):
         # Only track playback if old tracker is not running
@@ -120,7 +137,6 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
         # Get playback details
         playback = self._get_playback_details()
-
         # Loop until popup is due, unless abort requested
         while not (self.monitor.abortRequested() or self.sigterm):
 
@@ -159,24 +175,8 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             self.sigterm = False
             return
 
-        # Stop second thread and popup from being created after next file
-        # has been requested but not yet loaded
-        self.state.set_tracking(False)
-        self.sigstop = True
-
-        # Stop detector once popup is shown
-        if self.detector:
-            self.detector.stop()
-
-        # Start playbackmanager to show popup and handle playback of next file
-        self.log('Popup at {0}s of {1}s'.format(
-            playback['play_time'], playback['total_time']
-        ), utils.LOGINFO)
-        playback_cancelled = self._launch_playbackmanager()
-
-        # Cleanup detector data and check if tracker needs to be reset if
-        # credits were incorrectly detected
-        tracker_restart = self._detector_post_run(playback_cancelled)
+        # Create UpNext popup to handle display and playback of next video
+        tracker_restart = self._launch_popup(playback)
 
         # Reset thread signals
         self.log('Stopped')
