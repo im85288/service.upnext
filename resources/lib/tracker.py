@@ -72,8 +72,11 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 'total_time': self.player.getTotalTime()
             }
             check_fail = False
-        if check_fail or playback['speed'] < 1:
+        if check_fail:
             return None
+
+        if playback['speed'] < 1:
+            return playback
 
         # Determine time until popup is required, scaled to real time
         popup_time = self.state.get_popup_time()
@@ -209,7 +212,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
             playback = self._get_playback_details(use_infolabel=True)
 
             # Exit if not playing, paused, or rewinding
-            if not playback:
+            if not playback or playback['speed'] < 1:
                 self.log('Skip tracker start: nothing playing', utils.LOGINFO)
                 called[0] = False
                 return
