@@ -108,7 +108,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def update_settings(self):
         self.set_log_level()
-        utils.log('', 'Settings', level=utils.LOGDEBUG)
+        utils.log('Loading...', 'Settings', level=utils.LOGDEBUG)
         utils.log(
             'logLevel: {0}'.format(utils.LOG_ENABLE_SETTING),
             'Settings',
