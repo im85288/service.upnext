@@ -494,7 +494,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         play_time = 0
         while not (self.monitor.abortRequested()
                    or self.sigterm or self.sigstop):
-            now = timeit.default_timer()
+            loop_start_time = timeit.default_timer()
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
@@ -568,8 +568,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
+            # Wait until total loop time of 1s has elapsed
             self.monitor.waitForAbort(
-                max(0.1, 1 - timeit.default_timer() + now)
+                max(0.1, 1 - timeit.default_timer() + loop_start_time)
             )
 
         self.update_timestamp(play_time)

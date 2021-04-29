@@ -169,7 +169,9 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
                 self._launch_detector()
 
             # Media hasn't reach popup time yet, waiting a bit longer
-            self.monitor.waitForAbort(min(1, playback['popup_wait_time']))
+            self.monitor.waitForAbort(
+                max(0.1, min(1, playback['popup_wait_time']))
+            )
             playback = self._get_playback_details()
         else:
             self.log('Abort', utils.LOGWARNING)
