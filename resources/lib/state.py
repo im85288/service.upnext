@@ -254,11 +254,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def set_popup_time(self, total_time=0, detected_time=0):
         popup_time = 0
 
+        # Detected popup time overrides addon data and settings
         if detected_time:
-            # Enable cue point unless forced off in demo mode
-            self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
             # Force popup time to specified play time
             popup_time = detected_time
+
+            # Enable cue point unless forced off in demo mode
+            self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
 
         # Alway use addon data, when available
         elif self.get_addon_type():
@@ -267,30 +269,39 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             # Some addons send the time from video start (e.g. Netflix)
             popup_time = utils.get_int(self.data, 'notification_offset', 0)
 
-            if 0 < popup_duration < total_time:
-                # Enable cue point unless forced off in demo mode
-                self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
+            # Ensure popup duration is not too short
+            if constants.POPUP_MIN_DURATION <= popup_duration < total_time:
                 popup_time = total_time - popup_duration
 
-            elif 0 < popup_time < total_time:
+            # Ensure popup time is not too close to end of playback
+            if 0 < popup_time <= total_time - constants.POPUP_MIN_DURATION:
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
+            # Otherwise ignore popup time from addon data
+            else:
+                popup_time = 0
 
         # Use addon settings as fallback option
         if not popup_time:
+            # Time from video end
             popup_duration = self.popup_durations[max(0, 0, *[
                 duration for duration in self.popup_durations
                 if total_time > duration
             ])]
+
+            # Ensure popup duration is not too short
+            if constants.POPUP_MIN_DURATION <= popup_duration < total_time:
+                popup_time = total_time - popup_duration
+            # Otherwise set default popup time
+            else:
+                popup_time = total_time - constants.POPUP_MIN_DURATION
+
             # Disable cue point unless forced on in demo mode
             self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
-            if 0 < popup_duration < total_time:
-                popup_time = total_time - popup_duration
-            else:
-                popup_time = 0
 
         self.popup_time = popup_time
         self._set_detect_time()
+
         self.log('Popup due at {0}s of {1}s'.format(
             self.popup_time, total_time
         ), utils.LOGINFO)
