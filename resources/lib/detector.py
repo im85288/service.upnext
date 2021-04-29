@@ -489,15 +489,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.running = True
 
         if self.state.detector_debug:
-            import cProfile
-            import pstats
-            try:
-                from StringIO import StringIO
-            except ImportError:
-                from io import StringIO
-
-            profiler = cProfile.Profile()
-            profiler.enable()
+            profiler = UpNextProfiler()
 
         play_time = 0
         while not (self.monitor.abortRequested()
@@ -570,14 +562,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['episodes'])
                 )
 
-                profiler.disable()
-                output_stream = StringIO()
-                pstats.Stats(
-                    profiler,
-                    stream=output_stream
-                ).sort_stats('cumulative').print_stats()
-                self.log(output_stream.getvalue())
-                output_stream.close()
+                self.log(profiler.get_stats())
 
             # Store current hash for comparison with next video frame
             self.hashes.data[self.hash_index['current']] = image_hash
@@ -694,3 +679,33 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.hash_index['detected_at'] = self.hash_index['current'][0]
         self.hashes.timestamps[self.hashes.episode] = play_time
         self.state.set_popup_time(detected_time=play_time)
+
+
+class UpNextProfiler(object):  # pylint: disable=useless-object-inheritance
+    from cProfile import Profile
+    from pstats import Stats
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
+
+    def __init__(self):
+        self._profiler = UpNextProfiler.Profile()
+        self._profiler.enable()
+
+    def get_stats(self, flush=True):
+        self._profiler.disable()
+
+        output_stream = UpNextProfiler.StringIO()
+        UpNextProfiler.Stats(
+            self._profiler,
+            stream=output_stream
+        ).sort_stats('cumulative').print_stats(20)
+        output = output_stream.getvalue()
+        output_stream.close()
+
+        if flush:
+            self._profiler = UpNextProfiler.Profile()
+        self._profiler.enable()
+
+        return output
