@@ -263,9 +263,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Alway use addon data, when available
         elif self.get_addon_type():
             # Some addons send the time from video end
-            popup_duration = utils.get_int(self.data, 'notification_time')
+            popup_duration = utils.get_int(self.data, 'notification_time', 0)
             # Some addons send the time from video start (e.g. Netflix)
-            popup_time = utils.get_int(self.data, 'notification_offset')
+            popup_time = utils.get_int(self.data, 'notification_offset', 0)
 
             if 0 < popup_duration < total_time:
                 # Enable cue point unless forced off in demo mode
