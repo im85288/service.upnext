@@ -156,8 +156,8 @@ def test_representative_hash():
     # Round down width to multiple of 2
     hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
-    test_hash = detector.UpNextDetector.generate_initial_hash(hash_size)
-    detector.UpNextDetector.print_hash(test_hash, test_hash, hash_size)
+    test_hash = detector.UpNextDetector._generate_initial_hash(hash_size)  # pylint: disable=protected-access
+    detector.UpNextDetector._print_hash(test_hash, test_hash, hash_size)  # pylint: disable=protected-access
 
     test_complete = True
     assert test_complete is True
@@ -190,13 +190,14 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         image1 = image1.convert('L').resize(hash_size, resample=Image.BOX)
         image2 = image2.convert('L').resize(hash_size, resample=Image.BOX)
 
-        hash1 = detector.UpNextDetector.calc_image_hash(image1)
-        hash2 = detector.UpNextDetector.calc_image_hash(image2)
+        hash1 = detector.UpNextDetector._calc_image_hash(image1)  # pylint: disable=protected-access
+        hash2 = detector.UpNextDetector._calc_image_hash(image2)  # pylint: disable=protected-access
 
-        similarity = detector.UpNextDetector.calc_similarity(hash1, hash2)
+        similarity = detector.UpNextDetector._calc_similarity(hash1, hash2)  # pylint: disable=protected-access
         is_match = similarity >= match_level
 
-        detector.UpNextDetector.print_hash(
+        detector.UpNextDetector._print_hash(  # pylint: disable=protected-access
+
             hash1,
             hash2,
             hash_size,
