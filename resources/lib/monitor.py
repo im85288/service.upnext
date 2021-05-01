@@ -19,16 +19,20 @@ class UpNextMonitor(xbmc.Monitor):
     def __init__(self, restart=False, **kwargs):
         self.log('Restart' if restart else 'Init')
 
-        self.player = kwargs.get('player', player.UpNextPlayer())
+        if not restart:
+            self.running = False
+            xbmc.Monitor.__init__(self)
+
         self.state = kwargs.get('state', state.UpNextState())
+        if self.state.is_disabled():
+            return
+
+        self.player = kwargs.get('player', player.UpNextPlayer())
         self.tracker = tracker.UpNextTracker(
             monitor=self,
             player=self.player,
             state=self.state
         )
-        self.running = restart
-
-        xbmc.Monitor.__init__(self)
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
@@ -170,12 +174,13 @@ class UpNextMonitor(xbmc.Monitor):
         self._check_video(decoded_data, encoding)
 
     def start(self):
-        self.log('UpNext starting', utils.LOGINFO)
+        if self.state and not self.state.is_disabled():
+            self.log('UpNext starting', utils.LOGINFO)
 
-        # Re-trigger player play/start event if addon started mid playback
-        if self.state.start_trigger and self.player.isPlaying():
-            # This is a fake event, use Player.OnAVStart even if not supported
-            self.onNotification('UpNext', 'Player.OnAVStart')
+            # Re-trigger player play/start event if addon started mid playback
+            if self.state.start_trigger and self.player.isPlaying():
+                # This is a fake event, use Player.OnAVStart
+                self.onNotification('UpNext', 'Player.OnAVStart')
 
         if not self.running:
             self.running = True
@@ -227,7 +232,7 @@ class UpNextMonitor(xbmc.Monitor):
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
 
-        if self.state.is_disabled():
+        if not self.state or self.state.is_disabled():
             return
 
         sender = statichelper.to_unicode(sender)
@@ -240,7 +245,7 @@ class UpNextMonitor(xbmc.Monitor):
             handler(self, sender=sender, data=data)
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
-        if self.state.is_disabled():
+        if not self.state or self.state.is_disabled():
             return
 
         # Restart tracking if previously tracking
