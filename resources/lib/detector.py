@@ -500,8 +500,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
+                total_time = self.player.getTotalTime()
                 self.hash_index['current'] = (
-                    int(self.player.getTotalTime() - play_time),
+                    int(total_time - play_time),
                     self.hashes.episode
                 )
                 # Only capture if playing at normal speed
@@ -575,7 +576,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 max(0.1, 1 - timeit.default_timer() + loop_start_time)
             )
 
-        self.update_timestamp(play_time)
+        self.update_timestamp(play_time, total_time)
 
         # Reset thread signals
         self.log('Stopped')
@@ -675,12 +676,15 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         self.past_hashes.save(self.hashes.seasonid)
 
-    def update_timestamp(self, play_time):
+    def update_timestamp(self, play_time, total_time):
         if not self.credits_detected():
             return
 
         self.hash_index['detected_at'] = self.hash_index['current'][0]
         self.hashes.timestamps[self.hashes.episode] = play_time
-        self.state.set_popup_time(detected_time=play_time)
+        self.state.set_popup_time(
+            total_time=total_time,
+            detected_time=play_time
+        )
 
         utils.event('upnext_trigger')
