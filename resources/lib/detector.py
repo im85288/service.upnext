@@ -491,7 +491,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.running = True
 
         if self.state.detector_debug:
-            profiler = UpNextProfiler()
+            profiler = utils.Profiler()
 
         play_time = 0
         while not (self.monitor.abortRequested()
@@ -683,36 +683,3 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.hashes.timestamps[self.hashes.episode] = play_time
         self.state.set_popup_time(detected_time=play_time)
 
-
-class UpNextProfiler(object):  # pylint: disable=useless-object-inheritance
-    """Class used to profile a block of code"""
-
-    __slots__ = ('_profiler', )
-
-    from cProfile import Profile
-    from pstats import Stats
-    try:
-        from StringIO import StringIO
-    except ImportError:
-        from io import StringIO
-
-    def __init__(self):
-        self._profiler = UpNextProfiler.Profile()
-        self._profiler.enable()
-
-    def get_stats(self, flush=True):
-        self._profiler.disable()
-
-        output_stream = UpNextProfiler.StringIO()
-        UpNextProfiler.Stats(
-            self._profiler,
-            stream=output_stream
-        ).sort_stats('cumulative').print_stats(20)
-        output = output_stream.getvalue()
-        output_stream.close()
-
-        if flush:
-            self._profiler = UpNextProfiler.Profile()
-        self._profiler.enable()
-
-        return output

@@ -369,3 +369,37 @@ def time_to_seconds(time_str):
         pass
 
     return seconds
+
+
+class Profiler(object):  # pylint: disable=useless-object-inheritance
+    """Class used to profile a block of code"""
+
+    __slots__ = ('_profiler', )
+
+    from cProfile import Profile
+    from pstats import Stats
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
+
+    def __init__(self):
+        self._profiler = Profiler.Profile()
+        self._profiler.enable()
+
+    def get_stats(self, flush=True):
+        self._profiler.disable()
+
+        output_stream = Profiler.StringIO()
+        Profiler.Stats(
+            self._profiler,
+            stream=output_stream
+        ).sort_stats('cumulative').print_stats(20)
+        output = output_stream.getvalue()
+        output_stream.close()
+
+        if flush:
+            self._profiler = Profiler.Profile()
+        self._profiler.enable()
+
+        return output
