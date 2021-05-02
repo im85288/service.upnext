@@ -85,7 +85,7 @@ def get_setting_bool(key, default=None, echo=True):
 
     value = default
     try:
-        value = xbmcaddon.Addon(constants.ADDON_ID).getSettingBool(key)
+        value = bool(xbmcaddon.Addon(constants.ADDON_ID).getSettingBool(key))
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
         value = get_setting(key, echo=False)
