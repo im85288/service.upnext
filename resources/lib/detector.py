@@ -683,3 +683,4 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.hashes.timestamps[self.hashes.episode] = play_time
         self.state.set_popup_time(detected_time=play_time)
 
+        utils.event('upnext_trigger')
