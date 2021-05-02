@@ -222,12 +222,15 @@ def event(message, data=None, sender=None, encoding='base64'):
     )
 
 
-LOGDEBUG = xbmc.LOGDEBUG
-LOGINFO = xbmc.LOGINFO
-LOGWARNING = xbmc.LOGWARNING
-LOGERROR = xbmc.LOGERROR
-LOGFATAL = xbmc.LOGFATAL
-LOGNONE = xbmc.LOGNONE
+# Log levels                      | v18 | v19
+LOGDEBUG = xbmc.LOGDEBUG        # |  0  |  0
+LOGINFO = xbmc.LOGINFO          # |  1  |  1
+# LOGNOTICE = xbmc.LOGNOTICE    # |  2  |  Deprecated
+LOGWARNING = xbmc.LOGWARNING    # |  3  |  2
+LOGERROR = xbmc.LOGERROR        # |  4  |  3
+# LOGSEVERE = xbmc.LOGSEVERE    # |  5  |  Deprecated
+LOGFATAL = xbmc.LOGFATAL        # |  6  |  4
+LOGNONE = xbmc.LOGNONE          # |  7  |  5
 
 LOG_ENABLE_SETTING = get_setting_int('logLevel', echo=False)
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1

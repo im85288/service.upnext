@@ -64,8 +64,8 @@ TVSHOW_PROPERTIES = [
 ]
 
 PLAYER_TYPES = {
-    'video': xbmc.PLAYLIST_VIDEO,
-    'audio': xbmc.PLAYLIST_MUSIC
+    'video': xbmc.PLAYLIST_VIDEO,  # 1
+    'audio': xbmc.PLAYLIST_MUSIC   # 0
 }
 
 
