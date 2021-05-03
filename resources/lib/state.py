@@ -29,7 +29,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'detect_level',
         'disabled',
         'enable_queue',
-        'tracker_mode',
         'demo_mode',
         'demo_seek',
         'demo_cue',
@@ -150,7 +149,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.enable_queue = utils.get_setting_bool('enableQueue')
-        self.tracker_mode = utils.get_setting_int('trackerMode')
 
         self.demo_mode = utils.get_setting_bool('enableDemoMode')
         self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')

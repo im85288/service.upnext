@@ -2,7 +2,6 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-import constants
 import detector
 import playbackmanager
 import utils
@@ -140,48 +139,29 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
 
         # Get playback details
         playback = self._get_playback_details()
-        # Loop until popup is due, unless abort requested
-        while not (self.monitor.abortRequested() or self.sigterm):
 
-            # Stop tracking if nothing playing
-            if not playback:
-                self.log('No file is playing', utils.LOGINFO)
-                self.state.set_tracking(False)
+        # Stop tracking if nothing playing
+        if not playback:
+            self.log('No file is playing', utils.LOGINFO)
+            self.state.set_tracking(False)
 
-            # Stop tracking if new stream started
-            elif self.state.get_tracked_file() != playback['current_file']:
-                self.log('Error: unknown file playing', utils.LOGWARNING)
-                self.state.set_tracking(False)
+        # Stop tracking if new stream started
+        elif self.state.get_tracked_file() != playback['current_file']:
+            self.log('Error: unknown file playing', utils.LOGWARNING)
+            self.state.set_tracking(False)
 
-            # Exit tracker if stop requested or if tracking stopped
-            if self.sigstop or not self.state.is_tracking():
-                self.log('Stopped')
-                self.running = False
-                self.sigstop = False
-                self.sigterm = False
-                return
-
-            # Exit loop if popup is due
-            if playback['popup_wait_time'] <= 0.1:
-                break
-            # Or start detector if start time is due
-            if playback.get('detector_wait_time', 1) <= 0.1:
-                self._launch_detector()
-
-            # Media hasn't reach popup time yet, waiting a bit longer
-            self.monitor.waitForAbort(
-                max(0.1, min(1, playback['popup_wait_time']))
-            )
-            playback = self._get_playback_details()
-        else:
+        elif self.sigterm:
             self.log('Abort', utils.LOGWARNING)
-            self.running = False
-            self.sigstop = False
-            self.sigterm = False
-            return
+            self.state.set_tracking(False)
 
-        # Create UpNext popup to handle display and playback of next video
-        tracker_restart = self._launch_popup(playback)
+        # Exit tracker if stop requested or if tracking stopped
+        elif self.sigstop:
+            self.state.set_tracking(False)
+
+        tracker_restart = False
+        if self.state.is_tracking():
+            # Create UpNext popup to handle display and playback of next video
+            tracker_restart = self._launch_popup(playback)
 
         # Reset thread signals
         self.log('Stopped')
@@ -192,7 +172,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         if tracker_restart:
             self.state.set_popup_time(playback['total_time'])
             self.state.set_tracking(playback['current_file'])
-            self._run()
+            utils.event('upnext_trigger')
 
     def start(self, called=[False]):  # pylint: disable=dangerous-default-value
         # Exit if tracking disabled or start tracking previously requested
@@ -202,50 +182,33 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         self.stop()
         called[0] = True
 
-        # Schedule a threading.Timer to check playback details only when popup
-        # is expected to be shown. Experimental mode, more testing required.
-        if self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
-            # Playtime needs some time to update correctly after seek/skip
-            # Try waiting 1s for update, longer delay may be required
-            self.monitor.waitForAbort(1)
+        # Playtime needs some time to update correctly after seek/skip
+        # Try waiting 1s for update, longer delay may be required
+        self.monitor.waitForAbort(1)
 
-            # Get playback details and use VideoPlayer.Time infolabel over
-            # xbmc.Player.getTime() as the infolabel appears to update quicker
-            playback = self._get_playback_details(use_infolabel=True)
+        # Get playback details and use VideoPlayer.Time infolabel over
+        # xbmc.Player.getTime() as the infolabel appears to update quicker
+        playback = self._get_playback_details(use_infolabel=True)
 
-            # Exit if not playing, paused, or rewinding
-            if not playback or playback['speed'] < 1:
-                self.log('Skip tracker start: nothing playing', utils.LOGINFO)
-                called[0] = False
-                return
+        # Exit if not playing, paused, or rewinding
+        if not playback or playback['speed'] < 1:
+            self.log('Skip tracker start: nothing playing', utils.LOGINFO)
+            called[0] = False
+            return
 
-            # Schedule detector to start when required
-            detector_delay = playback.get('detector_wait_time')
-            if detector_delay is not None:
-                detector_delay = max(0, detector_delay)
-                self.log('Detector starting in {0}s'.format(detector_delay))
-                self.detector = utils.run_after(
-                    detector_delay, self._launch_detector
-                )
+        # Schedule detector to start when required
+        detector_delay = playback.get('detector_wait_time')
+        if detector_delay is not None:
+            detector_delay = max(0, detector_delay)
+            self.log('Detector starting in {0}s'.format(detector_delay))
+            self.detector = utils.run_after(
+                detector_delay, self._launch_detector
+            )
 
-            # Schedule tracker to start when required
-            # Tracker starting delay is actual delay minus a 10s offset
-            tracker_delay = max(0, playback['popup_wait_time'] - 10)
-            self.log('Tracker starting in {0}s'.format(tracker_delay))
-            self.thread = utils.run_after(tracker_delay, self._run)
-
-        # Use while not abortRequested() loop in a separate threading.Thread to
-        # continuously poll playback details while callbacks continue to be
-        # processed in main service thread. Default mode.
-        elif self.state.tracker_mode == constants.TRACKER_MODE_THREAD:
-            self.thread = utils.run_threaded(self._run)
-
-        # Use while not abortRequested() loop in main service thread. Old mode.
-        else:
-            if self.running:
-                self.sigstop = False
-            else:
-                self._run()
+        # Schedule tracker to start when required
+        tracker_delay = max(0, playback['popup_wait_time'])
+        self.log('Tracker starting in {0}s'.format(tracker_delay))
+        self.thread = utils.run_after(tracker_delay, self._run)
 
         called[0] = False
 
@@ -274,7 +237,7 @@ class UpNextTracker(object):  # pylint: disable=useless-object-inheritance
         if self.running:
             self.thread.join()
         # Or if tracker has not yet started on timer then cancel old timer
-        elif self.state.tracker_mode == constants.TRACKER_MODE_TIMER:
+        else:
             self.thread.cancel()
             if self.detector:
                 self.detector.cancel()
