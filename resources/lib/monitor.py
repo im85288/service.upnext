@@ -154,8 +154,12 @@ class UpNextMonitor(xbmc.Monitor):
         self.state.reset_queue()
         # OnStop can occur before/after the next video has started playing
         # Reset state if UpNext has not requested the next file to play
+        # Full reset of state if UpNext has not requested the next file to play
         if not self.state.playing_next:
             self.state.reset()
+        # Otherwise just ensure details of current/next item to play are reset
+        else:
+            self.state.reset_item()
 
     def _event_handler_upnext_signal(self, **kwargs):
         sender = kwargs.get('sender').replace('.SIGNAL', '')

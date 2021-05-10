@@ -105,6 +105,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def reset(self):
         self.__init__(reset=True)
 
+    def reset_item(self):
+        self.item = None
+        self.next_item = None
+
     def update_settings(self):
         self.set_log_level()
         utils.log('Loading...', 'Settings', level=utils.LOGDEBUG)
