@@ -40,7 +40,7 @@ def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]): 
         seek_time = state.get_popup_time()
     # Seek to detector start time
     elif state.demo_seek == constants.DEMO_SEEK_DETECT_TIME:
-        seek_time = state.get_detect_time()
+        seek_time = state.get_detect_time() or state.get_popup_time()
     else:
         return
 
