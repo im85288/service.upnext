@@ -179,7 +179,9 @@ def test_hash_compare():  # pylint: disable=too-many-locals
     match_level = 90
     matches = 0
     false_positives = 0
+    false_positives_deviation = 0
     false_negatives = 0
+    false_negatives_deviation = 0
 
     for pairs in IMAGE_PAIRS:
         file1 = pairs[0]
@@ -207,34 +209,42 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         similarity = detector.UpNextDetector._calc_similarity(hash1, hash2)  # pylint: disable=protected-access
         is_match = similarity >= match_level
 
-        detector.UpNextDetector._print_hash(  # pylint: disable=protected-access
-
-            hash1,
-            hash2,
-            hash_size,
-            'Comparing: {0} & {1}, similarity: {2:2.1f}%, matched: {3} ({4})'.format(
-                file1,
-                file2,
-                similarity,
-                is_match,
-                expected_result
-            )
-        )
-
         if is_match is expected_result:
             matches += 1
+        else:
+            detector.UpNextDetector._print_hash(  # pylint: disable=protected-access
+                hash1,
+                hash2,
+                hash_size,
+                'Comparing: {0} & {1}, similarity: {2:2.1f}%, matched: {3} ({4})'.format(
+                    file1,
+                    file2,
+                    similarity,
+                    is_match,
+                    expected_result
+                )
+            )
+
         if is_match and not expected_result:
             false_positives += 1
+            false_positives_deviation += similarity - match_level
         if not is_match and expected_result:
             false_negatives += 1
+            false_negatives_deviation += match_level - similarity
 
     num_pairs = len(IMAGE_PAIRS)
     percent_matched_correctly = 100 * matches / len(IMAGE_PAIRS)
-    print('Correct matches: {0}/{1} ({2:2.1f}%), {3} false positives, {4} false negatives'.format(
+    if false_negatives:
+        false_negatives_deviation /= false_negatives
+    if false_positives:
+        false_positives_deviation /= false_positives
+    print('Correct matches: {0}/{1} ({2:2.1f}%), {3} false positives ({4}), {5} false negatives ({6})'.format(
         matches,
         num_pairs,
         percent_matched_correctly,
         false_positives,
-        false_negatives
+        false_positives_deviation,
+        false_negatives,
+        false_negatives_deviation
     ))
     assert percent_matched_correctly >= 90
