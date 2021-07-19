@@ -41,6 +41,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Current file details
         'item',
         'filename',
+        'total_time',
         'tvshowid',
         'episodeid',
         'season_identifier',
@@ -73,6 +74,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Current file details
         self.item = None
         self.filename = None
+        self.total_time = 0
         self.tvshowid = constants.UNKNOWN_DATA
         self.episodeid = constants.UNKNOWN_DATA
         self.season_identifier = None
