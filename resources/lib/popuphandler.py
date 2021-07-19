@@ -133,9 +133,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             'stop': False
         }
 
-        for keyword in kwargs:
-            if keyword in default_state:
-                default_state[keyword] = kwargs[keyword]
+        for kwarg, value in kwargs.items():
+            if kwarg in default_state:
+                default_state[kwarg] = value
 
         if not self._has_popup():
             return default_state
