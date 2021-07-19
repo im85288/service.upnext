@@ -253,7 +253,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def get_popup_time(self):
         return self.popup_time
 
-    def set_popup_time(self, total_time=0, detected_time=0):
+    def set_detected_popup_time(self, detected_time):
         popup_time = 0
 
         # Detected popup time overrides addon data and settings
@@ -264,8 +264,18 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             # Enable cue point unless forced off in demo mode
             self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
 
+        self.popup_time = popup_time
+        self._set_detect_time()
+
+        self.log('Popup: due at {0}s of {1}s (cue: {2})'.format(
+            self.popup_time, self.total_time, self.popup_cue
+        ), utils.LOGINFO)
+
+    def set_popup_time(self, total_time):
+        popup_time = 0
+
         # Alway use addon data, when available
-        elif self.get_addon_type():
+        if self.get_addon_type():
             # Some addons send the time from video end
             popup_duration = utils.get_int(self.data, 'notification_time', 0)
             # Some addons send the time from video start (e.g. Netflix)
@@ -302,10 +312,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
 
         self.popup_time = popup_time
+        self.total_time = total_time
         self._set_detect_time()
 
-        self.log('Popup due at {0}s of {1}s'.format(
-            self.popup_time, total_time
+        self.log('Popup: due at {0}s of {1}s (cue: {2})'.format(
+            self.popup_time, self.total_time, self.popup_cue
         ), utils.LOGINFO)
 
     def process_now_playing(self, playlist_position, addon_type, media_type):

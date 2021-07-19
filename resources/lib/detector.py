@@ -500,9 +500,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
-                total_time = self.player.getTotalTime()
                 self.hash_index['current'] = (
-                    int(total_time - play_time),
+                    int(self.player.getTotalTime() - play_time),
                     self.hashes.episode
                 )
                 # Only capture if playing at normal speed
@@ -575,8 +574,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.monitor.waitForAbort(
                 max(0.1, 1 - timeit.default_timer() + loop_start_time)
             )
-
-        self.update_timestamp(play_time, total_time)
+        else:
+            self.update_timestamp(play_time)
 
         # Reset thread signals
         self.log('Stopped')
@@ -616,7 +615,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         stored_timestamp = self.past_hashes.timestamps.get(self.hashes.episode)
         if stored_timestamp and not reset:
             self.log('Stored credits timestamp found')
-            self.state.set_popup_time(detected_time=stored_timestamp)
+            self.state.set_detected_popup_time(stored_timestamp)
+            utils.event('upnext_credits_detected')
 
         # Otherwise run the detector in a new thread
         else:
@@ -676,15 +676,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         self.past_hashes.save(self.hashes.seasonid)
 
-    def update_timestamp(self, play_time, total_time):
-        if not self.credits_detected():
+    def update_timestamp(self, play_time):
+        if not self.credits_detected() or not play_time:
             return
 
         self.hash_index['detected_at'] = self.hash_index['current'][0]
         self.hashes.timestamps[self.hashes.episode] = play_time
-        self.state.set_popup_time(
-            total_time=total_time,
-            detected_time=play_time
-        )
-
-        utils.event('upnext_trigger')
+        self.state.set_detected_popup_time(play_time)
+        utils.event('upnext_credits_detected')
