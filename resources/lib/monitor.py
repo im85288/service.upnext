@@ -211,6 +211,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Cleanup tracker')
 
     EVENTS_MAP = {
+        'Other.upnext_credits_detected': _event_handler_player_general,
         'Other.upnext_data': _event_handler_upnext_signal,
         'Other.upnext_trigger': _event_handler_player_general,
         'Player.OnPause': _event_handler_player_general,
