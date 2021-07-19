@@ -7,7 +7,7 @@ import xbmc
 import xbmcaddon
 import dummydata
 import monitor
-import playbackmanager
+import popuphandler
 import player
 import state
 
@@ -67,8 +67,8 @@ def test_popup(popup_type, simple_style=False):
     test_player.state.set('media_type', 'episode', force=True)
     test_player.state.set('stop', force=True)
 
-    # Create a test playbackmanager and create an actual popup for testing
-    return playbackmanager.UpNextPlaybackManager(
+    # Create a test popuphandler and create an actual popup for testing
+    return popuphandler.UpNextPopupHandler(
         monitor=xbmc.Monitor(), player=test_player, state=test_state
     ).start()
 
