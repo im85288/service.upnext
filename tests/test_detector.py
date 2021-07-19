@@ -6,6 +6,9 @@ from __future__ import absolute_import, division, unicode_literals
 from PIL import Image
 import detector
 
+
+SKIP_TEST = False
+
 # Test comparisons sourced from:
 # https://github.com/valbok/img.chk/blob/master/tests/hash/extractor.py
 # Test images sourced from:
@@ -150,6 +153,10 @@ IMAGE_PAIRS = (
 
 
 def test_representative_hash():
+    if SKIP_TEST:
+        assert True
+        return
+
     aspect_ratio = 16 / 9
     # Hash size as (width, height)
     hash_size = [8 * aspect_ratio, 8]
@@ -164,6 +171,10 @@ def test_representative_hash():
 
 
 def test_hash_compare():  # pylint: disable=too-many-locals
+    if SKIP_TEST:
+        assert True
+        return
+
     test_image_path = 'tests/images/'
     match_level = 80
     matches = 0
