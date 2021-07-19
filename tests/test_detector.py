@@ -176,7 +176,7 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         return
 
     test_image_path = 'tests/images/'
-    match_level = 80
+    match_level = 90
     matches = 0
     false_positives = 0
     false_negatives = 0
