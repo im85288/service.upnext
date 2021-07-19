@@ -140,6 +140,9 @@ class UpNextMonitor(xbmc.Monitor):
         # video. Reset state if playback was not requested by UpNext
         if not self.state.playing_next and not self.state.starting:
             self.state.reset()
+        # Otherwise just ensure details of current/next item to play are reset
+        else:
+            self.state.reset_item()
         # Update playcount and reset resume point of previous file
         if self.state.playing_next and self.state.mark_watched:
             api.handle_just_watched(
@@ -162,7 +165,6 @@ class UpNextMonitor(xbmc.Monitor):
 
         self.state.reset_queue()
         # OnStop can occur before/after the next video has started playing
-        # Reset state if UpNext has not requested the next file to play
         # Full reset of state if UpNext has not requested the next file to play
         if not self.state.playing_next:
             self.state.reset()
