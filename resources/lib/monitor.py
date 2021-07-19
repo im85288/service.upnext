@@ -42,10 +42,10 @@ class UpNextMonitor(xbmc.Monitor):
         # Only process one start at a time unless addon data has been received
         if self.state.starting and not data:
             return
-        self.log('Starting video check')
         # Increment starting counter
         self.state.starting += 1
         start_num = max(1, self.state.starting)
+        self.log('Starting video check attempt #{0}'.format(start_num))
 
         # onPlayBackEnded for current file can trigger after next file starts
         # Wait additional 5s after onPlayBackEnded or last start
