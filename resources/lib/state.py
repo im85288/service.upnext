@@ -38,8 +38,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Addon data
         'data',
         'encoding',
-        # Current file details
-        'item',
+        # Current video details
+        'current_item',
         'filename',
         'total_time',
         'tvshowid',
@@ -71,8 +71,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Addon data
         self.data = None
         self.encoding = 'base64'
-        # Current file details
-        self.item = None
+        # Current video details
+        self.current_item = None
         self.filename = None
         self.total_time = 0
         self.tvshowid = constants.UNKNOWN_DATA
@@ -108,7 +108,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.__init__(reset=True)
 
     def reset_item(self):
-        self.item = None
+        self.current_item = None
         self.next_item = None
 
     def update_settings(self):
@@ -231,13 +231,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         if next_item and source:
             self.next_item = {
-                'item': next_item,
+                'details': next_item,
                 'source': source
             }
         if not self.next_item:
             return None, None
 
-        return self.next_item['item'], self.next_item['source']
+        return self.next_item['details'], self.next_item['source']
 
     def get_detect_time(self):
         return self.detect_time
@@ -323,30 +323,30 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def process_now_playing(self, playlist_position, addon_type, media_type):
         if addon_type:
-            item = self._get_addon_now_playing()
+            current_item = self._get_addon_now_playing()
             source = constants.ADDON_TYPES[addon_type]
 
         elif playlist_position:
-            item = api.get_now_playing()
+            current_item = api.get_now_playing()
             source = 'playlist'
 
         elif media_type == 'episode':
-            item = self._get_library_now_playing()
+            current_item = self._get_library_now_playing()
             source = 'library'
 
         else:
-            item = None
+            current_item = None
             source = None
 
-        if item and source:
-            self.item = {
-                'item': item,
+        if current_item and source:
+            self.current_item = {
+                'details': current_item,
                 'source': source
             }
-        if not self.item:
+        if not self.current_item:
             return None
 
-        tvshowid = self.get_tvshowid(self.item['item'])
+        tvshowid = self.get_tvshowid(self.current_item['details'])
         # Reset played in a row count if new show playing
         if self.tvshowid != tvshowid:
             self.log('Reset played count: tvshowid change - {0} to {1}'.format(
@@ -360,52 +360,54 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self._set_playcount()
         self._set_season_identifier()
 
-        return self.item['item']
+        return self.current_item['details']
 
     def _get_addon_now_playing(self):
         if self.data:
             # Fallback to now playing info if addon does not provide current
             # episode details
-            item = self.data.get('current_episode', api.get_now_playing())
+            current_item = self.data.get(
+                'current_episode', api.get_now_playing()
+            )
         else:
-            item = None
+            current_item = None
 
-        self.log('Addon current_episode: {0}'.format(item))
-        if not item:
+        self.log('Addon current_episode: {0}'.format(current_item))
+        if not current_item:
             return None
 
-        return item
+        return current_item
 
     def _get_library_now_playing(self):
-        item = api.get_now_playing()
-        if not item:
+        current_item = api.get_now_playing()
+        if not current_item:
             return None
 
         # Get current tvshowid or search in library if detail missing
-        tvshowid = self.get_tvshowid(item)
+        tvshowid = self.get_tvshowid(current_item)
         if tvshowid == constants.UNKNOWN_DATA:
-            tvshowid = api.get_tvshowid(item.get('showtitle'))
+            tvshowid = api.get_tvshowid(current_item.get('showtitle'))
             self.log('Fetched tvshowid: {0}'.format(tvshowid))
         # Now playing show not found in library
         if tvshowid == constants.UNKNOWN_DATA:
             return None
-        item['tvshowid'] = tvshowid
+        current_item['tvshowid'] = tvshowid
 
         # Get current episodeid or search in library if detail missing
-        episodeid = self.get_episodeid(item)
+        episodeid = self.get_episodeid(current_item)
         if episodeid == constants.UNKNOWN_DATA:
             episodeid = api.get_episodeid(
                 tvshowid,
-                item.get('season'),
-                item.get('episode')
+                current_item.get('season'),
+                current_item.get('episode')
             )
             self.log('Fetched episodeid: {0}'.format(episodeid))
         # Now playing episode not found in library
         if episodeid == constants.UNKNOWN_DATA:
             return None
-        item['episodeid'] = episodeid
+        current_item['episodeid'] = episodeid
 
-        return item
+        return current_item
 
     def get_addon_type(self, playlist_position=None):
         if self.data:
@@ -426,7 +428,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.encoding = encoding
 
     def _set_tvshowid(self):
-        self.tvshowid = utils.get_int(self.item['item'], 'tvshowid')
+        self.tvshowid = utils.get_int(self.current_item['details'], 'tvshowid')
 
     def get_tvshowid(self, item=None):
         if item:
@@ -435,8 +437,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def _set_episodeid(self):
         self.episodeid = utils.get_int(
-            self.item['item'], 'episodeid',
-            utils.get_int(self.item['item'], 'id')
+            self.current_item['details'], 'episodeid',
+            utils.get_int(self.current_item['details'], 'id')
         )
 
     def get_episodeid(self, item=None):
@@ -448,20 +450,23 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         return self.episodeid
 
     def _set_episode(self):
-        self.episode = utils.get_int(self.item['item'], 'episode')
+        self.episode = utils.get_int(self.current_item['details'], 'episode')
 
     def get_episode(self):
         return self.episode
 
     def _set_playcount(self):
-        self.playcount = utils.get_int(self.item['item'], 'playcount', 0)
+        self.playcount = utils.get_int(
+            self.current_item['details'], 'playcount',
+            0
+        )
 
     def get_playcount(self):
         return self.playcount
 
     def _set_season_identifier(self):
-        showtitle = self.item['item'].get('showtitle')
-        season = self.item['item'].get('season')
+        showtitle = self.current_item['details'].get('showtitle')
+        season = self.current_item['details'].get('season')
         if not showtitle or not season or season == constants.UNKNOWN_DATA:
             self.season_identifier = None
         else:

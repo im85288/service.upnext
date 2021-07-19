@@ -24,7 +24,7 @@ def test_popup(popup_type, simple_style=False):
     test_state.playing = 1
     # Use test episode to simulate next playing episode used for popup display
     test_state.next_item = {
-        'item': test_next_episode,
+        'details': test_next_episode,
         'source': 'library'
     }
 
@@ -84,12 +84,12 @@ def test_upnext(popup_type, simple_style=False):
     # And while it is playing
     test_state.playing = 1
     # Use test episodes to simulate currently/next playing episodes for testing
-    # test_state.item = {
-    #     'item': test_episode,
+    # test_state.current_item = {
+    #     'details': test_episode,
     #     'source': 'library'
     # }
     # test_state.next_item = {
-    #     'item': test_next_episode,
+    #     'details': test_next_episode,
     #     'source': 'library'
     # }
 
