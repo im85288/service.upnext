@@ -119,7 +119,17 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset()
 
     def _event_handler_player_general(self, **_kwargs):
+        # Player events can fire in quick succession, ensure only one is
+        # handled at a time
+        if self.state.event_queued:
+            return
+
+        # Flag that event handler has started
+        self.state.event_queued = True
         self._start_tracking()
+
+        # Reset event handler queued status
+        self.state.event_queued = False
 
     def _event_handler_player_start(self, **_kwargs):
         # Remove remnants from previous operations
