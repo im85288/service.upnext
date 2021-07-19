@@ -587,8 +587,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return self.running
 
     def cancel(self):
-        # Dummy method to match threading/timer object method
-        pass
+        self.stop()
 
     def credits_detected(self):
         # Ignore invalidated hash data
@@ -597,13 +596,16 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         return self.match_counts['detected']
 
-    def start(self, restart=False, reset=False):
+    def reset(self):
+        self._hash_match_reset()
+        self.hashes.timestamps[self.hashes.episode] = None
+
+    def start(self, restart=False):
         """Method to run actual detection test loop in a separate thread"""
 
         if restart or self.running:
             self.stop()
-        if reset:
-            self._hash_match_reset()
+
         # Reset detector data if episode has changed
         if not self.hashes.is_valid(
                 self.state.get_season_identifier(),
@@ -613,7 +615,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # If a previously detected timestamp exists then use it
         stored_timestamp = self.past_hashes.timestamps.get(self.hashes.episode)
-        if stored_timestamp and not reset:
+        if stored_timestamp:
             self.log('Stored credits timestamp found')
             self.state.set_detected_popup_time(stored_timestamp)
             utils.event('upnext_credits_detected')

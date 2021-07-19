@@ -338,6 +338,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             utils.set_property('service.upnext.dialog', 'true')
             return True
 
+    def cancel(self):
+        self.stop()
+
     def start(self, called=[False]):  # pylint: disable=dangerous-default-value
         # Exit if popuphandler previously requested
         if called[0]:

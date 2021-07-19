@@ -339,23 +339,23 @@ def notification(
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 
-def run_threaded(target, *args, **kwargs):
-    """Executes the target in a separate thread"""
+def run_threaded(target, delay=None, args=None, kwargs=None):
+    """Executes the target in a separate thread or timer"""
 
-    thread = threading.Thread(target=target, args=args, kwargs=kwargs)
+    if args is None:
+        args = ()
+
+    if kwargs is None:
+        kwargs = {}
+
+    if delay is not None:
+        thread = threading.Timer(delay, target, args=args, kwargs=kwargs)
+    else:
+        thread = threading.Thread(target=target, args=args, kwargs=kwargs)
     # Daemon threads may not work in Kodi, but enable it anyway
     thread.daemon = True
     thread.start()
     return thread
-
-
-def run_after(delay, target, *args, **kwargs):
-    """Executes the target in a separate thread after time delay (in seconds)
-       has passed"""
-
-    timer = threading.Timer(delay, target, args=args, kwargs=kwargs)
-    timer.start()
-    return timer
 
 
 def time_to_seconds(time_str):
@@ -372,6 +372,13 @@ def time_to_seconds(time_str):
         pass
 
     return seconds
+
+
+def wait_time(end_time=None, start_time=0, rate=None):
+    if not end_time or not rate or rate < 1:
+        return None
+
+    return max(0, (end_time - start_time) // rate)
 
 
 class Profiler(object):  # pylint: disable=useless-object-inheritance
