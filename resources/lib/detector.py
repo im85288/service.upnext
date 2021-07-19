@@ -188,7 +188,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         vals = sorted(vals)
         if num_vals % 2:
             return vals[pivot]
-        return (vals[pivot] + vals[pivot - 1]) // 2
+        return (vals[pivot] + vals[pivot - 1]) / 2
 
     @staticmethod
     def _calc_significance(vals):
