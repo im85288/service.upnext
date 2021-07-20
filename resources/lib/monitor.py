@@ -216,14 +216,6 @@ class UpNextMonitor(xbmc.Monitor):
 
         return playback
 
-    def _stop_detector(self, terminate=False):
-        if not self.detector:
-            return
-        if isinstance(self.detector, detector.UpNextDetector):
-            self.detector.stop(terminate=terminate)
-        else:
-            self.detector.cancel()
-
     def _launch_detector(self):
         playback = self._get_playback_details()
         if not playback:
@@ -337,6 +329,14 @@ class UpNextMonitor(xbmc.Monitor):
                 self._launch_popup,
                 delay=popup_delay
             )
+
+    def _stop_detector(self, terminate=False):
+        if not self.detector:
+            return
+        if isinstance(self.detector, detector.UpNextDetector):
+            self.detector.stop(terminate=terminate)
+        else:
+            self.detector.cancel()
 
     def _stop_popuphandler(self, terminate=False):
         if not self.popuphandler:
