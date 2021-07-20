@@ -24,11 +24,11 @@ class UpNextMonitor(xbmc.Monitor):
             self.running = False
             xbmc.Monitor.__init__(self)
 
-        self.state = kwargs.get('state', state.UpNextState())
+        self.state = kwargs.get('state') or state.UpNextState()
         if self.state.is_disabled():
             return
 
-        self.player = kwargs.get('player', player.UpNextPlayer())
+        self.player = kwargs.get('player') or player.UpNextPlayer()
         self.detector = None
         self.popuphandler = None
 
