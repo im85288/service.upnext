@@ -434,9 +434,19 @@ def _jsonrpc_notifyall(params):
     for ref in _monitor_instances.valuerefs():
         notification_handler = getattr(ref(), "onNotification", None)
         if callable(notification_handler):
+            message = params.get('message')
+            if not message:
+                return False
+
+            announcers = [
+                name for name, details in _JSONRPC_announcer_map.items()
+                if message in details.get('messages')
+            ]
+            announcer = announcers[0] if announcers else 'Other'
+
             thread = threading.Thread(target=notification_handler, args=(
                 params.get('sender'),
-                params.get('message'),
+                '{0}.{1}'.format(announcer, message),
                 json.dumps(params.get('data'))
             ))
             thread.daemon = True
@@ -470,6 +480,20 @@ _JSONRPC_methods = {
     'Player.Open': _player_open,
     'Playlist.Add': _playlist_add,
     'Playlist.Remove': _playlist_remove
+}
+
+_JSONRPC_announcer_map = {
+    'Player': {'flag': 0x001, 'messages': ['OnAVChange', 'OnAVStart', 'OnPause', 'OnPlay', 'OnResume', 'OnSeek', 'OnSpeedChanged', 'OnStop']},
+    'Playlist': {'flag': 0x002, 'messages': []},
+    'GUI': {'flag': 0x004, 'messages': []},
+    'System': {'flag': 0x008, 'messages': []},
+    'VideoLibrary': {'flag': 0x010, 'messages': []},
+    'AudioLibrary': {'flag': 0x020, 'messages': []},
+    'Application': {'flag': 0x040, 'messages': []},
+    'Input': {'flag': 0x080, 'messages': []},
+    'PVR': {'flag': 0x100, 'messages': []},
+    'Other': {'flag': 0x200, 'messages': ['upnext_credits_detected', 'upnext_data', 'upnext_trigger']},
+    'Info': {'flag': 0x400, 'messages': []}
 }
 
 
