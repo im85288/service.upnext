@@ -8,11 +8,14 @@ import plugin
 import script
 
 
-SKIP_TEST = False
+SKIP_TEST_ALL = False
+SKIP_TEST_POPUP = False
+SKIP_TEST_OVERALL = False
+SKIP_TEST_PLUGIN = False
 
 
 def test_popup():
-    if SKIP_TEST:
+    if SKIP_TEST_ALL or SKIP_TEST_POPUP:
         assert True
         return
 
@@ -21,7 +24,7 @@ def test_popup():
 
 
 def test_overall():
-    if SKIP_TEST:
+    if SKIP_TEST_ALL or SKIP_TEST_OVERALL:
         assert True
         return
 
@@ -31,7 +34,7 @@ def test_overall():
 
 
 def test_plugin():
-    if SKIP_TEST:
+    if SKIP_TEST_ALL or SKIP_TEST_PLUGIN:
         assert True
         return
 

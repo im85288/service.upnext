@@ -14,13 +14,19 @@ xbmcaddon = __import__('xbmcaddon')
 xbmcgui = __import__('xbmcgui')
 xbmcvfs = __import__('xbmcvfs')
 
-SKIP_TEST = False
+
+SKIP_TEST_ALL = False
+SKIP_TEST_ENCODING = False
+SKIP_TEST_JSENCODED = False
+SKIP_TEST_FROM_ADDON_SIGNALS = False
+SKIP_TEST_TO_ADDON_SIGNALS = False
+SKIP_TEST_ADDON_SIGNALS = False
 
 
 class TestEncoding(unittest.TestCase):
 
     def test_encoding(self):
-        if SKIP_TEST:
+        if SKIP_TEST_ALL or SKIP_TEST_ENCODING:
             assert True
             return
 
@@ -41,7 +47,7 @@ class TestEncoding(unittest.TestCase):
         self.assertEqual(encoding, 'base64')
 
     def test_jsonencoded(self):
-        if SKIP_TEST:
+        if SKIP_TEST_ALL or SKIP_TEST_JSENCODED:
             assert True
             return
 
@@ -62,7 +68,7 @@ class TestEncoding(unittest.TestCase):
         self.assertEqual(encoding, 'base64')
 
     def test_from_addon_signals(self):
-        if SKIP_TEST:
+        if SKIP_TEST_ALL or SKIP_TEST_FROM_ADDON_SIGNALS:
             assert True
             return
 
@@ -76,7 +82,7 @@ class TestEncoding(unittest.TestCase):
         self.assertEqual(encoding, 'base64')
 
     def test_to_addon_signals(self):
-        if SKIP_TEST:
+        if SKIP_TEST_ALL or SKIP_TEST_TO_ADDON_SIGNALS:
             assert True
             return
 
@@ -91,7 +97,7 @@ class TestEncoding(unittest.TestCase):
         self.assertEqual(decoded_data, data)
 
     def test_addon_signals(self):
-        if SKIP_TEST:
+        if SKIP_TEST_ALL or SKIP_TEST_ADDON_SIGNALS:
             assert True
             return
 

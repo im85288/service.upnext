@@ -7,7 +7,10 @@ from PIL import Image
 import detector
 
 
-SKIP_TEST = False
+SKIP_TEST_ALL = False
+SKIP_TEST_REP_HASH = False
+SKIP_TEST_HASH_COMPARE = False
+
 
 # Test comparisons sourced from:
 # https://github.com/valbok/img.chk/blob/master/tests/hash/extractor.py
@@ -153,7 +156,7 @@ IMAGE_PAIRS = (
 
 
 def test_representative_hash():
-    if SKIP_TEST:
+    if SKIP_TEST_ALL or SKIP_TEST_REP_HASH:
         assert True
         return
 
@@ -171,7 +174,7 @@ def test_representative_hash():
 
 
 def test_hash_compare():  # pylint: disable=too-many-locals
-    if SKIP_TEST:
+    if SKIP_TEST_ALL or SKIP_TEST_HASH_COMPARE:
         assert True
         return
 
