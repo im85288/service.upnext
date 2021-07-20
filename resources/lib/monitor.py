@@ -352,8 +352,8 @@ class UpNextMonitor(xbmc.Monitor):
 
             # Re-trigger player play/start event if addon started mid playback
             if self.state.start_trigger and self.player.isPlaying():
-                # This is a fake event, use Player.OnAVStart
-                self.onNotification('UpNext', 'Player.OnAVStart')
+                # This is a fake event, use Other.OnAVStart
+                utils.event('OnAVStart')
 
         if not self.running:
             self.running = True
@@ -380,6 +380,7 @@ class UpNextMonitor(xbmc.Monitor):
         'Other.upnext_credits_detected': _event_handler_player_general,
         'Other.upnext_data': _event_handler_upnext_signal,
         'Other.upnext_trigger': _event_handler_player_general,
+        'Other.OnAVStart': _event_handler_player_start,
         'Player.OnPause': _event_handler_player_general,
         'Player.OnResume': _event_handler_player_general,
         'Player.OnSpeedChanged': _event_handler_player_general,
