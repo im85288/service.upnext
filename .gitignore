@@ -1,8 +1,15 @@
 # Test caches
 *.py[cod]
-.coverage
+.coverage*
+coverage.xml
+htmlcov/
 .pytest_cache/
 .tox/
+tests/images/
+tests/userdata/addon_data/
+
+# Backups
+*.py.old
 
 # Logs
 kodi-addon-checker-report.log
@@ -10,3 +17,8 @@ kodi-addon-checker.log
 
 # IDE Workspaces
 .idea/
+.vscode/settings.json
+GPATH
+GRTAGS
+NppGTags.cfg
+GTAGS
