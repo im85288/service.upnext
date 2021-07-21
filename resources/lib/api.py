@@ -2,13 +2,18 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from __future__ import absolute_import, division, unicode_literals
-from xbmc import sleep
+from xbmc import sleep, PLAYLIST_VIDEO, PLAYLIST_MUSIC
 from utils import event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
 class Api:
     """Main API class"""
     _shared_state = {}
+
+    PLAYER_TYPES = {
+        'video': PLAYLIST_VIDEO,  # 1
+        'audio': PLAYLIST_MUSIC   # 0
+    }
 
     def __init__(self):
         """Constructor for Api class"""
@@ -35,6 +40,29 @@ class Api:
     def play_kodi_item(episode):
         jsonrpc(method='Player.Open', id=0, params=dict(item=dict(episodeid=episode.get('episodeid'))))
 
+    @staticmethod
+    def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value
+        """Function to get active player ID"""
+
+        # We don't need to actually get playerid everytime, cache and reuse
+        if playerid_cache[0] is not None:
+            return playerid_cache[0]
+
+        # Sometimes Kodi gets confused and uses a music playlist for video
+        # content, so we use the first active playerid instead.
+        result = jsonrpc(method='Player.GetActivePlayers')
+        result = [
+            player for player in result.get('result', [{}])
+            if player.get('type') in Api.PLAYER_TYPES
+        ]
+
+        if not result:
+            return None
+
+        playerid = result[0].get('playerid')
+        playerid_cache[0] = playerid
+        return playerid
+
     def queue_next_item(self, episode):
         next_item = {}
         if not self.data:
@@ -43,24 +71,45 @@ class Api:
             next_item.update(file=self.data.get('play_url'))
 
         if next_item:
-            jsonrpc(method='Playlist.Add', id=0, params=dict(playlistid=1, item=next_item))
+            jsonrpc(
+                method='Playlist.Add',
+                id=0,
+                params=dict(
+                    playlistid=Api.get_playerid(),
+                    item=next_item
+                )
+            )
 
         return bool(next_item)
 
     @staticmethod
     def dequeue_next_item():
         """Remove unplayed next item from video playlist"""
-        jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=1))
+        jsonrpc(
+            method='Playlist.Remove',
+            id=0,
+            params=dict(
+                playlistid=Api.get_playerid(),
+                position=1
+            )
+        )
         return False
 
     @staticmethod
     def reset_queue():
         """Remove previously played item from video playlist"""
-        jsonrpc(method='Playlist.Remove', id=0, params=dict(playlistid=1, position=0))
+        jsonrpc(
+            method='Playlist.Remove',
+            id=0,
+            params=dict(
+                playlistid=Api.get_playerid(),
+                position=0
+            )
+        )
 
     def get_next_in_playlist(self, position):
         result = jsonrpc(method='Playlist.GetItems', params=dict(
-            playlistid=1,
+            playlistid=Api.get_playerid(),
             # limits are zero indexed, position is one indexed
             limits=dict(start=position, end=position + 1),
             properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
