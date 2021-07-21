@@ -272,7 +272,7 @@ def play_addon_item(data, encoding, resume=False):
     log('Error: no addon data available for playback', utils.LOGWARNING)
 
 
-def get_player_id(player_type=None, player_id_cache=[None]):   # pylint: disable=dangerous-default-value
+def get_player_id(player_id_cache=[None]):  # pylint: disable=dangerous-default-value
     """Function to get active player ID"""
 
     # We don't need to actually get playerid everytime, cache and reuse instead
@@ -284,15 +284,10 @@ def get_player_id(player_type=None, player_id_cache=[None]):   # pylint: disable
     result = utils.jsonrpc(
         method='Player.GetActivePlayers'
     )
-    result = result.get('result', [{}])
-    if player_type:
-        result = [
-            player for player in result if player.get('type') == player_type
-        ]
-    else:
-        result = [
-            player for player in result if player.get('type') in PLAYER_TYPES
-        ]
+    result = [
+        player for player in result.get('result', [{}])
+        if player.get('type') in PLAYER_TYPES
+    ]
 
     if not result:
         log('Error: no active player', utils.LOGWARNING)
