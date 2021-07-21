@@ -154,7 +154,7 @@ class UpNextPlayer(xbmc.Player):
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = (
-                utils.time_to_seconds(xbmc.getInfoLabel('VideoPlayer.Time'))
+                utils.time_to_seconds(xbmc.getInfoLabel('Player.Time'))
                 if use_infolabel
                 else getattr(xbmc.Player, 'getTime')(self)
             )
@@ -180,13 +180,17 @@ class UpNextPlayer(xbmc.Player):
         # Return actual value or forced value if forced
         return self.state.time
 
-    def getTotalTime(self):  # pylint: disable=invalid-name
+    def getTotalTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
         if self.state.forced('playing') or self.state.forced('total_time'):
             actual = self.state.total_time
         # Use inbuilt method to store actual value if playing not forced
         else:
-            actual = getattr(xbmc.Player, 'getTotalTime')(self)
+            actual = (
+                utils.time_to_seconds(xbmc.getInfoLabel('Player.Duration'))
+                if use_infolabel
+                else getattr(xbmc.Player, 'getTotalTime')(self)
+            )
         self.state.total_time = actual
         # Return actual value or forced value if forced
         return self.state.total_time
