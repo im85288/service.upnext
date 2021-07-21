@@ -57,7 +57,7 @@ class UpNextMonitor(xbmc.Monitor):
         if not playback:
             self.log('Skip video check: nothing playing', utils.LOGWARNING)
             return
-        self.log('Playing: {0[media_type]} - {0[file]}'.format(playback))
+        self.log('Playing: {media_type} - {file}'.format(**playback))
 
         # Exit if starting counter has been reset or new start detected or
         # starting state has been reset by playback error/end/stop
@@ -205,8 +205,8 @@ class UpNextMonitor(xbmc.Monitor):
             return
 
         # Start detector to detect end credits and trigger popup
-        self.log('Detector started at {0[time]}s of {0[duration]}s'.format(
-            playback), utils.LOGINFO)
+        self.log('Detector started at {time}s of {duration}s'.format(
+            **playback), utils.LOGINFO)
         if not isinstance(self.detector, detector.UpNextDetector):
             self.detector = detector.UpNextDetector(
                 monitor=self,
@@ -229,8 +229,8 @@ class UpNextMonitor(xbmc.Monitor):
             self.detector.cancel()
 
         # Start popuphandler to show popup and handle playback of next video
-        self.log('Popuphandler started at {0[time]}s of {0[duration]}s'.format(
-            playback), utils.LOGINFO)
+        self.log('Popuphandler started at {time}s of {duration}s'.format(
+            **playback), utils.LOGINFO)
         if not isinstance(self.popuphandler, popuphandler.UpNextPopupHandler):
             self.popuphandler = popuphandler.UpNextPopupHandler(
                 monitor=self,
