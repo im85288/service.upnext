@@ -53,15 +53,11 @@ class UpNextMonitor(xbmc.Monitor):
             wait_count -= 1
 
         # Get video details, exit if no video playing
-        with self.player as check_fail:
-            playing_file = self.player.getPlayingFile()
-            total_time = self.player.getTotalTime()
-            media_type = self.player.get_media_type()
-            check_fail = False
-        if check_fail:
+        playback = self._get_playback_details(use_infolabel=True)
+        if not playback:
             self.log('Skip video check: nothing playing', utils.LOGWARNING)
             return
-        self.log('Playing: {0} - {1}'.format(media_type, playing_file))
+        self.log('Playing: {0[media_type]} - {0[file]}'.format(playback))
 
         # Exit if starting counter has been reset or new start detected or
         # starting state has been reset by playback error/end/stop
@@ -94,14 +90,14 @@ class UpNextMonitor(xbmc.Monitor):
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
         now_playing_item = self.state.process_now_playing(
-            playlist_position, addon_type, media_type
+            playlist_position, addon_type, playback['media_type']
         )
         if now_playing_item:
-            self.state.set_tracking(playing_file)
+            self.state.set_tracking(playback['file'])
             self.state.reset_queue()
 
             # Store popup time and check if cue point was provided
-            self.state.set_popup_time(total_time)
+            self.state.set_popup_time(playback['duration'])
 
             # Handle demo mode functionality and notification
             demo.handle_demo_mode(
@@ -191,28 +187,15 @@ class UpNextMonitor(xbmc.Monitor):
     def _get_playback_details(self, use_infolabel=False):
         with self.player as check_fail:
             playback = {
-                'current_file': self.player.getPlayingFile(),
-                'play_time': self.player.getTime(use_infolabel=use_infolabel),
+                'file': self.player.getPlayingFile(),
+                'media_type': self.player.get_media_type(),
+                'time': self.player.getTime(use_infolabel),
                 'speed': self.player.get_speed(),
-                'total_time': self.player.getTotalTime()
+                'duration': self.player.getTotalTime(use_infolabel)
             }
             check_fail = False
         if check_fail:
             return None
-
-        # Determine time until popup is required, scaled to real time
-        playback['popup_wait_time'] = utils.wait_time(
-            end_time=self.state.get_popup_time(),
-            start_time=playback['play_time'],
-            rate=playback['speed']
-        )
-
-        # Determine time until detector is required, scaled to real time
-        playback['detector_wait_time'] = utils.wait_time(
-            end_time=self.state.get_detect_time(),
-            start_time=playback['play_time'],
-            rate=playback['speed']
-        )
 
         return playback
 
@@ -222,9 +205,8 @@ class UpNextMonitor(xbmc.Monitor):
             return
 
         # Start detector to detect end credits and trigger popup
-        self.log('Detector started at {0}s of {1}s'.format(
-            playback['play_time'], playback['total_time']
-        ), utils.LOGINFO)
+        self.log('Detector started at {0[time]}s of {0[duration]}s'.format(
+            playback), utils.LOGINFO)
         if not isinstance(self.detector, detector.UpNextDetector):
             self.detector = detector.UpNextDetector(
                 monitor=self,
@@ -247,9 +229,8 @@ class UpNextMonitor(xbmc.Monitor):
             self.detector.cancel()
 
         # Start popuphandler to show popup and handle playback of next video
-        self.log('Popuphandler started at {0}s of {1}s'.format(
-            playback['play_time'], playback['total_time']
-        ), utils.LOGINFO)
+        self.log('Popuphandler started at {0[time]}s of {0[duration]}s'.format(
+            playback), utils.LOGINFO)
         if not isinstance(self.popuphandler, popuphandler.UpNextPopupHandler):
             self.popuphandler = popuphandler.UpNextPopupHandler(
                 monitor=self,
@@ -280,8 +261,8 @@ class UpNextMonitor(xbmc.Monitor):
             popup_restart = False
 
         if popup_restart:
-            self.state.set_popup_time(playback['total_time'])
-            self.state.set_tracking(playback['current_file'])
+            self.state.set_popup_time(playback['duration'])
+            self.state.set_tracking(playback['file'])
             utils.event('upnext_trigger')
 
     def _start_tracking(self):
@@ -307,13 +288,26 @@ class UpNextMonitor(xbmc.Monitor):
             return
 
         # Stop tracking if new stream started
-        if self.state.get_tracked_file() != playback['current_file']:
+        if self.state.get_tracked_file() != playback['file']:
             self.log('Error: unknown file playing', utils.LOGWARNING)
             self.state.set_tracking(False)
             return
 
+        # Determine time until popup is required, scaled to real time
+        popup_delay = utils.wait_time(
+            end_time=self.state.get_popup_time(),
+            start_time=playback['time'],
+            rate=playback['speed']
+        )
+
+        # Determine time until detector is required, scaled to real time
+        detector_delay = utils.wait_time(
+            end_time=self.state.get_detect_time(),
+            start_time=playback['time'],
+            rate=playback['speed']
+        )
+
         # Schedule detector to start when required
-        detector_delay = playback['detector_wait_time']
         if detector_delay is not None:
             self.log('Detector starting in {0}s'.format(detector_delay))
             self.detector = utils.run_threaded(
@@ -322,7 +316,6 @@ class UpNextMonitor(xbmc.Monitor):
             )
 
         # Schedule popuphandler to start when required
-        popup_delay = playback['popup_wait_time']
         if popup_delay is not None:
             self.log('Popuphandler starting in {0}s'.format(popup_delay))
             self.popuphandler = utils.run_threaded(
