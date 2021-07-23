@@ -282,18 +282,21 @@ def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-va
         return playerid_cache[0]
 
     # Sometimes Kodi gets confused and uses a music playlist for video content,
-    # so we use the first active player id instead.
+    # so get the first active player instead, default to video player.
     result = utils.jsonrpc(
         method='Player.GetActivePlayers'
     )
     result = [
-        player for player in result.get('result', [{'type': 'video'}])
-        if player.get('type') in PLAYER_PLAYLIST
+        player for player in result.get('result', [{}])
+        if player.get('type', 'video') in PLAYER_PLAYLIST
     ]
 
-    playerid = utils.get_int(result[0], 'playerid')
+    playerid = (
+        utils.get_int(result[0], 'playerid') if result
+        else constants.UNKNOWN_DATA
+    )
 
-    if playerid == -1:
+    if playerid == constants.UNKNOWN_DATA:
         log('Error: no active player', utils.LOGWARNING)
         return None
 
