@@ -41,7 +41,7 @@ class Api:
         jsonrpc(method='Player.Open', id=0, params=dict(item=dict(episodeid=episode.get('episodeid'))))
 
     @staticmethod
-    def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value
+    def _get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value
         """Function to get active player playerid"""
 
         # We don't need to actually get playerid everytime, cache and reuse instead
@@ -75,7 +75,7 @@ class Api:
         result = jsonrpc(
             method='Player.GetProperties',
             params={
-                'playerid': Api.get_playerid(playerid_cache=[None]),
+                'playerid': Api._get_playerid(playerid_cache=[None]),
                 'properties': ['playlistid'],
             }
         )
