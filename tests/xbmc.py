@@ -331,14 +331,19 @@ def _player_getactiveplayers(params):  # pylint: disable=unused-argument
 
 
 def _player_getproperties(params):
-    if params.get('properties') != ['speed']:
-        return False
-
-    return json.dumps(dict(
-        id=1,
-        jsonrpc='2.0',
-        result=dict(speed=random.randint(0, 1))
-    ))
+    if params.get('properties') == ['speed']:
+        return json.dumps(dict(
+            id=1,
+            jsonrpc='2.0',
+            result=dict(speed=random.randint(0, 1))
+        ))
+    if params.get('properties') == ['playlistid']:
+        return json.dumps(dict(
+            id=1,
+            jsonrpc='2.0',
+            result=dict(playlistid=random.randint(-1, 2))
+        ))
+    return False
 
 
 def _player_getitem(params):  # pylint: disable=unused-argument
