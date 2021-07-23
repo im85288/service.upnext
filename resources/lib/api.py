@@ -10,7 +10,7 @@ class Api:
     """Main API class"""
     _shared_state = {}
 
-    PLAYER_TYPES = {
+    PLAYER_PLAYLIST = {
         'video': PLAYLIST_VIDEO,  # 1
         'audio': PLAYLIST_MUSIC   # 0
     }
@@ -42,26 +42,48 @@ class Api:
 
     @staticmethod
     def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value
-        """Function to get active player ID"""
+        """Function to get active player playerid"""
 
-        # We don't need to actually get playerid everytime, cache and reuse
+        # We don't need to actually get playerid everytime, cache and reuse instead
         if playerid_cache[0] is not None:
             return playerid_cache[0]
 
-        # Sometimes Kodi gets confused and uses a music playlist for video
-        # content, so we use the first active playerid instead.
+        # Sometimes Kodi gets confused and uses a music playlist for video content,
+        # so get the first active player instead, default to video player.
         result = jsonrpc(method='Player.GetActivePlayers')
         result = [
             player for player in result.get('result', [{}])
-            if player.get('type') in Api.PLAYER_TYPES
+            if player.get('type', 'video') in Api.PLAYER_PLAYLIST
         ]
 
-        if not result:
+        playerid = get_int(result[0], 'playerid') if result else -1
+
+        if playerid == -1:
             return None
 
-        playerid = result[0].get('playerid')
         playerid_cache[0] = playerid
         return playerid
+
+    @staticmethod
+    def get_playlistid(playlistid_cache=[None]):  # pylint: disable=dangerous-default-value
+        """Function to get playlistid of active player"""
+
+        # We don't need to actually get playlistid everytime, cache and reuse instead
+        if playlistid_cache[0] is not None:
+            return playlistid_cache[0]
+
+        result = jsonrpc(
+            method='Player.GetProperties',
+            params={
+                'playerid': Api.get_playerid(playerid_cache=[None]),
+                'properties': ['playlistid'],
+            }
+        )
+        result = get_int(
+            result.get('result', {}), 'playlistid', Api.PLAYER_PLAYLIST['video']
+        )
+
+        return result
 
     def queue_next_item(self, episode):
         next_item = {}
@@ -75,7 +97,7 @@ class Api:
                 method='Playlist.Add',
                 id=0,
                 params=dict(
-                    playlistid=Api.get_playerid(),
+                    playlistid=Api.get_playlistid(),
                     item=next_item
                 )
             )
@@ -89,7 +111,7 @@ class Api:
             method='Playlist.Remove',
             id=0,
             params=dict(
-                playlistid=Api.get_playerid(),
+                playlistid=Api.get_playlistid(),
                 position=1
             )
         )
@@ -102,14 +124,14 @@ class Api:
             method='Playlist.Remove',
             id=0,
             params=dict(
-                playlistid=Api.get_playerid(),
+                playlistid=Api.get_playlistid(),
                 position=0
             )
         )
 
     def get_next_in_playlist(self, position):
         result = jsonrpc(method='Playlist.GetItems', params=dict(
-            playlistid=Api.get_playerid(),
+            playlistid=Api.get_playlistid(),
             # limits are zero indexed, position is one indexed
             limits=dict(start=position, end=position + 1),
             properties=['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
