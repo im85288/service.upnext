@@ -33,7 +33,8 @@ REGIONS = {
 GLOBAL_SETTINGS = global_settings()
 PO = import_language(language=GLOBAL_SETTINGS.get('locale.language'))
 
-PLAYLIST_VIDEO = None
+PLAYLIST_VIDEO = 1
+PLAYLIST_MUSIC = 0
 
 
 class Keyboard:
