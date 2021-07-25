@@ -242,7 +242,7 @@ class UpNextMonitor(xbmc.Monitor):
         # And whether playback was cancelled by the user
         playback_cancelled = has_next_item and not self.state.playing_next
 
-        if not self.detector:
+        if not isinstance(self.detector, detector.UpNextDetector):
             return
 
         # If credits were (in)correctly detected and popup is cancelled
