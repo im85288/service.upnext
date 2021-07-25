@@ -30,6 +30,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         self.player = kwargs.get('player') or player.UpNextPlayer()
         self.detector = None
+        self.event_queue = 0
         self.popuphandler = None
 
     @classmethod
@@ -117,15 +118,11 @@ class UpNextMonitor(xbmc.Monitor):
     def _event_handler_player_general(self, **_kwargs):
         # Player events can fire in quick succession, ensure only one is
         # handled at a time
-        if self.state.event_queued:
+        if self.event_queue > 1:
             return
 
-        # Flag that event handler has started
-        self.state.event_queued = True
+        # Restart tracking if previously enabled
         self._start_tracking()
-
-        # Reset event handler queued status
-        self.state.event_queued = False
 
     def _event_handler_player_start(self, **_kwargs):
         # Remove remnants from previous operations
@@ -139,6 +136,7 @@ class UpNextMonitor(xbmc.Monitor):
         # Otherwise just ensure details of current/next item to play are reset
         else:
             self.state.reset_item()
+
         # Update playcount and reset resume point of previous file
         if self.state.playing_next and self.state.mark_watched:
             api.handle_just_watched(
@@ -407,8 +405,23 @@ class UpNextMonitor(xbmc.Monitor):
         self.log(' - '.join([sender, method, data]))
 
         handler = UpNextMonitor.EVENTS_MAP.get(method)
-        if handler:
-            handler(self, sender=sender, data=data)
+        if not handler:
+            return
+
+        # Player events can fire in quick succession, queue them up rather than
+        # trying to handle all of them
+        self.event_queue += 1
+        queue_length = max(1, self.event_queue)
+        self.log('Event queue length: {0} - {1}'.format(queue_length, method))
+
+        wait_count = 1 * queue_length
+        while not self.abortRequested() and wait_count > 0:
+            self.waitForAbort(1)
+            wait_count -= 1
+
+        handler(self, sender=sender, data=data)
+        if self.event_queue:
+            self.event_queue -= 1
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         if not self.state or self.state.is_disabled():

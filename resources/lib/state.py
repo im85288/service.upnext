@@ -59,8 +59,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'shuffle',
         'played_in_a_row',
         'queued',
-        'playing_next',
-        'event_queued'
+        'playing_next'
     )
 
     def __init__(self, reset=None):
@@ -94,7 +93,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
-        self.event_queued = False
 
     @staticmethod
     def set_log_level(level=None):
