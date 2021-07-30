@@ -20,7 +20,12 @@ class UpNextPlayerState(dict):
         self.set(name, value)
 
     def forced(self, name):
-        return self[name].get('force')
+        # If playing is forced all other player properties are also considered
+        # to be forced
+        forced = self.get(name, {}).get('force')
+        if forced or name == 'playing':
+            return forced
+        return self.get('playing', {}).get('force')
 
     def actual(self, name):
         return self[name].get('actual')
@@ -59,18 +64,18 @@ class UpNextPlayer(xbmc.Player):
         self.log('Init')
 
         # Used to override player state for testing
-        self.state = UpNextPlayerState()
-        self.state.external_player = False
-        self.state.playing = False
-        self.state.paused = False
-        self.state.playing_file = None
-        self.state.speed = 0
-        self.state.time = 0
-        self.state.total_time = 0
-        self.state.next_file = None
-        self.state.media_type = None
-        self.state.playnext = None
-        self.state.stop = None
+        self.player_state = UpNextPlayerState()
+        self.player_state.external_player = False
+        self.player_state.playing = False
+        self.player_state.paused = False
+        self.player_state.playing_file = None
+        self.player_state.speed = 0
+        self.player_state.time = 0
+        self.player_state.total_time = 0
+        self.player_state.next_file = None
+        self.player_state.media_type = None
+        self.player_state.playnext = None
+        self.player_state.stop = None
 
         xbmc.Player.__init__(self)
 
@@ -93,64 +98,64 @@ class UpNextPlayer(xbmc.Player):
             if utils.supports_python_api(18)
             else False
         )
-        self.state.external_player = actual
+        self.player_state.external_player = actual
         # Return actual value or forced value if forced
-        return self.state.external_player
+        return self.player_state.external_player
 
     def isPlaying(self):  # pylint: disable=invalid-name
         # Use inbuilt method to store actual value
         actual = getattr(xbmc.Player, 'isPlaying')(self)
-        self.state.playing = actual
+        self.player_state.playing = actual
         # Return actual value or forced value if forced
-        return self.state.playing
+        return self.player_state.playing
 
     def is_paused(self):
         # Use inbuilt method to store actual value
         actual = xbmc.getCondVisibility('Player.Paused')
-        self.state.paused = actual
+        self.player_state.paused = actual
         # Return actual value or forced value if forced
-        return self.state.paused
+        return self.player_state.paused
 
     def get_media_type(self):
         # Use current stored value if playing forced
-        if self.state.forced('playing') or self.state.forced('media_type'):
-            actual = self.state.media_type
+        if self.player_state.forced('media_type'):
+            actual = self.player_state.media_type
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = self.getVideoInfoTag().getMediaType()
             actual = actual if actual else 'unknowntype'
         actual = statichelper.to_unicode(actual)
-        self.state.media_type = actual
+        self.player_state.media_type = actual
         # Return actual value or forced value if forced
-        return self.state.media_type
+        return self.player_state.media_type
 
     def getPlayingFile(self):  # pylint: disable=invalid-name
         # Use current stored value if playing forced
-        if self.state.forced('playing') or self.state.forced('playing_file'):
-            actual = self.state.playing_file
+        if self.player_state.forced('playing_file'):
+            actual = self.player_state.playing_file
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = getattr(xbmc.Player, 'getPlayingFile')(self)
         actual = statichelper.to_unicode(actual)
-        self.state.playing_file = actual
+        self.player_state.playing_file = actual
         # Return actual value or forced value if forced
-        return self.state.playing_file
+        return self.player_state.playing_file
 
     def get_speed(self):
         # Use current stored value if playing forced
-        if self.state.forced('playing') or self.state.forced('speed'):
-            actual = self.state.speed
+        if self.player_state.forced('speed'):
+            actual = self.player_state.speed
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = api.get_player_speed()
-        self.state.speed = actual
+        self.player_state.speed = actual
         # Return actual value or forced value if forced
-        return self.state.speed
+        return self.player_state.speed
 
     def getTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
-        if self.state.forced('playing') or self.state.forced('time'):
-            actual = self.state.time
+        if self.player_state.forced('time'):
+            actual = self.player_state.time
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = (
@@ -158,32 +163,32 @@ class UpNextPlayer(xbmc.Player):
                 if use_infolabel
                 else getattr(xbmc.Player, 'getTime')(self)
             )
-        self.state.time = actual
+        self.player_state.time = actual
 
         # Simulate time progression if forced
-        if self.state.forced('time'):
+        if self.player_state.forced('time'):
             now = datetime.datetime.now()
 
             # Change in time from previously forced time to now
-            if isinstance(self.state.forced('time'), datetime.datetime):
-                delta = (self.state.forced('time') - now).total_seconds()
+            if isinstance(self.player_state.forced('time'), datetime.datetime):
+                delta = self.player_state.forced('time') - now
                 # No need to check actual speed, just use forced speed value
-                delta = delta * self.state.speed
+                delta = delta.total_seconds() * self.player_state.speed
             # Don't update if not previously forced
             else:
                 delta = 0
 
             # Set new forced time
-            new_time = self.state.time - delta
-            self.state.set('time', new_time, force=now)
+            new_time = self.player_state.time - delta
+            self.player_state.set('time', new_time, force=now)
 
         # Return actual value or forced value if forced
-        return self.state.time
+        return self.player_state.time
 
     def getTotalTime(self, use_infolabel=False):  # pylint: disable=invalid-name, arguments-differ
         # Use current stored value if playing forced
-        if self.state.forced('playing') or self.state.forced('total_time'):
-            actual = self.state.total_time
+        if self.player_state.forced('total_time'):
+            actual = self.player_state.total_time
         # Use inbuilt method to store actual value if playing not forced
         else:
             actual = (
@@ -191,35 +196,34 @@ class UpNextPlayer(xbmc.Player):
                 if use_infolabel
                 else getattr(xbmc.Player, 'getTotalTime')(self)
             )
-        self.state.total_time = actual
+        self.player_state.total_time = actual
         # Return actual value or forced value if forced
-        return self.state.total_time
+        return self.player_state.total_time
 
     def playnext(self):
         # Simulate playing next file if forced
-        if (self.state.forced('playing')
-                or self.state.forced('playnext')
-                or self.state.forced('next_file')):
-            next_file = self.state.next_file
-            self.state.set('next_file', None, force=True)
-            self.state.set('playing_file', next_file, force=True)
-            self.state.set('playing', bool(next_file), force=True)
+        if (self.player_state.forced('playnext')
+                or self.player_state.forced('next_file')):
+            next_file = self.player_state.next_file
+            self.player_state.set('next_file', None, force=True)
+            self.player_state.set('playing_file', next_file, force=True)
+            self.player_state.set('playing', bool(next_file), force=True)
         # Use inbuilt method if not forced
         else:
             getattr(xbmc.Player, 'playnext')(self)
 
     def seekTime(self, seekTime):  # pylint: disable=invalid-name
         # Set fake value if playing forced
-        if self.state.forced('playing') or self.state.forced('time'):
-            self.state.set('time', seekTime, force=True)
+        if self.player_state.forced('time'):
+            self.player_state.set('time', seekTime, force=True)
         # Use inbuilt method if not forced
         else:
             getattr(xbmc.Player, 'seekTime')(self, seekTime)
 
     def stop(self):
         # Set fake value if playing forced
-        if self.state.forced('playing') or self.state.forced('stop'):
-            self.state.set('playing', False, force=True)
+        if self.player_state.forced('stop'):
+            self.player_state.set('playing', False, force=True)
         # Use inbuilt method if not forced
         else:
             getattr(xbmc.Player, 'stop')(self)

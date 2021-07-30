@@ -37,7 +37,7 @@ def test_popup(popup_type, simple_style=False):
     # Create test player object
     test_player = player.UpNextPlayer()
     # Simulate player state
-    test_player.state.update({
+    test_player.player_state.update({
         # 'external_player': {'value': False, 'force': False},
         # Simulate file is playing
         'playing': {'value': True, 'force': True},
@@ -58,14 +58,14 @@ def test_popup(popup_type, simple_style=False):
         'stop': {'force': True}
     })
     # Simulate player state could also be done using the following
-    test_player.state.set('playing', True, force=True)
-    test_player.state.set('playing_file', test_episode['file'], force=True)
-    test_player.state.set('next_file', test_next_episode['file'], force=True)
-    test_player.state.set('speed', 1, force=True)
-    test_player.state.set('time', (test_episode['runtime'] - 10), force=True)
-    test_player.state.set('total_time', test_episode['runtime'], force=True)
-    test_player.state.set('media_type', 'episode', force=True)
-    test_player.state.set('stop', force=True)
+    test_player.player_state.set('playing', True, force=True)
+    test_player.player_state.set('playing_file', test_episode['file'], force=True)
+    test_player.player_state.set('next_file', test_next_episode['file'], force=True)
+    test_player.player_state.set('speed', 1, force=True)
+    test_player.player_state.set('time', (test_episode['runtime'] - 10), force=True)
+    test_player.player_state.set('total_time', test_episode['runtime'], force=True)
+    test_player.player_state.set('media_type', 'episode', force=True)
+    test_player.player_state.set('stop', force=True)
 
     # Create a test popuphandler and create an actual popup for testing
     return popuphandler.UpNextPopupHandler(
@@ -102,7 +102,7 @@ def test_upnext(popup_type, simple_style=False):
     # Create test player object
     test_player = player.UpNextPlayer()
     # Simulate player state
-    test_player.state.update({
+    test_player.player_state.update({
         # 'external_player': {'value': False, 'force': False},
         # Simulate file is playing
         'playing': {'value': True, 'force': True},
@@ -123,14 +123,14 @@ def test_upnext(popup_type, simple_style=False):
         'stop': {'force': True}
     })
     # Simulate player state could also be done using the following
-    test_player.state.set('playing', True, force=True)
-    test_player.state.set('playing_file', test_episode['file'], force=True)
-    test_player.state.set('next_file', test_next_episode['file'], force=True)
-    test_player.state.set('speed', 1, force=True)
-    test_player.state.set('time', 0, force=True)
-    test_player.state.set('total_time', test_episode['runtime'], force=True)
-    test_player.state.set('media_type', 'episode', force=True)
-    test_player.state.set('stop', force=True)
+    test_player.player_state.set('playing', True, force=True)
+    test_player.player_state.set('playing_file', test_episode['file'], force=True)
+    test_player.player_state.set('next_file', test_next_episode['file'], force=True)
+    test_player.player_state.set('speed', 1, force=True)
+    test_player.player_state.set('time', 0, force=True)
+    test_player.player_state.set('total_time', test_episode['runtime'], force=True)
+    test_player.player_state.set('media_type', 'episode', force=True)
+    test_player.player_state.set('stop', force=True)
 
     test_monitor = monitor.UpNextMonitor(
         player=test_player, state=test_state
