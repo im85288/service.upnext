@@ -28,9 +28,9 @@ class UpNextMonitor(xbmc.Monitor):
         if self.state.is_disabled():
             return
 
+        self._queue_length = 0
         self.player = kwargs.get('player') or player.UpNextPlayer()
         self.detector = None
-        self.event_queue = 0
         self.popuphandler = None
 
     @classmethod
@@ -116,15 +116,17 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset()
 
     def _event_handler_player_general(self, **_kwargs):
-        # Player events can fire in quick succession, ensure only one is
-        # handled at a time
-        if self.event_queue > 1:
+        # Only process this event if it is the last in the queue
+        if self._queue_length != 1:
             return
 
         # Restart tracking if previously enabled
         self._start_tracking()
 
     def _event_handler_player_start(self, **_kwargs):
+        # Clear queue to stop processing additional queued events
+        self._queue_length = 0
+
         # Remove remnants from previous operations
         self._stop_detector()
         self._stop_popuphandler()
@@ -153,6 +155,10 @@ class UpNextMonitor(xbmc.Monitor):
         self._check_video()
 
     def _event_handler_player_stop(self, **_kwargs):
+        # Only process this event if it is the last in the queue
+        if self._queue_length != 1:
+            return
+
         # Remove remnants from previous operations
         self._stop_detector()
         self._stop_popuphandler()
@@ -167,6 +173,9 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset_item()
 
     def _event_handler_upnext_signal(self, **kwargs):
+        # Clear queue to stop processing additional queued events
+        self._queue_length = 0
+
         sender = kwargs.get('sender').replace('.SIGNAL', '')
         data = kwargs.get('data')
 
@@ -410,18 +419,13 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Player events can fire in quick succession, queue them up rather than
         # trying to handle all of them
-        self.event_queue += 1
-        queue_length = max(1, self.event_queue)
-        self.log('Event queue length: {0} - {1}'.format(queue_length, method))
+        self._queue_length += 1
+        self.waitForAbort(1)
 
-        wait_count = 1 * queue_length
-        while not self.abortRequested() and wait_count > 0:
-            self.waitForAbort(1)
-            wait_count -= 1
-
+        # Call event handler and reduce queue length
         handler(self, sender=sender, data=data)
-        if self.event_queue:
-            self.event_queue -= 1
+        if self._queue_length:
+            self._queue_length -= 1
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
         if not self.state or self.state.is_disabled():
