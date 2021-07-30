@@ -367,7 +367,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         while self._running:
             # Wait until execution has finished to ensure references/resources
             # can be safely released
-            pass
+            self.monitor.waitForAbort(0.1)
 
         # Free references/resources
         if terminate:
