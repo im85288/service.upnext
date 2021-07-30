@@ -15,9 +15,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         'player',
         'state',
         'popup',
-        'running',
-        'sigstop',
-        'sigterm'
+        '_running',
+        '_sigstop',
+        '_sigterm'
     )
 
     def __init__(self, monitor, player, state):
@@ -27,9 +27,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         self.player = player
         self.state = state
         self.popup = None
-        self.running = False
-        self.sigstop = False
-        self.sigterm = False
+        self._running = False
+        self._sigstop = False
+        self._sigterm = False
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
@@ -94,8 +94,8 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                and popup_state['done']
                and not self.state.starting
                and self.state.playing
-               and not self.sigstop
-               and not self.sigterm):
+               and not self._sigstop
+               and not self._sigterm):
             remaining = total_time - self.player.getTime()
             popup_state = self._get_popup_state(
                 popup_state,
@@ -228,9 +228,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             self.player.stop()
 
         # Reset signals
-        self.sigstop = False
-        self.sigterm = False
-        self.running = False
+        self._sigstop = False
+        self._sigterm = False
+        self._running = False
 
     def _remove_popup(self):
         if not self._has_popup():
@@ -245,7 +245,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
     def _run(self):
         self.log('Started')
-        self.running = True
+        self._running = True
 
         next_item, source = self.state.get_next()
         # No next item to play, get out of here
@@ -358,13 +358,13 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
     def stop(self, terminate=False):
         if terminate:
-            self.sigterm = self.running
+            self._sigterm = self._running
         else:
-            self.sigstop = self.running
+            self._sigstop = self._running
 
         # popuphandler does not run in a separate thread, but stop() can be
         # called from another thread
-        while self.running:
+        while self._running:
             # Wait until execution has finished to ensure references/resources
             # can be safely released
             pass

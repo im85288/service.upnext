@@ -21,7 +21,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.log('Restart' if restart else 'Init')
 
         if not restart:
-            self.running = False
+            self._running = False
             xbmc.Monitor.__init__(self)
 
         self.state = kwargs.get('state') or state.UpNextState()
@@ -346,8 +346,8 @@ class UpNextMonitor(xbmc.Monitor):
                 # This is a fake event, use Other.OnAVStart
                 utils.event('OnAVStart')
 
-        if not self.running:
-            self.running = True
+        if not self._running:
+            self._running = True
 
             # Wait indefinitely until addon is terminated
             self.waitForAbort()

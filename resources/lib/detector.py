@@ -154,9 +154,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'hash_index',
         'match_counts',
         # Signals
-        'running',
-        'sigstop',
-        'sigterm'
+        '_running',
+        '_sigstop',
+        '_sigterm'
     )
 
     def __init__(self, monitor, player, state):
@@ -174,9 +174,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         }
         self._init_hashes()
 
-        self.running = False
-        self.sigstop = False
-        self.sigterm = False
+        self._running = False
+        self._sigstop = False
+        self._sigterm = False
 
     @staticmethod
     def _calc_median(vals):
@@ -406,7 +406,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         if self.credits_detected():
             self.log('Credits detected')
-            self.sigstop = self.running
+            self._sigstop = self._running
 
     def _hash_match_miss(self):
         self.match_counts['misses'] += 1
@@ -488,14 +488,14 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
            that end credits are playing."""
 
         self.log('Started')
-        self.running = True
+        self._running = True
 
         if self.state.detector_debug:
             profiler = utils.Profiler()
 
         play_time = 0
         while not (self.monitor.abortRequested()
-                   or self.sigterm or self.sigstop):
+                   or self._sigterm or self._sigstop):
             loop_start_time = timeit.default_timer()
 
             with self.player as check_fail:
@@ -579,12 +579,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Reset thread signals
         self.log('Stopped')
-        self.running = False
-        self.sigstop = False
-        self.sigterm = False
+        self._running = False
+        self._sigstop = False
+        self._sigterm = False
 
     def is_alive(self):
-        return self.running
+        return self._running
 
     def cancel(self):
         self.stop()
@@ -603,7 +603,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def start(self, restart=False):
         """Method to run actual detection test loop in a separate thread"""
 
-        if restart or self.running:
+        if restart or self._running:
             self.stop()
 
         # Reset detector data if episode has changed
@@ -627,16 +627,16 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def stop(self, terminate=False):
         # Set terminate or stop signals if detector is running
         if terminate:
-            self.sigterm = self.running
+            self._sigterm = self._running
         else:
-            self.sigstop = self.running
+            self._sigstop = self._running
 
         # Exit if detector thread has not been created
         if not self.thread:
             return
 
         # Wait for thread to complete
-        if self.running:
+        if self._running:
             self.thread.join()
 
         # Free references/resources
