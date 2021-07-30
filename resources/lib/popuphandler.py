@@ -65,7 +65,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             stop_button=self.state.show_stop_button
         )
 
-        return self._get_popup_state(done=True, show_upnext=show_upnext)
+        return self._popup_state(abort=False, show_upnext=show_upnext)
 
     def _display_popup(self, popup_state):
         # Get video details, exit if no video playing
@@ -74,7 +74,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             play_time = self.player.getTime()
             check_fail = False
         if check_fail:
-            return self._get_popup_state(popup_state, done=False)
+            return self._popup_state(old_state=popup_state, abort=True)
 
         # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
@@ -85,22 +85,21 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                 total_time = min(popup_start + popup_duration, total_time)
 
         if not self._show_popup():
-            return self._get_popup_state(popup_state, done=False)
+            return self._popup_state(old_state=popup_state, abort=True)
 
         # Current file can stop, or next file can start, while update loop is
         # running. Check state and abort popup update if required
         while (not self.monitor.abortRequested()
                and self.player.isPlaying()
-               and popup_state['done']
+               and not popup_state['abort']
                and not self.state.starting
                and self.state.playing
                and not self._sigstop
                and not self._sigterm):
             remaining = total_time - self.player.getTime()
-            popup_state = self._get_popup_state(
-                popup_state,
-                done=self._has_popup(),
-                remaining=remaining
+            # Update popup time remaining
+            popup_state = self._popup_state(
+                old_state=popup_state, remaining=remaining
             )
 
             # Decrease wait time and increase loop speed to try and avoid
@@ -113,18 +112,18 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             if (remaining <= 0
                     or popup_state['cancel']
                     or popup_state['play_now']):
-                popup_done = True
+                popup_abort = False
                 break
         else:
-            popup_done = False
+            popup_abort = True
 
-        return self._get_popup_state(popup_state, done=popup_done)
+        return self._popup_state(old_state=popup_state, abort=popup_abort)
 
-    def _get_popup_state(self, old_state=None, **kwargs):
+    def _popup_state(self, old_state=None, **kwargs):
         default_state = old_state if old_state else {
             'auto_play': self.state.auto_play,
             'cancel': False,
-            'done': False,
+            'abort': False,
             'play_now': False,
             'play_on_cue': self.state.auto_play and self.state.popup_cue,
             'show_upnext': False,
@@ -138,6 +137,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                 default_state[kwarg] = value
 
         if not self._has_popup():
+            default_state['abort'] = True
             return default_state
 
         with self.popup as check_fail:
@@ -153,7 +153,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                     and not self.popup.is_playnow()
                 ),
                 'cancel': self.popup.is_cancel(),
-                'done': default_state['done'],
+                'abort': default_state['abort'],
                 'play_now': self.popup.is_playnow(),
                 'play_on_cue': (
                     self.state.auto_play
@@ -285,7 +285,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         )
 
         # Popup closed prematurely
-        if not popup_state['done']:
+        if popup_state['abort']:
             self.log('Exiting: popup force closed', utils.LOGWARNING)
             has_next_item = False
 
@@ -293,14 +293,14 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         elif popup_state['shuffle_start']:
             self.log('Exiting: shuffle requested')
             has_next_item = False
-            popup_state['done'] = False
+            popup_state['abort'] = True
 
         elif not (popup_state['auto_play'] or popup_state['play_now']):
             self.log('Exiting: playback not selected')
             has_next_item = True
-            popup_state['done'] = False
+            popup_state['abort'] = True
 
-        if not popup_state['done']:
+        if popup_state['abort']:
             play_next = False
             # Stop playing if Stop button was clicked on popup, or if Still
             # Watching? popup was shown (to prevent unwanted playback that can
