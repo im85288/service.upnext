@@ -20,8 +20,6 @@ def test_popup(popup_type, simple_style=False):
     test_state = state.UpNextState()
     # Simulate after file has started
     test_state.starting = 0
-    # And while it is playing
-    test_state.playing = 1
     # Use test episode to simulate next playing episode used for popup display
     test_state.next_item = {
         'details': test_next_episode,
@@ -81,8 +79,6 @@ def test_upnext(popup_type, simple_style=False):
     test_state = state.UpNextState()
     # Simulate after file has started
     test_state.starting = 0
-    # And while it is playing
-    test_state.playing = 1
     # Use test episodes to simulate currently/next playing episodes for testing
     # test_state.current_item = {
     #     'details': test_episode,

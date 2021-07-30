@@ -66,7 +66,6 @@ class UpNextMonitor(xbmc.Monitor):
             self.log('Skip video check: playing item not fully loaded')
             return
         self.state.starting = 0
-        self.state.playing = 1
 
         if utils.get_property('PseudoTVRunning') == 'True':
             self.log('Skip video check: PsuedoTV detected')

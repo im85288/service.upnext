@@ -90,13 +90,19 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         # Current file can stop, or next file can start, while update loop is
         # running. Check state and abort popup update if required
         while (not self.monitor.abortRequested()
-               and self.player.isPlaying()
                and not popup_state['abort']
                and not self.state.starting
-               and self.state.playing
                and not self._sigstop
                and not self._sigterm):
-            remaining = total_time - self.player.getTime()
+
+            with self.player as check_fail:
+                remaining = total_time - self.player.getTime()
+                speed = self.player.get_speed()
+                check_fail = False
+            if check_fail:
+                popup_abort = True
+                break
+
             # Update popup time remaining
             popup_state = self._popup_state(
                 old_state=popup_state, remaining=remaining
@@ -104,7 +110,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
-            wait_time = 1 / max(1, self.player.get_speed())
+            wait_time = 1 / max(1, speed)
             self.monitor.waitForAbort(max(0.1, min(wait_time, remaining)))
 
             # If end of file or user has closed popup then exit update loop

@@ -54,7 +54,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'detect_time',
         # Tracking player state variables
         'starting',
-        'playing',
         'track',
         'shuffle',
         'played_in_a_row',
@@ -87,7 +86,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.detect_time = 0
         # Tracking player state variables
         self.starting = 0
-        self.playing = False
         self.track = False
         self.shuffle = False
         self.played_in_a_row = 1
