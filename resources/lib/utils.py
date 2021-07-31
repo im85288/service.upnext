@@ -16,6 +16,68 @@ import constants
 import statichelper
 
 
+class Profiler(object):  # pylint: disable=useless-object-inheritance
+    """Class used to profile a block of code"""
+
+    __slots__ = ('_profiler', )
+
+    from cProfile import Profile
+    from pstats import Stats
+    try:
+        from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
+
+    def __init__(self):
+        self._profiler = Profiler.Profile()
+        self._profiler.enable()
+
+    def disable(self):
+        self._profiler.disable()
+
+    def enable(self):
+        self._profiler.enable()
+
+    def get_stats(self, flush=True):
+        self.disable()
+
+        output_stream = Profiler.StringIO()
+        Profiler.Stats(
+            self._profiler,
+            stream=output_stream
+        ).sort_stats('cumulative').print_stats(20)
+        output = output_stream.getvalue()
+        output_stream.close()
+
+        if flush:
+            self._profiler = Profiler.Profile()
+        self.enable()
+
+        return output
+
+
+def profile(func):
+
+    def wrapper(*args, **kwargs):
+        profiler = Profiler()
+        result = func(*args, **kwargs)
+        profiler.disable()
+        if args:
+            if isinstance(args[0], type):
+                class_name = args[0].__name__
+            else:
+                class_name = args[0].__class__.__name__
+            name = '{0}.{1}'.format(class_name, func.__name__)
+        elif __name__:
+            name = '{0}.{1}'.format(__name__, func.__name__)
+        else:
+            name = func.__name__
+        log(profiler.get_stats(), name=name, level=LOGDEBUG)
+        return result
+
+    return wrapper
+
+
 ADDON = xbmcaddon.Addon(constants.ADDON_ID)
 KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
 
@@ -379,37 +441,3 @@ def wait_time(end_time=None, start_time=0, rate=None):
         return None
 
     return max(0, (end_time - start_time) // rate)
-
-
-class Profiler(object):  # pylint: disable=useless-object-inheritance
-    """Class used to profile a block of code"""
-
-    __slots__ = ('_profiler', )
-
-    from cProfile import Profile
-    from pstats import Stats
-    try:
-        from StringIO import StringIO
-    except ImportError:
-        from io import StringIO
-
-    def __init__(self):
-        self._profiler = Profiler.Profile()
-        self._profiler.enable()
-
-    def get_stats(self, flush=True):
-        self._profiler.disable()
-
-        output_stream = Profiler.StringIO()
-        Profiler.Stats(
-            self._profiler,
-            stream=output_stream
-        ).sort_stats('cumulative').print_stats(20)
-        output = output_stream.getvalue()
-        output_stream.close()
-
-        if flush:
-            self._profiler = Profiler.Profile()
-        self._profiler.enable()
-
-        return output
