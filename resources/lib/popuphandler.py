@@ -67,60 +67,6 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
         return self._popup_state(abort=False, show_upnext=show_upnext)
 
-    def _display_popup(self, popup_state):
-        # Get video details, exit if no video playing or no popup available
-        with self.player as check_fail:
-            total_time = self.player.getTotalTime()
-            play_time = self.player.getTime()
-            speed = self.player.get_speed()
-            check_fail = False
-        if check_fail or not self._show_popup():
-            return self._popup_state(old_state=popup_state, abort=True)
-
-        # If cue point was provided then UpNext will auto play after a fixed
-        # delay time, rather than waiting for the end of the file
-        if popup_state['play_on_cue']:
-            popup_duration = self.state.auto_play_delay
-            if popup_duration:
-                popup_start = max(play_time, self.state.get_popup_time())
-                total_time = min(popup_start + popup_duration, total_time)
-
-        # Current file can stop, or next file can start, while update loop is
-        # running. Check state and abort popup update if required
-        while (not self.monitor.abortRequested()
-               and not check_fail
-               and not popup_state['abort']
-               and not self.state.starting
-               and not self._sigstop
-               and not self._sigterm):
-            # Update popup time remaining
-            remaining = total_time - play_time
-            popup_state = self._popup_state(
-                old_state=popup_state, remaining=remaining
-            )
-
-            # Decrease wait time and increase loop speed to try and avoid
-            # missing the end of video when fast forwarding
-            wait_time = 1 / max(1, speed)
-            self.monitor.waitForAbort(max(0.1, min(wait_time, remaining)))
-
-            # If end of file or user has closed popup then exit update loop
-            remaining -= wait_time
-            if (remaining <= 0
-                    or popup_state['cancel']
-                    or popup_state['play_now']):
-                popup_abort = False
-                break
-
-            with self.player as check_fail:
-                play_time = self.player.getTime()
-                speed = self.player.get_speed()
-                check_fail = False
-        else:
-            popup_abort = True
-
-        return self._popup_state(old_state=popup_state, abort=popup_abort)
-
     def _popup_state(self, old_state=None, **kwargs):
         default_state = old_state if old_state else {
             'auto_play': self.state.auto_play,
@@ -266,8 +212,8 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
         # Create Kodi dialog to show UpNext or Still Watching? popup
         popup_state = self._create_popup(next_item, source)
-        # Display popup and update state of controls
-        popup_state = self._display_popup(popup_state)
+        # Show popup and update state of controls
+        popup_state = self._show_and_update_popup(popup_state)
         # Close dialog once we are done with it
         self._remove_popup()
 
@@ -339,6 +285,60 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             self.popup.show()
             utils.set_property('service.upnext.dialog', 'true')
             return True
+
+    def _show_and_update_popup(self, popup_state):
+        # Get video details, exit if no video playing or no popup available
+        with self.player as check_fail:
+            total_time = self.player.getTotalTime()
+            play_time = self.player.getTime()
+            speed = self.player.get_speed()
+            check_fail = False
+        if check_fail or not self._show_popup():
+            return self._popup_state(old_state=popup_state, abort=True)
+
+        # If cue point was provided then UpNext will auto play after a fixed
+        # delay time, rather than waiting for the end of the file
+        if popup_state['play_on_cue']:
+            popup_duration = self.state.auto_play_delay
+            if popup_duration:
+                popup_start = max(play_time, self.state.get_popup_time())
+                total_time = min(popup_start + popup_duration, total_time)
+
+        # Current file can stop, or next file can start, while update loop is
+        # running. Check state and abort popup update if required
+        while (not self.monitor.abortRequested()
+               and not check_fail
+               and not popup_state['abort']
+               and not self.state.starting
+               and not self._sigstop
+               and not self._sigterm):
+            # Update popup time remaining
+            remaining = total_time - play_time
+            popup_state = self._popup_state(
+                old_state=popup_state, remaining=remaining
+            )
+
+            # Decrease wait time and increase loop speed to try and avoid
+            # missing the end of video when fast forwarding
+            wait_time = 1 / max(1, speed)
+            self.monitor.waitForAbort(max(0.1, min(wait_time, remaining)))
+
+            # If end of file or user has closed popup then exit update loop
+            remaining -= wait_time
+            if (remaining <= 0
+                    or popup_state['cancel']
+                    or popup_state['play_now']):
+                popup_abort = False
+                break
+
+            with self.player as check_fail:
+                play_time = self.player.getTime()
+                speed = self.player.get_speed()
+                check_fail = False
+        else:
+            popup_abort = True
+
+        return self._popup_state(old_state=popup_state, abort=popup_abort)
 
     def cancel(self):
         self.stop()
