@@ -56,23 +56,33 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
         return output
 
 
-def profile(func):
+def profile(func, *args, **kwargs):
 
     def wrapper(*args, **kwargs):
         profiler = Profiler()
         result = func(*args, **kwargs)
         profiler.disable()
-        if args:
+
+        if args and hasattr(args[0], func.__name__):
             if isinstance(args[0], type):
                 class_name = args[0].__name__
             else:
                 class_name = args[0].__class__.__name__
             name = '{0}.{1}'.format(class_name, func.__name__)
-        elif __name__:
-            name = '{0}.{1}'.format(__name__, func.__name__)
+
+        elif (func.__class__
+                and func.__class__ != type
+                and func.__class__.__name__ != 'function'):
+            name = '{0}.{1}'.format(func.__class__.__name__, func.__name__)
+
+        elif func.__module__:
+            name = '{0}.{1}'.format(func.__module__, func.__name__)
+
         else:
             name = func.__name__
+
         log(profiler.get_stats(), name=name, level=LOGDEBUG)
+
         return result
 
     return wrapper
