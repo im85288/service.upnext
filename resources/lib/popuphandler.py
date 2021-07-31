@@ -68,12 +68,13 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         return self._popup_state(abort=False, show_upnext=show_upnext)
 
     def _display_popup(self, popup_state):
-        # Get video details, exit if no video playing
+        # Get video details, exit if no video playing or no popup available
         with self.player as check_fail:
             total_time = self.player.getTotalTime()
             play_time = self.player.getTime()
+            speed = self.player.get_speed()
             check_fail = False
-        if check_fail:
+        if check_fail or not self._show_popup():
             return self._popup_state(old_state=popup_state, abort=True)
 
         # If cue point was provided then UpNext will auto play after a fixed
@@ -84,26 +85,16 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                 popup_start = max(play_time, self.state.get_popup_time())
                 total_time = min(popup_start + popup_duration, total_time)
 
-        if not self._show_popup():
-            return self._popup_state(old_state=popup_state, abort=True)
-
         # Current file can stop, or next file can start, while update loop is
         # running. Check state and abort popup update if required
         while (not self.monitor.abortRequested()
+               and not check_fail
                and not popup_state['abort']
                and not self.state.starting
                and not self._sigstop
                and not self._sigterm):
-
-            with self.player as check_fail:
-                remaining = total_time - self.player.getTime()
-                speed = self.player.get_speed()
-                check_fail = False
-            if check_fail:
-                popup_abort = True
-                break
-
             # Update popup time remaining
+            remaining = total_time - play_time
             popup_state = self._popup_state(
                 old_state=popup_state, remaining=remaining
             )
@@ -120,6 +111,11 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                     or popup_state['play_now']):
                 popup_abort = False
                 break
+
+            with self.player as check_fail:
+                play_time = self.player.getTime()
+                speed = self.player.get_speed()
+                check_fail = False
         else:
             popup_abort = True
 
