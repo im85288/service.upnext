@@ -56,7 +56,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
         return output
 
 
-def profile(func, *args, **kwargs):
+def profile(func):
 
     def wrapper(*args, **kwargs):
         profiler = Profiler()
