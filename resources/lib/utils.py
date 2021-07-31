@@ -71,8 +71,8 @@ def profile(func):
             name = '{0}.{1}'.format(class_name, func.__name__)
 
         elif (func.__class__
-                and func.__class__ != type
-                and func.__class__.__name__ != 'function'):
+              and func.__class__ != type
+              and func.__class__.__name__ != 'function'):
             name = '{0}.{1}'.format(func.__class__.__name__, func.__name__)
 
         elif func.__module__:
