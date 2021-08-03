@@ -98,6 +98,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             level = utils.get_setting_int('logLevel', echo=False)
         utils.LOG_ENABLE_SETTING = level
 
+    @staticmethod
+    def update_addon_instance():
+        utils.ADDON = utils.get_addon(constants.ADDON_ID)
+
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
@@ -110,6 +114,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.next_item = None
 
     def update_settings(self):
+        self.update_addon_instance()
         self.set_log_level()
         utils.log('Loading...', 'Settings', level=utils.LOGDEBUG)
         utils.log(

@@ -92,6 +92,14 @@ ADDON = xbmcaddon.Addon(constants.ADDON_ID)
 KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
 
 
+def get_addon(addon_id=None):
+    """Return addon instance"""
+
+    if addon_id:
+        return xbmcaddon.Addon(addon_id)
+    return xbmcaddon.Addon()
+
+
 def get_addon_info(key):
     """Return addon information"""
 
@@ -139,9 +147,8 @@ def get_setting(key, default='', echo=True):
     """Get an addon setting as string"""
 
     value = default
-    # We use Addon() here to ensure changes in settings are reflected instantly
     try:
-        value = xbmcaddon.Addon(constants.ADDON_ID).getSetting(key)
+        value = ADDON.getSetting(key)
         value = statichelper.to_unicode(value)
     # Occurs when the addon is disabled
     except RuntimeError:
@@ -157,7 +164,7 @@ def get_setting_bool(key, default=None, echo=True):
 
     value = default
     try:
-        value = bool(xbmcaddon.Addon(constants.ADDON_ID).getSettingBool(key))
+        value = bool(ADDON.getSettingBool(key))
     # On Krypton or older, or when not a boolean
     except (AttributeError, TypeError):
         value = get_setting(key, echo=False)
@@ -176,7 +183,7 @@ def get_setting_int(key, default=None, echo=True):
 
     value = default
     try:
-        value = xbmcaddon.Addon(constants.ADDON_ID).getSettingInt(key)
+        value = ADDON.getSettingInt(key)
     # On Krypton or older, or when not an integer
     except (AttributeError, TypeError):
         value = get_setting(key, echo=False)
