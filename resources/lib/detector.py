@@ -31,7 +31,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         'version',
         'hash_size',
         'seasonid',
-        'episode',
+        'episode_number',
         'data',
         'timestamps'
     )
@@ -40,7 +40,9 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         self.version = kwargs.get('version', '0.1')
         self.hash_size = kwargs.get('hash_size', (8, 8))
         self.seasonid = kwargs.get('seasonid', '')
-        self.episode = kwargs.get('episode', constants.UNKNOWN_DATA)
+        self.episode_number = kwargs.get(
+            'episode_number', constants.UNKNOWN_DATA
+        )
         self.data = kwargs.get('data', {})
         self.timestamps = kwargs.get('timestamps', {})
 
@@ -62,21 +64,25 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
     def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def is_valid(self, seasonid=None, episode=None):
+    def is_valid(self, seasonid=None, episode_number=None):
+        # Invalid parameters
+        if seasonid is None or episode_number is None:
+            return False
+
         # Non-episodic video is being played
-        if not self.seasonid or self.episode == constants.UNKNOWN_DATA:
+        if not self.seasonid or self.episode_number == constants.UNKNOWN_DATA:
             return False
 
-        # New episode is being played, invalidate old hashes
-        if (seasonid is not None and self.seasonid != seasonid
-                or episode is not None and self.episode != episode):
-            return False
+        # Current episode matches, current hashes are still valid
+        if self.seasonid == seasonid and self.episode_number == episode_number:
+            return True
 
-        return True
+        # New video is being played, invalidate old hashes
+        return False
 
     def invalidate(self):
         self.seasonid = ''
-        self.episode = constants.UNKNOWN_DATA
+        self.episode_number = constants.UNKNOWN_DATA
 
     def load(self, identifier):
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
@@ -102,8 +108,9 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
             }
         if 'timestamps' in hashes:
             self.timestamps = {
-                utils.get_int(episode): hashes['timestamps'][episode]
-                for episode in hashes['timestamps']
+                utils.get_int(episode_number):
+                    hashes['timestamps'][episode_number]
+                for episode_number in hashes['timestamps']
             }
 
         self.log('Hashes loaded from {0}'.format(target))
@@ -447,7 +454,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             version='0.1',
             hash_size=hash_size,
             seasonid=self.state.get_season_identifier(),
-            episode=utils.get_int(self.state.get_episode()),
+            episode_number=utils.get_int(self.state.get_episode_number()),
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
             data={
@@ -502,7 +509,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 play_time = self.player.getTime()
                 self.hash_index['current'] = (
                     int(self.player.getTotalTime() - play_time),
-                    self.hashes.episode
+                    self.hashes.episode_number
                 )
                 # Only capture if playing at normal speed
                 # check_fail = self.player.get_speed() != 1
@@ -598,7 +605,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
     def reset(self):
         self._hash_match_reset()
-        self.hashes.timestamps[self.hashes.episode] = None
+        self.hashes.timestamps[self.hashes.episode_number] = None
 
     def start(self, restart=False):
         """Method to run actual detection test loop in a separate thread"""
@@ -609,12 +616,14 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Reset detector data if episode has changed
         if not self.hashes.is_valid(
                 self.state.get_season_identifier(),
-                utils.get_int(self.state.get_episode())
+                utils.get_int(self.state.get_episode_number())
         ):
             self._init_hashes()
 
         # If a previously detected timestamp exists then use it
-        stored_timestamp = self.past_hashes.timestamps.get(self.hashes.episode)
+        stored_timestamp = self.past_hashes.timestamps.get(
+            self.hashes.episode_number
+        )
         if stored_timestamp:
             self.log('Stored credits timestamp found')
             self.state.set_detected_popup_time(stored_timestamp)
@@ -683,6 +692,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             return
 
         self.hash_index['detected_at'] = self.hash_index['current'][0]
-        self.hashes.timestamps[self.hashes.episode] = play_time
+        self.hashes.timestamps[self.hashes.episode_number] = play_time
         self.state.set_detected_popup_time(play_time)
         utils.event('upnext_credits_detected')

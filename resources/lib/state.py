@@ -44,8 +44,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'total_time',
         'tvshowid',
         'episodeid',
+        'episode_number',
         'season_identifier',
-        'episode',
         'playcount',
         # Popup state variables
         'next_item',
@@ -76,8 +76,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.total_time = 0
         self.tvshowid = constants.UNKNOWN_DATA
         self.episodeid = constants.UNKNOWN_DATA
+        self.episode_number = None
         self.season_identifier = None
-        self.episode = None
         self.playcount = 0
         # Popup state variables
         self.next_item = None
@@ -343,7 +343,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         self._set_tvshowid()
         self._set_episodeid()
-        self._set_episode()
+        self._set_episode_number()
         self._set_playcount()
         self._set_season_identifier()
 
@@ -436,11 +436,13 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             )
         return self.episodeid
 
-    def _set_episode(self):
-        self.episode = utils.get_int(self.current_item['details'], 'episode')
+    def _set_episode_number(self):
+        self.episode_number = utils.get_int(
+            self.current_item['details'], 'episode'
+        )
 
-    def get_episode(self):
-        return self.episode
+    def get_episode_number(self):
+        return self.episode_number
 
     def _set_playcount(self):
         self.playcount = utils.get_int(
