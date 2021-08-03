@@ -54,8 +54,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'detect_time',
         # Tracking player state variables
         'starting',
-        'track',
         'shuffle',
+        'tracking',
         'played_in_a_row',
         'queued',
         'playing_next'
@@ -86,8 +86,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.detect_time = 0
         # Tracking player state variables
         self.starting = 0
-        self.track = False
         self.shuffle = False
+        self.tracking = False
         self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
@@ -160,15 +160,15 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         return self.disabled
 
     def is_tracking(self):
-        return self.track
+        return self.tracking
 
     def set_tracking(self, filename):
         if filename:
-            self.track = True
+            self.tracking = True
             self.filename = filename
             self.log('Tracking enabled: {0}'.format(filename), utils.LOGINFO)
         else:
-            self.track = False
+            self.tracking = False
             self.filename = None
             self.log('Tracking disabled')
 
