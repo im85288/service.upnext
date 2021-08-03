@@ -65,13 +65,13 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         utils.log(msg, name=cls.__name__, level=level)
 
     def is_valid(self, seasonid=None, episode_number=None):
-        # Invalid parameters
-        if seasonid is None or episode_number is None:
-            return False
-
         # Non-episodic video is being played
         if not self.seasonid or self.episode_number == constants.UNKNOWN_DATA:
             return False
+
+        # No new episode details, assume current hashes are still valid
+        if seasonid is None and episode_number is None:
+            return True
 
         # Current episode matches, current hashes are still valid
         if self.seasonid == seasonid and self.episode_number == episode_number:
