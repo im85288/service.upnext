@@ -57,8 +57,13 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
 
 
 def profile(func):
+    """Decorator used to profile function calls"""
 
     def wrapper(*args, **kwargs):
+        """Wrapper to create a new Profiler instance, run the function being
+           profiled, print out profiler result to the log, and return result of
+           function call"""
+
         profiler = Profiler()
         result = func(*args, **kwargs)
         profiler.disable()
