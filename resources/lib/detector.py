@@ -454,7 +454,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             version='0.1',
             hash_size=hash_size,
             seasonid=self.state.get_season_identifier(),
-            episode_number=utils.get_int(self.state.get_episode_number()),
+            episode_number=self.state.get_episode_number(),
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
             data={
@@ -616,7 +616,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Reset detector data if episode has changed
         if not self.hashes.is_valid(
                 self.state.get_season_identifier(),
-                utils.get_int(self.state.get_episode_number())
+                self.state.get_episode_number()
         ):
             self._init_hashes()
 
