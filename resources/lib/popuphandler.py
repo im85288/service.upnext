@@ -61,7 +61,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             'default',
             '1080i',
             item=next_item,
-            shuffle=self.state.shuffle if source == 'library' else None,
+            shuffle=self.state.shuffle_on if source == 'library' else None,
             stop_button=self.state.show_stop_button
         )
 
@@ -75,7 +75,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             'play_now': False,
             'play_on_cue': self.state.auto_play and self.state.popup_cue,
             'show_upnext': False,
-            'shuffle': False,
+            'shuffle_on': False,
             'shuffle_start': False,
             'stop': False
         }
@@ -111,10 +111,10 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                     and self.state.popup_cue
                 ),
                 'show_upnext': default_state['show_upnext'],
-                'shuffle': self.popup.is_shuffle(),
+                'shuffle_on': self.popup.is_shuffle_on(),
                 'shuffle_start': (
-                    not self.state.shuffle
-                    and self.popup.is_shuffle()
+                    not self.state.shuffle_on
+                    and self.popup.is_shuffle_on()
                 ),
                 'stop': self.popup.is_stop()
             }
@@ -223,7 +223,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         )
 
         # Update shuffle state
-        self.state.shuffle = popup_state['shuffle']
+        self.state.shuffle_on = popup_state['shuffle_on']
 
         # Signal to Trakt that current item has been watched
         utils.event(

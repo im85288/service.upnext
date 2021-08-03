@@ -52,9 +52,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'popup_time',
         'popup_cue',
         'detect_time',
+        'shuffle_on',
         # Tracking player state variables
         'starting',
-        'shuffle',
         'tracking',
         'played_in_a_row',
         'queued',
@@ -84,9 +84,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.popup_time = 0
         self.popup_cue = False
         self.detect_time = 0
+        self.shuffle_on = False
         # Tracking player state variables
         self.starting = 0
-        self.shuffle = False
         self.tracking = False
         self.played_in_a_row = 1
         self.queued = False
@@ -195,7 +195,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.log('Addon next_episode: {0}'.format(next_item))
 
         # Next item from non-addon playlist
-        elif playlist_position and not self.shuffle:
+        elif playlist_position and not self.shuffle_on:
             next_item = api.get_next_in_playlist(
                 playlist_position,
                 self.unwatched_only
@@ -209,7 +209,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
                 self.tvshowid,
                 self.unwatched_only,
                 self.next_season,
-                self.shuffle
+                self.shuffle_on
             )
             source = 'library'
             # Show Still Watching? popup if next episode is from next season

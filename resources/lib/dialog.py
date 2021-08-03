@@ -19,7 +19,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.log('Init: {0}'.format(args[0]))
 
         self.item = kwargs.get('item')
-        self.shuffle = kwargs.get('shuffle')
+        self.shuffle_on = kwargs.get('shuffle_on')
         self.stop_enable = kwargs.get('stop_button')
 
         # Set info here rather than onInit to avoid dialog update flash
@@ -70,8 +70,8 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
                 else constants.CLOSE_STRING_ID
             )
         )
-        self.setProperty('shuffle_enable', str(self.shuffle is not None))
-        self.setProperty('shuffle_on', str(self.shuffle))
+        self.setProperty('shuffle_enable', str(self.shuffle_on is not None))
+        self.setProperty('shuffle_on', str(self.shuffle_on))
 
         if self.item is not None:
             art = self.item.get('art')
@@ -158,12 +158,12 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
     def is_playnow(self):
         return self.playnow
 
-    def set_shuffle(self, shuffle):
-        self.shuffle = shuffle
-        self.setProperty('shuffle_on', str(shuffle))
+    def set_shuffle(self, shuffle_state):
+        self.shuffle_on = shuffle_state
+        self.setProperty('shuffle_on', str(shuffle_state))
 
-    def is_shuffle(self):
-        return self.shuffle
+    def is_shuffle_on(self):
+        return self.shuffle_on
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
         # Play now - Watch now / Still Watching
@@ -178,7 +178,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             self.close()
         # Shuffle play
         elif controlId == constants.SHUFFLE_CONTROL_ID:
-            if self.is_shuffle():
+            if self.is_shuffle_on():
                 self.set_shuffle(False)
             else:
                 self.set_shuffle(True)
