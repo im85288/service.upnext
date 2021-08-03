@@ -155,7 +155,7 @@ def get_setting(key, default='', echo=True):
         value = default
 
     if echo:
-        log('{0}: {1}'.format(key, value), 'Settings', level=LOGDEBUG)
+        log(msg='{0}: {1}'.format(key, value), name='Settings', level=LOGDEBUG)
     return value
 
 
@@ -174,7 +174,7 @@ def get_setting_bool(key, default=None, echo=True):
         value = default
 
     if echo:
-        log('{0}: {1}'.format(key, value), 'Settings', level=LOGDEBUG)
+        log(msg='{0}: {1}'.format(key, value), name='Settings', level=LOGDEBUG)
     return value
 
 
@@ -193,7 +193,7 @@ def get_setting_int(key, default=None, echo=True):
         value = default
 
     if echo:
-        log('{0}: {1}'.format(key, value), 'Settings', level=LOGDEBUG)
+        log(msg='{0}: {1}'.format(key, value), name='Settings', level=LOGDEBUG)
     return value
 
 

@@ -93,14 +93,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.playing_next = False
 
     @staticmethod
-    def set_log_level(level=None):
-        if level is None:
-            level = utils.get_setting_int('logLevel', echo=False)
-        utils.LOG_ENABLE_SETTING = level
-
-    @staticmethod
     def update_addon_instance():
         utils.ADDON = utils.get_addon(constants.ADDON_ID)
+
+    @staticmethod
+    def update_log_level(level=None):
+        if level is None:
+            level = utils.get_setting_int('logLevel')
+        utils.LOG_ENABLE_SETTING = level
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
@@ -115,13 +115,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def update_settings(self):
         self.update_addon_instance()
-        self.set_log_level()
-        utils.log('Loading...', 'Settings', level=utils.LOGDEBUG)
-        utils.log(
-            'logLevel: {0}'.format(utils.LOG_ENABLE_SETTING),
-            'Settings',
-            level=utils.LOGDEBUG
-        )
+        self.update_log_level()
 
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
         self.skin_popup = utils.get_setting_bool('enablePopupSkin')
