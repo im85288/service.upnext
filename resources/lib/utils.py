@@ -27,10 +27,49 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
         from StringIO import StringIO
     except ImportError:
         from io import StringIO
+    from functools import wraps
 
     def __init__(self):
-        self._profiler = Profiler.Profile()
+        self._profiler = self.Profile()
         self._profiler.enable()
+
+    @classmethod
+    def profile(cls, func):
+        """Decorator used to profile function calls"""
+
+        @cls.wraps(func)
+        def wrapper(*args, **kwargs):
+            """Wrapper to create a new Profiler instance, run the function being
+               profiled, print out profiler result to the log, and return result of
+               function call"""
+
+            profiler = cls()
+            result = func(*args, **kwargs)
+            profiler.disable()
+
+            if args and hasattr(args[0], func.__name__):
+                if isinstance(args[0], type):
+                    class_name = args[0].__name__
+                else:
+                    class_name = args[0].__class__.__name__
+                name = '{0}.{1}'.format(class_name, func.__name__)
+
+            elif (func.__class__
+                  and func.__class__ != type
+                  and func.__class__.__name__ != 'function'):
+                name = '{0}.{1}'.format(func.__class__.__name__, func.__name__)
+
+            elif func.__module__:
+                name = '{0}.{1}'.format(func.__module__, func.__name__)
+
+            else:
+                name = func.__name__
+
+            log(profiler.get_stats(), name=name, level=LOGDEBUG)
+
+            return result
+
+        return wrapper
 
     def disable(self):
         self._profiler.disable()
@@ -41,8 +80,8 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
     def get_stats(self, flush=True):
         self.disable()
 
-        output_stream = Profiler.StringIO()
-        Profiler.Stats(
+        output_stream = self.StringIO()
+        self.Stats(
             self._profiler,
             stream=output_stream
         ).sort_stats('cumulative').print_stats(20)
@@ -50,47 +89,10 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
         output_stream.close()
 
         if flush:
-            self._profiler = Profiler.Profile()
+            self._profiler = self.Profile()
         self.enable()
 
         return output
-
-
-def profile(func):
-    """Decorator used to profile function calls"""
-
-    def wrapper(*args, **kwargs):
-        """Wrapper to create a new Profiler instance, run the function being
-           profiled, print out profiler result to the log, and return result of
-           function call"""
-
-        profiler = Profiler()
-        result = func(*args, **kwargs)
-        profiler.disable()
-
-        if args and hasattr(args[0], func.__name__):
-            if isinstance(args[0], type):
-                class_name = args[0].__name__
-            else:
-                class_name = args[0].__class__.__name__
-            name = '{0}.{1}'.format(class_name, func.__name__)
-
-        elif (func.__class__
-              and func.__class__ != type
-              and func.__class__.__name__ != 'function'):
-            name = '{0}.{1}'.format(func.__class__.__name__, func.__name__)
-
-        elif func.__module__:
-            name = '{0}.{1}'.format(func.__module__, func.__name__)
-
-        else:
-            name = func.__name__
-
-        log(profiler.get_stats(), name=name, level=LOGDEBUG)
-
-        return result
-
-    return wrapper
 
 
 ADDON = xbmcaddon.Addon(constants.ADDON_ID)
