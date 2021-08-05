@@ -124,7 +124,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         return current_state
 
     def _has_popup(self):
-        return hasattr(self, 'popup') and self.popup
+        return getattr(self, 'popup', False)
 
     def _play_next_video(self, next_item, source, popup_state):
         # Primary method is to play next playlist item

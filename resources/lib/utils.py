@@ -46,8 +46,12 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
             profiler = cls()
             result = func(*args, **kwargs)
             profiler.disable()
+            
+            name = getattr(func, '__qualname__', None)
+            if name:
+                pass
 
-            if args and hasattr(args[0], func.__name__):
+            if args and getattr(args[0], func.__name__, None):
                 if isinstance(args[0], type):
                     class_name = args[0].__name__
                 else:
@@ -55,7 +59,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
                 name = '{0}.{1}'.format(class_name, func.__name__)
 
             elif (func.__class__
-                  and func.__class__ != type
+                  and not isinstance(func.__class__, type)
                   and func.__class__.__name__ != 'function'):
                 name = '{0}.{1}'.format(func.__class__.__name__, func.__name__)
 

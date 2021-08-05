@@ -42,11 +42,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'current_item',
         'filename',
         'total_time',
+        'playcount',
         'tvshowid',
         'episodeid',
         'episode_number',
         'season_identifier',
-        'playcount',
         # Popup state variables
         'next_item',
         'popup_time',
@@ -74,11 +74,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.current_item = None
         self.filename = None
         self.total_time = 0
+        self.playcount = 0
         self.tvshowid = constants.UNKNOWN_DATA
         self.episodeid = constants.UNKNOWN_DATA
         self.episode_number = None
         self.season_identifier = None
-        self.playcount = 0
         # Popup state variables
         self.next_item = None
         self.popup_time = 0
