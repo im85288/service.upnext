@@ -46,7 +46,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
             profiler = cls()
             result = func(*args, **kwargs)
             profiler.disable()
-            
+
             name = getattr(func, '__qualname__', None)
             if name:
                 pass
