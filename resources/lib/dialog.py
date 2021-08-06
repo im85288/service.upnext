@@ -76,9 +76,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         if self.item is not None:
             show_spoilers = utils.get_global_setting(
                 'videolibrary.showunwatchedplots'
-            )
-            show_plot = constants.UNWATCHED_PLOT in show_spoilers
-            show_art = constants.UNWATCHED_THUMB in show_spoilers
+            ) if utils.supports_python_api(18) else constants.DEFAULT_SPOILERS
+            show_plot = constants.UNWATCHED_EPISODE_PLOT in show_spoilers
+            show_art = constants.UNWATCHED_EPISODE_THUMB in show_spoilers
 
             art = self.item.get('art') if show_art else constants.NO_SPOILER_ART
             self.setProperty('fanart', art.get('tvshow.fanart', ''))
