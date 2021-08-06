@@ -21,6 +21,14 @@ NEXT_STRING_ID = 30049
 
 UNWATCHED_PLOT = 1
 UNWATCHED_THUMB = 2
+NO_SPOILER_ART = {
+    'tvshow.fanart': 'OverlaySpoiler.png',
+    'tvshow.landscape': 'OverlaySpoiler.png',
+    'tvshow.clearart': 'OverlaySpoiler.png',
+    'tvshow.clearlogo': 'OverlaySpoiler.png',
+    'tvshow.poster': 'OverlaySpoiler.png',
+    'thumb': 'OverlaySpoiler.png',
+}
 
 BOOL_STRING_VALUES = {
     'false': False,

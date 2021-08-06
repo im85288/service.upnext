@@ -80,21 +80,13 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
             show_plot = constants.UNWATCHED_PLOT in show_spoilers
             show_art = constants.UNWATCHED_THUMB in show_spoilers
 
-            if show_art:
-                art = self.item.get('art')
-                self.setProperty('fanart', art.get('tvshow.fanart', ''))
-                self.setProperty('landscape', art.get('tvshow.landscape', ''))
-                self.setProperty('clearart', art.get('tvshow.clearart', ''))
-                self.setProperty('clearlogo', art.get('tvshow.clearlogo', ''))
-                self.setProperty('poster', art.get('tvshow.poster', ''))
-                self.setProperty('thumb', art.get('thumb', ''))
-            else:
-                self.setProperty('fanart', 'OverlaySpoiler.png')
-                self.setProperty('landscape', 'OverlaySpoiler.png')
-                self.setProperty('clearart', 'OverlaySpoiler.png')
-                self.setProperty('clearlogo', 'OverlaySpoiler.png')
-                self.setProperty('poster', 'OverlaySpoiler.png')
-                self.setProperty('thumb', 'OverlaySpoiler.png')
+            art = self.item.get('art') if show_art else constants.NO_SPOILER_ART
+            self.setProperty('fanart', art.get('tvshow.fanart', ''))
+            self.setProperty('landscape', art.get('tvshow.landscape', ''))
+            self.setProperty('clearart', art.get('tvshow.clearart', ''))
+            self.setProperty('clearlogo', art.get('tvshow.clearlogo', ''))
+            self.setProperty('poster', art.get('tvshow.poster', ''))
+            self.setProperty('thumb', art.get('thumb', ''))
 
             self.setProperty(
                 'plot',
