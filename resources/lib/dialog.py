@@ -74,14 +74,32 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.setProperty('shuffle_on', str(self.shuffle_on))
 
         if self.item is not None:
-            art = self.item.get('art')
-            self.setProperty('fanart', art.get('tvshow.fanart', ''))
-            self.setProperty('landscape', art.get('tvshow.landscape', ''))
-            self.setProperty('clearart', art.get('tvshow.clearart', ''))
-            self.setProperty('clearlogo', art.get('tvshow.clearlogo', ''))
-            self.setProperty('poster', art.get('tvshow.poster', ''))
-            self.setProperty('thumb', art.get('thumb', ''))
-            self.setProperty('plot', self.item.get('plot', ''))
+            show_spoilers = utils.get_global_setting(
+                'videolibrary.showunwatchedplots'
+            )
+            show_plot = constants.UNWATCHED_PLOT in show_spoilers
+            show_art = constants.UNWATCHED_THUMB in show_spoilers
+
+            if show_art:
+                art = self.item.get('art')
+                self.setProperty('fanart', art.get('tvshow.fanart', ''))
+                self.setProperty('landscape', art.get('tvshow.landscape', ''))
+                self.setProperty('clearart', art.get('tvshow.clearart', ''))
+                self.setProperty('clearlogo', art.get('tvshow.clearlogo', ''))
+                self.setProperty('poster', art.get('tvshow.poster', ''))
+                self.setProperty('thumb', art.get('thumb', ''))
+            else:
+                self.setProperty('fanart', 'OverlaySpoiler.png')
+                self.setProperty('landscape', 'OverlaySpoiler.png')
+                self.setProperty('clearart', 'OverlaySpoiler.png')
+                self.setProperty('clearlogo', 'OverlaySpoiler.png')
+                self.setProperty('poster', 'OverlaySpoiler.png')
+                self.setProperty('thumb', 'OverlaySpoiler.png')
+
+            self.setProperty(
+                'plot',
+                self.item.get('plot', '') if show_plot else ''
+            )
             self.setProperty('tvshowtitle', self.item.get('showtitle', ''))
             self.setProperty('title', self.item.get('title', ''))
             season = str(self.item.get('season', ''))
