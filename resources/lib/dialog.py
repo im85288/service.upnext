@@ -21,6 +21,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         self.item = kwargs.get('item')
         self.shuffle_on = kwargs.get('shuffle_on')
         self.stop_enable = kwargs.get('stop_button')
+        self.popup_position = kwargs.get('popup_position')
 
         # Set info here rather than onInit to avoid dialog update flash
         self.set_info()
@@ -72,6 +73,9 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         )
         self.setProperty('shuffle_enable', str(self.shuffle_on is not None))
         self.setProperty('shuffle_on', str(self.shuffle_on))
+        self.setProperty(
+            'popup_position', constants.POPUP_POSITIONS[self.popup_position]
+        )
 
         if self.item is not None:
             show_spoilers = utils.get_global_setting(

@@ -5,13 +5,28 @@
     <onload>Dialog.Close(videoosd,true)</onload>
     <controls>
         <control type="group">
-            <animation type="WindowOpen" reversible="false">
-                <effect type="fade" start="0" end="100" time="600" />
-                <effect type="slide" start="0,-115" end="0,0" time="600" />
+            <animation type="WindowOpen" reversible="false" condition="String.IsEqual(Window.Property(popup_position),top)">
+                <effect type="fade" start="0" end="100" time="400" />
+                <effect type="slide" start="0,-80" end="0,0" time="400"/>
             </animation>
-            <animation type="WindowClose" reversible="false">
+            <animation type="WindowClose" reversible="false" condition="String.IsEqual(Window.Property(popup_position),top)">
                 <effect type="fade" start="100" end="0" time="400" />
-                <effect type="slide" start="0,0" end="0,-115" time="400" />
+                <effect type="slide" start="0,0" end="0,-80" time="400" />
+            </animation>
+            <animation type="WindowOpen" reversible="false" condition="String.IsEqual(Window.Property(popup_position),centre)">
+                <effect type="fade" start="0" end="100" time="400" />
+                <effect type="slide" end="0,500" time="0"/>
+            </animation>
+            <animation type="WindowClose" reversible="false" condition="String.IsEqual(Window.Property(popup_position),centre)">
+                <effect type="fade" start="100" end="0" time="400" />
+            </animation>
+            <animation type="WindowOpen" reversible="false" condition="String.IsEqual(Window.Property(popup_position),bottom)">
+                <effect type="fade" start="0" end="100" time="400" />
+                <effect type="slide" start="0,1160" end="0,1000" time="400"/>
+            </animation>
+            <animation type="WindowClose" reversible="false" condition="String.IsEqual(Window.Property(popup_position),bottom)">
+                <effect type="fade" start="100" end="0" time="400" />
+                <effect type="slide" start="0,0" end="0,80" time="400" />
             </animation>
             <control type="group">
                 <height>80</height>

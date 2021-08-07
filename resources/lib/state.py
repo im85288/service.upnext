@@ -13,8 +13,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     __slots__ = (
         # Settings state variables
         'simple_mode',
-        'skin_popup',
         'show_stop_button',
+        'skin_popup',
+        'popup_position',
         'auto_play',
         'played_limit',
         'enable_resume',
@@ -108,8 +109,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
 
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
-        self.skin_popup = utils.get_setting_bool('enablePopupSkin')
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')
+        self.skin_popup = utils.get_setting_bool('enablePopupSkin')
+        self.popup_position = utils.get_setting_int('popupPosition')
 
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.played_limit = (

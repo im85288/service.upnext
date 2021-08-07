@@ -64,6 +64,12 @@ SETTING_FORCED_OFF = 2
 
 POPUP_MIN_DURATION = 5
 
+POPUP_POSITIONS = {
+    0: 'bottom',
+    1: 'centre',
+    2: 'top'
+}
+
 DEMO_SEEK_15S = 1
 DEMO_SEEK_POPUP_TIME = 2
 DEMO_SEEK_DETECT_TIME = 3

@@ -143,6 +143,22 @@ msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr ""
 
+msgctxt "#30506"
+msgid "Popup vertical position [COLOR gray](requires skin integration)[/COLOR]"
+msgstr ""
+
+msgctxt "#30507"
+msgid "Bottom"
+msgstr ""
+
+msgctxt "#30508"
+msgid "Centre"
+msgstr ""
+
+msgctxt "#30509"
+msgid "Top"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr ""
