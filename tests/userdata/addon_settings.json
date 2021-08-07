@@ -28,6 +28,7 @@
 		"markWatched": "1",
 		"nextSeason": "true",
 		"playedInARow": "3",
+        "popupPosition": "2",
 		"simpleMode": "1",
 		"startTrigger": "true",
 		"stopAfterClose": "true",
