@@ -124,7 +124,7 @@ msgstr ""
 
 ### SETTINGS
 msgctxt "#30500"
-msgid "Interface"
+msgid "Appearance"
 msgstr ""
 
 msgctxt "#30501"
