@@ -251,7 +251,7 @@
                     <control type="grouplist">
                         <visible>!Window.IsVisible(extendedprogressdialog)</visible>
                         <animation effect="fade" time="150">VisibleChange</animation>
-						<top>-15</top>
+						<itemgap>40</itemgap>
                         <control type="label">
                             <font>font_clock</font>
 							<align>right</align>
