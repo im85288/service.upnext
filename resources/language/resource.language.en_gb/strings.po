@@ -23,7 +23,7 @@ msgid "Watch now"
 msgstr ""
 
 msgctxt "#30008"
-msgid "UpNext"
+msgid "Up next"
 msgstr ""
 
 msgctxt "#30009"
@@ -136,7 +136,7 @@ msgid "Set the display mode for the notifications"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Apply Kodi Skin to UpNext pop-up [COLOR gray](requires skin integration)[/COLOR]"
+msgid "Apply Kodi Skin to UpNext popup [COLOR gray](requires skin integration)[/COLOR]"
 msgstr ""
 
 msgctxt "#30505"
@@ -276,19 +276,19 @@ msgid "Test how the user interface looks"
 msgstr ""
 
 msgctxt "#30805"
-msgid "Show an UpNext pop-up…"
+msgid "Show an UpNext popup…"
 msgstr ""
 
 msgctxt "#30807"
-msgid "Show an UpNextSimple pop-up…"
+msgid "Show an UpNextSimple popup…"
 msgstr ""
 
 msgctxt "#30809"
-msgid "Show a StillWatching pop-up…"
+msgid "Show a StillWatching popup…"
 msgstr ""
 
 msgctxt "#30811"
-msgid "Show a StillWatchingSimple pop-up…"
+msgid "Show a StillWatchingSimple popup…"
 msgstr ""
 
 msgctxt "#30813"
