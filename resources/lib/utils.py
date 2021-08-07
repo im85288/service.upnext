@@ -49,6 +49,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
 
             name = getattr(func, '__qualname__', None)
             if name:
+                # If __qualname__ is available (Python 3.3+) then use it
                 pass
 
             elif args and getattr(args[0], func.__name__, None):

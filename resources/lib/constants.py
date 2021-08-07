@@ -27,13 +27,14 @@ DEFAULT_SPOILERS = [
     UNWATCHED_EPISODE_PLOT,
     UNWATCHED_EPISODE_THUMB
 ]
+NO_SPOILER_IMAGE = 'OverlaySpoiler.png'
 NO_SPOILER_ART = {
-    'tvshow.fanart': 'OverlaySpoiler.png',
-    'tvshow.landscape': 'OverlaySpoiler.png',
-    'tvshow.clearart': 'OverlaySpoiler.png',
-    'tvshow.clearlogo': 'OverlaySpoiler.png',
-    'tvshow.poster': 'OverlaySpoiler.png',
-    'thumb': 'OverlaySpoiler.png',
+    'tvshow.fanart': NO_SPOILER_IMAGE,
+    'tvshow.landscape': NO_SPOILER_IMAGE,
+    'tvshow.clearart': NO_SPOILER_IMAGE,
+    'tvshow.clearlogo': NO_SPOILER_IMAGE,
+    'tvshow.poster': NO_SPOILER_IMAGE,
+    'thumb': NO_SPOILER_IMAGE,
 }
 
 BOOL_STRING_VALUES = {
