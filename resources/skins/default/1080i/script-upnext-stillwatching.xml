@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <window>
-    <defaultcontrol always="true">20</defaultcontrol>
+    <defaultcontrol always="true">3012</defaultcontrol>
     <onload>Dialog.Close(fullscreeninfo,true)</onload>
     <onload>Dialog.Close(videoosd,true)</onload>
     <controls>
@@ -109,10 +109,21 @@
                         <width>auto</width>
                         <height>35</height>
                         <aligny>center</aligny>
-                        <font>font30_title</font>
-                        <textcolor>ffffffff</textcolor>
+                        <font>font25_title</font>
+                        <textcolor>eeffffff</textcolor>
+                        <shadowcolor>00000000</shadowcolor>
+                        <label>$ADDON[service.upnext 30035]</label>
+                        <visible>Integer.IsLessOrEqual(Window.Property(remaining),60)</visible>
+                    </control>
+                    <control type="label">
+                        <width>auto</width>
+                        <height>35</height>
+                        <aligny>center</aligny>
+                        <font>font25_title</font>
+                        <textcolor>eeffffff</textcolor>
                         <shadowcolor>00000000</shadowcolor>
                         <label>$ADDON[service.upnext 30024]</label>
+                        <visible>Integer.IsGreater(Window.Property(remaining),60)</visible>                                                                       
                     </control>
                     <!-- Details -->
                     <control type="grouplist">
@@ -122,7 +133,7 @@
                         <itemgap>0</itemgap>
                         <control type="label">
                             <width>auto</width>
-                            <height>30</height>
+                            <height>35</height>
                             <aligny>center</aligny>
                             <font>font12</font>
                             <textcolor>eeffffff</textcolor>
@@ -160,41 +171,13 @@
                         </control>
                     </control>
                     <!-- Buttons -->
-                    <control type="button" id="3012">
-                        <left>-1000</left>
-                        <top>-1000</top>
-                        <height>1</height>
-                        <width>1</width>
-                    </control>
-                    <control type="grouplist" id="20">
+                    <control type="grouplist">
                         <orientation>horizontal</orientation>
                         <height>56</height>
                         <bottom>20</bottom>
                         <itemgap>10</itemgap>
-                        <control type="button" id="10">
+                        <control type="button" id="3012">
                             <label>    $ADDON[service.upnext 30010]</label>
-                            <onclick>SendClick(3012)</onclick>
-                            <visible>Integer.IsGreater(Window.Property(remaining),60)</visible>
-                            <height>56</height>
-                            <width min="50">auto</width>
-                            <font>font20_title</font>
-                            <textoffsetx>55</textoffsetx>
-                            <textcolor>ddffffff</textcolor>
-                            <focusedcolor>eeffffff</focusedcolor>
-                            <selectedcolor>ddffffff</selectedcolor>
-                            <shadowcolor>22000000</shadowcolor>
-                            <aligny>center</aligny>
-                            <align>center</align>
-                            <texturefocus border="10" colordiffuse="FF172A91">button.png</texturefocus>
-                            <texturenofocus border="10" colordiffuse="FF212121">button.png</texturenofocus>
-                            <alttexturefocus border="10" colordiffuse="FF172A91">button.png</alttexturefocus>
-                            <alttexturenofocus border="10" colordiffuse="FF212121">button.png</alttexturenofocus>
-                            <pulseonselect>no</pulseonselect>
-                        </control>
-                        <control type="button" id="11">
-                            <label>    $ADDON[service.upnext 30035]</label>
-                            <onclick>SendClick(3012)</onclick>
-                            <visible>Integer.IsLessOrEqual(Window.Property(remaining),60)</visible>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
