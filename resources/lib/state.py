@@ -111,7 +111,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.simple_mode = utils.get_setting_int('simpleMode') == 0
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')
         self.skin_popup = utils.get_setting_bool('enablePopupSkin')
-        self.popup_position = utils.get_setting_int('popupPosition')
+        self.popup_position = constants.POPUP_POSITIONS[
+            utils.get_setting_int('popupPosition', default=0)
+        ]
 
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.played_limit = (

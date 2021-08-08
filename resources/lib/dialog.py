@@ -73,9 +73,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog):
         )
         self.setProperty('shuffle_enable', str(self.shuffle_on is not None))
         self.setProperty('shuffle_on', str(self.shuffle_on))
-        self.setProperty(
-            'popup_position', constants.POPUP_POSITIONS[self.popup_position]
-        )
+        self.setProperty('popup_position', self.popup_position)
 
         if self.item is not None:
             show_spoilers = utils.get_global_setting(
