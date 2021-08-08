@@ -16,6 +16,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'show_stop_button',
         'skin_popup',
         'popup_position',
+        'popup_accent_colour',
         'auto_play',
         'played_limit',
         'enable_resume',
@@ -114,6 +115,18 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.popup_position = constants.POPUP_POSITIONS[
             utils.get_setting_int('popupPosition', default=0)
         ]
+
+        accent_colour = constants.POPUP_ACCENT_COLOURS.get(
+            utils.get_setting_int('popupAccentColour', default=0)
+        )
+        if not accent_colour:
+            accent_colour = hex(
+                (utils.get_setting_int('popupCustomAccentColourA') << 24)
+                + (utils.get_setting_int('popupCustomAccentColourR') << 16)
+                + (utils.get_setting_int('popupCustomAccentColourG') << 8)
+                + utils.get_setting_int('popupCustomAccentColourB')
+            )[2:]
+        self.popup_accent_colour = accent_colour
 
         self.auto_play = utils.get_setting_int('autoPlayMode') == 0
         self.played_limit = (

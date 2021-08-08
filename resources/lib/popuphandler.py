@@ -63,7 +63,8 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             item=next_item,
             shuffle_on=self.state.shuffle_on if source == 'library' else None,
             stop_button=self.state.show_stop_button,
-            popup_position=self.state.popup_position
+            popup_position=self.state.popup_position,
+            accent_colour=self.state.popup_accent_colour
         )
 
         return self._popup_state(abort=False, show_upnext=show_upnext)

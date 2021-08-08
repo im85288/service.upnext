@@ -51,15 +51,15 @@ msgid "Close"
 msgstr ""
 
 msgctxt "#30035"
-msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgid "Continue watching in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30036"
-msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgid "Up next in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30037"
-msgid "Next video in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgid "Next video in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] seconds"
 msgstr ""
 
 msgctxt "#30038"
@@ -157,6 +157,46 @@ msgstr ""
 
 msgctxt "#30509"
 msgid "Top"
+msgstr ""
+
+msgctxt "#30510"
+msgid "Popup accent colour [COLOR gray](requires skin integration)[/COLOR]"
+msgstr ""
+
+msgctxt "#30511"
+msgid "Default"
+msgstr ""
+
+msgctxt "#30512"
+msgid "Red"
+msgstr ""
+
+msgctxt "#30513"
+msgid "Green"
+msgstr ""
+
+msgctxt "#30514"
+msgid "Blue"
+msgstr ""
+
+msgctxt "#30515"
+msgid "Custom"
+msgstr ""
+
+msgctxt "#30516"
+msgid "Alpha channel"
+msgstr ""
+
+msgctxt "#30517"
+msgid "Red channel"
+msgstr ""
+
+msgctxt "#30518"
+msgid "Green channel"
+msgstr ""
+
+msgctxt "#30519"
+msgid "Blue channel"
 msgstr ""
 
 msgctxt "#30600"

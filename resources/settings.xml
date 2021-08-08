@@ -4,7 +4,12 @@
         <setting label="30503" type="enum" id="simpleMode" lvalues="30038|30039" default="1"/>
         <setting label="30505" type="bool" id="stopAfterClose" default="false"/>
 		<setting label="30504" type="bool" id="enablePopupSkin" default="true"/>
-        <setting label="30506" type="enum" id="popupPosition" lvalues="30507|30508|30509" default="2"/>
+        <setting label="30506" type="enum" id="popupPosition" lvalues="30507|30508|30509" default="0"/>
+        <setting label="30510" type="enum" id="popupAccentColour" lvalues="30511|30512|30513|30514|30515" default="0"/>
+        <setting label="30516" type="slider" id="popupCustomAccentColourA" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-1,4)"/>
+        <setting label="30517" type="slider" id="popupCustomAccentColourR" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-2,4)"/>
+        <setting label="30518" type="slider" id="popupCustomAccentColourG" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-3,4)"/>
+        <setting label="30519" type="slider" id="popupCustomAccentColourB" default="000" range="0,1,255" option="int" subsetting="true" visible="eq(-4,4)"/>
     </category>
     <category label="30600"> <!-- Behaviour -->
 		<setting label="30601" type="lsep"/> <!-- Playback -->
