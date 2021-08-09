@@ -1,52 +1,52 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
-    <category label="30500"> <!-- Appearance-->
-        <setting label="30503" type="enum" id="simpleMode" lvalues="30038|30039" default="1"/>
-        <setting label="30505" type="bool" id="stopAfterClose" default="false"/>
+	<category label="30500"> <!-- Appearance-->
+		<setting label="30503" type="enum" id="simpleMode" lvalues="30038|30039" default="1"/>
+		<setting label="30505" type="bool" id="stopAfterClose" default="false"/>
 		<setting label="30504" type="bool" id="enablePopupSkin" default="true"/>
-        <setting label="30506" type="enum" id="popupPosition" lvalues="30507|30508|30509" default="0"/>
-        <setting label="30510" type="enum" id="popupAccentColour" lvalues="30511|30512|30513|30514|30515" default="0"/>
-        <setting label="30516" type="slider" id="popupCustomAccentColourA" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-1,4)"/>
-        <setting label="30517" type="slider" id="popupCustomAccentColourR" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-2,4)"/>
-        <setting label="30518" type="slider" id="popupCustomAccentColourG" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-3,4)"/>
-        <setting label="30519" type="slider" id="popupCustomAccentColourB" default="000" range="0,1,255" option="int" subsetting="true" visible="eq(-4,4)"/>
-    </category>
-    <category label="30600"> <!-- Behaviour -->
+		<setting label="30506" type="enum" id="popupPosition" lvalues="30507|30508|30509" default="0"/>
+		<setting label="30510" type="enum" id="popupAccentColour" lvalues="30511|30512|30513|30514|30515" default="0"/>
+		<setting label="30516" type="slider" id="popupCustomAccentColourA" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-1,4)"/>
+		<setting label="30517" type="slider" id="popupCustomAccentColourR" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-2,4)"/>
+		<setting label="30518" type="slider" id="popupCustomAccentColourG" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-3,4)"/>
+		<setting label="30519" type="slider" id="popupCustomAccentColourB" default="000" range="0,1,255" option="int" subsetting="true" visible="eq(-4,4)"/>
+	</category>
+	<category label="30600"> <!-- Behaviour -->
 		<setting label="30601" type="lsep"/> <!-- Playback -->
-        <setting label="30603" type="enum" id="autoPlayMode" lvalues="30040|30041" default="0"/>
+		<setting label="30603" type="enum" id="autoPlayMode" lvalues="30040|30041" default="0"/>
 		<setting label="30606" type="bool" id="enableStillWatching" default="true" enable="eq(-1,0)"/>
 		<setting label="30607" type="slider" id="playedInARow" default="3" range="1,1,15" option="int" subsetting="true" enable="eq(-1,true)"/>
 		<setting label="30605" type="bool" id="includeWatched" default="false"/>
 		<setting label="30642" type="bool" id="enableResume" default="false"/>
-        <setting label="30032" type="bool" id="enablePlaylist" default="true"/>
+		<setting label="30032" type="bool" id="enablePlaylist" default="true"/>
 		<setting label="30640" type="lsep"/> <!-- Library management -->
 		<setting label="30641" type="enum" id="markWatched" lvalues="30050|30051|30052" default="0"/>
 		<setting label="30643" type="bool" id="nextSeason" default="true"/> 
-        <setting label="30609" type="lsep"/> <!-- When end credits time is known -->
-        <setting label="30611" type="slider" id="autoPlayCountdown" default="5" range="1,5,120" option="int"/>
-        <setting label="30613" type="lsep"/> <!-- When end credits time is unknown -->
-        <setting label="30615" type="bool" id="customAutoPlayTime" default="true"/>
-        <setting label="30617" type="slider" id="autoPlaySeasonTime" default="30" range="5,5,120" option="int" subsetting="true" visible="eq(-1,false)"/>
-        <setting label="30619" type="slider" id="autoPlayTimeXS" default="15" range="5,5,120" option="int" subsetting="true" visible="eq(-2,true)"/>
-        <setting label="30621" type="slider" id="autoPlayTimeS" default="30" range="5,5,120" option="int" subsetting="true" visible="eq(-3,true)"/>
-        <setting label="30623" type="slider" id="autoPlayTimeM" default="40" range="5,5,120" option="int" subsetting="true" visible="eq(-4,true)"/>
-        <setting label="30625" type="slider" id="autoPlayTimeL" default="50" range="5,5,120" option="int" subsetting="true" visible="eq(-5,true)"/>
-        <setting label="30627" type="slider" id="autoPlayTimeXL" default="60" range="5,5,120" option="int" subsetting="true" visible="eq(-6,true)"/>
+		<setting label="30609" type="lsep"/> <!-- When end credits time is known -->
+		<setting label="30611" type="slider" id="autoPlayCountdown" default="5" range="1,5,120" option="int"/>
+		<setting label="30613" type="lsep"/> <!-- When end credits time is unknown -->
+		<setting label="30615" type="bool" id="customAutoPlayTime" default="true"/>
+		<setting label="30617" type="slider" id="autoPlaySeasonTime" default="30" range="5,5,120" option="int" subsetting="true" visible="eq(-1,false)"/>
+		<setting label="30619" type="slider" id="autoPlayTimeXS" default="15" range="5,5,120" option="int" subsetting="true" visible="eq(-2,true)"/>
+		<setting label="30621" type="slider" id="autoPlayTimeS" default="30" range="5,5,120" option="int" subsetting="true" visible="eq(-3,true)"/>
+		<setting label="30623" type="slider" id="autoPlayTimeM" default="40" range="5,5,120" option="int" subsetting="true" visible="eq(-4,true)"/>
+		<setting label="30625" type="slider" id="autoPlayTimeL" default="50" range="5,5,120" option="int" subsetting="true" visible="eq(-5,true)"/>
+		<setting label="30627" type="slider" id="autoPlayTimeXL" default="60" range="5,5,120" option="int" subsetting="true" visible="eq(-6,true)"/>
 		<setting label="30631" type="bool" id="detectPlayTime" default="true"/>
 		<setting label="30633" type="slider" id="detectPeriod" default="90" range="30,30,240" option="int" subsetting="true" visible="eq(-1,true)"/>
 		<setting label="30635" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
-    </category>
-    <category label="30700"> <!-- Expert -->
-        <setting label="30703" type="bool" id="disableNextUp" default="false"/>
-        <setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
+	</category>
+	<category label="30700"> <!-- Expert -->
+		<setting label="30703" type="bool" id="disableNextUp" default="false"/>
+		<setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
 		<setting label="30707" type="bool" id="enableQueue" default="true"/>
-    </category>
-    <category label="30800"> <!-- Developer -->
-        <setting label="30801" type="lsep"/> <!-- Test the GUI -->
-        <setting label="30805" type="action" action="RunScript(service.upnext,test_window,upnext)"/>
-        <setting label="30807" type="action" action="RunScript(service.upnext,test_window,upnext,simple)"/>
-        <setting label="30809" type="action" action="RunScript(service.upnext,test_window,stillwatching)"/>
-        <setting label="30811" type="action" action="RunScript(service.upnext,test_window,stillwatching,simple)"/>
+	</category>
+	<category label="30800"> <!-- Developer -->
+		<setting label="30801" type="lsep"/> <!-- Test the GUI -->
+		<setting label="30805" type="action" action="RunScript(service.upnext,test_window,upnext)"/>
+		<setting label="30807" type="action" action="RunScript(service.upnext,test_window,upnext,simple)"/>
+		<setting label="30809" type="action" action="RunScript(service.upnext,test_window,stillwatching)"/>
+		<setting label="30811" type="action" action="RunScript(service.upnext,test_window,stillwatching,simple)"/>
 		<setting label="30813" type="lsep"/> <!-- Demo mode settings -->
 		<setting label="30815" type="bool" id="enableDemoMode" default="false"/>
 		<setting label="30817" type="enum" id="demoSeek" lvalues="30045|30046|30047|30048" default="0" subsetting="true" enable="eq(-1,true)"/>
@@ -55,5 +55,5 @@
 		<setting label="30823" type="lsep"/> <!-- Additional developer settings -->
 		<setting label="30825" type="bool" id="detectorDebug" default="false"/>
 		<setting label="30827" type="bool" id="startTrigger" default="false"/>
-    </category>
+	</category>
 </settings>
