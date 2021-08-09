@@ -123,7 +123,7 @@
                         <textcolor>DDFFFFFF</textcolor>
                         <shadowcolor>FF000000</shadowcolor>
                         <label>$ADDON[service.upnext 30024]</label>
-                        <visible>Integer.IsGreater(Window.Property(remaining),60)</visible>                                                                       
+                        <visible>Integer.IsGreater(Window.Property(remaining),60)</visible>
                     </control>
                     <!-- Details -->
                     <control type="grouplist">
@@ -207,7 +207,7 @@
 						<control type="togglebutton" id="3015">
 							<visible>String.IsEqual(Window.Property(shuffle_enable),True)</visible>
 							<selected>String.IsEqual(Window.Property(shuffle_on),True)</selected>
-                            <texturenofocus colordiffuse="FF212121">shuffle.png</texturenofocus>                                                    
+                            <texturenofocus colordiffuse="FF212121">shuffle.png</texturenofocus>
                             <texturefocus colordiffuse="$INFO[Window.Property(accent_colour)]">shuffle.png</texturefocus>
                             <alttexturenofocus colordiffuse="DDFFFFFF">shuffle.png</alttexturenofocus>
                             <alttexturefocus colordiffuse="$INFO[Window.Property(accent_colour)]">shuffle.png</alttexturefocus>

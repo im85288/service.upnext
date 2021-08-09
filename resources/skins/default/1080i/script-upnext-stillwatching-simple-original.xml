@@ -113,7 +113,7 @@
                         <textcolor>DDFFFFFF</textcolor>
                         <shadowcolor>FF000000</shadowcolor>
                         <visible>!String.IsEmpty(Window.Property(endtime))</visible>
-                    </control>                      
+                    </control>
                     <control type="image">
                         <width>46</width>
                         <height>46</height>
