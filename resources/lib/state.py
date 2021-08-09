@@ -36,6 +36,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'demo_cue',
         'demo_plugin',
         'detector_debug',
+        'detector_threads',
         'detector_data_limit',
         'start_trigger',
         # Addon data
@@ -169,6 +170,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         )
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
+        self.detector_threads = utils.get_setting_int('detectorThreads')
         self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
         self.start_trigger = utils.get_setting_bool('startTrigger')
 

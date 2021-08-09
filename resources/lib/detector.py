@@ -150,7 +150,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'monitor',
         'player',
         'state',
-        'thread',
+        'threads',
         # Settings
         'match_number',
         'mismatch_number',
@@ -173,7 +173,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.monitor = monitor
         self.player = player
         self.state = state
-        self.thread = None
+        self.threads = []
 
         self.match_counts = {
             'hits': 0,
@@ -503,7 +503,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         play_time = 0
         while not (self.monitor.abortRequested()
                    or self._sigterm or self._sigstop):
-            loop_start_time = timeit.default_timer()
+            loop_time = timeit.default_timer()
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
@@ -577,15 +577,18 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
-            # Wait until total loop time of 1s has elapsed
-            self.monitor.waitForAbort(
-                max(0.1, 1 - timeit.default_timer() + loop_start_time)
-            )
+            # Wait until loop execution time of 1 s/loop/thread has elapsed
+            loop_time = timeit.default_timer() - loop_time
+            self.monitor.waitForAbort(max(
+                0.1, self.state.detector_threads - loop_time
+            ))
         else:
             self.update_timestamp(play_time)
 
         # Reset thread signals
         self.log('Stopped')
+        if any(thread.is_alive() for thread in self.threads):
+            return
         self._running = False
         self._sigstop = False
         self._sigterm = False
@@ -631,7 +634,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Otherwise run the detector in a new thread
         else:
-            self.thread = utils.run_threaded(self._run)
+            self.threads = [
+                utils.run_threaded(self._run, delay=start_delay)
+                for start_delay in range(self.state.detector_threads)
+            ]
 
     def stop(self, terminate=False):
         # Set terminate or stop signals if detector is running
@@ -641,16 +647,18 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self._sigstop = self._running
 
         # Exit if detector thread has not been created
-        if not self.thread:
+        if not self.threads:
             return
 
         # Wait for thread to complete
         if self._running:
-            self.thread.join()
+            for thread in self.threads:
+                if thread.is_alive():
+                    thread.join()
 
         # Free references/resources
-        del self.thread
-        self.thread = None
+        del self.threads
+        self.threads = []
         if terminate:
             # Invalidate collected hashes if not needed for later use
             self.hashes.invalidate()
@@ -688,7 +696,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
+        # No credits detected at play_time
         if not self.credits_detected() or not play_time:
+            return
+        # Timestamp already stored
+        if self.hash_index['detected_at']:
             return
 
         self.hash_index['detected_at'] = self.hash_index['current'][0]
