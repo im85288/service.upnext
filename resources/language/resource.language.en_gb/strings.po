@@ -360,5 +360,9 @@ msgid "Enable detector debug logging and profiling"
 msgstr ""
 
 msgctxt "#30827"
+msgid "Max data (kB) per video frame for detector to process [COLOR gray](More data increases accuracy, lowers speed)[/COLOR]"
+msgstr ""
+
+msgctxt "#30830"
 msgid "Re-trigger a playback start event on addon start"
 msgstr ""

@@ -427,9 +427,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.match_counts['detected'] = False
 
     def _init_hashes(self):
-        # Limit captured data to 16 kB
+        # Limit captured data to increase processing speed
         self.capture_size, self.capture_ar = self._capture_resolution(
-            max_size=16
+            max_size=self.state.detector_data_limit
         )
 
         self.hash_index = {

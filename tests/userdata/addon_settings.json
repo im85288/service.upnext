@@ -14,6 +14,7 @@
 		"demoSeek": "3",
 		"detectLevel": "90",
 		"detectorDebug": "true",
+        "detectorDataLimit": "16",
 		"detectPeriod": "30",
 		"detectPlayTime": "true",
 		"disableNextUp": "false",
