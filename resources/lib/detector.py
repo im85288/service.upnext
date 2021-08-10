@@ -526,11 +526,13 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     image[-5:-1] if image else 'nothing',
                     self.state.detector_data_limit
                 ))
+
                 if self.state.detector_data_limit > 8:
                     self.state.detector_data_limit -= 8
-                self.capture_size, self.capture_ar = self._capture_resolution(
+                self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
                     max_size=self.state.detector_data_limit
                 )
+
                 self.monitor.waitForAbort(self.state.detector_threads)
                 continue
 
