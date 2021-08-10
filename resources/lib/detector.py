@@ -224,19 +224,18 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
            capturing the video frame buffer at a specific size/resolution"""
 
         aspect_ratio = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
+        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
+        width = int(width.replace(',', ''))
+        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
+        height = int(height.replace(',', ''))
 
         # Capturing render buffer at higher resolution captures more detail
         # depending on Kodi scaling function used, but slows down processing.
         # Limit captured data to max_size (in kB)
         if max_size:
             max_size = max_size * 8 * 1024
-            height = int((max_size / aspect_ratio) ** 0.5)
-            width = int(height * aspect_ratio)
-        else:
-            width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
-            width = int(width.replace(',', ''))
-            height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
-            height = int(height.replace(',', ''))
+            height = min(int((max_size / aspect_ratio) ** 0.5), height)
+            width = min(int(height * aspect_ratio), width)
 
         return (width, height), aspect_ratio
 
