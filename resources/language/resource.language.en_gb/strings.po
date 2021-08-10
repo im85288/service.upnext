@@ -292,7 +292,7 @@ msgid "Kodi Library"
 msgstr ""
 
 msgctxt "#30641"
-msgid "Mark as watched after UpNext popup is shown [COLOR gray](override default Kodi functionality)[/COLOR]"
+msgid "Override mark as watched when UpNext popup is shown"
 msgstr ""
 
 msgctxt "#30642"
