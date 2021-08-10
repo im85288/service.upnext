@@ -520,8 +520,18 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.capturer.capture(*self.capture_size)
             image = self.capturer.getImage()
 
-            # Capture failed or was skipped, re-initialise RenderCapture
+            # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
+                self.log('Capture error: captured {0} with {1}kB limit'.format(
+                    image[-5:-1] if image else 'nothing',
+                    self.state.detector_data_limit
+                ))
+                if self.state.detector_data_limit > 8:
+                    self.state.detector_data_limit -= 8
+                self.capture_size, self.capture_ar = self._capture_resolution(
+                    max_size=self.state.detector_data_limit
+                )
+                self.monitor.waitForAbort(self.state.detector_threads)
                 continue
 
             # Convert captured video frame from a nominal default 484x272 BGRA
