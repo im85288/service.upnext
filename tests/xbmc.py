@@ -41,8 +41,8 @@ PLAYLIST_VIDEO = 1
 
 _INFO_LABELS = {
     'System.BuildVersion': '18.9' if __KODI_MATRIX__ else '19.0',
-    'Player.Process(VideoWidth)': '1920',
-    'Player.Process(VideoHeight)': '1080',
+    'Player.Process(VideoWidth)': '1,920',
+    'Player.Process(VideoHeight)': '1,080',
     'Player.Process(VideoDAR)': '1.78'
 }
 
