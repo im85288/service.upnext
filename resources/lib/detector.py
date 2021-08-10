@@ -609,6 +609,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def reset(self):
         self._hash_match_reset()
         self.hashes.timestamps[self.hashes.episode_number] = None
+        self.hash_index['detected_at'] = None
 
     def start(self, restart=False):
         """Method to run actual detection test loop in a separate thread"""
