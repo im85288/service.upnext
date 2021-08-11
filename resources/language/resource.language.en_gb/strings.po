@@ -287,6 +287,19 @@ msgctxt "#30636"
 msgid "Data processing limit (kB/frame) [COLOR gray](higher is more accurate, slower)[/COLOR]"
 msgstr ""
 
+msgctxt "#30637"
+msgid "Max significance for match [COLOR gray](% of areas with significant content)[/COLOR]"
+msgstr ""
+
+msgctxt "#30638"
+msgid "Min number of matches required for detection"
+msgstr ""
+
+msgctxt "#30639"
+msgid "Max number of mismatches before match count is reset"
+msgstr ""
+
+
 msgctxt "#30640"
 msgid "Kodi Library"
 msgstr ""

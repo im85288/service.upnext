@@ -31,13 +31,16 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'detect_level',
         'disabled',
         'enable_queue',
+        'detector_threads',
+        'detector_data_limit',
+        'detect_significance',
+        'detect_matches',
+        'detect_mismatches',
         'demo_mode',
         'demo_seek',
         'demo_cue',
         'demo_plugin',
         'detector_debug',
-        'detector_threads',
-        'detector_data_limit',
         'start_trigger',
         # Addon data
         'data',
@@ -162,6 +165,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.enable_queue = utils.get_setting_bool('enableQueue')
 
+        self.detector_threads = utils.get_setting_int('detectorThreads')
+        self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
+        self.detect_significance = utils.get_setting_int('detectSignificance')
+        self.detect_matches = utils.get_setting_int('detectMatches')
+        self.detect_mismatches = utils.get_setting_int('detectMismatches')
+
         self.demo_mode = utils.get_setting_bool('enableDemoMode')
         self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
         self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
@@ -170,8 +179,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         )
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
-        self.detector_threads = utils.get_setting_int('detectorThreads')
-        self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
         self.start_trigger = utils.get_setting_bool('startTrigger')
 
     def get_tracked_file(self):

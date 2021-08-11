@@ -468,7 +468,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # self.significance_level = 0.90 * self.calc_significance(
         #    self.hashes.data[self.hash_index['credits']]
         # )
-        self.significance_level = 25
+        # Set to 25 as default
+        self.significance_level = self.state.detect_significance
 
         # Hashes from previously played episodes
         self.past_hashes = UpNextHashStore(hash_size=hash_size)
@@ -476,10 +477,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.past_hashes.load(self.hashes.seasonid)
 
         # Number of consecutive frame matches required for a positive detection
-        self.match_number = 5
+        # Set to 5 as default
+        self.match_number = self.state.detect_matches
         # Number of consecutive frame mismatches required to reset match count
         # Set to 3 to account for bad frame capture
-        self.mismatch_number = 3
+        self.mismatch_number = self.state.detect_mismatches
         self._hash_match_reset()
 
     def _run(self):
@@ -522,8 +524,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
-                self.log('Capture error: captured {0} with {1}kB limit'.format(
-                    image[-5:-1] if image else 'nothing',
+                self.log('Capture error: using {0}kB data limit'.format(
                     self.state.detector_data_limit
                 ))
 

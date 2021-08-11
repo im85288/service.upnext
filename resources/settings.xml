@@ -43,6 +43,9 @@
 		<setting label="30634" type="lsep"/> <!-- Additional detector settings -->
 		<setting label="30635" type="slider" id="detectorThreads" default="1" range="1,1,4" option="int"/>
 		<setting label="30636" type="slider" id="detectorDataLimit" default="16" range="8,8,256" option="int"/>
+        <setting label="30637" type="slider" id="detectSignificance" default="25" range="1,1,50" option="int"/>
+        <setting label="30638" type="slider" id="detectMatches" default="5" range="1,1,10" option="int"/>
+        <setting label="30639" type="slider" id="detectMismatches" default="3" range="1,1,10" option="int"/>
 	</category>
 	<category label="30800"> <!-- Developer -->
 		<setting label="30801" type="lsep"/> <!-- Test the GUI -->
