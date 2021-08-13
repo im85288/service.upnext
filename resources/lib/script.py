@@ -9,7 +9,7 @@ import dummydata
 import monitor
 import popuphandler
 import player
-from settings import SETTINGS
+import settings
 import state
 
 
@@ -28,12 +28,13 @@ def test_popup(popup_type, simple_style=False):
     }
 
     # Make a copy of existing settings for test run
-    test_settings = SETTINGS.copy()
+    original_settings = settings.SETTINGS.copy()
+
     # Choose popup style
-    test_settings.simple_mode = bool(simple_style)
+    settings.SETTINGS.simple_mode = bool(simple_style)
     # Choose popup type
     if popup_type == 'stillwatching':
-        test_state.played_in_a_row = test_settings.played_limit
+        test_state.played_in_a_row = settings.SETTINGS.played_limit
 
     # Create test player object
     test_player = player.UpNextPlayer()
@@ -69,9 +70,14 @@ def test_popup(popup_type, simple_style=False):
     test_player.player_state.set('stop', force=True)
 
     # Create a test popuphandler and create an actual popup for testing
-    return popuphandler.UpNextPopupHandler(
+    has_next_item = popuphandler.UpNextPopupHandler(
         monitor=xbmc.Monitor(), player=test_player, state=test_state
     ).start()
+
+    # Restore original settings
+    settings.SETTINGS = original_settings
+
+    return has_next_item
 
 
 def test_upnext(popup_type, simple_style=False):
@@ -93,12 +99,13 @@ def test_upnext(popup_type, simple_style=False):
     # }
 
     # Make a copy of existing settings for test run
-    test_settings = SETTINGS.copy()
+    original_settings = settings.SETTINGS.copy()
+
     # Choose popup style
-    test_settings.simple_mode = bool(simple_style)
+    settings.SETTINGS.simple_mode = bool(simple_style)
     # Choose popup type
     if popup_type == 'stillwatching':
-        test_state.played_in_a_row = test_settings.played_limit
+        test_state.played_in_a_row = settings.SETTINGS.played_limit
 
     # Create test player object
     test_player = player.UpNextPlayer()
@@ -135,6 +142,10 @@ def test_upnext(popup_type, simple_style=False):
 
     test_monitor = monitor.UpNextMonitor()
     test_monitor.start(player=test_player, state=test_state)
+
+    # Restore original settings
+    settings.SETTINGS = original_settings
+
     return test_monitor
 
 
