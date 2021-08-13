@@ -9,7 +9,7 @@ import dummydata
 import monitor
 import popuphandler
 import player
-from settings import settings
+from settings import SETTINGS
 import state
 
 
@@ -28,7 +28,7 @@ def test_popup(popup_type, simple_style=False):
     }
 
     # Make a copy of existing settings for test run
-    test_settings = settings.copy()
+    test_settings = SETTINGS.copy()
     # Choose popup style
     test_settings.simple_mode = bool(simple_style)
     # Choose popup type
@@ -93,7 +93,7 @@ def test_upnext(popup_type, simple_style=False):
     # }
 
     # Make a copy of existing settings for test run
-    test_settings = settings.copy()
+    test_settings = SETTINGS.copy()
     # Choose popup style
     test_settings.simple_mode = bool(simple_style)
     # Choose popup type

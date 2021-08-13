@@ -139,4 +139,4 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
         self.start_trigger = utils.get_setting_bool('startTrigger')
 
 
-settings = UpNextSettings()
+SETTINGS = UpNextSettings()

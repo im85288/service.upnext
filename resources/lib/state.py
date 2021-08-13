@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import api
 import constants
-from settings import settings
+from settings import SETTINGS
 import utils
 
 
@@ -110,7 +110,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             next_item = self.data.get('next_episode')
             source = constants.ADDON_TYPES[addon_type]
 
-            if (settings.unwatched_only
+            if (SETTINGS.unwatched_only
                     and utils.get_int(next_item, 'playcount') > 0):
                 next_item = None
             self.log('Addon next_episode: {0}'.format(next_item))
@@ -119,7 +119,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         elif playlist_position and not self.shuffle_on:
             next_item = api.get_next_in_playlist(
                 playlist_position,
-                settings.unwatched_only
+                SETTINGS.unwatched_only
             )
             source = 'playlist'
 
@@ -128,14 +128,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             next_item, new_season = api.get_next_from_library(
                 self.episodeid,
                 self.tvshowid,
-                settings.unwatched_only,
-                settings.next_season,
+                SETTINGS.unwatched_only,
+                SETTINGS.next_season,
                 self.shuffle_on
             )
             source = 'library'
             # Show Still Watching? popup if next episode is from next season
             if new_season:
-                self.played_in_a_row = settings.played_limit
+                self.played_in_a_row = SETTINGS.played_limit
 
         if next_item and source:
             self.next_item = {
@@ -153,12 +153,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def _set_detect_time(self):
         # Don't use detection time period if an addon cue point was provided,
         # or end credits detection is disabled
-        if self.popup_cue or not settings.detect_enabled:
+        if self.popup_cue or not SETTINGS.detect_enabled:
             self.detect_time = None
             return
 
         # Detection time period starts before normal popup time
-        self.detect_time = max(0, self.popup_time - settings.detect_period)
+        self.detect_time = max(0, self.popup_time - SETTINGS.detect_period)
 
     def get_popup_time(self):
         return self.popup_time
@@ -172,7 +172,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             popup_time = detected_time
 
             # Enable cue point unless forced off in demo mode
-            self.popup_cue = settings.demo_cue != constants.SETTING_OFF
+            self.popup_cue = SETTINGS.demo_cue != constants.SETTING_OFF
 
         self.popup_time = popup_time
         self._set_detect_time()
@@ -198,7 +198,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             # Ensure popup time is not too close to end of playback
             if 0 < popup_time <= total_time - constants.POPUP_MIN_DURATION:
                 # Enable cue point unless forced off in demo mode
-                self.popup_cue = settings.demo_cue != constants.SETTING_OFF
+                self.popup_cue = SETTINGS.demo_cue != constants.SETTING_OFF
             # Otherwise ignore popup time from addon data
             else:
                 popup_time = 0
@@ -206,8 +206,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Use addon settings as fallback option
         if not popup_time:
             # Time from video end
-            popup_duration = settings.popup_durations[max(0, 0, *[
-                duration for duration in settings.popup_durations
+            popup_duration = SETTINGS.popup_durations[max(0, 0, *[
+                duration for duration in SETTINGS.popup_durations
                 if total_time > duration
             ])]
 
@@ -219,7 +219,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
                 popup_time = total_time - constants.POPUP_MIN_DURATION
 
             # Disable cue point unless forced on in demo mode
-            self.popup_cue = settings.demo_cue == constants.SETTING_ON
+            self.popup_cue = SETTINGS.demo_cue == constants.SETTING_ON
 
         self.popup_time = popup_time
         self.total_time = total_time

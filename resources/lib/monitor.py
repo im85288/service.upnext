@@ -9,7 +9,7 @@ import demo
 import detector
 import player
 import popuphandler
-from settings import settings
+from settings import SETTINGS
 import state
 import statichelper
 import utils
@@ -19,7 +19,7 @@ class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
     def __init__(self, restart=False):
-        if settings.disabled:
+        if SETTINGS.disabled:
             return
 
         if restart:
@@ -80,7 +80,7 @@ class UpNextMonitor(xbmc.Monitor):
 
         # Exit if UpNext playlist handling has not been enabled
         playlist_position = api.get_playlist_position()
-        if playlist_position and not settings.enable_playlist:
+        if playlist_position and not SETTINGS.enable_playlist:
             self.log('Skip video check: playlist handling not enabled')
             return
 
@@ -142,12 +142,12 @@ class UpNextMonitor(xbmc.Monitor):
             self.state.reset_item()
 
         # Update playcount and reset resume point of previous file
-        if self.state.playing_next and settings.mark_watched:
+        if self.state.playing_next and SETTINGS.mark_watched:
             api.handle_just_watched(
                 episodeid=self.state.get_episodeid(),
                 playcount=self.state.get_playcount(),
                 reset_playcount=(
-                    settings.mark_watched == constants.SETTING_OFF
+                    SETTINGS.mark_watched == constants.SETTING_OFF
                 ),
                 reset_resume=True
             )
@@ -364,7 +364,7 @@ class UpNextMonitor(xbmc.Monitor):
         self.player = player.UpNextPlayer()
 
         # Re-trigger player play/start event if addon started mid playback
-        if settings.start_trigger and self.player.isPlaying():
+        if SETTINGS.start_trigger and self.player.isPlaying():
             # This is a fake event, use Other.OnAVStart
             utils.event('OnAVStart')
 
@@ -419,7 +419,7 @@ class UpNextMonitor(xbmc.Monitor):
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
         """Handler for Kodi events and data transfer from addons"""
 
-        if settings.disabled:
+        if SETTINGS.disabled:
             return
 
         sender = statichelper.to_unicode(sender)
@@ -435,6 +435,7 @@ class UpNextMonitor(xbmc.Monitor):
         # trying to handle all of them
         self._queue_length += 1
         self.waitForAbort(1)
+        self.log('Event queue: #{0} - {1}'.format(self._queue_length, handler))
 
         # Call event handler and reduce queue length
         handler(self, sender=sender, data=data)
@@ -442,17 +443,17 @@ class UpNextMonitor(xbmc.Monitor):
             self._queue_length -= 1
 
     def onScreensaverDeactivated(self):  # pylint: disable=invalid-name
-        if settings.disabled:
+        if SETTINGS.disabled:
             return
 
         self._start_tracking()
 
     def onSettingsChanged(self):  # pylint: disable=invalid-name
-        settings.update()
-        if settings.disabled and self._started:
+        SETTINGS.update()
+        if SETTINGS.disabled and self._started:
             self.log('UpNext disabled', utils.LOGINFO)
             self.stop()
-        elif not settings.disabled and not self._started:
+        elif not SETTINGS.disabled and not self._started:
             self.log('UpNext enabled', utils.LOGINFO)
             self.__init__(restart=True)
             self.start()

@@ -5,7 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import constants
 import plugin
-from settings import settings
+from settings import SETTINGS
 import upnext
 import utils
 
@@ -15,7 +15,7 @@ def log(msg, level=utils.LOGDEBUG):
 
 
 def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
-    if not settings.demo_mode or called[0]:
+    if not SETTINGS.demo_mode or called[0]:
         called[0] = False
         return
 
@@ -23,7 +23,7 @@ def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]): 
     log('Active')
 
     # Force use of addon data method if demo plugin mode is enabled
-    if state.get_addon_type() is None and settings.demo_plugin:
+    if state.get_addon_type() is None and SETTINGS.demo_plugin:
         addon_id = utils.get_addon_id()
         upnext_info = plugin.generate_data(
             now_playing_item, addon_id, state
@@ -34,13 +34,13 @@ def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]): 
             upnext.send_signal(addon_id, upnext_info)
 
     # Seek to 15s before end of video
-    if settings.demo_seek == constants.DEMO_SEEK_15S:
+    if SETTINGS.demo_seek == constants.DEMO_SEEK_15S:
         seek_time = player.getTotalTime() - 15
     # Seek to popup start time
-    elif settings.demo_seek == constants.DEMO_SEEK_POPUP_TIME:
+    elif SETTINGS.demo_seek == constants.DEMO_SEEK_POPUP_TIME:
         seek_time = state.get_popup_time()
     # Seek to detector start time
-    elif settings.demo_seek == constants.DEMO_SEEK_DETECT_TIME:
+    elif SETTINGS.demo_seek == constants.DEMO_SEEK_DETECT_TIME:
         seek_time = state.get_detect_time() or state.get_popup_time()
     else:
         return

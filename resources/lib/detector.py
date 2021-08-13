@@ -10,7 +10,7 @@ from PIL import Image
 import xbmc
 import constants
 import file_utils
-from settings import settings
+from settings import SETTINGS
 import utils
 
 
@@ -343,10 +343,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             image_hash
         )
         # Match if current hash (loosely) matches representative hash
-        if stats['credits'] >= settings.detect_level - 10:
+        if stats['credits'] >= SETTINGS.detect_level - 10:
             stats['is_match'] = True
         # Unless debugging, return if match found, otherwise continue checking
-        if stats['is_match'] and not settings.detector_debug:
+        if stats['is_match'] and not SETTINGS.detector_debug:
             self._hash_match_hit()
             return stats
 
@@ -359,13 +359,13 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         stats['significance'] = self._calc_significance(image_hash)
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
-        if stats['previous'] >= settings.detect_level:
+        if stats['previous'] >= SETTINGS.detect_level:
             stats['possible_match'] = True
             stats['is_match'] = (
                 stats['significance'] <= self.significance_level
             )
         # Unless debugging, return if match found, otherwise continue checking
-        if stats['is_match'] and not settings.detector_debug:
+        if stats['is_match'] and not SETTINGS.detector_debug:
             self._hash_match_hit()
             return stats
 
@@ -390,7 +390,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 image_hash
             )
             # Match if current hash matches other episode hashes
-            if stats['episodes'] >= settings.detect_level:
+            if stats['episodes'] >= SETTINGS.detect_level:
                 stats['is_match'] = True
                 break
         self.hash_index['episodes'] = old_hash_index
@@ -429,7 +429,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def _init_hashes(self):
         # Limit captured data to increase processing speed
         self.capture_size, self.capture_ar = self._capture_resolution(
-            max_size=settings.detector_data_limit
+            max_size=SETTINGS.detector_data_limit
         )
 
         self.hash_index = {
@@ -470,7 +470,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         #    self.hashes.data[self.hash_index['credits']]
         # )
         # Set to 25 as default
-        self.significance_level = settings.detect_significance
+        self.significance_level = SETTINGS.detect_significance
 
         # Hashes from previously played episodes
         self.past_hashes = UpNextHashStore(hash_size=hash_size)
@@ -479,10 +479,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Number of consecutive frame matches required for a positive detection
         # Set to 5 as default
-        self.match_number = settings.detect_matches
+        self.match_number = SETTINGS.detect_matches
         # Number of consecutive frame mismatches required to reset match count
         # Set to 3 to account for bad frame capture
-        self.mismatch_number = settings.detect_mismatches
+        self.mismatch_number = SETTINGS.detect_mismatches
         self._hash_match_reset()
 
     def _run(self):
@@ -499,7 +499,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.log('Started')
         self._running = True
 
-        if settings.detector_debug:
+        if SETTINGS.detector_debug:
             profiler = utils.Profiler()
 
         play_time = 0
@@ -526,16 +526,16 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
                 self.log('Capture error: using {0}kB data limit'.format(
-                    settings.detector_data_limit
+                    SETTINGS.detector_data_limit
                 ))
 
-                if settings.detector_data_limit > 8:
-                    settings.detector_data_limit -= 8
+                if SETTINGS.detector_data_limit > 8:
+                    SETTINGS.detector_data_limit -= 8
                 self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
-                    max_size=settings.detector_data_limit
+                    max_size=SETTINGS.detector_data_limit
                 )
 
-                self.monitor.waitForAbort(settings.detector_threads)
+                self.monitor.waitForAbort(SETTINGS.detector_threads)
                 continue
 
             # Convert captured video frame from a nominal default 484x272 BGRA
@@ -551,7 +551,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # credits hash, or other episode hashes
             stats = self._check_similarity(image_hash)
 
-            if settings.detector_debug:
+            if SETTINGS.detector_debug:
                 self.log('Match: {0[hits]}/{1}, Miss: {0[misses]}/{2}'.format(
                     self.match_counts, self.match_number, self.mismatch_number
                 ))
@@ -593,7 +593,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Wait until loop execution time of 1 s/loop/thread has elapsed
             loop_time = timeit.default_timer() - loop_time
             self.monitor.waitForAbort(max(
-                0.1, settings.detector_threads - loop_time
+                0.1, SETTINGS.detector_threads - loop_time
             ))
         else:
             self.update_timestamp(play_time)
@@ -650,7 +650,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         else:
             self.threads = [
                 utils.run_threaded(self._run, delay=start_delay)
-                for start_delay in range(settings.detector_threads)
+                for start_delay in range(SETTINGS.detector_threads)
             ]
 
     def stop(self, terminate=False):
