@@ -9,6 +9,7 @@ import dummydata
 import monitor
 import popuphandler
 import player
+from settings import settings
 import state
 
 
@@ -26,11 +27,13 @@ def test_popup(popup_type, simple_style=False):
         'source': 'library'
     }
 
+    # Make a copy of existing settings for test run
+    test_settings = settings.copy()
     # Choose popup style
-    test_state.simple_mode = bool(simple_style)
+    test_settings.simple_mode = bool(simple_style)
     # Choose popup type
     if popup_type == 'stillwatching':
-        test_state.played_in_a_row = test_state.played_limit
+        test_state.played_in_a_row = test_settings.played_limit
 
     # Create test player object
     test_player = player.UpNextPlayer()
@@ -89,11 +92,13 @@ def test_upnext(popup_type, simple_style=False):
     #     'source': 'library'
     # }
 
+    # Make a copy of existing settings for test run
+    test_settings = settings.copy()
     # Choose popup style
-    test_state.simple_mode = bool(simple_style)
+    test_settings.simple_mode = bool(simple_style)
     # Choose popup type
     if popup_type == 'stillwatching':
-        test_state.played_in_a_row = test_state.played_limit
+        test_state.played_in_a_row = test_settings.played_limit
 
     # Create test player object
     test_player = player.UpNextPlayer()

@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import api
 import constants
+from settings import settings
 import utils
 
 
@@ -11,37 +12,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     """Class encapsulating all state variables and methods"""
 
     __slots__ = (
-        # Settings state variables
-        'simple_mode',
-        'show_stop_button',
-        'skin_popup',
-        'popup_position',
-        'popup_accent_colour',
-        'auto_play',
-        'played_limit',
-        'enable_resume',
-        'enable_playlist',
-        'mark_watched',
-        'unwatched_only',
-        'next_season',
-        'auto_play_delay',
-        'popup_durations',
-        'detect_enabled',
-        'detect_period',
-        'detect_level',
-        'disabled',
-        'enable_queue',
-        'detector_threads',
-        'detector_data_limit',
-        'detect_significance',
-        'detect_matches',
-        'detect_mismatches',
-        'demo_mode',
-        'demo_seek',
-        'demo_cue',
-        'demo_plugin',
-        'detector_debug',
-        'start_trigger',
         # Addon data
         'data',
         'encoding',
@@ -71,9 +41,6 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def __init__(self, reset=None):
         self.log('Reset' if reset else 'Init')
 
-        # Settings state variables
-        if not reset:
-            self.update_settings()
         # Addon data
         self.data = None
         self.encoding = 'base64'
@@ -110,82 +77,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.current_item = None
         self.next_item = None
 
-    def update_settings(self):
-        utils.ADDON = utils.get_addon(constants.ADDON_ID)
-        utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
-
-        self.simple_mode = utils.get_setting_int('simpleMode') == 0
-        self.show_stop_button = utils.get_setting_bool('stopAfterClose')
-        self.skin_popup = utils.get_setting_bool('enablePopupSkin')
-        self.popup_position = constants.POPUP_POSITIONS[
-            utils.get_setting_int('popupPosition', default=0)
-        ]
-
-        accent_colour = constants.POPUP_ACCENT_COLOURS.get(
-            utils.get_setting_int('popupAccentColour', default=0)
-        )
-        if not accent_colour:
-            accent_colour = hex(
-                (utils.get_setting_int('popupCustomAccentColourA') << 24)
-                + (utils.get_setting_int('popupCustomAccentColourR') << 16)
-                + (utils.get_setting_int('popupCustomAccentColourG') << 8)
-                + utils.get_setting_int('popupCustomAccentColourB')
-            )[2:]
-        self.popup_accent_colour = accent_colour
-
-        self.auto_play = utils.get_setting_int('autoPlayMode') == 0
-        self.played_limit = (
-            utils.get_setting_int('playedInARow')
-            if self.auto_play and utils.get_setting_bool('enableStillWatching')
-            else 0
-        )
-
-        self.enable_resume = utils.get_setting_bool('enableResume')
-        self.enable_playlist = utils.get_setting_bool('enablePlaylist')
-
-        self.mark_watched = utils.get_setting_int('markWatched')
-        self.unwatched_only = not utils.get_setting_bool('includeWatched')
-        self.next_season = utils.get_setting_bool('nextSeason')
-
-        self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
-        self.popup_durations = {
-            3600: utils.get_setting_int('autoPlayTimeXL'),
-            2400: utils.get_setting_int('autoPlayTimeL'),
-            1200: utils.get_setting_int('autoPlayTimeM'),
-            600: utils.get_setting_int('autoPlayTimeS'),
-            0: utils.get_setting_int('autoPlayTimeXS')
-        } if utils.get_setting_bool('customAutoPlayTime') else {
-            0: utils.get_setting_int('autoPlaySeasonTime')
-        }
-
-        self.detect_enabled = utils.get_setting_bool('detectPlayTime')
-        self.detect_period = utils.get_setting_int('detectPeriod')
-        self.detect_level = utils.get_setting_int('detectLevel')
-
-        self.disabled = utils.get_setting_bool('disableNextUp')
-        self.enable_queue = utils.get_setting_bool('enableQueue')
-
-        self.detector_threads = utils.get_setting_int('detectorThreads')
-        self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
-        self.detect_significance = utils.get_setting_int('detectSignificance')
-        self.detect_matches = utils.get_setting_int('detectMatches')
-        self.detect_mismatches = utils.get_setting_int('detectMismatches')
-
-        self.demo_mode = utils.get_setting_bool('enableDemoMode')
-        self.demo_seek = self.demo_mode and utils.get_setting_int('demoSeek')
-        self.demo_cue = self.demo_mode and utils.get_setting_int('demoCue')
-        self.demo_plugin = (
-            self.demo_mode and utils.get_setting_bool('demoPlugin')
-        )
-
-        self.detector_debug = utils.get_setting_bool('detectorDebug')
-        self.start_trigger = utils.get_setting_bool('startTrigger')
-
     def get_tracked_file(self):
         return self.filename
-
-    def is_disabled(self):
-        return self.disabled
 
     def is_tracking(self):
         return self.tracking
@@ -217,7 +110,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             next_item = self.data.get('next_episode')
             source = constants.ADDON_TYPES[addon_type]
 
-            if (self.unwatched_only
+            if (settings.unwatched_only
                     and utils.get_int(next_item, 'playcount') > 0):
                 next_item = None
             self.log('Addon next_episode: {0}'.format(next_item))
@@ -226,7 +119,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         elif playlist_position and not self.shuffle_on:
             next_item = api.get_next_in_playlist(
                 playlist_position,
-                self.unwatched_only
+                settings.unwatched_only
             )
             source = 'playlist'
 
@@ -235,14 +128,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             next_item, new_season = api.get_next_from_library(
                 self.episodeid,
                 self.tvshowid,
-                self.unwatched_only,
-                self.next_season,
+                settings.unwatched_only,
+                settings.next_season,
                 self.shuffle_on
             )
             source = 'library'
             # Show Still Watching? popup if next episode is from next season
             if new_season:
-                self.played_in_a_row = self.played_limit
+                self.played_in_a_row = settings.played_limit
 
         if next_item and source:
             self.next_item = {
@@ -260,12 +153,12 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def _set_detect_time(self):
         # Don't use detection time period if an addon cue point was provided,
         # or end credits detection is disabled
-        if self.popup_cue or not self.detect_enabled:
+        if self.popup_cue or not settings.detect_enabled:
             self.detect_time = None
             return
 
         # Detection time period starts before normal popup time
-        self.detect_time = max(0, self.popup_time - self.detect_period)
+        self.detect_time = max(0, self.popup_time - settings.detect_period)
 
     def get_popup_time(self):
         return self.popup_time
@@ -279,7 +172,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             popup_time = detected_time
 
             # Enable cue point unless forced off in demo mode
-            self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
+            self.popup_cue = settings.demo_cue != constants.SETTING_OFF
 
         self.popup_time = popup_time
         self._set_detect_time()
@@ -305,7 +198,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             # Ensure popup time is not too close to end of playback
             if 0 < popup_time <= total_time - constants.POPUP_MIN_DURATION:
                 # Enable cue point unless forced off in demo mode
-                self.popup_cue = self.demo_cue != constants.SETTING_FORCED_OFF
+                self.popup_cue = settings.demo_cue != constants.SETTING_OFF
             # Otherwise ignore popup time from addon data
             else:
                 popup_time = 0
@@ -313,8 +206,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         # Use addon settings as fallback option
         if not popup_time:
             # Time from video end
-            popup_duration = self.popup_durations[max(0, 0, *[
-                duration for duration in self.popup_durations
+            popup_duration = settings.popup_durations[max(0, 0, *[
+                duration for duration in settings.popup_durations
                 if total_time > duration
             ])]
 
@@ -326,7 +219,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
                 popup_time = total_time - constants.POPUP_MIN_DURATION
 
             # Disable cue point unless forced on in demo mode
-            self.popup_cue = self.demo_cue == constants.SETTING_FORCED_ON
+            self.popup_cue = settings.demo_cue == constants.SETTING_ON
 
         self.popup_time = popup_time
         self.total_time = total_time

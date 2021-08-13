@@ -4,6 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import api
 import dialog
+from settings import settings
 import utils
 
 
@@ -37,22 +38,22 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
     def _create_popup(self, next_item, source=None):
         # Only use Still Watching? popup if played limit has been reached
-        if self.state.played_limit:
-            show_upnext = self.state.played_limit > self.state.played_in_a_row
+        if settings.played_limit:
+            show_upnext = settings.played_limit > self.state.played_in_a_row
         # Don't show Still Watching? popup if played limit is zero, unless
         # played in a row count has been set to zero for testing
         else:
-            show_upnext = self.state.played_limit != self.state.played_in_a_row
+            show_upnext = settings.played_limit != self.state.played_in_a_row
 
         self.log('Auto played in a row: {0} of {1}'.format(
-            self.state.played_in_a_row, self.state.played_limit
+            self.state.played_in_a_row, settings.played_limit
         ), utils.LOGINFO)
 
         # Filename for dialog XML
         filename = 'script-upnext{0}{1}{2}.xml'.format(
             '-upnext' if show_upnext else '-stillwatching',
-            '-simple' if self.state.simple_mode else '',
-            '' if self.state.skin_popup else '-original'
+            '-simple' if settings.simple_mode else '',
+            '' if settings.skin_popup else '-original'
         )
 
         self.popup = dialog.UpNextPopup(
@@ -62,20 +63,20 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             '1080i',
             item=next_item,
             shuffle_on=self.state.shuffle_on if source == 'library' else None,
-            stop_button=self.state.show_stop_button,
-            popup_position=self.state.popup_position,
-            accent_colour=self.state.popup_accent_colour
+            stop_button=settings.show_stop_button,
+            popup_position=settings.popup_position,
+            accent_colour=settings.popup_accent_colour
         )
 
         return self._popup_state(abort=False, show_upnext=show_upnext)
 
     def _popup_state(self, old_state=None, **kwargs):
         default_state = old_state if old_state else {
-            'auto_play': self.state.auto_play,
+            'auto_play': settings.auto_play,
             'cancel': False,
             'abort': False,
             'play_now': False,
-            'play_on_cue': self.state.auto_play and self.state.popup_cue,
+            'play_on_cue': settings.auto_play and self.state.popup_cue,
             'show_upnext': False,
             'shuffle_on': False,
             'shuffle_start': False,
@@ -97,7 +98,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
             current_state = {
                 'auto_play': (
-                    self.state.auto_play
+                    settings.auto_play
                     and default_state['show_upnext']
                     and not self.popup.is_cancel()
                     and not self.popup.is_playnow()
@@ -106,7 +107,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                 'abort': default_state['abort'],
                 'play_now': self.popup.is_playnow(),
                 'play_on_cue': (
-                    self.state.auto_play
+                    settings.auto_play
                     and default_state['show_upnext']
                     and not self.popup.is_cancel()
                     and not self.popup.is_playnow()
@@ -146,7 +147,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                 api.play_playlist_item(
                     # Use previously stored next playlist position if available
                     position=next_item.get('playlist_position', 'next'),
-                    resume=self.state.enable_resume
+                    resume=settings.enable_resume
                 )
 
         # Fallback addon playback method, used if addon provides play_info
@@ -154,12 +155,12 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             api.play_addon_item(
                 self.state.data,
                 self.state.encoding,
-                self.state.enable_resume
+                settings.enable_resume
             )
 
         # Fallback library playback method, not normally used
         else:
-            api.play_kodi_item(next_item, self.state.enable_resume)
+            api.play_kodi_item(next_item, settings.enable_resume)
 
         # Determine playback method. Used for logging purposes
         self.log('Playback requested: {0}, from {1}{2}'.format(
@@ -209,7 +210,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             return has_next_item
 
         # Add next file to playlist if existing playlist is not being used
-        if self.state.enable_queue and source[-len('playlist'):] != 'playlist':
+        if settings.enable_queue and source[-len('playlist'):] != 'playlist':
             self.state.queued = api.queue_next_item(self.state.data, next_item)
 
         # Create Kodi dialog to show UpNext or Still Watching? popup
@@ -301,7 +302,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         # If cue point was provided then UpNext will auto play after a fixed
         # delay time, rather than waiting for the end of the file
         if popup_state['play_on_cue']:
-            popup_duration = self.state.auto_play_delay
+            popup_duration = settings.auto_play_delay
             if popup_duration:
                 popup_start = max(play_time, self.state.get_popup_time())
                 total_time = min(popup_start + popup_duration, total_time)
