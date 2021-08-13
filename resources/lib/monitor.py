@@ -18,7 +18,7 @@ import utils
 class UpNextMonitor(xbmc.Monitor):
     """Monitor service for Kodi"""
 
-    def __init__(self, restart=False):
+    def __init__(self):
         if SETTINGS.disabled:
             return
 
