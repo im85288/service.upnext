@@ -22,19 +22,18 @@ class UpNextMonitor(xbmc.Monitor):
         if SETTINGS.disabled:
             return
 
-        if restart:
-            self.log('Restart')
-        else:
-            self.log('Init')
-            xbmc.Monitor.__init__(self)
-            self._monitoring = False
+        self.log('Init')
 
-        self._started = False
+        self._monitoring = False
         self._queue_length = 0
+        self._started = False
+
         self.detector = None
         self.player = None
         self.popuphandler = None
         self.state = None
+
+        xbmc.Monitor.__init__(self)
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
@@ -353,15 +352,16 @@ class UpNextMonitor(xbmc.Monitor):
         else:
             self.popuphandler.cancel()
 
-    def start(self):
-        if settings.disabled:
+    def start(self, **kwargs):
+        if SETTINGS.disabled:
             return
 
         self.log('UpNext starting', utils.LOGINFO)
 
+        self.state = kwargs.get('state') or state.UpNextState()
+        self.player = kwargs.get('player') or player.UpNextPlayer()
+
         self._started = True
-        self.state = state.UpNextState()
-        self.player = player.UpNextPlayer()
 
         # Re-trigger player play/start event if addon started mid playback
         if SETTINGS.start_trigger and self.player.isPlaying():
@@ -388,6 +388,7 @@ class UpNextMonitor(xbmc.Monitor):
         del self.player
         self.player = None
         self.log('Cleanup player')
+
         self._started = False
 
     EVENTS_MAP = {
@@ -455,5 +456,4 @@ class UpNextMonitor(xbmc.Monitor):
             self.stop()
         elif not SETTINGS.disabled and not self._started:
             self.log('UpNext enabled', utils.LOGINFO)
-            self.__init__(restart=True)
             self.start()
