@@ -18,7 +18,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         'popup',
         '_running',
         '_sigstop',
-        '_sigterm'
+        '_sigterm',
     )
 
     def __init__(self, monitor, player, state):

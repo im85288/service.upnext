@@ -12,8 +12,22 @@ import utils
 OS_MACHINE = platform.machine()
 
 
-class UpNextPopup(xbmcgui.WindowXMLDialog):
+class UpNextPopup(xbmcgui.WindowXMLDialog, object):  # pylint: disable=useless-object-inheritance
     """Class for UpNext popup state variables and methods"""
+
+    __slots__ = (
+        'item',
+        'shuffle_on',
+        'stop_enable',
+        'popup_position',
+        'accent_colour',
+        'cancel',
+        'stop',
+        'playnow',
+        'countdown_total_time',
+        'current_progress_percent',
+        'progress_control',
+    )
 
     def __init__(self, *args, **kwargs):
         self.log('Init: {0}'.format(args[0]))
