@@ -170,6 +170,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
     def _post_run(self, play_next, keep_playing):
         # Update playback state
         self.state.playing_next = play_next
+        self.state.keep_playing = keep_playing
 
         # Dequeue and stop playback if not playing next file
         if not play_next and self.state.queued:
@@ -202,7 +203,6 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         # No next item to play, get out of here
         if not next_item:
             self.log('Exiting: no next item to play')
-
             play_next = False
             keep_playing = True
             self._post_run(play_next, keep_playing)

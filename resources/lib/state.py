@@ -35,7 +35,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         'tracking',
         'played_in_a_row',
         'queued',
-        'playing_next'
+        'playing_next',
+        'keep_playing',
     )
 
     def __init__(self, reset=None):
@@ -65,6 +66,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.played_in_a_row = 1
         self.queued = False
         self.playing_next = False
+        self.keep_playing = False
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
