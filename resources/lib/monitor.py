@@ -436,7 +436,6 @@ class UpNextMonitor(xbmc.Monitor):
         # trying to handle all of them
         self._queue_length += 1
         self.waitForAbort(1)
-        self.log('Event queue: #{0} - {1}'.format(self._queue_length, handler))
 
         # Call event handler and reduce queue length
         handler(self, sender=sender, data=data)
