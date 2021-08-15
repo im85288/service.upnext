@@ -276,8 +276,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         if self.data:
             # Fallback to now playing info if addon does not provide current
             # episode details
-            current_item = self.data.get(
-                'current_episode', api.get_now_playing()
+            current_item = (
+                self.data.get('current_episode')
+                or api.get_now_playing()
             )
         else:
             current_item = None
