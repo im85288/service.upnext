@@ -101,7 +101,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
 
 
 ADDON = xbmcaddon.Addon(constants.ADDON_ID)
-KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
+_KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
 
 
 def get_addon(addon_id=None):
@@ -133,7 +133,7 @@ def get_addon_path():
 def supports_python_api(version):
     """Return True if Kodi supports target Python API version"""
 
-    return KODI_VERSION >= version
+    return _KODI_VERSION >= version
 
 
 def get_property(key, window_id=constants.WINDOW_HOME):
