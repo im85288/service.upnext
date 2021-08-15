@@ -3,13 +3,10 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import datetime
-import platform
 import xbmcgui
 import constants
 import statichelper
 import utils
-
-OS_MACHINE = platform.machine()
 
 
 class UpNextPopup(xbmcgui.WindowXMLDialog, object):  # pylint: disable=useless-object-inheritance
