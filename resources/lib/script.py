@@ -5,11 +5,11 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import xbmcaddon
+from settings import SETTINGS
 import dummydata
 import monitor
 import popuphandler
 import player
-import settings
 import state
 
 
@@ -27,14 +27,11 @@ def test_popup(popup_type, simple_style=False):
         'source': 'library'
     }
 
-    # Make a copy of existing settings for test run
-    original_settings = settings.SETTINGS.copy()
-
     # Choose popup style
-    settings.SETTINGS.simple_mode = bool(simple_style)
+    SETTINGS.simple_mode = bool(simple_style)
     # Choose popup type
     if popup_type == 'stillwatching':
-        test_state.played_in_a_row = settings.SETTINGS.played_limit
+        test_state.played_in_a_row = SETTINGS.played_limit
 
     # Create test player object
     test_player = player.UpNextPlayer()
@@ -74,9 +71,6 @@ def test_popup(popup_type, simple_style=False):
         monitor=xbmc.Monitor(), player=test_player, state=test_state
     ).start()
 
-    # Restore original settings
-    settings.SETTINGS = original_settings
-
     return has_next_item
 
 
@@ -98,14 +92,11 @@ def test_upnext(popup_type, simple_style=False):
     #     'source': 'library'
     # }
 
-    # Make a copy of existing settings for test run
-    original_settings = settings.SETTINGS.copy()
-
     # Choose popup style
-    settings.SETTINGS.simple_mode = bool(simple_style)
+    SETTINGS.simple_mode = bool(simple_style)
     # Choose popup type
     if popup_type == 'stillwatching':
-        test_state.played_in_a_row = settings.SETTINGS.played_limit
+        test_state.played_in_a_row = SETTINGS.played_limit
 
     # Create test player object
     test_player = player.UpNextPlayer()
@@ -142,9 +133,6 @@ def test_upnext(popup_type, simple_style=False):
 
     test_monitor = monitor.UpNextMonitor()
     test_monitor.start(player=test_player, state=test_state)
-
-    # Restore original settings
-    settings.SETTINGS = original_settings
 
     return test_monitor
 
