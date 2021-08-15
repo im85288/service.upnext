@@ -1,7 +1,7 @@
 {
     "service.upnext": {
 		"autoPlayCountdown": "5",
-		"autoPlayMode": "0",
+		"autoPlayMode": "1",
 		"autoPlaySeasonTime": "30",
 		"autoPlayTimeL": "50",
 		"autoPlayTimeM": "40",
@@ -39,7 +39,7 @@
         "popupCustomAccentColourR": "255",
         "popupCustomAccentColourG": "255",
         "popupCustomAccentColourB": "0",
-		"simpleMode": "1",
+		"simpleMode": "false",
 		"startTrigger": "true",
 		"stopAfterClose": "true",
 		"trackerMode": "2"
