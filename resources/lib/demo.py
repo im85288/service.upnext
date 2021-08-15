@@ -3,9 +3,9 @@
 """Implements UpNext demo mode functions used for runtime testing UpNext"""
 
 from __future__ import absolute_import, division, unicode_literals
+from settings import SETTINGS
 import constants
 import plugin
-from settings import SETTINGS
 import upnext
 import utils
 

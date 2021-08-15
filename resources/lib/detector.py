@@ -8,9 +8,9 @@ import os.path
 import timeit
 from PIL import Image
 import xbmc
+from settings import SETTINGS
 import constants
 import file_utils
-from settings import SETTINGS
 import utils
 
 

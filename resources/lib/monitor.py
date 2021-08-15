@@ -3,13 +3,13 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
+from settings import SETTINGS
 import api
 import constants
 import demo
 import detector
 import player
 import popuphandler
-from settings import SETTINGS
 import state
 import statichelper
 import utils
