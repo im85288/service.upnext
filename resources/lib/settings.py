@@ -67,7 +67,7 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
         utils.ADDON = utils.get_addon(constants.ADDON_ID)
         utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
 
-        self.simple_mode = utils.get_setting_int('simpleMode') == 1
+        self.simple_mode = utils.get_setting_bool('simpleMode')
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')
         self.skin_popup = utils.get_setting_bool('enablePopupSkin')
         self.popup_position = constants.POPUP_POSITIONS[

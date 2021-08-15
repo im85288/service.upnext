@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="30500"> <!-- Appearance-->
-		<setting label="30503" type="enum" id="simpleMode" lvalues="30039|30038" default="0"/>
+		<setting label="30503" type="bool" id="simpleMode" default="false"/>
 		<setting label="30505" type="bool" id="stopAfterClose" default="true"/>
 		<setting label="30504" type="bool" id="enablePopupSkin" default="true"/>
 		<setting label="30506" type="enum" id="popupPosition" lvalues="30507|30508|30509" default="0"/>

@@ -63,11 +63,11 @@ msgid "Next video in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.P
 msgstr ""
 
 msgctxt "#30038"
-msgid "Simple"
+msgid ""
 msgstr ""
 
 msgctxt "#30039"
-msgid "Fancy"
+msgid ""
 msgstr ""
 
 msgctxt "#30040"
@@ -132,7 +132,7 @@ msgid "Features"
 msgstr ""
 
 msgctxt "#30503"
-msgid "Set the display mode for the notifications"
+msgid "Show simple style popup"
 msgstr ""
 
 msgctxt "#30504"
