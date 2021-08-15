@@ -1,8 +1,10 @@
 <?xml version="1.0" encoding="utf-8" standalone="yes"?>
 <settings>
 	<category label="30500"> <!-- Appearance-->
+		<setting label="30501" type="lsep"/> <!-- Popup display -->
 		<setting label="30503" type="bool" id="simpleMode" default="false"/>
 		<setting label="30505" type="bool" id="stopAfterClose" default="true"/>
+		<setting label="30502" type="lsep"/> <!-- Skin integration -->
 		<setting label="30504" type="bool" id="enablePopupSkin" default="true"/>
 		<setting label="30506" type="enum" id="popupPosition" lvalues="30507|30508|30509" default="0"/>
 		<setting label="30510" type="enum" id="popupAccentColour" lvalues="30511|30512|30513|30514|30515" default="0"/>
@@ -37,6 +39,7 @@
 		<setting label="30633" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
 	</category>
 	<category label="30700"> <!-- Expert -->
+		<setting label="30701" type="lsep"/> <!-- Troubleshooting -->
 		<setting label="30703" type="bool" id="disableNextUp" default="false"/>
 		<setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
 		<setting label="30707" type="bool" id="enableQueue" default="true"/>

@@ -128,7 +128,11 @@ msgid "Appearance"
 msgstr ""
 
 msgctxt "#30501"
-msgid "Features"
+msgid "Popup display"
+msgstr ""
+
+msgctxt "#30502"
+msgid "Skin customisation [COLOR gray](requires skin integration)[/COLOR]"
 msgstr ""
 
 msgctxt "#30503"
@@ -136,7 +140,7 @@ msgid "Show simple style popup"
 msgstr ""
 
 msgctxt "#30504"
-msgid "Apply Kodi Skin to UpNext popup [COLOR gray](requires skin integration)[/COLOR]"
+msgid "Apply Kodi skin to UpNext popup"
 msgstr ""
 
 msgctxt "#30505"
@@ -144,7 +148,7 @@ msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr ""
 
 msgctxt "#30506"
-msgid "Popup vertical position [COLOR gray](requires skin integration)[/COLOR]"
+msgid "Popup vertical position"
 msgstr ""
 
 msgctxt "#30507"
@@ -160,7 +164,7 @@ msgid "Top"
 msgstr ""
 
 msgctxt "#30510"
-msgid "Popup accent colour [COLOR gray](requires skin integration)[/COLOR]"
+msgid "Popup accent colour"
 msgstr ""
 
 msgctxt "#30511"
@@ -299,9 +303,8 @@ msgctxt "#30639"
 msgid "Max number of mismatches before match count is reset"
 msgstr ""
 
-
 msgctxt "#30640"
-msgid "Kodi Library"
+msgid "Kodi library"
 msgstr ""
 
 msgctxt "#30641"
@@ -318,6 +321,10 @@ msgstr ""
 
 msgctxt "#30700"
 msgid "Expert"
+msgstr ""
+
+msgctxt "#30701"
+msgid "Troubleshooting"
 msgstr ""
 
 msgctxt "#30703"
