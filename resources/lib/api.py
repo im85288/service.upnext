@@ -340,14 +340,16 @@ def get_player_speed():
     return result
 
 
-def get_now_playing():
+def get_now_playing(properties=None):
     """Function to get detail of currently playing item"""
 
     result = utils.jsonrpc(
         method='Player.GetItem',
         params={
             'playerid': get_playerid(),
-            'properties': EPISODE_PROPERTIES,
+            'properties': (
+                EPISODE_PROPERTIES if properties is None else properties
+            ),
         }
     )
     result = result.get('result', {}).get('item')
@@ -511,7 +513,7 @@ def get_tvshowid(title):
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
         params={
-            'properties': ['title'],
+            'properties': [],
             'limits': {'start': 0, 'end': 1},
             'filter': {
                 'field': 'title',
@@ -551,7 +553,7 @@ def get_episodeid(tvshowid, season, episode):
         method='VideoLibrary.GetEpisodes',
         params={
             'tvshowid': tvshowid,
-            'properties': EPISODE_PROPERTIES,
+            'properties': [],
             'limits': {'start': 0, 'end': 1},
             'filter': filters
         }
