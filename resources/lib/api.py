@@ -16,24 +16,26 @@ EPISODE_PROPERTIES = [
     'season',
     'episode',
     'showtitle',
-    # 'originaltitle', # Not used
+    # 'originaltitle',  # Not used
     'plot',
-    # 'votes', # Not used
+    # 'votes',  # Not used
     'file',
     'rating',
-    # 'ratings', # Not used, slow
-    # 'userrating', # Not used
+    # 'ratings',  # Not used, slow
+    # 'userrating',  # Not used
     'resume',
     'tvshowid',
     'firstaired',
     'art',
-    # 'streamdetails', # Not used, slow
+    # 'streamdetails',  # Not used, slow
     'runtime',
-    # 'director', # Not used
-    # 'writer', # Not used
-    # 'cast', # Not used, slow
+    # 'director',  # Not used
+    # 'writer',  # Not used
+    # 'cast',  # Not used, slow
     'dateadded',
-    'lastplayed'
+    'lastplayed',
+    'mediapath',
+    # 'dynpath',  # Not used
 ]
 
 TVSHOW_PROPERTIES = [
@@ -41,11 +43,11 @@ TVSHOW_PROPERTIES = [
     'studio',
     'year',
     'plot',
-    # 'cast', # Not used, slow
+    # 'cast',  # Not used, slow
     'rating',
-    # 'ratings', # Not used, slow
-    # 'userrating', # Not used
-    # 'votes', # Not used
+    # 'ratings',  # Not used, slow
+    # 'userrating',  # Not used
+    # 'votes',  # Not used
     'genre',
     'episode',
     'season',
@@ -54,13 +56,13 @@ TVSHOW_PROPERTIES = [
     'premiered',
     'playcount',
     'lastplayed',
-    # 'sorttitle', # Not used
-    # 'originaltitle', # Not used
+    # 'sorttitle',  # Not used
+    # 'originaltitle',  # Not used
     'art',
-    # 'tag', # Not used, slow
+    # 'tag',  # Not used, slow
     'dateadded',
     'watchedepisodes',
-    # 'imdbnumber' # Not used
+    # 'imdbnumber',  # Not used
 ]
 
 PLAYER_PLAYLIST = {
