@@ -47,7 +47,7 @@ def parse_plugin_url(url):
 
 
 def handler(argv):
-    plugin_url, args = parse_plugin_url(argv[0])
+    plugin_url, args = parse_plugin_url(argv[0] + argv[2])
     if not plugin_url:
         return False
 
