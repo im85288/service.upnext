@@ -23,16 +23,6 @@ def test_popup():
     assert test_complete is True
 
 
-def test_overall():
-    if SKIP_TEST_ALL or SKIP_TEST_OVERALL:
-        assert True
-        return
-
-    test_run = script.run(['', 'test_upnext', 'upnext'])
-    test_complete = test_run.waitForAbort()
-    assert test_complete is True
-
-
 def test_plugin():
     if SKIP_TEST_ALL or SKIP_TEST_PLUGIN:
         assert True
@@ -42,4 +32,14 @@ def test_plugin():
     test_complete = plugin.handler([
         'plugin://service.upnext/', '1', '?play={0}'.format(dbid)
     ])
+    assert test_complete is True
+
+
+def test_overall():
+    if SKIP_TEST_ALL or SKIP_TEST_OVERALL:
+        assert True
+        return
+
+    test_run = script.run(['', 'test_upnext', 'upnext'])
+    test_complete = test_run.waitForAbort()
     assert test_complete is True
