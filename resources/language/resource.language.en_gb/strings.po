@@ -267,8 +267,12 @@ msgctxt "#30627"
 msgid "Very long videos [COLOR gray]> 60 mins[/COLOR]"
 msgstr ""
 
-msgctxt "#30631"
+msgctxt "#30630"
 msgid "Auto-detect end credits"
+msgstr ""
+
+msgctxt "#30631"
+msgid "Detector storage location"
 msgstr ""
 
 msgctxt "#30632"

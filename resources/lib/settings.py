@@ -17,15 +17,16 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
         'demo_mode',
         'demo_plugin',
         'demo_seek',
-        'detector_data_limit',
-        'detector_debug',
-        'detector_threads',
         'detect_enabled',
         'detect_level',
         'detect_matches',
         'detect_mismatches',
         'detect_period',
         'detect_significance',
+        'detector_data_limit',
+        'detector_debug',
+        'detector_save_path',
+        'detector_threads',
         'disabled',
         'enable_playlist',
         'enable_queue',
@@ -118,6 +119,7 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.enable_queue = utils.get_setting_bool('enableQueue')
 
+        self.detector_save_path = utils.get_setting('detectorSavePath')
         self.detector_threads = utils.get_setting_int('detectorThreads')
         self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
         self.detect_significance = utils.get_setting_int('detectSignificance')

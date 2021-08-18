@@ -20,6 +20,7 @@
 		"detectSignificance": "25",
 		"detectorDataLimit": "16",
 		"detectorDebug": "true",
+		"detectorSavePath": "special://profile/addon_data/service.upnext/detector/",
 		"detectorThreads": "2",
 		"disableNextUp": "false",
 		"enableDemoMode": "true",
