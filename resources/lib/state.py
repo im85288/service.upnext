@@ -348,16 +348,14 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def _set_episodeid(self):
         self.episodeid = utils.get_int(
-            self.current_item['details'], 'episodeid',
-            utils.get_int(self.current_item['details'], 'id')
-        )
+            self.current_item['details'], 'id', None
+        ) or utils.get_int(self.current_item['details'], 'episodeid')
 
     def get_episodeid(self, item=None):
         if item:
             return utils.get_int(
-                item, 'episodeid',
-                utils.get_int(item, 'id')
-            )
+                item, 'episodeid', None
+            ) or utils.get_int(item, 'id')
         return self.episodeid
 
     def _set_episode_number(self):
@@ -370,8 +368,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
     def _set_playcount(self):
         self.playcount = utils.get_int(
-            self.current_item['details'], 'playcount',
-            0
+            self.current_item['details'], 'playcount', 0
         )
 
     def get_playcount(self):
