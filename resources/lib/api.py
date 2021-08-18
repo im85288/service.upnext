@@ -34,8 +34,6 @@ EPISODE_PROPERTIES = [
     # 'cast',  # Not used, slow
     'dateadded',
     'lastplayed',
-    'mediapath',
-    # 'dynpath',  # Not used
 ]
 
 TVSHOW_PROPERTIES = [
