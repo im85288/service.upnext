@@ -9,12 +9,12 @@ import constants
 import upnext
 
 try:
-    from urllib.parse import parse_qs
+    from urllib.parse import parse_qs, urlparse
 except ImportError:
-    from urlparse import parse_qs
+    from urlparse import parse_qs, urlparse
 
 
-def generate_data(current_episode, addon_id, state=None):
+def generate_library_plugin_data(current_episode, addon_id, state=None):
     if state:
         next_episode, source = state.get_next()
         if source != 'library':
@@ -37,12 +37,19 @@ def generate_data(current_episode, addon_id, state=None):
     return upnext_info
 
 
+def parse_plugin_url(url):
+    if not url:
+        return None, None
+    parsed_url = urlparse(url)
+    if parsed_url.scheme != 'plugin':
+        return None, None
+    return parsed_url, parse_qs(parsed_url.query)
+
+
 def handler(argv):
-    base_url = argv[0]
-    addon_id = base_url[len('plugin://'):-1]
-    addon_handle = int(argv[1])
-    # Query string in form ?field1=value1&field2=value2&field3=value3...
-    args = parse_qs(argv[2][1:])
+    plugin_url, args = parse_plugin_url(argv[0])
+    if not plugin_url:
+        return False
 
     dbid = int(args.get('play', [constants.UNKNOWN_DATA])[0])
     if dbid == constants.UNKNOWN_DATA:
@@ -51,19 +58,22 @@ def handler(argv):
     current_episode = api.get_from_library(dbid)
     if not current_episode:
         xbmcplugin.setResolvedUrl(
-            addon_handle, False, upnext.create_listitem({})
+            int(argv[1]), False, upnext.create_listitem({})
         )
         return False
 
-    upnext_info = generate_data(current_episode, addon_id)
+    upnext_info = generate_library_plugin_data(
+        current_episode=current_episode,
+        addon_id=plugin_url.netloc
+    )
     if not upnext_info:
         xbmcplugin.setResolvedUrl(
-            addon_handle, False, upnext.create_listitem({})
+            int(argv[1]), False, upnext.create_listitem({})
         )
         return False
 
     xbmcplugin.setResolvedUrl(
-        addon_handle, True, upnext_info['current_episode']
+        int(argv[1]), True, upnext_info['current_episode']
     )
-    upnext.send_signal(addon_id, upnext_info)
+    upnext.send_signal(plugin_url.netloc, upnext_info)
     return True

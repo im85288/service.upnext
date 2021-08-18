@@ -245,13 +245,13 @@ def get_next_in_playlist(position, unwatched_only=False):
     return item
 
 
-def play_addon_item(data, encoding, resume=False):
-    """Function to play next addon item, either using JSONRPC Player.Open or by
-       passthrough back to the addon"""
+def play_plugin_item(data, encoding, resume=False):
+    """Function to play next plugin item, either using JSONRPC Player.Open or
+       by passthrough back to the plugin"""
 
     play_url = data.get('play_url')
     if play_url:
-        log('Playing from addon - {0}'.format(play_url))
+        log('Playing from plugin - {0}'.format(play_url))
         utils.jsonrpc(
             method='Player.Open',
             params={'item': {'file': play_url}},
@@ -262,7 +262,7 @@ def play_addon_item(data, encoding, resume=False):
 
     play_info = data.get('play_info')
     if play_info:
-        log('Sending as {0} to addon - {1}'.format(encoding, play_info))
+        log('Sending as {0} to plugin - {1}'.format(encoding, play_info))
         utils.event(
             message=data.get('id'),
             data=play_info,
@@ -271,7 +271,7 @@ def play_addon_item(data, encoding, resume=False):
         )
         return
 
-    log('Error: no addon data available for playback', utils.LOGWARNING)
+    log('Error: no plugin data available for playback', utils.LOGWARNING)
 
 
 def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value

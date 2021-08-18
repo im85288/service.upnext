@@ -46,18 +46,18 @@ LOG_ENABLE_DISABLED = 0
 LOG_ENABLE_INFO = 1
 LOG_ENABLE_DEBUG = 2
 
-ADDON_TYPES = (
-    'addon_data_error',
-    'addon_playlist',
-    'addon_play_url',
-    'addon_play_url_playlist',
-    'addon_play_info',
-    'addon_play_info_playlist'
+PLUGIN_TYPES = (
+    'plugin_data_error',
+    'plugin_playlist',
+    'plugin_play_url',
+    'plugin_play_url_playlist',
+    'plugin_play_info',
+    'plugin_play_info_playlist'
 )
-ADDON_DATA_ERROR = 0
-ADDON_PLAYLIST = 1
-ADDON_PLAY_URL = 2
-ADDON_PLAY_INFO = 4
+PLUGIN_DATA_ERROR = 0
+PLUGIN_PLAYLIST = 1
+PLUGIN_PLAY_URL = 2
+PLUGIN_PLAY_INFO = 4
 
 SETTING_DISABLED = 0
 SETTING_ON = 1

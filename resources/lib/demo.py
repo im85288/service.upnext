@@ -22,10 +22,10 @@ def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]): 
     utils.notification('UpNext demo mode', 'Active')
     log('Active')
 
-    # Force use of addon data method if demo plugin mode is enabled
-    if state.get_addon_type() is None and SETTINGS.demo_plugin:
+    # Force use of plugin data method if demo plugin mode is enabled
+    if state.get_plugin_type() is None and SETTINGS.demo_plugin:
         addon_id = utils.get_addon_id()
-        upnext_info = plugin.generate_data(
+        upnext_info = plugin.generate_library_plugin_data(
             now_playing_item, addon_id, state
         )
         if upnext_info:

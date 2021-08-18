@@ -50,7 +50,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         utils.log(msg, name=cls.__name__, level=level)
 
     def _check_video(self, data=None, encoding=None):
-        # Only process one start at a time unless addon data has been received
+        # Only process one start at a time unless plugin data has been received
         if self.state.starting and not data:
             return
         # Increment starting counter
@@ -93,16 +93,16 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
             self.log('Skip video check: playlist handling not enabled')
             return
 
-        # Use new addon data if provided or erase old addon data.
+        # Use new plugin data if provided or erase old plugin data.
         # Note this may cause played in a row count to reset incorrectly if
-        # playlist of mixed non-addon and addon content is used
-        self.state.set_addon_data(data, encoding)
-        addon_type = self.state.get_addon_type(playlist_position)
+        # playlist of mixed non-plugin and plugin content is used
+        self.state.set_plugin_data(data, encoding)
+        plugin_type = self.state.get_plugin_type(playlist_position)
 
         # Start tracking if UpNext can handle the currently playing video
         # Process now playing video to get episode details and save playcount
         now_playing_item = self.state.process_now_playing(
-            playlist_position, addon_type, playback['media_type']
+            playlist_position, plugin_type, playback['media_type']
         )
         if now_playing_item:
             self.state.set_tracking(playback['file'])
@@ -192,7 +192,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
 
         decoded_data, encoding = utils.decode_data(data)
         if not decoded_data or not isinstance(decoded_data, dict):
-            self.log('Error: {0} addon, sent {1} as {2}'.format(
+            self.log('Error: {0} plugin, sent {1} as {2}'.format(
                 sender, decoded_data, data
             ), utils.LOGWARNING)
             return
@@ -432,7 +432,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
     }
 
     def onNotification(self, sender, method, data=None):  # pylint: disable=invalid-name
-        """Handler for Kodi events and data transfer from addons"""
+        """Handler for Kodi events and data transfer from plugins"""
 
         if SETTINGS.disabled:
             return

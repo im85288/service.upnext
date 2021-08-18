@@ -150,9 +150,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
                     resume=SETTINGS.enable_resume
                 )
 
-        # Fallback addon playback method, used if addon provides play_info
-        elif source[:len('addon')] == 'addon':
-            api.play_addon_item(
+        # Fallback plugin playback method, used if plugin provides play_info
+        elif source[:len('plugin')] == 'plugin':
+            api.play_plugin_item(
                 self.state.data,
                 self.state.encoding,
                 SETTINGS.enable_resume

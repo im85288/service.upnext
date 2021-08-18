@@ -42,7 +42,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def __init__(self, reset=None):
         self.log('Reset' if reset else 'Init')
 
-        # Addon data
+        # Plugin data
         self.data = None
         self.encoding = 'base64'
         # Current video details
@@ -105,19 +105,19 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         next_item = None
         source = None
         playlist_position = api.get_playlist_position()
-        addon_type = self.get_addon_type(playlist_position)
+        plugin_type = self.get_plugin_type(playlist_position)
 
-        # Next episode from addon data
-        if addon_type:
+        # Next episode from plugin data
+        if plugin_type:
             next_item = self.data.get('next_episode')
-            source = constants.ADDON_TYPES[addon_type]
+            source = constants.PLUGIN_TYPES[plugin_type]
 
             if (SETTINGS.unwatched_only
                     and utils.get_int(next_item, 'playcount') > 0):
                 next_item = None
-            self.log('Addon next_episode: {0}'.format(next_item))
+            self.log('Plugin next_episode: {0}'.format(next_item))
 
-        # Next item from non-addon playlist
+        # Next item from non-plugin playlist
         elif playlist_position and not self.shuffle_on:
             next_item = api.get_next_in_playlist(
                 playlist_position,
@@ -153,7 +153,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         return self.detect_time
 
     def _set_detect_time(self):
-        # Don't use detection time period if an addon cue point was provided,
+        # Don't use detection time period if an plugin cue point was provided,
         # or end credits detection is disabled
         if self.popup_cue or not SETTINGS.detect_enabled:
             self.detect_time = None
@@ -168,7 +168,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def set_detected_popup_time(self, detected_time):
         popup_time = 0
 
-        # Detected popup time overrides addon data and settings
+        # Detected popup time overrides plugin data and settings
         if detected_time:
             # Force popup time to specified play time
             popup_time = detected_time
@@ -186,11 +186,11 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def set_popup_time(self, total_time):
         popup_time = 0
 
-        # Alway use addon data, when available
-        if self.get_addon_type():
-            # Some addons send the time from video end
+        # Alway use plugin data, when available
+        if self.get_plugin_type():
+            # Some plugins send the time from video end
             popup_duration = utils.get_int(self.data, 'notification_time', 0)
-            # Some addons send the time from video start (e.g. Netflix)
+            # Some plugins send the time from video start (e.g. Netflix)
             popup_time = utils.get_int(self.data, 'notification_offset', 0)
 
             # Ensure popup duration is not too short
@@ -201,7 +201,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             if 0 < popup_time <= total_time - constants.POPUP_MIN_DURATION:
                 # Enable cue point unless forced off in demo mode
                 self.popup_cue = SETTINGS.demo_cue != constants.SETTING_OFF
-            # Otherwise ignore popup time from addon data
+            # Otherwise ignore popup time from plugin data
             else:
                 popup_time = 0
 
@@ -231,10 +231,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             self.popup_time, self.total_time, self.popup_cue
         ), utils.LOGINFO)
 
-    def process_now_playing(self, playlist_position, addon_type, media_type):
-        if addon_type:
-            current_item = self._get_addon_now_playing()
-            source = constants.ADDON_TYPES[addon_type]
+    def process_now_playing(self, playlist_position, plugin_type, media_type):
+        if plugin_type:
+            current_item = self._get_plugin_now_playing()
+            source = constants.PLUGIN_TYPES[plugin_type]
 
         elif playlist_position:
             current_item = api.get_now_playing()
@@ -272,9 +272,9 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         return self.current_item['details']
 
-    def _get_addon_now_playing(self):
+    def _get_plugin_now_playing(self):
         if self.data:
-            # Fallback to now playing info if addon does not provide current
+            # Fallback to now playing info if plugin does not provide current
             # episode details
             current_item = (
                 self.data.get('current_episode')
@@ -283,7 +283,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         else:
             current_item = None
 
-        self.log('Addon current_episode: {0}'.format(current_item))
+        self.log('Plugin current_episode: {0}'.format(current_item))
         if not current_item:
             return None
 
@@ -320,21 +320,21 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         return current_item
 
-    def get_addon_type(self, playlist_position=None):
+    def get_plugin_type(self, playlist_position=None):
         if self.data:
-            addon_type = constants.ADDON_DATA_ERROR
+            plugin_type = constants.PLUGIN_DATA_ERROR
             if playlist_position:
-                addon_type += constants.ADDON_PLAYLIST
+                plugin_type += constants.PLUGIN_PLAYLIST
             if self.data.get('play_url'):
-                addon_type += constants.ADDON_PLAY_URL
+                plugin_type += constants.PLUGIN_PLAY_URL
             elif self.data.get('play_info'):
-                addon_type += constants.ADDON_PLAY_INFO
-            return addon_type
+                plugin_type += constants.PLUGIN_PLAY_INFO
+            return plugin_type
         return None
 
-    def set_addon_data(self, data, encoding='base64'):
+    def set_plugin_data(self, data, encoding='base64'):
         if data:
-            self.log('Addon data: {0}'.format(data))
+            self.log('Plugin data: {0}'.format(data))
         self.data = data
         self.encoding = encoding
 

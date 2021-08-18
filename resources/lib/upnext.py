@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
-"""Implements helper functions for addons to interact with UpNext"""
+"""Implements helper functions for video plugins to interact with UpNext"""
 
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
@@ -98,13 +98,13 @@ def create_listitem(episode):
 
 
 def send_signal(sender, upnext_info):
-    """Helper function for addons to send data to UpNext"""
+    """Helper function for video plugins to send data to UpNext"""
 
-    # Exit if not enough addon information provided
+    # Exit if not enough information provided by video plugin
     required_episode_info = ['current_episode', 'next_episode']
-    required_addon_info = ['play_url', 'play_info']
+    required_plugin_info = ['play_url', 'play_info']
     if not (any(info in upnext_info for info in required_episode_info)
-            and any(info in upnext_info for info in required_addon_info)):
+            and any(info in upnext_info for info in required_plugin_info)):
         log('Error: Invalid UpNext info - {0}'.format(upnext_info),
             utils.LOGWARNING)
         return
