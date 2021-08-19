@@ -160,7 +160,10 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             return
 
         # Detection time period starts before normal popup time
-        self.detect_time = max(0, self.popup_time - SETTINGS.detect_period)
+        self.detect_time = max(
+            0,
+            self.popup_time - (SETTINGS.detect_period * self.total_time / 3600)
+        )
 
     def get_popup_time(self):
         return self.popup_time

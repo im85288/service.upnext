@@ -28,14 +28,14 @@
 		<setting label="30611" type="slider" id="autoPlayCountdown" default="5" range="1,5,120" option="int"/>
 		<setting label="30613" type="lsep"/> <!-- When end credits time is unknown -->
 		<setting label="30615" type="bool" id="customAutoPlayTime" default="false"/>
-		<setting label="30617" type="slider" id="autoPlaySeasonTime" default="10" range="5,5,120" option="int" subsetting="true" visible="eq(-1,false)"/>
-		<setting label="30619" type="slider" id="autoPlayTimeXS" default="15" range="5,5,120" option="int" subsetting="true" visible="eq(-2,true)"/>
-		<setting label="30621" type="slider" id="autoPlayTimeS" default="30" range="5,5,120" option="int" subsetting="true" visible="eq(-3,true)"/>
-		<setting label="30623" type="slider" id="autoPlayTimeM" default="40" range="5,5,120" option="int" subsetting="true" visible="eq(-4,true)"/>
-		<setting label="30625" type="slider" id="autoPlayTimeL" default="50" range="5,5,120" option="int" subsetting="true" visible="eq(-5,true)"/>
-		<setting label="30627" type="slider" id="autoPlayTimeXL" default="60" range="5,5,120" option="int" subsetting="true" visible="eq(-6,true)"/>
+		<setting label="30617" type="slider" id="autoPlaySeasonTime" default="10" range="5,5,300" option="int" subsetting="true" visible="eq(-1,false)"/>
+		<setting label="30619" type="slider" id="autoPlayTimeXS" default="15" range="5,5,300" option="int" subsetting="true" visible="eq(-2,true)"/>
+		<setting label="30621" type="slider" id="autoPlayTimeS" default="30" range="5,5,300" option="int" subsetting="true" visible="eq(-3,true)"/>
+		<setting label="30623" type="slider" id="autoPlayTimeM" default="40" range="5,5,300" option="int" subsetting="true" visible="eq(-4,true)"/>
+		<setting label="30625" type="slider" id="autoPlayTimeL" default="50" range="5,5,300" option="int" subsetting="true" visible="eq(-5,true)"/>
+		<setting label="30627" type="slider" id="autoPlayTimeXL" default="60" range="5,5,300" option="int" subsetting="true" visible="eq(-6,true)"/>
 		<setting label="30630" type="bool" id="detectPlayTime" default="true"/>
-		<setting label="30632" type="slider" id="detectPeriod" default="240" range="30,30,240" option="int" subsetting="true" visible="eq(-1,true)"/>
+		<setting label="30632" type="slider" id="detectPeriod" default="300" range="30,30,600" option="int" subsetting="true" visible="eq(-1,true)"/>
 		<setting label="30633" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
 	</category>
 	<category label="30700"> <!-- Expert -->

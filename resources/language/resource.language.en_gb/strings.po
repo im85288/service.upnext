@@ -240,7 +240,7 @@ msgid "When credits time is unknown (e.g. local media, other)"
 msgstr ""
 
 msgctxt "#30615"
-msgid "Customize notification time (in seconds) by video length"
+msgid "Customise popup time (in seconds) by video length"
 msgstr ""
 
 msgctxt "#30617"
@@ -276,7 +276,7 @@ msgid "Detector storage location"
 msgstr ""
 
 msgctxt "#30632"
-msgid "Detection window [COLOR gray](seconds prior to notification appearing by time)[/COLOR]"
+msgid "Detection window [COLOR gray](seconds/hr prior to popup appearing by time)[/COLOR]"
 msgstr ""
 
 msgctxt "#30633"

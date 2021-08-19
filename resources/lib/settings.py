@@ -103,11 +103,11 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
 
         self.auto_play_delay = utils.get_setting_int('autoPlayCountdown')
         self.popup_durations = {
-            3600: utils.get_setting_int('autoPlayTimeXL'),
-            2400: utils.get_setting_int('autoPlayTimeL'),
-            1200: utils.get_setting_int('autoPlayTimeM'),
-            600: utils.get_setting_int('autoPlayTimeS'),
-            0: utils.get_setting_int('autoPlayTimeXS')
+            3600: utils.get_setting_int('autoPlayTimeXL'),  # > 60 minutes
+            2400: utils.get_setting_int('autoPlayTimeL'),   # > 40 minutes
+            1200: utils.get_setting_int('autoPlayTimeM'),   # > 20 minutes
+            600: utils.get_setting_int('autoPlayTimeS'),    # > 10 minutes
+            0: utils.get_setting_int('autoPlayTimeXS')      # < 10 minutes
         } if utils.get_setting_bool('customAutoPlayTime') else {
             0: utils.get_setting_int('autoPlaySeasonTime')
         }
