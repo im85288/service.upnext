@@ -69,6 +69,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         playback = self._get_playback_details(use_infolabel=True)
         if not playback:
             self.log('Skip video check: nothing playing', utils.LOGWARNING)
+            self.state.starting = 0
             return
         self.log('Playing: {media_type} - {file}'.format(**playback))
 
