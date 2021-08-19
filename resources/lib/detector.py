@@ -32,7 +32,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
     )
 
     def __init__(self, **kwargs):
-        self.version = kwargs.get('version', '0.1')
+        self.version = kwargs.get('version', '0.2')
         self.hash_size = kwargs.get('hash_size', (8, 8))
         self.seasonid = kwargs.get('seasonid', '')
         self.episode_number = kwargs.get(
@@ -366,17 +366,32 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Get all previous hash indexes for episodes other than the current
         # episode and where the hash timestamps are approximately equal (+/- an
         # index_offset)
-        episode_idx = self.hash_index['current'][1]
+        current_episode_idx = self.hash_index['current'][2]
         # Offset equal to the number of matches required for detection
-        index_offset = self.match_number
-        min_time_idx = self.hash_index['current'][0] - index_offset
-        max_time_idx = self.hash_index['current'][0] + index_offset
+        offset = self.match_number
+        # Matching time period from start of file
+        min_start_time = self.hash_index['current'][1] - offset
+        max_start_time = self.hash_index['current'][1] + offset
+        # Matching time period from end of file
+        min_end_time = self.hash_index['current'][0] - offset
+        max_end_time = self.hash_index['current'][0] + offset
+
         old_hash_indexes = [
-            idx for idx in self.past_hashes.data
-            if idx[1] != episode_idx
-            and idx[0] >= min_time_idx
-            and idx[0] <= max_time_idx
+            hash_idx for hash_idx in self.past_hashes.data
+            if ((
+                # Selection conditions for v0.2 hash file format
+                constants.UNDEFINED != hash_idx[2] != current_episode_idx
+                and (
+                    min_start_time <= hash_idx[1] <= max_start_time
+                    or min_end_time <= hash_idx[0] <= max_end_time
+                )
+            ) if len(hash_idx) == 3 else (
+                # Selection conditions for v0.1 hash file format
+                0 != hash_idx[1] != current_episode_idx
+                and min_end_time <= hash_idx[0] <= max_end_time
+            ))
         ]
+
         old_hash_index = None
         for old_hash_index in old_hash_indexes:
             stats['episodes'] = self._calc_similarity(
@@ -428,11 +443,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         self.hash_index = {
             # Current hash index
-            'current': (0, 0),
+            'current': (0, 0, 0),
             # Previous hash index
             'previous': None,
             # Representative end credits hash index
-            'credits': (0, 0),
+            'credits': (0, 0, constants.UNDEFINED),
             # Other episodes hash index
             'episodes': None,
             # Detected end credits timestamp from end of file
@@ -505,6 +520,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 play_time = self.player.getTime()
                 self.hash_index['current'] = (
                     int(self.player.getTotalTime() - play_time),
+                    int(play_time),
                     self.hashes.episode_number
                 )
                 # Only capture if playing at normal speed
@@ -694,6 +710,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # If credit were detected only store the previous 5s worth of hashes to
         # reduce false positives when comparing to other episodes
         if self.match_counts['detected']:
+            # Offset equal to the number of matches required for detection
             detect_offset = self.hash_index['detected_at'] + self.match_number
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
