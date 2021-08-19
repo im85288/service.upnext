@@ -662,7 +662,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         if self._running:
             for thread in self.threads:
                 if thread.is_alive():
-                    thread.join()
+                    thread.join(5)
+                if thread.is_alive():
+                    self.log('Thread {0} failed to stop cleanly'.format(
+                        thread.ident
+                    ), utils.LOGWARNING)
 
         # Free references/resources
         del self.threads

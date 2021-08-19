@@ -369,10 +369,15 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
         # popuphandler does not run in a separate thread, but stop() can be
         # called from another thread
-        while self._running:
+        timeout = 5
+        wait_time = 0.1
+        while self._running and timeout > 0:
             # Wait until execution has finished to ensure references/resources
             # can be safely released
-            self.monitor.waitForAbort(0.1)
+            self.monitor.waitForAbort(wait_time)
+            timeout -= wait_time
+        if self._running:
+            self.log('Failed to stop cleanly', utils.LOGWARNING)
 
         # Free references/resources
         if terminate:
