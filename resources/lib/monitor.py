@@ -242,10 +242,6 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         # has been requested but not yet loaded
         self.state.set_tracking(False)
 
-        # Stop detector once popup is shown
-        if self.detector:
-            self.detector.cancel()
-
         # Start popuphandler to show popup and handle playback of next video
         self.log('Popuphandler started at {time}s of {duration}s'.format(
             **playback), utils.LOGINFO)
@@ -265,6 +261,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         )
 
         if not isinstance(self.detector, detector.UpNextDetector):
+            self.detector.cancel()
             return
 
         # If credits were (in)correctly detected and popup is cancelled
@@ -279,7 +276,6 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
             self.state.set_popup_time(playback['duration'])
             self.state.set_tracking(playback['file'])
             utils.event('upnext_trigger')
-
             return
 
         # Store hashes and timestamp for current video
