@@ -2,7 +2,7 @@
 	"service.upnext": {
 		"autoPlayCountdown": "5",
 		"autoPlayMode": "1",
-		"autoPlaySeasonTime": "30",
+		"autoPlaySeasonTime": "10",
 		"autoPlayTimeL": "50",
 		"autoPlayTimeM": "40",
 		"autoPlayTimeS": "30",
