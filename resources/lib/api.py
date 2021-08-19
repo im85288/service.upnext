@@ -94,13 +94,13 @@ def queue_next_item(data=None, episode=None):
     play_url = data.get('play_url') if data else None
     episodeid = (
         utils.get_int(episode, 'episodeid') if episode
-        else constants.UNKNOWN_DATA
+        else constants.UNDEFINED
     )
 
     if play_url:
         next_item.update(file=play_url)
 
-    elif episode and episodeid != constants.UNKNOWN_DATA:
+    elif episode and episodeid != constants.UNDEFINED:
         next_item.update(episodeid=episodeid)
 
     if next_item:
@@ -233,9 +233,9 @@ def get_next_in_playlist(position, unwatched_only=False):
     item['tvshowid'] = utils.get_int(item, 'tvshowid')
     # If missing season/episode, change to empty string to avoid episode
     # formatting issues ("S-1E-1") in UpNext popup
-    if utils.get_int(item, 'season') == constants.UNKNOWN_DATA:
+    if utils.get_int(item, 'season') == constants.UNDEFINED:
         item['season'] = ''
-    if utils.get_int(item, 'episode') == constants.UNKNOWN_DATA:
+    if utils.get_int(item, 'episode') == constants.UNDEFINED:
         item['episode'] = ''
 
     # Store current playlist position for later use
@@ -293,10 +293,10 @@ def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-va
 
     playerid = (
         utils.get_int(result[0], 'playerid') if result
-        else constants.UNKNOWN_DATA
+        else constants.UNDEFINED
     )
 
-    if playerid == constants.UNKNOWN_DATA:
+    if playerid == constants.UNDEFINED:
         log('Error: no active player', utils.LOGWARNING)
         return None
 
@@ -363,7 +363,7 @@ def get_now_playing(properties=None):
 
 
 def get_next_from_library(
-        episodeid=constants.UNKNOWN_DATA,
+        episodeid=constants.UNDEFINED,
         tvshowid=None,
         unwatched_only=False,
         next_season=True,
@@ -440,7 +440,7 @@ def get_next_from_library(
     filters = {'and': filters}
 
     if not tvshowid:
-        tvshowid = episode.get('tvshowid', constants.UNKNOWN_DATA)
+        tvshowid = episode.get('tvshowid', constants.UNDEFINED)
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
@@ -487,7 +487,7 @@ def get_from_library(episodeid, tvshowid=None):
     episode = result
 
     if not tvshowid:
-        tvshowid = episode.get('tvshowid', constants.UNKNOWN_DATA)
+        tvshowid = episode.get('tvshowid', constants.UNDEFINED)
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShowDetails',
@@ -526,7 +526,7 @@ def get_tvshowid(title):
 
     if not result:
         log('Error: tvshowid not found in library', utils.LOGWARNING)
-        return constants.UNKNOWN_DATA
+        return constants.UNDEFINED
 
     return utils.get_int(result[0], 'tvshowid')
 
@@ -562,7 +562,7 @@ def get_episodeid(tvshowid, season, episode):
 
     if not result:
         log('Error: episodeid not found in library', utils.LOGWARNING)
-        return constants.UNKNOWN_DATA
+        return constants.UNDEFINED
 
     return utils.get_int(result[0], 'episodeid')
 

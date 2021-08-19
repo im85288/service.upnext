@@ -6,7 +6,7 @@ from __future__ import absolute_import, division, unicode_literals
 
 ADDON_ID = 'service.upnext'
 
-UNKNOWN_DATA = -1
+UNDEFINED = -1
 
 WINDOW_HOME = 10000
 

@@ -51,8 +51,8 @@ def handler(argv):
     if not plugin_url:
         return False
 
-    dbid = int(args.get('play', [constants.UNKNOWN_DATA])[0])
-    if dbid == constants.UNKNOWN_DATA:
+    dbid = int(args.get('play', [constants.UNDEFINED])[0])
+    if dbid == constants.UNDEFINED:
         return False
 
     current_episode = api.get_from_library(dbid)

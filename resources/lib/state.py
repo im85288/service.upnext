@@ -50,8 +50,8 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
         self.filename = None
         self.total_time = 0
         self.playcount = 0
-        self.tvshowid = constants.UNKNOWN_DATA
-        self.episodeid = constants.UNKNOWN_DATA
+        self.tvshowid = constants.UNDEFINED
+        self.episodeid = constants.UNDEFINED
         self.episode_number = None
         self.season_identifier = None
         # Popup state variables
@@ -299,17 +299,17 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
 
         # Get current tvshowid or search in library if detail missing
         tvshowid = self.get_tvshowid(current_item)
-        if tvshowid == constants.UNKNOWN_DATA:
+        if tvshowid == constants.UNDEFINED:
             tvshowid = api.get_tvshowid(current_item.get('showtitle'))
             self.log('Fetched tvshowid: {0}'.format(tvshowid))
         # Now playing show not found in library
-        if tvshowid == constants.UNKNOWN_DATA:
+        if tvshowid == constants.UNDEFINED:
             return None
         current_item['tvshowid'] = tvshowid
 
         # Get current episodeid or search in library if detail missing
         episodeid = self.get_episodeid(current_item)
-        if episodeid == constants.UNKNOWN_DATA:
+        if episodeid == constants.UNDEFINED:
             episodeid = api.get_episodeid(
                 tvshowid,
                 current_item.get('season'),
@@ -317,7 +317,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
             )
             self.log('Fetched episodeid: {0}'.format(episodeid))
         # Now playing episode not found in library
-        if episodeid == constants.UNKNOWN_DATA:
+        if episodeid == constants.UNDEFINED:
             return None
         current_item['episodeid'] = episodeid
 
@@ -380,7 +380,7 @@ class UpNextState(object):  # pylint: disable=useless-object-inheritance,too-man
     def _set_season_identifier(self):
         showtitle = self.current_item['details'].get('showtitle')
         season = self.current_item['details'].get('season')
-        if not showtitle or not season or season == constants.UNKNOWN_DATA:
+        if not showtitle or not season or season == constants.UNDEFINED:
             self.season_identifier = None
         else:
             self.season_identifier = '_'.join((str(showtitle), str(season)))

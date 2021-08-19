@@ -36,7 +36,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         self.hash_size = kwargs.get('hash_size', (8, 8))
         self.seasonid = kwargs.get('seasonid', '')
         self.episode_number = kwargs.get(
-            'episode_number', constants.UNKNOWN_DATA
+            'episode_number', constants.UNDEFINED
         )
         self.data = kwargs.get('data', {})
         self.timestamps = kwargs.get('timestamps', {})
@@ -61,7 +61,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
 
     def is_valid(self, seasonid=None, episode_number=None):
         # Non-episodic video is being played
-        if not self.seasonid or self.episode_number == constants.UNKNOWN_DATA:
+        if not self.seasonid or self.episode_number == constants.UNDEFINED:
             return False
 
         # No new episode details, assume current hashes are still valid
@@ -77,7 +77,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
 
     def invalidate(self):
         self.seasonid = ''
-        self.episode_number = constants.UNKNOWN_DATA
+        self.episode_number = constants.UNDEFINED
 
     def load(self, identifier):
         filename = file_utils.make_legal_filename(identifier, suffix='.json')

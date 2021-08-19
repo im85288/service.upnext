@@ -17,7 +17,7 @@ def _copy_episode_details(upnext_info):
     # If next episode information is not provided, fake it
     if not upnext_info.get('next_episode'):
         episode = upnext_info['current_episode']
-        episode['episodeid'] = constants.UNKNOWN_DATA
+        episode['episodeid'] = constants.UNDEFINED
         episode['art'] = {}
         # Next provided episode may not be the next consecutive episode so we
         # can't assume that the episode can simply be incremented, instead set
@@ -38,7 +38,7 @@ def _copy_episode_details(upnext_info):
     # If current episode information is not provided, fake it
     elif not upnext_info.get('current_episode'):
         episode = upnext_info['next_episode']
-        episode['episodeid'] = constants.UNKNOWN_DATA
+        episode['episodeid'] = constants.UNDEFINED
         episode['art'] = {}
         episode['title'] = ''
         episode['season'] = ''
@@ -68,13 +68,13 @@ def create_listitem(episode):
     listitem.setInfo(
         type='Video',
         infoLabels={
-            'dbid': episode.get('episodeid', constants.UNKNOWN_DATA),
+            'dbid': episode.get('episodeid', constants.UNDEFINED),
             'path': episode.get('file', ''),
             'title': episode.get('title', ''),
             'plot': episode.get('plot', ''),
             'tvshowtitle': episode.get('showtitle', ''),
-            'season': episode.get('season', constants.UNKNOWN_DATA),
-            'episode': episode.get('episode', constants.UNKNOWN_DATA),
+            'season': episode.get('season', constants.UNDEFINED),
+            'episode': episode.get('episode', constants.UNDEFINED),
             'rating': str(float(episode.get('rating', 0.0))),
             'aired': episode.get('firstaired', ''),
             'premiered': episode.get('firstaired', ''),
@@ -86,7 +86,7 @@ def create_listitem(episode):
         }
     )
     listitem.setProperty(
-        'tvshowid', str(episode.get('tvshowid', constants.UNKNOWN_DATA))
+        'tvshowid', str(episode.get('tvshowid', constants.UNDEFINED))
     )
     listitem.setArt(episode.get('art', {}))
     listitem.setProperty('isPlayable', 'true')
@@ -113,7 +113,7 @@ def send_signal(sender, upnext_info):
     for key, val in upnext_info.items():
         thumb = ''
         fanart = ''
-        tvshowid = str(constants.UNKNOWN_DATA)
+        tvshowid = str(constants.UNDEFINED)
 
         if isinstance(val, xbmcgui.ListItem):
             thumb = val.getArt('thumb')
@@ -126,9 +126,9 @@ def send_signal(sender, upnext_info):
 
         # Use show title as substitute for missing ListItem tvshowid
         tvshowid = (
-            tvshowid if tvshowid != str(constants.UNKNOWN_DATA)
+            tvshowid if tvshowid != str(constants.UNDEFINED)
             else val.getTVShowTitle()
-        ) or constants.UNKNOWN_DATA
+        ) or constants.UNDEFINED
         # Fallback for available date information
         firstaired = val.getFirstAired() or val.getPremiered() or val.getYear()
         # Runtime used to evaluate endtime in UpNext popup, if available
