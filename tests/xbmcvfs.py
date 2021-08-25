@@ -10,9 +10,49 @@ import os
 from xbmcextra import __KODI_MATRIX__
 
 
-def File(path, flags='r'):
+class File:
     ''' A reimplementation of the xbmcvfs File() function '''
-    return open(path, flags)  # pylint: disable=consider-using-with
+    def __init__(self, path, mode=None):
+        if mode != 'w':
+            mode = 'r'
+        mode += 'b'
+        self._file = open(path, mode=mode)  # pylint: disable=consider-using-with
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self._file.close()
+
+    def close(self):
+        self._file.close()
+
+    def read(self, numbytes=None):
+        bytestring = self._file.read(numbytes)
+        return bytestring.decode('utf-8', 'ignore')
+
+    def readBytes(self, numbytes=None):
+        return self._file.read(numbytes)
+
+    def seek(self, seekBytes, iWhence=os.SEEK_SET):
+        return self._file.seek(seekBytes, iWhence)
+
+    def size(self):
+        current_position = self.tell()
+        self.seek(0, os.SEEK_END)
+        size = self.tell()
+        self.seek(current_position)
+        return size
+
+    def tell(self):
+        return self._file.tell()
+
+    def write(self, buffer):
+        try:
+            self._file.write(buffer)
+            return True
+        except (IOError, OSError, TypeError, ValueError):
+            return False
 
 
 def Stat(path):
