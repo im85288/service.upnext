@@ -83,7 +83,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(_SAVE_PATH, filename)
         try:
-            with open(target, mode='r') as target_file:
+            with open(target, mode='r', encoding='utf-8') as target_file:
                 hashes = json.load(target_file)
         except (IOError, OSError, TypeError, ValueError):
             self.log('Could not load stored hashes from {0}'.format(target))
@@ -125,7 +125,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         filename = file_utils.make_legal_filename(identifier, suffix='.json')
         target = os.path.join(_SAVE_PATH, filename)
         try:
-            with open(target, mode='w') as target_file:
+            with open(target, mode='w', encoding='utf-8') as target_file:
                 json.dump(output, target_file, indent=4)
                 self.log('Hashes saved to {0}'.format(target))
         except (IOError, OSError, TypeError, ValueError):
