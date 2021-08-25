@@ -368,7 +368,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Get all previous hash indexes for episodes other than the current
         # episode and where the hash timestamps are approximately equal (+/- an
-        # index_offset)
+        # index offset)
+        invalid_episode_idx = constants.UNDEFINED
         current_episode_idx = self.hash_index['current'][2]
         # Offset equal to the number of matches required for detection
         offset = self.match_number
@@ -378,21 +379,19 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Matching time period from end of file
         min_end_time = self.hash_index['current'][0] - offset
         max_end_time = self.hash_index['current'][0] + offset
+        # Limit selection criteria for old hash storage format
+        if self.past_hashes.version < 0.2:
+            invalid_episode_idx = 0
+            min_start_time = constants.UNDEFINED
+            max_start_time = constants.UNDEFINED
 
         old_hash_indexes = [
             hash_idx for hash_idx in self.past_hashes.data
-            if ((
-                # Selection conditions for v0.2 hash file format
-                constants.UNDEFINED != hash_idx[2] != current_episode_idx
-                and (
-                    min_start_time <= hash_idx[1] <= max_start_time
-                    or min_end_time <= hash_idx[0] <= max_end_time
-                )
-            ) if len(hash_idx) == 3 else (
-                # Selection conditions for v0.1 hash file format
-                0 != hash_idx[1] != current_episode_idx
-                and min_end_time <= hash_idx[0] <= max_end_time
-            ))
+            if invalid_episode_idx != hash_idx[-1] != current_episode_idx
+            and (
+                min_start_time <= hash_idx[-2] <= max_start_time
+                or min_end_time <= hash_idx[0] <= max_end_time
+            )
         ]
 
         old_hash_index = None
