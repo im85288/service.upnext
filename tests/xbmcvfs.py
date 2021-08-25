@@ -13,10 +13,12 @@ from xbmcextra import __KODI_MATRIX__
 class File:
     ''' A reimplementation of the xbmcvfs File() function '''
     def __init__(self, path, mode=None):
-        if mode != 'w':
-            mode = 'r'
-        mode += 'b'
-        self._file = open(path, mode=mode)  # pylint: disable=consider-using-with
+        if mode == 'w':
+            mode = 'r+b'
+        else:
+            mode = 'rb'
+
+        self._file = open(path, mode=mode, encoding='utf-8')  # pylint: disable=consider-using-with
 
     def __enter__(self):
         return self
@@ -47,9 +49,9 @@ class File:
     def tell(self):
         return self._file.tell()
 
-    def write(self, buffer):
+    def write(self, data):
         try:
-            self._file.write(buffer)
+            self._file.write(data)
             return True
         except (IOError, OSError, TypeError, ValueError):
             return False
