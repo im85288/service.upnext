@@ -263,7 +263,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ).convert('L')
         # Resize to reduce number of pixels processed for hashing
         if output_size != input_size:
-            image = image.resize(output_size, resample=Image.BOX)
+            image = image.resize(
+                output_size,
+                resample=SETTINGS.detector_resize_method
+            )
 
         return image
 

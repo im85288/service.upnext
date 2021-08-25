@@ -272,39 +272,7 @@ msgid "Auto-detect end credits"
 msgstr ""
 
 msgctxt "#30631"
-msgid "Detector storage location"
-msgstr ""
-
-msgctxt "#30632"
 msgid "Detection window [COLOR gray](seconds/hr prior to popup appearing by time)[/COLOR]"
-msgstr ""
-
-msgctxt "#30633"
-msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
-msgstr ""
-
-msgctxt "#30634"
-msgid "Additional detector settings"
-msgstr ""
-
-msgctxt "#30635"
-msgid "Number of threads to use"
-msgstr ""
-
-msgctxt "#30636"
-msgid "Data processing limit (kB/frame) [COLOR gray](higher is more accurate, slower)[/COLOR]"
-msgstr ""
-
-msgctxt "#30637"
-msgid "Max significance for match [COLOR gray](% of areas with significant content)[/COLOR]"
-msgstr ""
-
-msgctxt "#30638"
-msgid "Min number of matches required for detection"
-msgstr ""
-
-msgctxt "#30639"
-msgid "Max number of mismatches before match count is reset"
 msgstr ""
 
 msgctxt "#30640"
@@ -341,6 +309,66 @@ msgstr ""
 
 msgctxt "#30707"
 msgid "Enable UpNext queue [COLOR gray](use playlist to queue and play next video)[/COLOR]"
+msgstr ""
+
+msgctxt "#30730"
+msgid "Additional detector settings"
+msgstr ""
+
+msgctxt "#30731"
+msgid "Detector storage location"
+msgstr ""
+
+msgctxt "#30732"
+msgid "Number of threads to use"
+msgstr ""
+
+msgctxt "#30733"
+msgid "Data processing limit (kB/frame) [COLOR gray](higher is more accurate, slower)[/COLOR]"
+msgstr ""
+
+msgctxt "#30734"
+msgid "Image resize method"
+msgstr ""
+
+msgctxt "#30735"
+msgid "Nearest"
+msgstr ""
+
+msgctxt "#30736"
+msgid "Box"
+msgstr ""
+
+msgctxt "#30737"
+msgid "Bilinear"
+msgstr ""
+
+msgctxt "#30738"
+msgid "Hamming"
+msgstr ""
+
+msgctxt "#30739"
+msgid "Bicubic"
+msgstr ""
+
+msgctxt "#30740"
+msgid "Lanczos"
+msgstr ""
+
+msgctxt "#30741"
+msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
+msgstr ""
+
+msgctxt "#30742"
+msgid "Max significance for match [COLOR gray](% of areas with significant content)[/COLOR]"
+msgstr ""
+
+msgctxt "#30743"
+msgid "Min number of matches required for detection"
+msgstr ""
+
+msgctxt "#30744"
+msgid "Max number of mismatches before match count is reset"
 msgstr ""
 
 msgctxt "#30800"

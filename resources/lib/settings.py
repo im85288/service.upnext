@@ -26,6 +26,7 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
         'detector_data_limit',
         'detector_debug',
         'detector_save_path',
+        'detector_resize_method',
         'detector_threads',
         'disabled',
         'enable_playlist',
@@ -114,7 +115,6 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
 
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
         self.detect_period = utils.get_setting_int('detectPeriod')
-        self.detect_level = utils.get_setting_int('detectLevel')
 
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.enable_queue = utils.get_setting_bool('enableQueue')
@@ -122,6 +122,10 @@ class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
         self.detector_save_path = utils.get_setting('detectorSavePath')
         self.detector_threads = utils.get_setting_int('detectorThreads')
         self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
+        self.detector_resize_method = constants.PIL_RESIZE_METHODS.get(
+            utils.get_setting_int('detectorResizeMethod', default=1)
+        )
+        self.detect_level = utils.get_setting_int('detectLevel')
         self.detect_significance = utils.get_setting_int('detectSignificance')
         self.detect_matches = utils.get_setting_int('detectMatches')
         self.detect_mismatches = utils.get_setting_int('detectMismatches')

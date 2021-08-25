@@ -81,3 +81,12 @@ POPUP_ACCENT_COLOURS = {
 DEMO_SEEK_15S = 1
 DEMO_SEEK_POPUP_TIME = 2
 DEMO_SEEK_DETECT_TIME = 3
+
+PIL_RESIZE_METHODS = {
+    0: 0,  # PIL.Image.NEAREST
+    1: 4,  # PIL.Image.BOX
+    2: 2,  # PIL.Image.BILINEAR
+    3: 5,  # PIL.Image.HAMMING
+    4: 3,  # PIL.Image.BICUBIC
+    5: 1,  # PIL.Image.LANCZOS
+}

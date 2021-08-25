@@ -35,21 +35,22 @@
 		<setting label="30625" type="slider" id="autoPlayTimeL" default="50" range="5,5,300" option="int" subsetting="true" visible="eq(-5,true)"/>
 		<setting label="30627" type="slider" id="autoPlayTimeXL" default="60" range="5,5,300" option="int" subsetting="true" visible="eq(-6,true)"/>
 		<setting label="30630" type="bool" id="detectPlayTime" default="true"/>
-		<setting label="30632" type="slider" id="detectPeriod" default="300" range="30,30,600" option="int" subsetting="true" visible="eq(-1,true)"/>
-		<setting label="30633" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
+		<setting label="30631" type="slider" id="detectPeriod" default="300" range="30,30,600" option="int" subsetting="true" visible="eq(-1,true)"/>
 	</category>
 	<category label="30700"> <!-- Expert -->
 		<setting label="30701" type="lsep"/> <!-- Troubleshooting -->
 		<setting label="30703" type="bool" id="disableNextUp" default="false"/>
 		<setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
 		<setting label="30707" type="bool" id="enableQueue" default="true"/>
-		<setting label="30634" type="lsep"/> <!-- Additional detector settings -->
-		<setting label="30631" type="folder" id="detectorSavePath" default="special://profile/addon_data/service.upnext/detector/" source="" option="writeable"/>
-		<setting label="30635" type="slider" id="detectorThreads" default="1" range="1,1,4" option="int"/>
-		<setting label="30636" type="slider" id="detectorDataLimit" default="16" range="8,8,256" option="int"/>
-		<setting label="30637" type="slider" id="detectSignificance" default="25" range="1,1,50" option="int"/>
-		<setting label="30638" type="slider" id="detectMatches" default="5" range="1,1,10" option="int"/>
-		<setting label="30639" type="slider" id="detectMismatches" default="3" range="1,1,10" option="int"/>
+		<setting label="30730" type="lsep"/> <!-- Additional detector settings -->
+		<setting label="30731" type="folder" id="detectorSavePath" default="special://profile/addon_data/service.upnext/detector/" source="" option="writeable"/>
+		<setting label="30732" type="slider" id="detectorThreads" default="1" range="1,1,4" option="int"/>
+		<setting label="30733" type="slider" id="detectorDataLimit" default="16" range="8,8,256" option="int"/>
+		<setting label="30734" type="enum" id="detectorResizeMethod" lvalues="30735|30736|30737|30738|30739|30740" default="1"/>
+		<setting label="30741" type="slider" id="detectLevel" default="90" range="50,1,100" option="int" subsetting="true" visible="eq(-2,true)"/>
+		<setting label="30742" type="slider" id="detectSignificance" default="25" range="1,1,50" option="int"/>
+		<setting label="30743" type="slider" id="detectMatches" default="5" range="1,1,10" option="int"/>
+		<setting label="30744" type="slider" id="detectMismatches" default="3" range="1,1,10" option="int"/>
 	</category>
 	<category label="30800"> <!-- Developer -->
 		<setting label="30801" type="lsep"/> <!-- Test the GUI -->
