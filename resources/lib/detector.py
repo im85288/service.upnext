@@ -463,7 +463,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
         # Hashes for currently playing episode
         self.hashes = UpNextHashStore(
-            version='0.1',
             hash_size=hash_size,
             seasonid=self.state.get_season_identifier(),
             episode_number=self.state.get_episode_number(),
