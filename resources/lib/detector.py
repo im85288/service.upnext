@@ -32,7 +32,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
     )
 
     def __init__(self, **kwargs):
-        self.version = kwargs.get('version', '0.2')
+        self.version = kwargs.get('version', 0.2)
         self.hash_size = kwargs.get('hash_size', (8, 8))
         self.seasonid = kwargs.get('seasonid', '')
         self.episode_number = kwargs.get(
@@ -92,7 +92,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         if not hashes:
             return False
 
-        self.version = hashes.get('version', self.version)
+        self.version = float(hashes.get('version', self.version))
         self.hash_size = hashes.get('hash_size', self.hash_size)
         if 'data' in hashes:
             hash_size = self.hash_size[0] * self.hash_size[1]
