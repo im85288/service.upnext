@@ -436,6 +436,10 @@ def wait(timeout=None):
     return xbmc.Monitor().waitForAbort()
 
 
+def create_lock():
+    return threading.Lock()
+
+
 def run_threaded(target, delay=None, args=None, kwargs=None):
     """Executes the target in a separate thread or timer"""
 

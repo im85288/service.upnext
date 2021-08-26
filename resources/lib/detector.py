@@ -155,6 +155,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'hash_index',
         'match_counts',
         # Signals
+        '_lock',
         '_running',
         '_sigstop',
         '_sigterm'
@@ -172,6 +173,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             'hits': 0,
             'misses': 0
         }
+        self._lock = utils.create_lock()
         self._init_hashes()
 
         self._running = False
@@ -413,22 +415,25 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         return stats
 
     def _hash_match_hit(self):
-        self.match_counts['hits'] += 1
-        self.match_counts['misses'] = 0
-        self.match_counts['detected'] = (
-            self.match_counts['hits'] >= self.match_number
-        )
+        with self._lock:
+            self.match_counts['hits'] += 1
+            self.match_counts['misses'] = 0
+            self.match_counts['detected'] = (
+                self.match_counts['hits'] >= self.match_number
+            )
 
     def _hash_match_miss(self):
-        self.match_counts['misses'] += 1
-
-        if self.match_counts['misses'] >= self.mismatch_number:
-            self._hash_match_reset()
+        with self._lock:
+            self.match_counts['misses'] += 1
+            if self.match_counts['misses'] < self.mismatch_number:
+                return
+        self._hash_match_reset()
 
     def _hash_match_reset(self):
-        self.match_counts['hits'] = 0
-        self.match_counts['misses'] = 0
-        self.match_counts['detected'] = False
+        with self._lock:
+            self.match_counts['hits'] = 0
+            self.match_counts['misses'] = 0
+            self.match_counts['detected'] = False
 
     def _init_hashes(self):
         # Limit captured data to increase processing speed
@@ -721,8 +726,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         if self.hash_index['detected_at']:
             return
 
-        self.log('Credits detected')
-        self.hash_index['detected_at'] = self.hash_index['current'][0]
-        self.hashes.timestamps[self.hashes.episode_number] = play_time
-        self.state.set_detected_popup_time(play_time)
-        utils.event('upnext_credits_detected')
+        with self._lock:
+            self.log('Credits detected')
+            self.hash_index['detected_at'] = self.hash_index['current'][0]
+            self.hashes.timestamps[self.hashes.episode_number] = play_time
+            self.state.set_detected_popup_time(play_time)
+            utils.event('upnext_credits_detected')

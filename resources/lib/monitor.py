@@ -22,6 +22,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         '_monitoring',
         '_queue_length',
         '_started',
+        '_lock',
         'detector',
         'player',
         'popuphandler',
@@ -37,6 +38,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         self._monitoring = False
         self._queue_length = 0
         self._started = False
+        self._lock = utils.create_lock()
 
         self.detector = None
         self.player = None
@@ -254,10 +256,11 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         self.log('Detector started at {time}s of {duration}s'.format(
             **playback), utils.LOGINFO)
         if not isinstance(self.detector, detector.UpNextDetector):
-            self.detector = detector.UpNextDetector(
-                player=self.player,
-                state=self.state
-            )
+            with self._lock:
+                self.detector = detector.UpNextDetector(
+                    player=self.player,
+                    state=self.state
+                )
         self.detector.start()
 
     def _launch_popup(self):
