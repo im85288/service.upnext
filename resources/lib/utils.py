@@ -430,12 +430,6 @@ def notification(
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 
-def wait(timeout=None):
-    if timeout:
-        return xbmc.Monitor().waitForAbort(timeout)
-    return xbmc.Monitor().waitForAbort()
-
-
 def create_lock():
     return threading.Lock()
 
@@ -475,7 +469,13 @@ def time_to_seconds(time_str):
     return seconds
 
 
-def wait_time(end_time=None, start_time=0, rate=None):
+def wait(timeout=None):
+    if timeout:
+        return xbmc.Monitor().waitForAbort(timeout)
+    return xbmc.Monitor().waitForAbort()
+
+
+def calc_wait_time(end_time=None, start_time=0, rate=None):
     if not end_time or not rate or rate < 1:
         return None
 

@@ -199,7 +199,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
             return
 
         # Determine time until popup is required, scaled to real time
-        popup_delay = utils.wait_time(
+        popup_delay = utils.calc_wait_time(
             end_time=self.state.get_popup_time(),
             start_time=playback['time'],
             rate=playback['speed']
@@ -344,14 +344,14 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
             return
 
         # Determine time until popup is required, scaled to real time
-        popup_delay = utils.wait_time(
+        popup_delay = utils.calc_wait_time(
             end_time=self.state.get_popup_time(),
             start_time=playback['time'],
             rate=playback['speed']
         )
 
         # Determine time until detector is required, scaled to real time
-        detector_delay = utils.wait_time(
+        detector_delay = utils.calc_wait_time(
             end_time=self.state.get_detect_time(),
             start_time=playback['time'],
             rate=playback['speed']
