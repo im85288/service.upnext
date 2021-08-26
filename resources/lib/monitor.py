@@ -281,7 +281,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
                 state=self.state
             )
         # Check if popuphandler found a video to play next
-        has_next_item = self.popuphandler.start()
+        has_next_item = self.popuphandler.start()  # pylint: disable=assignment-from-no-return
         # And check whether popup/playback was cancelled/stopped by the user
         playback_cancelled = (
             has_next_item
