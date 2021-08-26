@@ -183,6 +183,34 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         else:
             self.state.reset_item()
 
+    def _event_handler_upnext_trigger(self, **_kwargs):
+        # Remove remnants from previous operations
+        self._stop_popuphandler()
+
+        # Get playback details and use VideoPlayer.Time infolabel over
+        # xbmc.Player.getTime() as the infolabel appears to update quicker
+        playback = self._get_playback_details(use_infolabel=True)
+
+        # Exit if not playing, paused, or rewinding
+        if not playback or playback['speed'] < 1:
+            self.log('Skip trigger: nothing playing', utils.LOGINFO)
+            return
+
+        # Determine time until popup is required, scaled to real time
+        popup_delay = utils.wait_time(
+            end_time=self.state.get_popup_time(),
+            start_time=playback['time'],
+            rate=playback['speed']
+        )
+
+        # Schedule popuphandler to start when required
+        if popup_delay is not None:
+            self.log('Popuphandler starting in {0}s'.format(popup_delay))
+            self.popuphandler = utils.run_threaded(
+                self._launch_popup,
+                delay=popup_delay
+            )
+
     def _event_handler_upnext_signal(self, **kwargs):
         # Clear queue to stop processing additional queued events
         self._queue_length = 0
@@ -400,9 +428,9 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         self._started = False
 
     EVENTS_MAP = {
-        'Other.upnext_credits_detected': _event_handler_player_general,
+        'Other.upnext_credits_detected': _event_handler_upnext_trigger,
         'Other.upnext_data': _event_handler_upnext_signal,
-        'Other.upnext_trigger': _event_handler_player_general,
+        'Other.upnext_trigger': _event_handler_upnext_trigger,
         'Other.OnAVStart': _event_handler_player_start,
         'Player.OnPause': _event_handler_player_general,
         'Player.OnResume': _event_handler_player_general,
