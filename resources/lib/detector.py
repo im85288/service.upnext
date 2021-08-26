@@ -704,15 +704,19 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             return
 
         self.past_hashes.hash_size = self.hashes.hash_size
-        # If credit were detected only store the previous 5s worth of hashes to
+        # If credit were detected only store the previous +/- 5s of hashes to
         # reduce false positives when comparing to other episodes
         if self.match_counts['detected']:
             # Offset equal to the number of matches required for detection
-            detect_offset = self.hash_index['detected_at'] + self.match_number
+            offset = self.match_number
+            # Matching time period from end of file
+            min_end_time = self.hash_index['detected_at'] - offset
+            max_end_time = self.hash_index['detected_at'] + offset
+
             self.past_hashes.data.update({
                 hash_index: self.hashes.data[hash_index]
                 for hash_index in self.hashes.data
-                if hash_index[0] <= detect_offset
+                if min_end_time <= hash_index[0] <= max_end_time
             })
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
