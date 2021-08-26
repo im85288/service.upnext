@@ -419,10 +419,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.match_counts['hits'] >= self.match_number
         )
 
-        if self.credits_detected():
-            self.log('Credits detected')
-            self._sigstop = self._running
-
     def _hash_match_miss(self):
         self.match_counts['misses'] += 1
 
@@ -598,11 +594,13 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.hashes.data[self.hash_index['current']] = image_hash
             self.hash_index['previous'] = self.hash_index['current']
 
+            # Store timestamps if credits are detected
+            if self.credits_detected():
+                self.update_timestamp(play_time)
+
             # Wait until loop execution time of 1 s/loop/thread has elapsed
             loop_time = timeit.default_timer() - loop_time
             abort = utils.wait(max(0.1, SETTINGS.detector_threads - loop_time))
-        else:
-            self.update_timestamp(play_time)
 
         # Reset thread signals
         self.log('Stopped')
@@ -719,13 +717,11 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
-        # No credits detected at play_time
-        if not self.credits_detected() or not play_time:
-            return
         # Timestamp already stored
         if self.hash_index['detected_at']:
             return
 
+        self.log('Credits detected')
         self.hash_index['detected_at'] = self.hash_index['current'][0]
         self.hashes.timestamps[self.hashes.episode_number] = play_time
         self.state.set_detected_popup_time(play_time)
