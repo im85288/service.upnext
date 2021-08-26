@@ -3,7 +3,6 @@
 """This is the actual UpNext script"""
 
 from __future__ import absolute_import, division, unicode_literals
-import xbmc
 import xbmcaddon
 from settings import SETTINGS
 import dummydata
@@ -68,7 +67,7 @@ def test_popup(popup_type, simple_style=False):
 
     # Create a test popuphandler and create an actual popup for testing
     has_next_item = popuphandler.UpNextPopupHandler(
-        monitor=xbmc.Monitor(), player=test_player, state=test_state
+        player=test_player, state=test_state
     ).start()
 
     return has_next_item

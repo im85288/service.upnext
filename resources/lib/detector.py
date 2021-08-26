@@ -142,7 +142,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'capturer',
         'hashes',
         'past_hashes',
-        'monitor',
         'player',
         'state',
         'threads',
@@ -161,11 +160,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         '_sigterm'
     )
 
-    def __init__(self, monitor, player, state):
+    def __init__(self, player, state):
         self.log('Init')
 
         self.capturer = xbmc.RenderCapture()
-        self.monitor = monitor
         self.player = player
         self.state = state
         self.threads = []
@@ -513,8 +511,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             profiler = utils.Profiler()
 
         play_time = 0
-        while not (self.monitor.abortRequested()
-                   or self._sigterm or self._sigstop):
+        abort = False
+        while not (abort or self._sigterm or self._sigstop):
             loop_time = timeit.default_timer()
 
             with self.player as check_fail:
@@ -546,7 +544,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     max_size=SETTINGS.detector_data_limit
                 )
 
-                self.monitor.waitForAbort(SETTINGS.detector_threads)
+                abort = utils.wait(SETTINGS.detector_threads)
                 continue
 
             # Convert captured video frame from a nominal default 484x272 BGRA
@@ -603,9 +601,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             # Wait until loop execution time of 1 s/loop/thread has elapsed
             loop_time = timeit.default_timer() - loop_time
-            self.monitor.waitForAbort(max(
-                0.1, SETTINGS.detector_threads - loop_time
-            ))
+            abort = utils.wait(max(0.1, SETTINGS.detector_threads - loop_time))
         else:
             self.update_timestamp(play_time)
 
@@ -694,8 +690,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Delete reference to instances if detector will not be restarted
             del self.capturer
             self.capturer = None
-            del self.monitor
-            self.monitor = None
             del self.player
             self.player = None
             del self.state

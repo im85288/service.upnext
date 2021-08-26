@@ -14,7 +14,7 @@ def log(msg, level=utils.LOGDEBUG):
     utils.log(msg, name=__name__, level=level)
 
 
-def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
+def handle_demo_mode(player, state, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
     if not SETTINGS.demo_mode or called[0]:
         called[0] = False
         return
@@ -51,7 +51,7 @@ def handle_demo_mode(monitor, player, state, now_playing_item, called=[False]): 
 
         # Seek workaround required for AML HW decoder on certain problematic
         # H.265 encodes to avoid buffer desync and playback hangs
-        monitor.waitForAbort(3)
+        utils.wait(3)
         if player.getTime() <= seek_time:
             log('Seek workaround')
             player.seekTime(seek_time + 3)

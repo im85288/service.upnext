@@ -12,7 +12,6 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
     """Controller for UpNext popup and playback of next item"""
 
     __slots__ = (
-        'monitor',
         'player',
         'state',
         'popup',
@@ -21,10 +20,9 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         '_sigterm',
     )
 
-    def __init__(self, monitor, player, state):
+    def __init__(self, player, state):
         self.log('Init')
 
-        self.monitor = monitor
         self.player = player
         self.state = state
         self.popup = None
@@ -309,7 +307,8 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
 
         # Current file can stop, or next file can start, while update loop is
         # running. Check state and abort popup update if required
-        while (not self.monitor.abortRequested()
+        popup_abort = False
+        while (not popup_abort
                and not check_fail
                and not popup_state['abort']
                and not self.state.starting
@@ -324,14 +323,14 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
             wait_time = 1 / max(1, speed)
-            self.monitor.waitForAbort(max(0.1, min(wait_time, remaining)))
+            popup_abort = utils.wait(max(0.1, min(wait_time, remaining)))
 
             # If end of file or user has closed popup then exit update loop
             remaining -= wait_time
-            if (remaining <= 0
+            if (popup_abort
+                    or remaining <= 0
                     or popup_state['cancel']
                     or popup_state['play_now']):
-                popup_abort = False
                 break
 
             with self.player as check_fail:
@@ -374,7 +373,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         while self._running and timeout > 0:
             # Wait until execution has finished to ensure references/resources
             # can be safely released
-            self.monitor.waitForAbort(wait_time)
+            utils.wait(wait_time)
             timeout -= wait_time
         if self._running:
             self.log('Failed to stop cleanly', utils.LOGWARNING)
@@ -382,8 +381,6 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         # Free references/resources
         if terminate:
             self._remove_popup()
-            del self.monitor
-            self.monitor = None
             del self.player
             self.player = None
             del self.state

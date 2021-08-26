@@ -430,6 +430,12 @@ def notification(
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 
+def wait(timeout=None):
+    if timeout:
+        return xbmc.Monitor().waitForAbort(timeout)
+    return xbmc.Monitor().waitForAbort()
+
+
 def run_threaded(target, delay=None, args=None, kwargs=None):
     """Executes the target in a separate thread or timer"""
 
