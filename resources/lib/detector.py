@@ -356,9 +356,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # regions of deviation
         if stats['previous'] >= SETTINGS.detect_level:
             stats['possible_match'] = True
-            stats['is_match'] = (
-                stats['significance'] <= self.significance_level
-            )
+            if stats['significance'] <= self.significance_level:
+                stats['is_match'] = True
         # Unless debugging, return if match found, otherwise continue checking
         if stats['is_match'] and not SETTINGS.detector_debug:
             self._hash_match_hit()
