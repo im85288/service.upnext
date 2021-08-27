@@ -434,6 +434,10 @@ def create_lock():
     return threading.Lock()
 
 
+def create_event():
+    return threading.Event()
+
+
 def run_threaded(target, delay=None, args=None, kwargs=None):
     """Executes the target in a separate thread or timer"""
 

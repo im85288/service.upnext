@@ -176,9 +176,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self._lock = utils.create_lock()
         self._init_hashes()
 
-        self._running = False
-        self._sigstop = False
-        self._sigterm = False
+        self._running = utils.create_event()
+        self._sigstop = utils.create_event()
+        self._sigterm = utils.create_event()
 
     @staticmethod
     def _calc_median(vals):
@@ -505,14 +505,14 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
            that end credits are playing."""
 
         self.log('Started')
-        self._running = True
+        self._running.set()
 
         if SETTINGS.detector_debug:
             profiler = utils.Profiler()
 
         play_time = 0
         abort = False
-        while not (abort or self._sigterm or self._sigstop):
+        while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
             loop_time = timeit.default_timer()
 
             with self.player as check_fail:
@@ -611,12 +611,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.log('Stopped')
         if any(thread.is_alive() for thread in self.threads):
             return
-        self._running = False
-        self._sigstop = False
-        self._sigterm = False
+        self._running.clear()
+        self._sigstop.clear()
+        self._sigterm.clear()
 
     def is_alive(self):
-        return self._running
+        return self._running.is_set()
 
     def cancel(self):
         self.stop()
@@ -636,7 +636,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def start(self, restart=False):
         """Method to run actual detection test loop in a separate thread"""
 
-        if restart or self._running:
+        if restart or self._running.is_set():
             self.stop()
 
         # Reset detector data if episode has changed
@@ -664,17 +664,12 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
     def stop(self, terminate=False):
         # Set terminate or stop signals if detector is running
-        if terminate:
-            self._sigterm = self._running
-        else:
-            self._sigstop = self._running
+        if self._running.is_set():
+            if terminate:
+                self._sigterm.set()
+            else:
+                self._sigstop.set()
 
-        # Exit if detector thread has not been created
-        if not self.threads:
-            return
-
-        # Wait for thread to complete
-        if self._running:
             for thread in self.threads:
                 if thread.is_alive():
                     thread.join(5)
@@ -684,18 +679,19 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ), utils.LOGWARNING)
 
         # Free references/resources
-        del self.threads
-        self.threads = []
-        if terminate:
-            # Invalidate collected hashes if not needed for later use
-            self.hashes.invalidate()
-            # Delete reference to instances if detector will not be restarted
-            del self.capturer
-            self.capturer = None
-            del self.player
-            self.player = None
-            del self.state
-            self.state = None
+        with self._lock:
+            del self.threads
+            self.threads = []
+            if terminate:
+                # Invalidate collected hashes if not needed for later use
+                self.hashes.invalidate()
+                # Delete reference to instances if not needed for later use
+                del self.capturer
+                self.capturer = None
+                del self.player
+                self.player = None
+                del self.state
+                self.state = None
 
     def store_data(self):
         # Only store data for videos that are grouped by season (i.e. same show
