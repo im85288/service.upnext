@@ -427,7 +427,7 @@ def _videolibrary_gettvshowdetails(params):
 
 
 def _jsonrpc_notifyall(params):
-    for ref in Monitor._instances.valuerefs():
+    for ref in Monitor._instances.valuerefs():  # pylint: disable=protected-access
         notification_handler = getattr(ref(), "onNotification", None)
         if callable(notification_handler):
             message = params.get('message')
