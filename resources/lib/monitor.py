@@ -129,6 +129,8 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
             self.state.reset()
 
     def _event_handler_player_general(self, **_kwargs):
+        # Delay event handler execution to allow events to queue up
+        self.waitForAbort(1)
         # Only process this event if it is the last in the queue
         if self._queue_length != 1:
             return
@@ -137,6 +139,8 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         self._start_tracking()
 
     def _event_handler_player_start(self, **_kwargs):
+        # Delay event handler execution to allow events to queue up
+        self.waitForAbort(1)
         # Clear queue to stop processing additional queued events
         self._queue_length = 0
 
@@ -168,6 +172,8 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         self._check_video()
 
     def _event_handler_player_stop(self, **_kwargs):
+        # Delay event handler execution to allow events to queue up
+        self.waitForAbort(1)
         # Only process this event if it is the last in the queue
         if self._queue_length != 1:
             return
@@ -214,6 +220,8 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
             )
 
     def _event_handler_upnext_signal(self, **kwargs):
+        # Delay event handler execution to allow events to queue up
+        self.waitForAbort(1)
         # Clear queue to stop processing additional queued events
         self._queue_length = 0
 
@@ -321,10 +329,6 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         # Remove remnants from previous operations
         self._stop_detector()
         self._stop_popuphandler()
-
-        # Playtime needs some time to update correctly after seek/skip
-        # Try waiting 1s for update, longer delay may be required
-        self.waitForAbort(1)
 
         # Get playback details and use VideoPlayer.Time infolabel over
         # xbmc.Player.getTime() as the infolabel appears to update quicker
@@ -471,11 +475,9 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         if not handler:
             return
 
-        # Player events can fire in quick succession, queue them up rather than
-        # trying to handle all of them
+        # Player events can fire in quick succession, increment queue length to
+        # allow event handlers to skip through the queue
         self._queue_length += 1
-        self.waitForAbort(1)
-
         # Call event handler and reduce queue length
         handler(self, sender=sender, data=data)
         if self._queue_length:
