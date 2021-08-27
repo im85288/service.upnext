@@ -74,13 +74,11 @@ class Keyboard:
         return 'test'
 
 
-_monitor_instances = WeakValueDictionary()
-
-
 class Monitor:
     ''' A stub implementation of the xbmc Monitor class '''
+    _instances = WeakValueDictionary()
     _instance_number = 0
-    _aborted = False
+    _aborted = threading.Event()
 
     def __init__(self):
         ''' A stub constructor for the xbmc Monitor class '''
@@ -89,7 +87,7 @@ class Monitor:
             abort_timer.daemon = True
             abort_timer.start()
 
-        _monitor_instances[Monitor._instance_number] = self
+        Monitor._instances[Monitor._instance_number] = self
         Monitor._instance_number += 1
 
     def _timer(self):
@@ -97,8 +95,8 @@ class Monitor:
         abort_time = abort_times[random.randint(0, len(abort_times) - 1)]
         log('Test exit in {0}s'.format(abort_time), LOGINFO)
 
-        time.sleep(abort_time)
-        Monitor._aborted = True
+        Monitor._aborted.wait(abort_time)
+        Monitor._aborted.set()
         try:
             sys.exit()
         except SystemExit:
@@ -106,29 +104,22 @@ class Monitor:
 
     def abortRequested(self):
         ''' A stub implementation for the xbmc Monitor class abortRequested() method '''
-        return Monitor._aborted
+        return Monitor._aborted.is_set()
 
     def waitForAbort(self, timeout=None):
         ''' A stub implementation for the xbmc Monitor class waitForAbort() method '''
-        sleep_time = 0
-        timed_out = False
-
         try:
-            while not timed_out and not Monitor._aborted:
-                time.sleep(1)
-                sleep_time += 1
-                if timeout is not None and sleep_time >= timeout:
-                    timed_out = True
+            Monitor._aborted.wait(timeout)
         except KeyboardInterrupt:
-            Monitor._aborted = True
+            Monitor._aborted.set()
             try:
                 sys.exit()
             except SystemExit:
                 pass
         except SystemExit:
-            Monitor._aborted = True
+            Monitor._aborted.set()
 
-        return Monitor._aborted
+        return Monitor._aborted.is_set()
 
 
 class Player:
@@ -436,7 +427,7 @@ def _videolibrary_gettvshowdetails(params):
 
 
 def _jsonrpc_notifyall(params):
-    for ref in _monitor_instances.valuerefs():
+    for ref in Monitor._instances.valuerefs():
         notification_handler = getattr(ref(), "onNotification", None)
         if callable(notification_handler):
             message = params.get('message')
