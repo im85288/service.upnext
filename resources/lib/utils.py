@@ -251,16 +251,15 @@ def encode_data(data, encoding='base64'):
     return encoded_data
 
 
-def decode_data(encoded_data, compat_mode=True):
+def decode_data(encoded_data=None, serialised_json=None, compat_mode=True):
     """Decode JSON data coming from a notification event"""
 
-    decoded_json = None
     decoded_data = None
     encoding = None
 
     # Compatibility with Addon Signals which wraps serialised data in square
     # brackets to generate an array/list
-    if compat_mode:
+    if compat_mode and encoded_data:
         try:
             encoded_data = json.loads(encoded_data)[0]
         except (IndexError, TypeError, ValueError):
@@ -274,19 +273,19 @@ def decode_data(encoded_data, compat_mode=True):
 
         for encoding, decode_method in decode_methods.items():
             try:
-                decoded_json = decode_method(encoded_data)
+                serialised_json = decode_method(encoded_data)
                 break
             except (TypeError, binascii.Error):
                 pass
         else:
             encoding = None
 
-    if decoded_json:
+    if serialised_json:
         try:
             # NOTE: With Python 3.5 and older json.loads() does not support
             # bytes or bytearray, so we convert to unicode
-            decoded_json = statichelper.to_unicode(decoded_json)
-            decoded_data = json.loads(decoded_json)
+            serialised_json = statichelper.to_unicode(serialised_json)
+            decoded_data = json.loads(serialised_json)
         except (TypeError, ValueError):
             pass
 
