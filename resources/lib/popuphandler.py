@@ -376,7 +376,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
         while self._running.is_set() and not utils.wait(wait_time):
             timeout -= wait_time
             if timeout <= 0:
-                break            
+                break
         if self._running.is_set():
             self.log('Failed to stop cleanly', utils.LOGWARNING)
 
