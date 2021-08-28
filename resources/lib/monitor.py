@@ -206,7 +206,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         # Restart tracking if previously enabled
         self._start_tracking()
 
-    def _event_handler_upnext_trigger(self, ):
+    def _event_handler_upnext_trigger(self, **_kwargs):
         # Remove remnants from previous operations
         self._stop_popuphandler()
 
