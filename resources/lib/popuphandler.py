@@ -368,10 +368,15 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             else:
                 self._sigstop.set()
 
-        # popuphandler does not run in a separate thread, but stop() can be
-        # called from another thread. Wait until execution has finished to
-        # ensure references/resources can be safely released
-        self._running.wait(5)
+        # Wait until execution has finished to ensure references/resources can
+        # be safely released. Can't use self._running.wait(5) as popuphandler
+        # does not run in a separate thread even if stop() can.
+        timeout = 5
+        wait_time = 0.1
+        while self._running.is_set() and not utils.wait(wait_time):
+            timeout -= wait_time
+            if timeout <= 0:
+                break            
         if self._running.is_set():
             self.log('Failed to stop cleanly', utils.LOGWARNING)
 
