@@ -491,6 +491,9 @@ def wait(timeout=None):
     return xbmc.Monitor().waitForAbort()
 
 
+def abort_requested():
+    return xbmc.Monitor().abortRequested()
+
 def calc_wait_time(end_time=None, start_time=0, rate=None):
     if not end_time or not rate or rate < 1:
         return None
