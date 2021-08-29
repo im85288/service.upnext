@@ -497,7 +497,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.mismatch_number = SETTINGS.detect_mismatches
         self._hash_match_reset()
 
-    def _push_frame_to_queue(self, first_push=False):
+    def _push_frame_to_queue(self):
         start = self.queue.get()
         if start is not True:
             self.queue.task_done()
@@ -636,10 +636,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             # Store timestamps if credits are detected
             if self.credits_detected():
                 self.update_timestamp(play_time)
-
-            # Wait until loop execution time of 1 s/loop/thread has elapsed
-            loop_time = timeit.default_timer() - loop_time
-            abort = utils.wait(max(0.1, SETTINGS.detector_threads - loop_time))
 
             self.queue.task_done()
 
