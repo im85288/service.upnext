@@ -320,9 +320,8 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
         # by the user, then restart tracking loop to allow detector to
         # restart, or to launch popup at default time
         if self.detector.credits_detected() and playback_cancelled:
-            # Restart detector and reset match counts
+            # Reset detector match counts
             self.detector.reset()
-            self.detector.start()
 
             # Reset popup time, restart tracking, and trigger a new popup
             self.state.set_popup_time(playback['duration'])
