@@ -527,20 +527,16 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 )
                 continue
 
-            loop_time = timeit.default_timer() - loop_start
             try:
+                self.queue.put(image, timeout=1)
+                loop_time = timeit.default_timer() - loop_start
                 if loop_time >= 1:
-                    loop_start = timeit.default_timer()
-                    self.queue.put(image, block=False)
-                else:
-                    self.queue.put(image, timeout=(1 - loop_time))
+                    raise queue.Full
+                abort = utils.wait(1 - loop_time)
             except queue.Full:
-                self.log('Error: queue full, capture failed', utils.LOGWARNING)
+                self.log('Error: capture/detection desync', utils.LOGWARNING)
                 abort = utils.abort_requested()
                 continue
-
-            loop_time = timeit.default_timer() - loop_start
-            abort = utils.wait(max(0.1, 1 - loop_time))
 
         self.queue.task_done()
 
