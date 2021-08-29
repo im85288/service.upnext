@@ -684,7 +684,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Otherwise run the detector in a new thread
         self._running.set()
-        self.queue.put(True)
+        self.queue.put_nowait(True)
         self.workers = [
             utils.run_threaded(self._push_frame_to_queue)
         ] + [
@@ -692,7 +692,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             for start_delay in range(SETTINGS.detector_threads - 1)
         ]
         self.queue.join()
-        self.queue.put(None)
+        self.queue.put_nowait(None)
         self._running.clear()
         self._sigstop.clear()
         self._sigterm.clear()
