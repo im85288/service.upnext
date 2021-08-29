@@ -12,6 +12,7 @@ from settings import SETTINGS
 import constants
 import file_utils
 import utils
+import queue
 
 
 # Create directory where all stored hashes will be saved
@@ -154,6 +155,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'hash_index',
         'match_counts',
         # Worker pool
+        'queue',
         'workers',
         # Signals
         '_lock',
@@ -168,6 +170,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.capturer = xbmc.RenderCapture()
         self.player = player
         self.state = state
+        self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
         self.workers = []
 
         self.match_counts = {
@@ -494,40 +497,16 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.mismatch_number = SETTINGS.detect_mismatches
         self._hash_match_reset()
 
-    def _run(self):
-        """Detection loop captures Kodi render buffer every 1s to create an
-           image hash. Hash is compared to the previous hash to determine
-           whether current frame of video is similar to the previous frame.
+    def _push_frame_to_queue(self, first_push=False):
+        start = self.queue.get()
+        if start is not True:
+            self.queue.task_done()
+            return
 
-           Hash is also compared to hashes calculated from previously played
-           episodes to detect common sequence of frames (i.e. credits).
-
-           A consecutive number of matching frames must be detected to confirm
-           that end credits are playing."""
-
-        self.log('Started')
-        self._running.set()
-
-        if SETTINGS.detector_debug:
-            profiler = utils.Profiler()
-
-        play_time = 0
         abort = False
         while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
-            loop_time = timeit.default_timer()
-
-            with self.player as check_fail:
-                play_time = self.player.getTime()
-                self.hash_index['current'] = (
-                    int(self.player.getTotalTime() - play_time),
-                    int(play_time),
-                    self.hashes.episode_number
-                )
-                # Only capture if playing at normal speed
-                # check_fail = self.player.get_speed() != 1
-                check_fail = False
-            if check_fail:
-                self.log('No file is playing')
+            loop_start = timeit.default_timer()
+            if not self.capturer:
                 break
 
             self.capturer.capture(*self.capture_size)
@@ -544,9 +523,63 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
                     max_size=SETTINGS.detector_data_limit
                 )
-
-                abort = utils.wait(SETTINGS.detector_threads)
                 continue
+
+            loop_time = timeit.default_timer() - loop_start
+            try:
+                if loop_time >= 1:
+                    loop_start = timeit.default_timer()
+                    self.queue.put(image, block=False)
+                else:
+                    self.queue.put(image, timeout=(1 - loop_time))
+            except queue.Full:
+                self.log('Error: queue full, capture failed', utils.LOGWARNING)
+                abort = utils.abort_requested()
+                continue
+
+            loop_time = timeit.default_timer() - loop_start
+            abort = utils.wait(max(0.1, 1 - loop_time))
+
+        self.queue.task_done()
+
+    def _worker(self):
+        """Detection loop captures Kodi render buffer every 1s to create an
+           image hash. Hash is compared to the previous hash to determine
+           whether current frame of video is similar to the previous frame.
+
+           Hash is also compared to hashes calculated from previously played
+           episodes to detect common sequence of frames (i.e. credits).
+
+           A consecutive number of matching frames must be detected to confirm
+           that end credits are playing."""
+
+        if SETTINGS.detector_debug:
+            profiler = utils.Profiler()
+
+        while not (self._sigterm.is_set() or self._sigstop.is_set()):
+            try:
+                image = self.queue.get(timeout=SETTINGS.detector_threads)
+                if image is None:
+                    self.queue.task_done()
+                    raise queue.Empty
+            except queue.Empty:
+                self.log('Queue empty, exiting')
+                break
+
+            with self.player as check_fail:
+                play_time = self.player.getTime()
+                self.hash_index['current'] = (
+                    int(self.player.getTotalTime() - play_time),
+                    int(play_time),
+                    self.hashes.episode_number
+                )
+                # Only capture if playing at normal speed
+                # check_fail = self.player.get_speed() != 1
+                check_fail = False
+            if check_fail:
+                self.log('No file is playing')
+                self.queue.task_done()
+                break
 
             # Convert captured video frame from a nominal default 484x272 BGRA
             # image to a 14x8 greyscale image, depending on video aspect ratio
@@ -608,13 +641,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             loop_time = timeit.default_timer() - loop_time
             abort = utils.wait(max(0.1, SETTINGS.detector_threads - loop_time))
 
-        # Reset signals
-        self.log('Stopped')
-        if any(worker.is_alive() for worker in self.workers):
-            return
-        self._running.clear()
-        self._sigstop.clear()
-        self._sigterm.clear()
+            self.queue.task_done()
 
     def is_alive(self):
         return self._running.is_set()
@@ -655,13 +682,22 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.log('Stored credits timestamp found')
             self.state.set_detected_popup_time(stored_timestamp)
             utils.event('upnext_credits_detected')
+            return
 
         # Otherwise run the detector in a new thread
-        else:
-            self.workers = [
-                utils.run_threaded(self._run, delay=start_delay)
-                for start_delay in range(SETTINGS.detector_threads)
-            ]
+        self._running.set()
+        self.queue.put(True)
+        self.workers = [
+            utils.run_threaded(self._push_frame_to_queue)
+        ] + [
+            utils.run_threaded(self._worker, delay=start_delay)
+            for start_delay in range(SETTINGS.detector_threads - 1)
+        ]
+        self.queue.join()
+        self.queue.put(None)
+        self._running.clear()
+        self._sigstop.clear()
+        self._sigterm.clear()
 
     def stop(self, terminate=False):
         # Set terminate or stop signals if detector is running
