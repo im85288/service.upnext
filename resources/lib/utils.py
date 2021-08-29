@@ -30,8 +30,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
     from functools import wraps
 
     def __init__(self):
-        self._profiler = self.Profile()
-        self._profiler.enable()
+        self._create_profiler()
 
     @classmethod
     def profile(cls, func):
@@ -45,7 +44,7 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
 
             profiler = cls()
             result = func(*args, **kwargs)
-            profiler.disable()
+            stats = profiler.get_stats()
 
             name = getattr(func, '__qualname__', None)
             if name:
@@ -70,11 +69,15 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
             else:
                 name = func.__name__
 
-            log(profiler.get_stats(), name=name, level=LOGDEBUG)
+            log(stats, name=name, level=LOGDEBUG)
 
             return result
 
         return wrapper
+
+    def _create_profiler(self):
+        self._profiler = self.Profile()
+        self._profiler.enable()
 
     def disable(self):
         self._profiler.disable()
@@ -82,20 +85,30 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
     def enable(self):
         self._profiler.enable()
 
-    def get_stats(self, flush=True):
+    def get_stats(self, flush=True, reuse=False):
         self.disable()
 
         output_stream = self.StringIO()
-        self.Stats(
-            self._profiler,
-            stream=output_stream
-        ).sort_stats('cumulative').print_stats(20)
+        try:
+            self.Stats(
+                self._profiler,
+                stream=output_stream
+            ).sort_stats('cumulative').print_stats(20)
+        # Occurs when no stats were able to be generated from profiler
+        except TypeError:
+            pass
         output = output_stream.getvalue()
         output_stream.close()
 
-        if flush:
-            self._profiler = self.Profile()
-        self.enable()
+        if not reuse:
+            # If profiler is not being reused then do nothing
+            pass
+        elif flush:
+            # If stats are flushed then create a new profiler
+            self._create_profiler()
+        else:
+            # If stats are accumulating then re-enable existing profiler
+            self.enable()
 
         return output
 

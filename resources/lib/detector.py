@@ -593,7 +593,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     ).format(stats['episodes'])
                 )
 
-                self.log(profiler.get_stats())
+                self.log(profiler.get_stats(reuse=True))
 
             # Store current hash for comparison with next video frame
             self.hashes.data[self.hash_index['current']] = image_hash
