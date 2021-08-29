@@ -12,8 +12,10 @@ from settings import SETTINGS
 import constants
 import file_utils
 import utils
-import queue
-
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
 # Create directory where all stored hashes will be saved
 _SAVE_PATH = file_utils.translate_path(SETTINGS.detector_save_path)
