@@ -144,7 +144,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'past_hashes',
         'player',
         'state',
-        'threads',
         # Settings
         'match_number',
         'mismatch_number',
@@ -154,6 +153,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'capture_ar',
         'hash_index',
         'match_counts',
+        # Worker pool
+        'workers',
         # Signals
         '_lock',
         '_running',
@@ -167,7 +168,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.capturer = xbmc.RenderCapture()
         self.player = player
         self.state = state
-        self.threads = []
+        self.workers = []
 
         self.match_counts = {
             'hits': 0,
@@ -607,9 +608,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             loop_time = timeit.default_timer() - loop_time
             abort = utils.wait(max(0.1, SETTINGS.detector_threads - loop_time))
 
-        # Reset thread signals
+        # Reset signals
         self.log('Stopped')
-        if any(thread.is_alive() for thread in self.threads):
+        if any(worker.is_alive() for worker in self.workers):
             return
         self._running.clear()
         self._sigstop.clear()
@@ -657,7 +658,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Otherwise run the detector in a new thread
         else:
-            self.threads = [
+            self.workers = [
                 utils.run_threaded(self._run, delay=start_delay)
                 for start_delay in range(SETTINGS.detector_threads)
             ]
@@ -670,18 +671,18 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             else:
                 self._sigstop.set()
 
-            for thread in self.threads:
-                if thread.is_alive():
-                    thread.join(5)
-                if thread.is_alive():
-                    self.log('Thread {0} failed to stop cleanly'.format(
-                        thread.ident
+            for idx, worker in enumerate(self.workers):
+                if worker.is_alive():
+                    worker.join(5)
+                if worker.is_alive():
+                    self.log('Worker {0}({1}) failed to stop cleanly'.format(
+                        idx, worker.ident
                     ), utils.LOGWARNING)
 
         # Free references/resources
         with self._lock:
-            del self.threads
-            self.threads = []
+            del self.workers
+            self.workers = []
             if terminate:
                 # Invalidate collected hashes if not needed for later use
                 self.hashes.invalidate()
