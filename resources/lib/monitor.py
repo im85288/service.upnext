@@ -245,7 +245,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
 
         decoded_data, encoding = utils.decode_data(data)
         if not decoded_data or not isinstance(decoded_data, dict):
-            self.log('Error: {0} plugin, sent {1} as {2}'.format(
+            self.log('{0} plugin, sent {1} as {2}'.format(
                 sender, decoded_data, data
             ), utils.LOGWARNING)
             return
@@ -356,7 +356,7 @@ class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inh
 
         # Stop tracking if new stream started
         if self.state.get_tracked_file() != playback['file']:
-            self.log('Error: unknown file playing', utils.LOGWARNING)
+            self.log('Unknown file playing', utils.LOGWARNING)
             self.state.set_tracking(False)
             called[0] = False
             return

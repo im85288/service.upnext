@@ -247,8 +247,7 @@ def encode_data(data, encoding='base64'):
     encode_method = encode_methods.get(encoding)
 
     if not encode_method:
-        log('Unknown payload encoding type: {0}'.format(encoding),
-            level=LOGWARNING)
+        log('Unknown encoding type: {0}'.format(encoding), level=LOGWARNING)
         return None
 
     try:

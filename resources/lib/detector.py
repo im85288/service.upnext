@@ -132,7 +132,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
                 json.dump(output, target_file, indent=4)
                 self.log('Hashes saved to {0}'.format(target))
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Error: Could not save hashes to {0}'.format(target),
+            self.log('Could not save hashes to {0}'.format(target),
                      utils.LOGWARNING)
         return output
 
@@ -509,7 +509,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
-                self.log('Capture error: using {0}kB data limit'.format(
+                self.log('Capture failed using {0}kB data limit'.format(
                     SETTINGS.detector_data_limit
                 ))
 
@@ -529,7 +529,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     raise queue.Full
                 abort = utils.wait(1 - loop_time)
             except queue.Full:
-                self.log('Error: capture/detection desync', utils.LOGWARNING)
+                self.log('Desync between capture and detection', utils.LOGWARNING)
                 abort = utils.abort_requested()
                 continue
 
@@ -557,7 +557,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     self.queue.task_done()
                     raise queue.Empty
             except queue.Empty:
-                self.log('Queue empty, exiting')
+                self.log('Exiting: queue empty')
                 break
 
             with self.player as check_fail:
@@ -675,6 +675,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             return
 
         # Otherwise run the detector in a new thread
+        self.log('Started')
         self._running.set()
         self.queue.put_nowait(xbmc.RenderCapture())
         self.workers = [
@@ -685,6 +686,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ]
         self.queue.join()
         self.queue.put_nowait(None)
+        self.log('Stopped')
         self._running.clear()
         self._sigstop.clear()
         self._sigterm.clear()
