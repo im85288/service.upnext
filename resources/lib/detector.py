@@ -509,9 +509,13 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
             # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
+                if not self.player.isPlaying():
+                    self.log('Stop capture: nothing playing')
+                    break
+
                 self.log('Capture failed using {0}kB data limit'.format(
                     SETTINGS.detector_data_limit
-                ))
+                ), utils.LOGWARNING)
 
                 if SETTINGS.detector_data_limit > 8:
                     SETTINGS.detector_data_limit -= 8
@@ -677,6 +681,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         # Otherwise run the detector in a new thread
         self.log('Started')
         self._running.set()
+
         self.queue.put_nowait(xbmc.RenderCapture())
         self.workers = [
             utils.run_threaded(self._push_frame_to_queue)
@@ -686,6 +691,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         ]
         self.queue.join()
         self.queue.put_nowait(None)
+
+        if any(worker.is_alive() for worker in self.workers):
+            self.stop()
         self.log('Stopped')
         self._running.clear()
         self._sigstop.clear()
