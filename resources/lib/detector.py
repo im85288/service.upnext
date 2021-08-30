@@ -142,7 +142,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
     __slots__ = (
         # Instances
-        'capturer',
         'hashes',
         'past_hashes',
         'player',
@@ -169,7 +168,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def __init__(self, player, state):
         self.log('Init')
 
-        self.capturer = xbmc.RenderCapture()
         self.player = player
         self.state = state
         self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
@@ -500,19 +498,14 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self._hash_match_reset()
 
     def _push_frame_to_queue(self):
-        start = self.queue.get()
-        if start is not True:
-            self.queue.task_done()
-            return
+        capturer = self.queue.get()
 
         abort = False
         while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
             loop_start = timeit.default_timer()
-            if not self.capturer:
-                break
 
-            self.capturer.capture(*self.capture_size)
-            image = self.capturer.getImage()
+            capturer.capture(*self.capture_size)
+            image = capturer.getImage()
 
             # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
@@ -525,6 +518,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
                     max_size=SETTINGS.detector_data_limit
                 )
+                del capturer
+                capturer = xbmc.RenderCapture()
                 continue
 
             try:
@@ -538,6 +533,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 abort = utils.abort_requested()
                 continue
 
+        del capturer
         self.queue.task_done()
 
     def _worker(self):
@@ -680,7 +676,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
 
         # Otherwise run the detector in a new thread
         self._running.set()
-        self.queue.put_nowait(True)
+        self.queue.put_nowait(xbmc.RenderCapture())
         self.workers = [
             utils.run_threaded(self._push_frame_to_queue)
         ] + [
@@ -717,8 +713,6 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 # Invalidate collected hashes if not needed for later use
                 self.hashes.invalidate()
                 # Delete reference to instances if not needed for later use
-                del self.capturer
-                self.capturer = None
                 del self.player
                 self.player = None
                 del self.state
