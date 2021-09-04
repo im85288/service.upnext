@@ -15,7 +15,7 @@ import statichelper
 import utils
 
 
-class UpNextMonitor(xbmc.Monitor, object):  # pylint: disable=useless-object-inheritance
+class UpNextMonitor(xbmc.Monitor, object):
     """Monitor service for Kodi"""
 
     __slots__ = (

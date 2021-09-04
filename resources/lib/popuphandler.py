@@ -8,7 +8,7 @@ import dialog
 import utils
 
 
-class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
+class UpNextPopupHandler(object):
     """Controller for UpNext popup and playback of next item"""
 
     __slots__ = (

@@ -22,7 +22,7 @@ _SAVE_PATH = file_utils.translate_path(SETTINGS.detector_save_path)
 file_utils.create_directory(_SAVE_PATH)
 
 
-class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
+class UpNextHashStore(object):
     """Class to store/save/load hashes used by UpNextDetector"""
 
     __slots__ = (
@@ -137,7 +137,7 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
         return output
 
 
-class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
+class UpNextDetector(object):
     """Detector class used to detect end credits in playing video"""
 
     __slots__ = (
@@ -533,7 +533,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                     raise queue.Full
                 abort = utils.wait(1 - loop_time)
             except queue.Full:
-                self.log('Desync between capture and detection', utils.LOGWARNING)
+                self.log('Capture/detection desync', utils.LOGWARNING)
                 abort = utils.abort_requested()
                 continue
 

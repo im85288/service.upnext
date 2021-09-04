@@ -15,3 +15,4 @@ disable=
     too-many-return-statements,
     too-many-statements,
     useless-super-delegation,
+    useless-object-inheritance,

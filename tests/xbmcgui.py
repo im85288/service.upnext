@@ -232,7 +232,7 @@ class ListItem:
         return
 
 
-class Window(object):  # pylint: disable=useless-object-inheritance
+class Window(object):
     ''' A reimplementation of the xbmcgui Window '''
 
     __window_properties__ = {}

@@ -9,7 +9,7 @@ import statichelper
 import utils
 
 
-class UpNextPopup(xbmcgui.WindowXMLDialog, object):  # pylint: disable=useless-object-inheritance
+class UpNextPopup(xbmcgui.WindowXMLDialog, object):
     """Class for UpNext popup state variables and methods"""
 
     __slots__ = (

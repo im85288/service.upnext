@@ -307,7 +307,7 @@ def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-va
 def get_playlistid(playlistid_cache=[None]):  # pylint: disable=dangerous-default-value
     """Function to get playlistid of active player"""
 
-    # We don't need to actually get playlistid everytime, cache and reuse instead
+    # We don't need to get playlistid everytime, cache and reuse instead
     if playlistid_cache[0] is not None:
         return playlistid_cache[0]
 

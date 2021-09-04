@@ -16,7 +16,7 @@ import constants
 import statichelper
 
 
-class Profiler(object):  # pylint: disable=useless-object-inheritance
+class Profiler(object):
     """Class used to profile a block of code"""
 
     __slots__ = ('_profiler', )
@@ -38,9 +38,11 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
 
         @cls.wraps(func)
         def wrapper(*args, **kwargs):
-            """Wrapper to create a new Profiler instance, run the function being
-               profiled, print out profiler result to the log, and return result of
-               function call"""
+            """Wrapper to:
+               1) create a new Profiler instance;
+               2) run the function being profiled;
+               3) print out profiler result to the log; and
+               4) return result of function call"""
 
             profiler = cls()
             result = func(*args, **kwargs)

@@ -6,7 +6,7 @@ import constants
 import utils
 
 
-class UpNextSettings(object):  # pylint: disable=useless-object-inheritance
+class UpNextSettings(object):
     """Class containing all addon settings"""
 
     __slots__ = (
