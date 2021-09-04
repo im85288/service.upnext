@@ -215,11 +215,17 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         if is_match is expected_result:
             matches += 1
         else:
+            result_summary = (
+                'Comparing: {0} & {1},'
+                'similarity: {2:2.1f}%,'
+                'matched: {3},'
+                'actual: {4}'
+            )
             detector.UpNextDetector._print_hash(  # pylint: disable=protected-access
                 hash1,
                 hash2,
                 hash_size,
-                'Comparing: {0} & {1}, similarity: {2:2.1f}%, matched: {3} ({4})'.format(
+                result_summary.format(
                     file1,
                     file2,
                     similarity,
@@ -241,7 +247,12 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         false_negatives_deviation /= false_negatives
     if false_positives:
         false_positives_deviation /= false_positives
-    print('Correct matches: {0}/{1} ({2:2.1f}%), {3} false positives ({4}), {5} false negatives ({6})'.format(
+    results_summary = (
+        'Correct matches: {0}/{1} ({2:2.1f}%),'
+        '{3} false positives (mean deviation: {4}),'
+        '{5} false negatives (mean deviation: {6})'
+    )
+    print(results_summary.format(
         matches,
         num_pairs,
         percent_matched_correctly,
