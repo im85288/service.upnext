@@ -78,14 +78,14 @@ LIBRARY = {
 
 def update_library_ids():
     for idx, tvshow in enumerate(LIBRARY['tvshows']):
-        range_start = idx * 10
-        range_end = range_start + 9
-        tvshow['tvshowid'] = random.randint(range_start, range_end)
+        min_id = idx * 10
+        max_id = min_id + 9
+        LIBRARY['tvshows'][tvshow]['tvshowid'] = random.randint(min_id, max_id)
 
-    for idx, episode in LIBRARY['episodes']:
-        range_start = idx * 10
-        range_end = range_start + 9
-        episode['episodeid'] = random.randint(range_start, range_end)
+    for idx, episode in enumerate(LIBRARY['episodes']):
+        min_id = idx * 10
+        max_id = min_id + 9
+        episode['episodeid'] = random.randint(min_id, max_id)
 
         tvshow = LIBRARY['tvshows'].get(episode['showtitle'], {})
         episode['tvshowid'] = tvshow.get('tvshowid', constants.UNDEFINED)
