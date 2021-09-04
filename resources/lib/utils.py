@@ -485,9 +485,11 @@ def time_to_seconds(time_str):
 
 
 def wait(timeout=None):
-    if timeout:
-        return xbmc.Monitor().waitForAbort(timeout)
-    return xbmc.Monitor().waitForAbort()
+    if not timeout:
+        timeout = 0
+    elif timeout < 0:
+        timeout = 0.1
+    return xbmc.Monitor().waitForAbort(timeout)
 
 
 def abort_requested():
