@@ -8,7 +8,7 @@ import dialog
 import utils
 
 
-class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
+class UpNextPopupHandler(object):
     """Controller for UpNext popup and playback of next item"""
 
     __slots__ = (
@@ -323,7 +323,7 @@ class UpNextPopupHandler(object):  # pylint: disable=useless-object-inheritance
             # Decrease wait time and increase loop speed to try and avoid
             # missing the end of video when fast forwarding
             wait_time = 1 / max(1, speed)
-            popup_abort = utils.wait(max(0.1, min(wait_time, remaining)))
+            popup_abort = utils.wait(min(wait_time, remaining))
 
             # If end of file or user has closed popup then exit update loop
             remaining -= wait_time

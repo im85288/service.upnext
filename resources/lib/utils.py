@@ -16,7 +16,7 @@ import constants
 import statichelper
 
 
-class Profiler(object):  # pylint: disable=useless-object-inheritance
+class Profiler(object):
     """Class used to profile a block of code"""
 
     __slots__ = ('_profiler', )
@@ -38,9 +38,11 @@ class Profiler(object):  # pylint: disable=useless-object-inheritance
 
         @cls.wraps(func)
         def wrapper(*args, **kwargs):
-            """Wrapper to create a new Profiler instance, run the function being
-               profiled, print out profiler result to the log, and return result of
-               function call"""
+            """Wrapper to:
+               1) create a new Profiler instance;
+               2) run the function being profiled;
+               3) print out profiler result to the log; and
+               4) return result of function call"""
 
             profiler = cls()
             result = func(*args, **kwargs)
@@ -247,8 +249,7 @@ def encode_data(data, encoding='base64'):
     encode_method = encode_methods.get(encoding)
 
     if not encode_method:
-        log('Unknown payload encoding type: {0}'.format(encoding),
-            level=LOGWARNING)
+        log('Unknown encoding type: {0}'.format(encoding), level=LOGWARNING)
         return None
 
     try:
@@ -486,9 +487,15 @@ def time_to_seconds(time_str):
 
 
 def wait(timeout=None):
-    if timeout:
-        return xbmc.Monitor().waitForAbort(timeout)
-    return xbmc.Monitor().waitForAbort()
+    if not timeout:
+        timeout = 0
+    elif timeout < 0:
+        timeout = 0.1
+    return xbmc.Monitor().waitForAbort(timeout)
+
+
+def abort_requested():
+    return xbmc.Monitor().abortRequested()
 
 
 def calc_wait_time(end_time=None, start_time=0, rate=None):

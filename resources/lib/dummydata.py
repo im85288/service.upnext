@@ -3,29 +3,30 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import random
+import constants
 
 LIBRARY = {
     'tvshows': {
         'Game of Thrones': {
-            'tvshowid': random.randint(0, 9)
+            'tvshowid': constants.UNDEFINED,
         },
         'Breaking Bad': {
-            'tvshowid': random.randint(10, 19)
+            'tvshowid': constants.UNDEFINED,
         },
         'The Mandalorian': {
-            'tvshowid': random.randint(20, 29)
+            'tvshowid': constants.UNDEFINED,
         },
         'The Handmaid\'s Tale': {
-            'tvshowid': random.randint(30, 39)
+            'tvshowid': constants.UNDEFINED,
         },
         'Mad Men': {
-            'tvshowid': random.randint(40, 49)
+            'tvshowid': constants.UNDEFINED,
         }
     },
     'episodes': [
         {
-            'episodeid': random.randint(0, 9),
-            'tvshowid': -1,
+            'episodeid': constants.UNDEFINED,
+            'tvshowid': constants.UNDEFINED,
             'title': 'Garden of Bones',
             'art': {
                 'thumb': 'https://artworks.thetvdb.com/banners/episodes/121361/4245773.jpg',
@@ -48,8 +49,8 @@ LIBRARY = {
             'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E04 - Garden of Bones.mkv'
         },
         {
-            'episodeid': random.randint(10, 19),
-            'tvshowid': -1,
+            'episodeid': constants.UNDEFINED,
+            'tvshowid': constants.UNDEFINED,
             'title': 'The Ghost of Harrenhal',
             'art': {
                 'thumb': 'https://artworks.thetvdb.com/banners/episodes/121361/4245774.jpg',
@@ -74,8 +75,20 @@ LIBRARY = {
     ]
 }
 
-for episode in LIBRARY['episodes']:
-    episode['tvshowid'] = (
-        LIBRARY['tvshows'].get(episode['showtitle'], {}).get('tvshowid', -1)
-    )
-del episode  # pylint: disable=undefined-loop-variable
+
+def update_library_ids():
+    for idx, tvshow in enumerate(LIBRARY['tvshows']):
+        min_id = idx * 10
+        max_id = min_id + 9
+        LIBRARY['tvshows'][tvshow]['tvshowid'] = random.randint(min_id, max_id)
+
+    for idx, episode in enumerate(LIBRARY['episodes']):
+        min_id = idx * 10
+        max_id = min_id + 9
+        episode['episodeid'] = random.randint(min_id, max_id)
+
+        tvshow = LIBRARY['tvshows'].get(episode['showtitle'], {})
+        episode['tvshowid'] = tvshow.get('tvshowid', constants.UNDEFINED)
+
+
+update_library_ids()

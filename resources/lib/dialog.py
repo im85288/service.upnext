@@ -9,7 +9,7 @@ import statichelper
 import utils
 
 
-class UpNextPopup(xbmcgui.WindowXMLDialog, object):  # pylint: disable=useless-object-inheritance
+class UpNextPopup(xbmcgui.WindowXMLDialog, object):
     """Class for UpNext popup state variables and methods"""
 
     __slots__ = (
@@ -92,10 +92,12 @@ class UpNextPopup(xbmcgui.WindowXMLDialog, object):  # pylint: disable=useless-o
             show_spoilers = utils.get_global_setting(
                 'videolibrary.showunwatchedplots'
             ) if utils.supports_python_api(18) else constants.DEFAULT_SPOILERS
-            show_plot = constants.UNWATCHED_EPISODE_PLOT in show_spoilers
-            show_art = constants.UNWATCHED_EPISODE_THUMB in show_spoilers
 
-            art = self.item.get('art') if show_art else constants.NO_SPOILER_ART
+            art = (
+                self.item.get('art')
+                if constants.UNWATCHED_EPISODE_THUMB in show_spoilers
+                else constants.NO_SPOILER_ART
+            )
             self.setProperty('fanart', art.get('tvshow.fanart', ''))
             self.setProperty('landscape', art.get('tvshow.landscape', ''))
             self.setProperty('clearart', art.get('tvshow.clearart', ''))
@@ -105,7 +107,8 @@ class UpNextPopup(xbmcgui.WindowXMLDialog, object):  # pylint: disable=useless-o
 
             self.setProperty(
                 'plot',
-                self.item.get('plot', '') if show_plot else ''
+                self.item.get('plot', '')
+                if constants.UNWATCHED_EPISODE_PLOT in show_spoilers else ''
             )
             self.setProperty('tvshowtitle', self.item.get('showtitle', ''))
             self.setProperty('title', self.item.get('title', ''))

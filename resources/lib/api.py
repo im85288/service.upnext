@@ -219,7 +219,7 @@ def get_next_in_playlist(position, unwatched_only=False):
 
     # Don't check if next item is an episode, just use it if it is there
     if not item:  # item.get('type') != 'episode':
-        log('Error: no next item found in playlist', utils.LOGWARNING)
+        log('No next item found in playlist', utils.LOGWARNING)
         return None
 
     # Playlist item may not have had video info details set
@@ -271,7 +271,7 @@ def play_plugin_item(data, encoding, resume=False):
         )
         return
 
-    log('Error: no plugin data available for playback', utils.LOGWARNING)
+    log('No plugin data available for playback', utils.LOGWARNING)
 
 
 def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value
@@ -297,7 +297,7 @@ def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-va
     )
 
     if playerid == constants.UNDEFINED:
-        log('Error: no active player', utils.LOGWARNING)
+        log('No active player', utils.LOGWARNING)
         return None
 
     playerid_cache[0] = playerid
@@ -307,7 +307,7 @@ def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-va
 def get_playlistid(playlistid_cache=[None]):  # pylint: disable=dangerous-default-value
     """Function to get playlistid of active player"""
 
-    # We don't need to actually get playlistid everytime, cache and reuse instead
+    # We don't need to get playlistid everytime, cache and reuse instead
     if playlistid_cache[0] is not None:
         return playlistid_cache[0]
 
@@ -355,7 +355,7 @@ def get_now_playing(properties=None):
     result = result.get('result', {}).get('item')
 
     if not result:
-        log('Error: now playing item info not found', utils.LOGWARNING)
+        log('Now playing item info not found', utils.LOGWARNING)
         return None
 
     log('Now playing: {0}'.format(result))
@@ -375,7 +375,7 @@ def get_next_from_library(
     episode = episode.copy() if episode else get_from_library(episodeid)
 
     if not episode:
-        log('Error: no next episode found, current episode not in library',
+        log('No next episode found, current episode not in library',
             utils.LOGWARNING)
         episode = None
         new_season = False
@@ -482,7 +482,7 @@ def get_from_library(episodeid, tvshowid=None):
     result = result.get('result', {}).get('episodedetails')
 
     if not result:
-        log('Error: episode info not found in library', utils.LOGWARNING)
+        log('Episode info not found in library', utils.LOGWARNING)
         return None
     episode = result
 
@@ -499,7 +499,7 @@ def get_from_library(episodeid, tvshowid=None):
     result = result.get('result', {}).get('tvshowdetails')
 
     if not result:
-        log('Error: show info not found in library', utils.LOGWARNING)
+        log('Show info not found in library', utils.LOGWARNING)
         return None
     result.update(episode)
 
@@ -525,7 +525,7 @@ def get_tvshowid(title):
     result = result.get('result', {}).get('tvshows')
 
     if not result:
-        log('Error: tvshowid not found in library', utils.LOGWARNING)
+        log('tvshowid not found in library', utils.LOGWARNING)
         return constants.UNDEFINED
 
     return utils.get_int(result[0], 'tvshowid')
@@ -561,7 +561,7 @@ def get_episodeid(tvshowid, season, episode):
     result = result.get('result', {}).get('episodes')
 
     if not result:
-        log('Error: episodeid not found in library', utils.LOGWARNING)
+        log('episodeid not found in library', utils.LOGWARNING)
         return constants.UNDEFINED
 
     return utils.get_int(result[0], 'episodeid')

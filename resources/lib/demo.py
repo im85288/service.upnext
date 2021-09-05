@@ -58,4 +58,4 @@ def handle_demo_mode(player, state, now_playing_item, called=[False]):  # pylint
 
         check_fail = False
     if check_fail:
-        log('Error: demo seek, nothing playing', utils.LOGWARNING)
+        log('Nothing playing', utils.LOGWARNING)

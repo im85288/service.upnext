@@ -57,7 +57,7 @@ class UpNextPlayerState(dict):
             self[name]['actual'] = args[0]
 
 
-class UpNextPlayer(xbmc.Player, object):  # pylint: disable=useless-object-inheritance
+class UpNextPlayer(xbmc.Player, object):
     """Inbuilt player function overrides"""
 
     __slots__ = (

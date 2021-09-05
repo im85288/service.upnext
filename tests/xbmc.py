@@ -272,7 +272,7 @@ class RenderCapture:
         self._width = width
         self._height = height
 
-    def getImage(self):
+    def getImage(self, msecs=None):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
         return array.array('B', [
             random.getrandbits(8) if i % 4 != 3 else 255

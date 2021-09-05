@@ -12,14 +12,17 @@ from settings import SETTINGS
 import constants
 import file_utils
 import utils
-
+try:
+    import queue
+except ImportError:
+    import Queue as queue
 
 # Create directory where all stored hashes will be saved
 _SAVE_PATH = file_utils.translate_path(SETTINGS.detector_save_path)
 file_utils.create_directory(_SAVE_PATH)
 
 
-class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
+class UpNextHashStore(object):
     """Class to store/save/load hashes used by UpNextDetector"""
 
     __slots__ = (
@@ -129,22 +132,20 @@ class UpNextHashStore(object):  # pylint: disable=useless-object-inheritance
                 json.dump(output, target_file, indent=4)
                 self.log('Hashes saved to {0}'.format(target))
         except (IOError, OSError, TypeError, ValueError):
-            self.log('Error: Could not save hashes to {0}'.format(target),
+            self.log('Could not save hashes to {0}'.format(target),
                      utils.LOGWARNING)
         return output
 
 
-class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
+class UpNextDetector(object):
     """Detector class used to detect end credits in playing video"""
 
     __slots__ = (
         # Instances
-        'capturer',
         'hashes',
         'past_hashes',
         'player',
         'state',
-        'threads',
         # Settings
         'match_number',
         'mismatch_number',
@@ -154,6 +155,9 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         'capture_ar',
         'hash_index',
         'match_counts',
+        # Worker pool
+        'queue',
+        'workers',
         # Signals
         '_lock',
         '_running',
@@ -164,10 +168,10 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
     def __init__(self, player, state):
         self.log('Init')
 
-        self.capturer = xbmc.RenderCapture()
         self.player = player
         self.state = state
-        self.threads = []
+        self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
+        self.workers = []
 
         self.match_counts = {
             'hits': 0,
@@ -493,7 +497,50 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
         self.mismatch_number = SETTINGS.detect_mismatches
         self._hash_match_reset()
 
-    def _run(self):
+    def _push_frame_to_queue(self):
+        capturer = self.queue.get()
+
+        abort = False
+        while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
+            loop_start = timeit.default_timer()
+
+            capturer.capture(*self.capture_size)
+            image = capturer.getImage()
+
+            # Capture failed or was skipped, retry with less data
+            if not image or image[-1] != 255:
+                if not self.player.isPlaying():
+                    self.log('Stop capture: nothing playing')
+                    break
+
+                self.log('Capture failed using {0}kB data limit'.format(
+                    SETTINGS.detector_data_limit
+                ), utils.LOGWARNING)
+
+                if SETTINGS.detector_data_limit > 8:
+                    SETTINGS.detector_data_limit -= 8
+                self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
+                    max_size=SETTINGS.detector_data_limit
+                )
+                del capturer
+                capturer = xbmc.RenderCapture()
+                continue
+
+            try:
+                self.queue.put(image, timeout=1)
+                loop_time = timeit.default_timer() - loop_start
+                if loop_time >= 1:
+                    raise queue.Full
+                abort = utils.wait(1 - loop_time)
+            except queue.Full:
+                self.log('Capture/detection desync', utils.LOGWARNING)
+                abort = utils.abort_requested()
+                continue
+
+        del capturer
+        self.queue.task_done()
+
+    def _worker(self):
         """Detection loop captures Kodi render buffer every 1s to create an
            image hash. Hash is compared to the previous hash to determine
            whether current frame of video is similar to the previous frame.
@@ -504,16 +551,18 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
            A consecutive number of matching frames must be detected to confirm
            that end credits are playing."""
 
-        self.log('Started')
-        self._running.set()
-
         if SETTINGS.detector_debug:
             profiler = utils.Profiler()
 
-        play_time = 0
-        abort = False
-        while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
-            loop_time = timeit.default_timer()
+        while not (self._sigterm.is_set() or self._sigstop.is_set()):
+            try:
+                image = self.queue.get(timeout=SETTINGS.detector_threads)
+                if image is None:
+                    self.queue.task_done()
+                    raise queue.Empty
+            except queue.Empty:
+                self.log('Exiting: queue empty')
+                break
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
@@ -527,25 +576,8 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
                 check_fail = False
             if check_fail:
                 self.log('No file is playing')
+                self.queue.task_done()
                 break
-
-            self.capturer.capture(*self.capture_size)
-            image = self.capturer.getImage()
-
-            # Capture failed or was skipped, retry with less data
-            if not image or image[-1] != 255:
-                self.log('Capture error: using {0}kB data limit'.format(
-                    SETTINGS.detector_data_limit
-                ))
-
-                if SETTINGS.detector_data_limit > 8:
-                    SETTINGS.detector_data_limit -= 8
-                self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
-                    max_size=SETTINGS.detector_data_limit
-                )
-
-                abort = utils.wait(SETTINGS.detector_threads)
-                continue
 
             # Convert captured video frame from a nominal default 484x272 BGRA
             # image to a 14x8 greyscale image, depending on video aspect ratio
@@ -603,17 +635,7 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             if self.credits_detected():
                 self.update_timestamp(play_time)
 
-            # Wait until loop execution time of 1 s/loop/thread has elapsed
-            loop_time = timeit.default_timer() - loop_time
-            abort = utils.wait(max(0.1, SETTINGS.detector_threads - loop_time))
-
-        # Reset thread signals
-        self.log('Stopped')
-        if any(thread.is_alive() for thread in self.threads):
-            return
-        self._running.clear()
-        self._sigstop.clear()
-        self._sigterm.clear()
+            self.queue.task_done()
 
     def is_alive(self):
         return self._running.is_set()
@@ -654,13 +676,28 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             self.log('Stored credits timestamp found')
             self.state.set_detected_popup_time(stored_timestamp)
             utils.event('upnext_credits_detected')
+            return
 
         # Otherwise run the detector in a new thread
-        else:
-            self.threads = [
-                utils.run_threaded(self._run, delay=start_delay)
-                for start_delay in range(SETTINGS.detector_threads)
-            ]
+        self.log('Started')
+        self._running.set()
+
+        self.queue.put_nowait(xbmc.RenderCapture())
+        self.workers = [
+            utils.run_threaded(self._push_frame_to_queue)
+        ] + [
+            utils.run_threaded(self._worker, delay=start_delay)
+            for start_delay in range(SETTINGS.detector_threads - 1)
+        ]
+        self.queue.join()
+        self.queue.put_nowait(None)
+
+        if any(worker.is_alive() for worker in self.workers):
+            self.stop()
+        self.log('Stopped')
+        self._running.clear()
+        self._sigstop.clear()
+        self._sigterm.clear()
 
     def stop(self, terminate=False):
         # Set terminate or stop signals if detector is running
@@ -670,24 +707,22 @@ class UpNextDetector(object):  # pylint: disable=useless-object-inheritance
             else:
                 self._sigstop.set()
 
-            for thread in self.threads:
-                if thread.is_alive():
-                    thread.join(5)
-                if thread.is_alive():
-                    self.log('Thread {0} failed to stop cleanly'.format(
-                        thread.ident
+            for idx, worker in enumerate(self.workers):
+                if worker.is_alive():
+                    worker.join(5)
+                if worker.is_alive():
+                    self.log('Worker {0}({1}) failed to stop cleanly'.format(
+                        idx, worker.ident
                     ), utils.LOGWARNING)
 
         # Free references/resources
         with self._lock:
-            del self.threads
-            self.threads = []
+            del self.workers
+            self.workers = []
             if terminate:
                 # Invalidate collected hashes if not needed for later use
                 self.hashes.invalidate()
                 # Delete reference to instances if not needed for later use
-                del self.capturer
-                self.capturer = None
                 del self.player
                 self.player = None
                 del self.state
