@@ -242,6 +242,12 @@ class UpNextDetector(object):
         return (width, height), aspect_ratio
 
     @staticmethod
+    def _create_mask(image_hash, mask_value=None):
+        if mask_value is None:
+            mask_value = len(image_hash) / image_hash.count(0)
+        return tuple(0 if pixel else mask_value for pixel in image_hash)
+
+    @staticmethod
     def _generate_initial_hash(
         width, height, blank_value=0, pixel_value=1
     ):
@@ -360,7 +366,10 @@ class UpNextDetector(object):
             image_hash
         )
         # Calculate percentage of significant pixels
-        stats['significance'] = self._calc_significance(image_hash)
+        stats['significance'] = self._calc_significance(
+            image_hash,
+            self.hashes.data.get(self.hash_index['mask'])
+        )
         # Match if current hash matches previous hash and has few significant
         # regions of deviation
         if stats['previous'] >= SETTINGS.detect_level:
@@ -449,13 +458,17 @@ class UpNextDetector(object):
         )
 
         self.hash_index = {
-            # Current hash index
+            # Hash indexes are tuples containing the following data:
+            # (time_to_end, time_from_start, episode_number)
+            # Current hash
             'current': (0, 0, 0),
-            # Previous hash index
+            # Previous hash
             'previous': None,
-            # Representative end credits hash index
+            # Representative end credits hash
             'credits': (0, 0, constants.UNDEFINED),
-            # Other episodes hash index
+            # Significance mask of representative end credits hash
+            'mask': (0, 1, constants.UNDEFINED),
+            # Other episodes hash
             'episodes': None,
             # Detected end credits timestamp from end of file
             'detected_at': None
@@ -473,9 +486,11 @@ class UpNextDetector(object):
             seasonid=self.state.get_season_identifier(),
             episode_number=self.state.get_episode_number(),
             # Representative hash of centred end credits text on a dark
-            # background stored as first hash
+            # background stored as first hash. Masked significance weights
+            # stored as second hash.
             data={
                 self.hash_index['credits']: initial_hash,
+                self.hash_index['mask']: self._create_mask(initial_hash)
             },
             timestamps={}
         )
