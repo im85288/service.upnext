@@ -121,6 +121,7 @@ class UpNextHashStore(object):
             'data': {
                 str(hash_index): self.hash_to_int(self.data[hash_index])
                 for hash_index in self.data
+                if hash_index[-1] != constants.UNDEFINED
             },
             'timestamps': self.timestamps
         }
