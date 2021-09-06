@@ -198,7 +198,9 @@ class UpNextDetector(object):
         return (vals[pivot] + vals[pivot - 1]) / 2
 
     @staticmethod
-    def _calc_significance(vals):
+    def _calc_significance(vals, weights=None):
+        if weights:
+            return 100 * sum(map(operator.mul, vals, weights)) / len(vals)
         return 100 * sum(vals) / len(vals)
 
     @staticmethod
@@ -240,22 +242,22 @@ class UpNextDetector(object):
         return (width, height), aspect_ratio
 
     @staticmethod
-    def _generate_initial_hash(hash_size):
+    def _generate_initial_hash(
+        width, height, blank_value=0, pixel_value=1
+    ):
         return (
-            [0] * hash_size[0]
-            + (
+            (blank_value, ) * width + (
                 (
-                    [0] * (4 * hash_size[0] // 16)
-                    + [1] * (hash_size[0] - 2 * (4 * hash_size[0] // 16))
-                    + [0] * (4 * hash_size[0] // 16)
+                    (blank_value, ) * (4 * width // 16)
+                    + (pixel_value, ) * (width - 2 * (4 * width // 16))
+                    + (blank_value, ) * (4 * width // 16)
+                ) + (
+                    (blank_value, ) * (6 * width // 16)
+                    + (pixel_value, ) * (width - 2 * (6 * width // 16))
+                    + (blank_value, ) * (6 * width // 16)
                 )
-                + (
-                    [0] * (6 * hash_size[0] // 16)
-                    + [1] * (hash_size[0] - 2 * (6 * hash_size[0] // 16))
-                    + [0] * (6 * hash_size[0] // 16)
-                )
-            ) * ((hash_size[1] - 2) // 2)
-            + [0] * hash_size[0]
+            ) * ((height - 2) // 2)
+            + (blank_value, ) * width
         )
 
     @staticmethod
@@ -463,7 +465,9 @@ class UpNextDetector(object):
         hash_size = [8 * self.capture_ar, 8]
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
+
         # Hashes for currently playing episode
+        initial_hash = self._generate_initial_hash(*hash_size)
         self.hashes = UpNextHashStore(
             hash_size=hash_size,
             seasonid=self.state.get_season_identifier(),
@@ -471,9 +475,7 @@ class UpNextDetector(object):
             # Representative hash of centred end credits text on a dark
             # background stored as first hash
             data={
-                self.hash_index['credits']: self._generate_initial_hash(
-                    hash_size
-                )
+                self.hash_index['credits']: initial_hash,
             },
             timestamps={}
         )
