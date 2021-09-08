@@ -276,10 +276,10 @@ class UpNextMonitor(xbmc.Monitor, object):
             return
 
         # Start detector to detect end credits and trigger popup
-        self.log('Detector started at {time}s of {duration}s'.format(
-            **playback), utils.LOGINFO)
-        if not isinstance(self.detector, detector.UpNextDetector):
-            with self._lock:
+        with self._lock:
+            self.log('Detector started at {time}s of {duration}s'.format(
+                **playback), utils.LOGINFO)
+            if not isinstance(self.detector, detector.UpNextDetector):
                 self.detector = detector.UpNextDetector(
                     player=self.player,
                     state=self.state
@@ -296,13 +296,15 @@ class UpNextMonitor(xbmc.Monitor, object):
         self.state.set_tracking(False)
 
         # Start popuphandler to show popup and handle playback of next video
-        self.log('Popuphandler started at {time}s of {duration}s'.format(
-            **playback), utils.LOGINFO)
-        if not isinstance(self.popuphandler, popuphandler.UpNextPopupHandler):
-            self.popuphandler = popuphandler.UpNextPopupHandler(
-                player=self.player,
-                state=self.state
-            )
+        with self._lock:
+            self.log('Popuphandler started at {time}s of {duration}s'.format(
+                **playback), utils.LOGINFO)
+            if not isinstance(self.popuphandler,
+                              popuphandler.UpNextPopupHandler):
+                self.popuphandler = popuphandler.UpNextPopupHandler(
+                    player=self.player,
+                    state=self.state
+                )
         # Check if popuphandler found a video to play next
         has_next_item = self.popuphandler.start()  # pylint: disable=assignment-from-no-return
         # And check whether popup/playback was cancelled/stopped by the user
@@ -311,6 +313,8 @@ class UpNextMonitor(xbmc.Monitor, object):
             and self.state.keep_playing
             and not self.state.playing_next
         )
+        # Stop popuphandler and release resources
+        self._stop_popuphandler(terminate=True)
 
         if not isinstance(self.detector, detector.UpNextDetector):
             self.detector.cancel()
@@ -332,7 +336,7 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Store hashes and timestamp for current video
         self.detector.store_data()
         # Stop detector and release resources
-        self.detector.stop(terminate=True)
+        self._stop_detector(terminate=True)
 
     def _start_tracking(self, called=[False]):  # pylint: disable=dangerous-default-value
         # Exit if tracking disabled
@@ -394,20 +398,30 @@ class UpNextMonitor(xbmc.Monitor, object):
         called[0] = False
 
     def _stop_detector(self, terminate=False):
-        if not self.detector:
-            return
-        if isinstance(self.detector, detector.UpNextDetector):
-            self.detector.stop(terminate=terminate)
-        else:
-            self.detector.cancel()
+        with self._lock:
+            if not self.detector:
+                return
+            if isinstance(self.detector, detector.UpNextDetector):
+                self.detector.stop(terminate=terminate)
+                if terminate:
+                    del self.detector
+                    self.detector = None
+                    self.log('Cleanup detector')
+            else:
+                self.detector.cancel()
 
     def _stop_popuphandler(self, terminate=False):
-        if not self.popuphandler:
-            return
-        if isinstance(self.popuphandler, popuphandler.UpNextPopupHandler):
-            self.popuphandler.stop(terminate=terminate)
-        else:
-            self.popuphandler.cancel()
+        with self._lock:
+            if not self.popuphandler:
+                return
+            if isinstance(self.popuphandler, popuphandler.UpNextPopupHandler):
+                self.popuphandler.stop(terminate=terminate)
+                if terminate:
+                    del self.popuphandler
+                    self.popuphandler = None
+                    self.log('Cleanup popuphandler')
+            else:
+                self.popuphandler.cancel()
 
     def start(self, **kwargs):
         if SETTINGS.disabled:
@@ -437,8 +451,8 @@ class UpNextMonitor(xbmc.Monitor, object):
         self.log('UpNext exiting', utils.LOGINFO)
 
         # Free references/resources
-        self._stop_detector()
-        self._stop_popuphandler()
+        self._stop_detector(terminate=True)
+        self._stop_popuphandler(terminate=True)
         del self.state
         self.state = None
         self.log('Cleanup state')
