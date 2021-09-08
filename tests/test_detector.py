@@ -166,7 +166,7 @@ def test_representative_hash():
     # Round down width to multiple of 2
     hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
-    test_hash = detector.UpNextDetector._generate_initial_hash(hash_size)  # pylint: disable=protected-access
+    test_hash = detector.UpNextDetector._generate_initial_hash(*hash_size)  # pylint: disable=protected-access
     detector.UpNextDetector._print_hash(test_hash, test_hash, hash_size)  # pylint: disable=protected-access
 
     test_complete = True
