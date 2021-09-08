@@ -243,10 +243,13 @@ class UpNextDetector(object):
         return (width, height), aspect_ratio
 
     @staticmethod
-    def _create_mask(image_hash, masked_value=0, masking_value=None):
+    def _create_mask(image_hash, masked_value=0, masking_value=None, level=0):
         if masking_value is None:
             masking_value = len(image_hash) / image_hash.count(masked_value)
-        return tuple(0 if pixel else masking_value for pixel in image_hash)
+        return tuple(
+            masking_value if pixel == masked_value else level
+            for pixel in image_hash
+        )
 
     @staticmethod
     def _generate_initial_hash(width, height, blank_value=0, pixel_value=1):
@@ -502,7 +505,9 @@ class UpNextDetector(object):
             # stored as second hash.
             data={
                 self.hash_index['credits']: initial_hash,
-                self.hash_index['mask']: self._create_mask(initial_hash)
+                self.hash_index['mask']: self._create_mask(
+                    initial_hash, level=0.25
+                )
             },
             timestamps={}
         )
