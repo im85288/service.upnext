@@ -154,6 +154,7 @@ class UpNextDetector(object):
         # Variables
         'capture_size',
         'capture_ar',
+        'capture_interval',
         'hash_index',
         'match_counts',
         # Worker pool
@@ -385,7 +386,7 @@ class UpNextDetector(object):
         invalid_episode_idx = constants.UNDEFINED
         current_episode_idx = self.hash_index['current'][2]
         # Offset equal to the number of matches required for detection
-        offset = self.match_number
+        offset = SETTINGS.detect_matches
         # Matching time period from start of file
         min_start_time = self.hash_index['current'][1] - offset
         max_start_time = self.hash_index['current'][1] + offset
@@ -454,6 +455,8 @@ class UpNextDetector(object):
         self.capture_size, self.capture_ar = self._capture_resolution(
             max_size=SETTINGS.detector_data_limit
         )
+        # Set minimum capture interval to decrease capture rate
+        self.capture_interval = 0.5
 
         self.hash_index = {
             # Hash indexes are tuples containing the following data:
@@ -507,10 +510,14 @@ class UpNextDetector(object):
 
         # Number of consecutive frame matches required for a positive detection
         # Set to 5 as default
-        self.match_number = SETTINGS.detect_matches
+        self.match_number = int(
+            SETTINGS.detect_matches / self.capture_interval
+        )
         # Number of consecutive frame mismatches required to reset match count
         # Set to 3 to account for bad frame capture
-        self.mismatch_number = SETTINGS.detect_mismatches
+        self.mismatch_number = int(
+            SETTINGS.detect_mismatches / self.capture_interval
+        )
         self._hash_match_reset()
 
     def _push_frame_to_queue(self):
@@ -543,11 +550,11 @@ class UpNextDetector(object):
                 continue
 
             try:
-                self.queue.put(image, timeout=1)
+                self.queue.put(image, timeout=self.capture_interval)
                 loop_time = timeit.default_timer() - loop_start
-                if loop_time >= 1:
+                if loop_time >= self.capture_interval:
                     raise queue.Full
-                abort = utils.wait(1 - loop_time)
+                abort = utils.wait(self.capture_interval - loop_time)
             except queue.Full:
                 self.log('Capture/detection desync', utils.LOGWARNING)
                 abort = utils.abort_requested()
@@ -702,7 +709,10 @@ class UpNextDetector(object):
         self.workers = [
             utils.run_threaded(self._push_frame_to_queue)
         ] + [
-            utils.run_threaded(self._worker, delay=start_delay)
+            utils.run_threaded(
+                self._worker,
+                delay=(start_delay * self.capture_interval)
+            )
             for start_delay in range(SETTINGS.detector_threads - 1)
         ]
         self.queue.join()
@@ -755,7 +765,7 @@ class UpNextDetector(object):
         # reduce false positives when comparing to other episodes
         if self.match_counts['detected']:
             # Offset equal to the number of matches required for detection
-            offset = self.match_number
+            offset = SETTINGS.detect_matches
             # Matching time period from end of file
             min_end_time = self.hash_index['detected_at'] - offset
             max_end_time = self.hash_index['detected_at'] + offset
