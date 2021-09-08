@@ -688,7 +688,7 @@ class UpNextDetector(object):
         stored_timestamp = self.past_hashes.timestamps.get(
             self.hashes.episode_number
         )
-        if stored_timestamp:
+        if stored_timestamp and not SETTINGS.detector_debug:
             self.log('Stored credits timestamp found')
             self.state.set_detected_popup_time(stored_timestamp)
             utils.event('upnext_credits_detected')
