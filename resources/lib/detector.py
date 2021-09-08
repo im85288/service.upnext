@@ -333,9 +333,10 @@ class UpNextDetector(object):
         utils.log(msg, name=cls.__name__, level=level)
 
     def _check_similarity(self, image_hash):
+        is_match = False
+        possible_match = False
+
         stats = {
-            'is_match': False,
-            'possible_match': False,
             # Similarity to representative end credits hash
             'credits': 0,
             # Similarity to previous frame hash
@@ -351,11 +352,13 @@ class UpNextDetector(object):
             self.hashes.data.get(self.hash_index['credits']),
             image_hash
         )
-        # Match if current hash (loosely) matches representative hash
-        if stats['credits'] >= SETTINGS.detect_level - 10:
-            stats['is_match'] = True
+        # Match if current hash matches representative hash or blank hash
+        is_match = (
+            stats['credits'] >= SETTINGS.detect_level
+            or not any(image_hash)
+        )
         # Unless debugging, return if match found, otherwise continue checking
-        if stats['is_match'] and not SETTINGS.detector_debug:
+        if is_match and not SETTINGS.detector_debug:
             self._hash_match_hit()
             return stats
 
@@ -369,14 +372,22 @@ class UpNextDetector(object):
             image_hash,
             self.hashes.data.get(self.hash_index['mask'])
         )
-        # Match if current hash matches previous hash and has few significant
-        # regions of deviation
-        if stats['previous'] >= SETTINGS.detect_level:
-            stats['possible_match'] = True
-            if stats['significance'] <= self.significance_level:
-                stats['is_match'] = True
+        # Possible match if current hash matches previous hash and is similar
+        # to representative hash
+        possible_match = (
+            stats['credits'] >= SETTINGS.detect_level - 20
+            and stats['previous'] >= SETTINGS.detect_level
+        )
+        # Match if hash also has few significant regions of deviation
+        is_match = (
+            is_match
+            or (
+                possible_match
+                and stats['significance'] <= self.significance_level
+            )
+        )
         # Unless debugging, return if match found, otherwise continue checking
-        if stats['is_match'] and not SETTINGS.detector_debug:
+        if is_match and not SETTINGS.detector_debug:
             self._hash_match_hit()
             return stats
 
@@ -416,15 +427,15 @@ class UpNextDetector(object):
             )
             # Match if current hash matches other episode hashes
             if stats['episodes'] >= SETTINGS.detect_level:
-                stats['is_match'] = True
+                is_match = True
                 break
         self.hash_index['episodes'] = old_hash_index
 
         # Increment the number of matches
-        if stats['is_match']:
+        if is_match:
             self._hash_match_hit()
         # Otherwise increment number of mismatches
-        elif not stats['possible_match']:
+        elif not possible_match:
             self._hash_match_miss()
 
         return stats
