@@ -22,7 +22,8 @@ class UpNextMonitor(xbmc.Monitor, object):
         '_monitoring',
         '_queue_length',
         '_started',
-        '_lock',
+        '_detector',
+        '_popuphandler',
         'detector',
         'player',
         'popuphandler',
@@ -38,7 +39,9 @@ class UpNextMonitor(xbmc.Monitor, object):
         self._monitoring = False
         self._queue_length = 0
         self._started = False
-        self._lock = utils.create_lock()
+
+        self._detector = None
+        self._popuphandler = None
 
         self.detector = None
         self.player = None
@@ -229,7 +232,7 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Schedule popuphandler to start when required
         if popup_delay is not None:
             self.log('Popuphandler starting in {0}s'.format(popup_delay))
-            self.popuphandler = utils.run_threaded(
+            self._popuphandler = utils.run_threaded(
                 self._launch_popup,
                 delay=popup_delay
             )
@@ -271,22 +274,28 @@ class UpNextMonitor(xbmc.Monitor, object):
         return playback
 
     def _launch_detector(self):
+        del self._detector
+        self._detector = None
+
         playback = self._get_playback_details()
         if not playback:
             return
 
         # Start detector to detect end credits and trigger popup
-        with self._lock:
-            self.log('Detector started at {time}s of {duration}s'.format(
-                **playback), utils.LOGINFO)
-            if not isinstance(self.detector, detector.UpNextDetector):
-                self.detector = detector.UpNextDetector(
-                    player=self.player,
-                    state=self.state
-                )
+        self.log('Detector started at {time}s of {duration}s'.format(
+            **playback), utils.LOGINFO)
+        if not self.detector:
+            self.detector = detector.UpNextDetector(
+                player=self.player,
+                state=self.state
+            )
+
         self.detector.start()
 
     def _launch_popup(self):
+        del self._popuphandler
+        self._popuphandler = None
+
         playback = self._get_playback_details()
         if not playback:
             return
@@ -296,15 +305,13 @@ class UpNextMonitor(xbmc.Monitor, object):
         self.state.set_tracking(False)
 
         # Start popuphandler to show popup and handle playback of next video
-        with self._lock:
-            self.log('Popuphandler started at {time}s of {duration}s'.format(
-                **playback), utils.LOGINFO)
-            if not isinstance(self.popuphandler,
-                              popuphandler.UpNextPopupHandler):
-                self.popuphandler = popuphandler.UpNextPopupHandler(
-                    player=self.player,
-                    state=self.state
-                )
+        self.log('Popuphandler started at {time}s of {duration}s'.format(
+            **playback), utils.LOGINFO)
+        if not self.popuphandler:
+            self.popuphandler = popuphandler.UpNextPopupHandler(
+                player=self.player,
+                state=self.state
+            )
         # Check if popuphandler found a video to play next
         has_next_item = self.popuphandler.start()  # pylint: disable=assignment-from-no-return
         # And check whether popup/playback was cancelled/stopped by the user
@@ -316,8 +323,8 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Stop popuphandler and release resources
         self._stop_popuphandler(terminate=True)
 
-        if not isinstance(self.detector, detector.UpNextDetector):
-            self.detector.cancel()
+        if not self.detector:
+            self._stop_detector()
             return
 
         # If credits were (in)correctly detected and popup is cancelled
@@ -382,7 +389,7 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Schedule detector to start when required
         if detector_delay is not None:
             self.log('Detector starting in {0}s'.format(detector_delay))
-            self.detector = utils.run_threaded(
+            self._detector = utils.run_threaded(
                 self._launch_detector,
                 delay=detector_delay
             )
@@ -390,7 +397,7 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Schedule popuphandler to start when required
         if popup_delay is not None:
             self.log('Popuphandler starting in {0}s'.format(popup_delay))
-            self.popuphandler = utils.run_threaded(
+            self._popuphandler = utils.run_threaded(
                 self._launch_popup,
                 delay=popup_delay
             )
@@ -398,30 +405,30 @@ class UpNextMonitor(xbmc.Monitor, object):
         called[0] = False
 
     def _stop_detector(self, terminate=False):
-        with self._lock:
-            if not self.detector:
-                return
-            if isinstance(self.detector, detector.UpNextDetector):
-                self.detector.stop(terminate=terminate)
-                if terminate:
-                    del self.detector
-                    self.detector = None
-                    self.log('Cleanup detector')
-            else:
-                self.detector.cancel()
+        if self._detector:
+            self._detector.cancel()
+            del self._detector
+            self._detector = None
+
+        if self.detector:
+            self.detector.stop(terminate=terminate)
+            if terminate:
+                del self.detector
+                self.detector = None
+                self.log('Cleanup detector')
 
     def _stop_popuphandler(self, terminate=False):
-        with self._lock:
-            if not self.popuphandler:
-                return
-            if isinstance(self.popuphandler, popuphandler.UpNextPopupHandler):
-                self.popuphandler.stop(terminate=terminate)
-                if terminate:
-                    del self.popuphandler
-                    self.popuphandler = None
-                    self.log('Cleanup popuphandler')
-            else:
-                self.popuphandler.cancel()
+        if self._popuphandler:
+            self._popuphandler.cancel()
+            del self._popuphandler
+            self._popuphandler = None
+
+        if self.popuphandler:
+            self.popuphandler.stop(terminate=terminate)
+            if terminate:
+                del self.popuphandler
+                self.popuphandler = None
+                self.log('Cleanup popuphandler')
 
     def start(self, **kwargs):
         if SETTINGS.disabled:
