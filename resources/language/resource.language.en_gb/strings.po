@@ -328,46 +328,50 @@ msgid "Data processing limit (kB/frame) [COLOR gray](higher is more accurate, sl
 msgstr ""
 
 msgctxt "#30734"
-msgid "Image resize method"
+msgid "Enable filtering to detect text in credits"
 msgstr ""
 
 msgctxt "#30735"
-msgid "Nearest"
+msgid "Image resize method"
 msgstr ""
 
 msgctxt "#30736"
-msgid "Box"
+msgid "Nearest"
 msgstr ""
 
 msgctxt "#30737"
-msgid "Bilinear"
+msgid "Box"
 msgstr ""
 
 msgctxt "#30738"
-msgid "Hamming"
+msgid "Bilinear"
 msgstr ""
 
 msgctxt "#30739"
-msgid "Bicubic"
+msgid "Hamming"
 msgstr ""
 
 msgctxt "#30740"
-msgid "Lanczos"
+msgid "Bicubic"
 msgstr ""
 
 msgctxt "#30741"
-msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
+msgid "Lanczos"
 msgstr ""
 
 msgctxt "#30742"
-msgid "Max significance for match [COLOR gray](% of areas with significant content)[/COLOR]"
+msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
 msgstr ""
 
 msgctxt "#30743"
-msgid "Min number of matches required for detection"
+msgid "Max significance for match [COLOR gray](% of areas with significant content)[/COLOR]"
 msgstr ""
 
 msgctxt "#30744"
+msgid "Min number of matches required for detection"
+msgstr ""
+
+msgctxt "#30745"
 msgid "Max number of mismatches before match count is reset"
 msgstr ""
 

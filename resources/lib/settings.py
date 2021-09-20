@@ -25,8 +25,9 @@ class UpNextSettings(object):
         'detect_significance',
         'detector_data_limit',
         'detector_debug',
-        'detector_save_path',
+        'detector_filter',
         'detector_resize_method',
+        'detector_save_path',
         'detector_threads',
         'disabled',
         'enable_playlist',
@@ -122,6 +123,7 @@ class UpNextSettings(object):
         self.detector_save_path = utils.get_setting('detectorSavePath')
         self.detector_threads = utils.get_setting_int('detectorThreads')
         self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
+        self.detector_filter = utils.get_setting_bool('detectorFilter')
         self.detector_resize_method = constants.PIL_RESIZE_METHODS.get(
             utils.get_setting_int('detectorResizeMethod', default=1)
         )
