@@ -199,12 +199,6 @@ class UpNextDetector(object):
         return (vals[pivot] + vals[pivot - 1]) / 2
 
     @staticmethod
-    def _calc_significance(vals, weights=None):
-        if weights:
-            return 100 * sum(map(operator.mul, vals, weights)) / len(vals)
-        return 100 * sum(vals) / len(vals)
-
-    @staticmethod
     def _calc_similarity(hash1, hash2):
         """Method to compare the similarity between two image hashes"""
 
@@ -217,7 +211,7 @@ class UpNextDetector(object):
 
         # Check whether each pixel is equal
         bit_eq = sum(map(operator.eq, hash1, hash2))
-        bit_ne = sum(map(operator.ne, hash1, hash2))
+        bit_ne = sum(map(operator.ne, hash1, hash2)) * 0.75
         bit_ignore = hash1.count(None)
         bit_compare = bit_eq - bit_ne + bit_ignore
 
@@ -298,8 +292,8 @@ class UpNextDetector(object):
         masked_value = 0
 
         mask = len(image_hash) / image_hash.count(masked_value)
-        fuzzy_mask = 0.25
-        min_mask = 0
+        fuzzy_mask = 0.5
+        min_mask = 0.25
 
         return tuple(
             mask if pixel == masked_value else
@@ -412,7 +406,7 @@ class UpNextDetector(object):
     def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def _check_similarity(self, image_hash, filtered_hash=None):
+    def _evaluate_similarity(self, image_hash, filtered_hash=None):
         is_match = False
         possible_match = False
 
@@ -421,32 +415,19 @@ class UpNextDetector(object):
             'credits': 0,
             # Similarity to previous frame hash
             'previous': 0,
-            # Fuzz factor - allowable dissimilarity
-            'fuzz': 0,
             # Similarity to hash from other episodes
             'episodes': 0
         }
-
-        # Calculate percentage of significant pixels in hash and generate fuzz
-        # factor for modifying level of similarity required for a match
-        significance = self._calc_significance(
-            image_hash,
-            (self._generate_mask(filtered_hash) if filtered_hash
-                else self.hashes.data.get(self.hash_index['mask']))
-        )
-        stats['fuzz'] = (10 * abs(significance - self.significance_level)
-                         / self.significance_level)
 
         # Calculate similarity between current hash and representative hash
         stats['credits'] = self._calc_similarity(
             self.hashes.data.get(self.hash_index['credits']),
             filtered_hash or image_hash
-        )
-        # Match if current hash matches representative hash based on level of
-        # significant regions of deviation or if current hash is blank
-        fuzz_value = 20 - stats['fuzz']
+        ) - self._evaluate_uncertainty(image_hash, filtered_hash)
+        # Match if current hash matches representative hash or if current hash
+        # is blank
         is_match = (
-            stats['credits'] >= SETTINGS.detect_level - fuzz_value
+            stats['credits'] >= SETTINGS.detect_level - 15
             or not any(image_hash)
         )
         # Unless debugging, return if match found, otherwise continue checking
@@ -462,13 +443,9 @@ class UpNextDetector(object):
         # Possible match if current hash matches previous hash
         possible_match = stats['previous'] >= SETTINGS.detect_level
         # Match if hash is also somewhat similar to representative hash
-        fuzz_value = 30 - stats['fuzz']
-        is_match = (
-            is_match
-            or (
-                possible_match
-                and stats['credits'] >= SETTINGS.detect_level - fuzz_value
-            )
+        is_match = is_match or (
+            stats['credits'] >= SETTINGS.detect_level - 20
+            and possible_match
         )
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not SETTINGS.detector_debug:
@@ -523,6 +500,19 @@ class UpNextDetector(object):
             self._hash_match_miss()
 
         return stats
+
+    def _evaluate_uncertainty(self, image_hash, filtered_hash=None):
+        if filtered_hash:
+            weights = self._generate_mask(filtered_hash)
+        else:
+            weights = self.hashes.data.get(self.hash_index['mask'])
+
+        significant_regions = sum(map(operator.mul, image_hash, weights))
+        significance = 100 * significant_regions / len(image_hash)
+        significance_range = abs(significance - self.significance_level)
+        uncertainty = 10 * significance_range / self.significance_level
+
+        return uncertainty
 
     def _hash_match_hit(self):
         with self._lock:
@@ -743,7 +733,7 @@ class UpNextDetector(object):
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            stats = self._check_similarity(image_hash, filtered_hash)
+            stats = self._evaluate_similarity(image_hash, filtered_hash)
 
             if SETTINGS.detector_debug:
                 self.log('Match: {0[hits]}/{1}, Miss: {0[misses]}/{2}'.format(
@@ -754,24 +744,27 @@ class UpNextDetector(object):
                     self.hashes.data.get(self.hash_index['credits']),
                     filtered_hash or image_hash,
                     self.hashes.hash_size,
-                    ('Hash compare: {credits:2.1f}% similar to typical credits'
-                     ' with {fuzz:2.1f}% allowable fuzziness').format(**stats)
+                    'Hash {0:2.1f}% similar to typical credits'.format(
+                        stats['credits']
+                    )
                 )
 
                 self._print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
                     self.hashes.hash_size,
-                    ('Hash compare: {previous:2.1f}% similar to previous frame'
-                     ' with {fuzz:2.1f}% allowable fuzziness').format(**stats)
+                    'Hash {0:2.1f}% similar to previous frame'.format(
+                        stats['previous']
+                    )
                 )
 
                 self._print_hash(
                     self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
                     self.hashes.hash_size,
-                    ('Hash compare: {0:2.1f}% similar to other episodes'
-                     ).format(stats['episodes'])
+                    'Hash {0:2.1f}% similar to other episodes'.format(
+                        stats['episodes']
+                    )
                 )
 
                 self.log(profiler.get_stats(reuse=True))
