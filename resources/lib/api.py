@@ -362,14 +362,12 @@ def get_now_playing(properties=None):
     return result
 
 
-def get_next_from_library(
-        episodeid=constants.UNDEFINED,
-        tvshowid=None,
-        unwatched_only=False,
-        next_season=True,
-        random=False,
-        episode=None
-):
+def get_next_from_library(episodeid=constants.UNDEFINED,
+                          tvshowid=None,
+                          unwatched_only=False,
+                          next_season=True,
+                          random=False,
+                          episode=None):
     """Function to get show and next episode details from Kodi library"""
 
     episode = episode.copy() if episode else get_from_library(episodeid)
@@ -567,12 +565,8 @@ def get_episodeid(tvshowid, season, episode):
     return utils.get_int(result[0], 'episodeid')
 
 
-def handle_just_watched(
-        episodeid,
-        playcount,
-        reset_playcount=False,
-        reset_resume=True
-):
+def handle_just_watched(episodeid, playcount,
+                        reset_playcount=False, reset_resume=True):
     """Function to update playcount and resume point of just watched video"""
 
     result = utils.jsonrpc(

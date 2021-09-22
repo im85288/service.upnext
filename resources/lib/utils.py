@@ -434,10 +434,8 @@ def localize_time(time_object):
     return time_object.strftime(time_format)
 
 
-def notification(
-        heading, message,
-        icon=xbmcgui.NOTIFICATION_INFO, time=5000, sound=False
-):
+def notification(heading, message,
+                 icon=xbmcgui.NOTIFICATION_INFO, time=5000, sound=False):
     """Display a notification in Kodi with notification sound off by default"""
 
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
