@@ -15,10 +15,10 @@ def log(msg, level=utils.LOGDEBUG):
 
 
 def handle_demo_mode(player, state, now_playing_item, called=[False]):  # pylint: disable=dangerous-default-value
-    skip_tracking = False
+    event_triggered = False
     if not SETTINGS.demo_mode or called[0]:
         called[0] = False
-        return skip_tracking
+        return event_triggered
 
     utils.notification('UpNext demo mode', 'Active')
     log('Active')
@@ -32,7 +32,7 @@ def handle_demo_mode(player, state, now_playing_item, called=[False]):  # pylint
         if upnext_info:
             log('Plugin data sent')
             called[0] = True
-            skip_tracking = True
+            event_triggered = True
             upnext.send_signal(addon_id, upnext_info)
 
     # Seek to 15s before end of video
@@ -45,7 +45,7 @@ def handle_demo_mode(player, state, now_playing_item, called=[False]):  # pylint
     elif SETTINGS.demo_seek == constants.DEMO_SEEK_DETECT_TIME:
         seek_time = state.get_detect_time() or state.get_popup_time()
     else:
-        return skip_tracking
+        return event_triggered
 
     with player as check_fail:
         log('Seeking to end')
@@ -61,6 +61,6 @@ def handle_demo_mode(player, state, now_playing_item, called=[False]):  # pylint
         check_fail = False
     if check_fail:
         log('Nothing playing', utils.LOGWARNING)
-    
-    skip_tracking = True
-    return skip_tracking
+
+    event_triggered = True
+    return event_triggered
