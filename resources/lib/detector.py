@@ -137,19 +137,17 @@ class UpNextHashStore(object):
                      utils.LOGWARNING)
         return output
 
-    def window(self, hash_index, include_all=False):
+    def window(self, hash_index, size, include_all=False):
         # Get all hash indexes for episodes where the hash timestamps are
         # approximately equal (+/- an index offset)
         invalid_idx = constants.UNDEFINED
         current_idx = constants.UNDEFINED if include_all else hash_index[2]
-        # Offset equal to the number of matches required for detection
-        offset = SETTINGS.detect_matches
         # Matching time period from start of file
-        min_start_time = hash_index[1] - offset
-        max_start_time = hash_index[1] + offset
+        min_start_time = hash_index[1] - size
+        max_start_time = hash_index[1] + size
         # Matching time period from end of file
-        min_end_time = hash_index[0] - offset
-        max_end_time = hash_index[0] + offset
+        min_end_time = hash_index[0] - size
+        max_end_time = hash_index[0] + size
 
         # Limit selection criteria for old hash storage format
         if self.version < 0.2:
@@ -482,7 +480,7 @@ class UpNextDetector(object):
             self._hash_match_hit()
             return stats
 
-        old_hashes = self.past_hashes.window(self.hash_index['current'])
+        old_hashes = self.past_hashes.window(self.hash_index['current'], 60)
         for self.hash_index['episodes'], old_hash in old_hashes.items():
             stats['episodes'] = self._calc_similarity(
                 old_hash,
@@ -880,7 +878,7 @@ class UpNextDetector(object):
         # reduce false positives when comparing to other episodes
         if self.match_counts['detected']:
             self.past_hashes.data.update(self.hashes.window(
-                self.hash_index['detected_at'], include_all=True
+                self.hash_index['detected_at'], 5, include_all=True
             ))
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
