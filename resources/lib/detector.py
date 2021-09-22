@@ -417,6 +417,11 @@ class UpNextDetector(object):
 
         cls.log('\n\t\t\t'.join(
             [prefix if prefix else '-' * (7 + 4 * size[0])]
+            + ['{0} | {1} | {2}'.format(
+                size,
+                UpNextHashStore.hash_to_int(hash1),
+                UpNextHashStore.hash_to_int(hash2)
+            )]
             + ['{0:>3} |{1}|{2}|'.format(
                 row,
                 ' '.join([
