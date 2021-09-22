@@ -54,7 +54,7 @@ class UpNextHashStore(object):
     @staticmethod
     def hash_to_int(image_hash):
         return sum(
-            bit_val << i
+            (bit_val or 0) << i
             for i, bit_val in enumerate(reversed(image_hash))
         )
 
