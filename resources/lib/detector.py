@@ -339,8 +339,8 @@ class UpNextDetector(object):
         masked_value = 0
 
         mask = len(image_hash) / image_hash.count(masked_value)
-        fuzzy_mask = 0.5
-        min_mask = 0.25
+        fuzzy_mask = 0.25
+        min_mask = 0.1
 
         return tuple(
             mask if pixel == masked_value else
@@ -479,7 +479,7 @@ class UpNextDetector(object):
         # Match if current hash matches representative hash or if current hash
         # is blank
         is_match = (
-            stats['credits'] >= SETTINGS.detect_level - 15
+            stats['credits'] >= SETTINGS.detect_level - 10
             or not any(image_hash)
         )
         # Unless debugging, return if match found, otherwise continue checking
@@ -496,7 +496,7 @@ class UpNextDetector(object):
         possible_match = stats['previous'] >= SETTINGS.detect_level
         # Match if hash is also somewhat similar to representative hash
         is_match = is_match or (
-            stats['credits'] >= SETTINGS.detect_level - 25
+            stats['credits'] >= SETTINGS.detect_level - 15
             and possible_match
         )
         # Unless debugging, return if match found, otherwise continue checking
