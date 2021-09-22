@@ -118,13 +118,14 @@ class UpNextMonitor(xbmc.Monitor, object):
             self.state.set_popup_time(playback['duration'])
 
             # Handle demo mode functionality and notification
-            demo.handle_demo_mode(
+            skip_tracking = demo.handle_demo_mode(
                 player=self.player,
                 state=self.state,
                 now_playing_item=now_playing_item
             )
 
-            self._start_tracking()
+            if not skip_tracking:
+                self._start_tracking()
             return
 
         self.log('Skip video check: UpNext unable to handle playing item')
