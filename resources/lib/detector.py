@@ -137,6 +137,36 @@ class UpNextHashStore(object):
                      utils.LOGWARNING)
         return output
 
+    def window(self, hash_index, include_all=False):
+        # Get all hash indexes for episodes where the hash timestamps are
+        # approximately equal (+/- an index offset)
+        invalid_idx = constants.UNDEFINED
+        current_idx = constants.UNDEFINED if include_all else hash_index[2]
+        # Offset equal to the number of matches required for detection
+        offset = SETTINGS.detect_matches
+        # Matching time period from start of file
+        min_start_time = hash_index[1] - offset
+        max_start_time = hash_index[1] + offset
+        # Matching time period from end of file
+        min_end_time = hash_index[0] - offset
+        max_end_time = hash_index[0] + offset
+
+        # Limit selection criteria for old hash storage format
+        if self.version < 0.2:
+            invalid_idx = 0
+            min_start_time = constants.UNDEFINED
+            max_start_time = constants.UNDEFINED
+
+        return {
+            hash_index: self.data[hash_index]
+            for hash_index in self.data
+            if invalid_idx != hash_index[-1] != current_idx
+            and (
+                min_start_time <= hash_index[-2] <= max_start_time
+                or min_end_time <= hash_index[0] <= max_end_time
+            )
+        }
+
 
 class UpNextDetector(object):
     """Detector class used to detect end credits in playing video"""
@@ -452,45 +482,16 @@ class UpNextDetector(object):
             self._hash_match_hit()
             return stats
 
-        # Get all previous hash indexes for episodes other than the current
-        # episode and where the hash timestamps are approximately equal (+/- an
-        # index offset)
-        invalid_episode_idx = constants.UNDEFINED
-        current_episode_idx = self.hash_index['current'][2]
-        # Offset equal to the number of matches required for detection
-        offset = SETTINGS.detect_matches
-        # Matching time period from start of file
-        min_start_time = self.hash_index['current'][1] - offset
-        max_start_time = self.hash_index['current'][1] + offset
-        # Matching time period from end of file
-        min_end_time = self.hash_index['current'][0] - offset
-        max_end_time = self.hash_index['current'][0] + offset
-        # Limit selection criteria for old hash storage format
-        if self.past_hashes.version < 0.2:
-            invalid_episode_idx = 0
-            min_start_time = constants.UNDEFINED
-            max_start_time = constants.UNDEFINED
-
-        old_hash_indexes = [
-            hash_idx for hash_idx in self.past_hashes.data
-            if invalid_episode_idx != hash_idx[-1] != current_episode_idx
-            and (
-                min_start_time <= hash_idx[-2] <= max_start_time
-                or min_end_time <= hash_idx[0] <= max_end_time
-            )
-        ]
-
-        old_hash_index = None
-        for old_hash_index in old_hash_indexes:
+        old_hashes = self.past_hashes.window(self.hash_index['current'])
+        for self.hash_index['episodes'], old_hash in old_hashes.items():
             stats['episodes'] = self._calc_similarity(
-                self.past_hashes.data[old_hash_index],
+                old_hash,
                 image_hash
             )
             # Match if current hash matches other episode hashes
             if stats['episodes'] >= SETTINGS.detect_level:
                 is_match = True
                 break
-        self.hash_index['episodes'] = old_hash_index
 
         # Increment the number of matches
         if is_match:
@@ -883,17 +884,9 @@ class UpNextDetector(object):
         # If credit were detected only store the previous +/- 5s of hashes to
         # reduce false positives when comparing to other episodes
         if self.match_counts['detected']:
-            # Offset equal to the number of matches required for detection
-            offset = SETTINGS.detect_matches
-            # Matching time period from end of file
-            min_end_time = self.hash_index['detected_at'] - offset
-            max_end_time = self.hash_index['detected_at'] + offset
-
-            self.past_hashes.data.update({
-                hash_index: self.hashes.data[hash_index]
-                for hash_index in self.hashes.data
-                if min_end_time <= hash_index[0] <= max_end_time
-            })
+            self.past_hashes.data.update(self.hashes.window(
+                self.hash_index['detected_at'], include_all=True
+            ))
             self.past_hashes.timestamps.update(self.hashes.timestamps)
         # Otherwise store all hashes for comparison with other episodes
         else:
@@ -908,7 +901,7 @@ class UpNextDetector(object):
 
         with self._lock:
             self.log('Credits detected')
-            self.hash_index['detected_at'] = self.hash_index['current'][0]
+            self.hash_index['detected_at'] = self.hash_index['current']
             self.hashes.timestamps[self.hashes.episode_number] = play_time
             self.state.set_detected_popup_time(play_time)
             utils.event('upnext_credits_detected')
