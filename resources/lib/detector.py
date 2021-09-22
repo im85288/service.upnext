@@ -238,13 +238,32 @@ class UpNextDetector(object):
             return 0
 
         # Check whether each pixel is equal
-        bit_eq = sum(map(operator.eq, hash1, hash2))
-        bit_ne = sum(map(operator.ne, hash1, hash2)) * 0.75
-        bit_ignore = hash1.count(None)
-        bit_compare = bit_eq - bit_ne + bit_ignore
+        bits_eq = sum(map(UpNextDetector._eq, hash1, hash2))
+        bits_xor = map(UpNextDetector._xor, hash1, hash2)
+        bits_xor_hash1 = sum(map(UpNextDetector._and, bits_xor, hash1)) * 0.25
+        bits_xor_hash2 = sum(map(UpNextDetector._and, bits_xor, hash2)) * 0.75
+
+        ignored_bits = hash1.count(None)
+        bit_compare = bits_eq - bits_xor_hash1 - bits_xor_hash2
 
         # Evaluate similarity as a percentage of un-ignored pixels in the hash
-        return max(0, 100 * bit_compare / (num_pixels - bit_ignore))
+        return max(0, 100 * bit_compare / (num_pixels - ignored_bits))
+
+    @staticmethod
+    def _and(bit1, bit2):
+        return bool(bit1 and bit2)
+
+    @staticmethod
+    def _eq(bit1, bit2):
+        return bit1 == bit2
+
+    @staticmethod
+    def _mul(bit1, bit2):
+        return bit1 * bit2
+
+    @staticmethod
+    def _xor(bit1, bit2):
+        return bool((bit1 or bit2) and (bit1 != bit2))
 
     @staticmethod
     def _capture_resolution(max_size=None):
