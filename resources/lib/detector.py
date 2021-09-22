@@ -456,7 +456,7 @@ class UpNextDetector(object):
         stats['credits'] = self._calc_similarity(
             self.hashes.data.get(self.hash_index['credits']),
             filtered_hash or image_hash
-        ) - self._evaluate_uncertainty(image_hash, filtered_hash)
+        ) - self._evaluate_uncertainty(5, image_hash, filtered_hash)
         # Match if current hash matches representative hash or if current hash
         # is blank
         is_match = (
@@ -505,18 +505,17 @@ class UpNextDetector(object):
 
         return stats
 
-    def _evaluate_uncertainty(self, image_hash, filtered_hash=None):
+    def _evaluate_uncertainty(self, scaling, image_hash, filtered_hash=None):
         if filtered_hash:
             weights = self._generate_mask(filtered_hash)
         else:
             weights = self.hashes.data.get(self.hash_index['mask'])
 
-        significant_regions = sum(map(operator.mul, image_hash, weights))
-        significance = 100 * significant_regions / len(image_hash)
-        significance_range = abs(significance - self.significance_level)
-        uncertainty = 10 * significance_range / self.significance_level
+        significant_bits = sum(map(UpNextDetector._mul, image_hash, weights))
+        significance = 100 * significant_bits / len(image_hash)
+        delta = significance - self.significance_level
 
-        return uncertainty
+        return scaling * delta / self.significance_level
 
     def _hash_match_hit(self):
         with self._lock:
