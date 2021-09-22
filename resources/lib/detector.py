@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import json
-import operator
 import os.path
 import timeit
 from PIL import Image, ImageChops, ImageEnhance, ImageFilter, ImageMorph
@@ -705,6 +704,16 @@ class UpNextDetector(object):
 
             image = self._image_format(image, self.capture_size)
 
+            # Resize and generate median absolute deviation from median hash
+            image_hash = self._generate_image_hash(self._image_process(
+                image,
+                image_operations=[
+                    {'method': self._image_resize,
+                     'args': [self.hashes.hash_size]}
+                ]
+            ))
+            filtered_hash = None
+
             if SETTINGS.detector_filter:
                 filtered_image = self._image_process(
                     image,
@@ -736,18 +745,6 @@ class UpNextDetector(object):
                     ]
                 )
                 filtered_hash = self._generate_image_hash(filtered_image)
-            else:
-                filtered_hash = None
-
-            # Resize and generate median absolute deviation from median hash
-            image = self._image_process(
-                image,
-                image_operations=[
-                    {'method': self._image_resize,
-                     'args': [self.hashes.hash_size]}
-                ]
-            )
-            image_hash = self._generate_image_hash(image)
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
