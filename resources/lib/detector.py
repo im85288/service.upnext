@@ -474,7 +474,7 @@ class UpNextDetector(object):
         possible_match = stats['previous'] >= SETTINGS.detect_level
         # Match if hash is also somewhat similar to representative hash
         is_match = is_match or (
-            stats['credits'] >= SETTINGS.detect_level - 20
+            stats['credits'] >= SETTINGS.detect_level - 25
             and possible_match
         )
         # Unless debugging, return if match found, otherwise continue checking
@@ -582,11 +582,7 @@ class UpNextDetector(object):
             timestamps={}
         )
 
-        # Calculated maximum allowable significant level
-        # self.significance_level = 0.90 * self.calc_significance(
-        #    self.hashes.data[self.hash_index['credits']]
-        # )
-        # Set to 25 as default
+        # Set max significance level to 25% as default
         self.significance_level = SETTINGS.detect_significance
 
         # Hashes from previously played episodes
