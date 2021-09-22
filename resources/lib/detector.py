@@ -826,9 +826,8 @@ class UpNextDetector(object):
         self._running.set()
 
         self.queue.put_nowait(xbmc.RenderCapture())
-        self.workers = [
-            utils.run_threaded(self._push_frame_to_queue)
-        ] + [
+        self.workers = [utils.run_threaded(self._push_frame_to_queue)]
+        self.workers += [
             utils.run_threaded(
                 self._worker,
                 delay=(start_delay * self.capture_interval)
