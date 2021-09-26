@@ -739,35 +739,31 @@ class UpNextDetector(object):
                      'args': [self.hashes.hash_size]}
                 ]
             ))
-            filtered_hash = None
-
-            if SETTINGS.detector_filter:
-                filtered_image = self._image_process(
-                    image,
-                    image_operations=[
-                        {'method': self._image_contrast,
-                         'args': [100]},
-                        {'method': self._image_brightness,
-                         'args': [0.1]},
-                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter1.png')]},
-                        {'method': self._image_find_edges},
-                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter2.png')]},
-                        {'method': self._image_morph,
-                         'args': [
-                             ['4:(... .01 ...)->1',
-                              '4:(... .0. ..1)->1'],
-                             ['4:(... .10 ...)->0'],
-                             ['4:(... .10 ...)->0'],
-                         ]},
-                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter3.png')]},
-                        {'method': self._image_multiply,
-                         'args': [self._image_auto_contrast(image), 5]},
-                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filtered.png')]},
-                        {'method': self._image_resize,
-                         'args': [self.hashes.hash_size]},
-                    ]
-                )
-                filtered_hash = self._generate_image_hash(filtered_image)
+            filtered_hash = self._generate_image_hash(self._image_process(
+                image,
+                image_operations=[
+                    {'method': self._image_contrast,
+                     'args': [100]},
+                    {'method': self._image_brightness,
+                     'args': [0.1]},
+                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter1.png')]},
+                    {'method': self._image_find_edges},
+                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter2.png')]},
+                    {'method': self._image_morph,
+                     'args': [
+                         ['4:(... .01 ...)->1',
+                          '4:(... .0. ..1)->1'],
+                         ['4:(... .10 ...)->0'],
+                         ['4:(... .10 ...)->0'],
+                     ]},
+                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter3.png')]},
+                    {'method': self._image_multiply,
+                     'args': [self._image_auto_contrast(image), 5]},
+                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filtered.png')]},
+                    {'method': self._image_resize,
+                     'args': [self.hashes.hash_size]},
+                ]
+            )) if SETTINGS.detector_filter else None
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
