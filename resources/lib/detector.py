@@ -297,7 +297,7 @@ class UpNextDetector(object):
         padding_2 = min(2 * width // 16, 2)
 
         return (
-            border_token * width
+            border_token * width * 2
             + (
                 border_token
                 + blank_token * 2 * padding_1
@@ -321,7 +321,7 @@ class UpNextDetector(object):
                 + ignore_token * padding_2
                 + blank_token * padding_2
                 + border_token
-            )) * ((height - 4) // 2)
+            )) * ((height - 6) // 2)
             + (
                 border_token
                 + blank_token * 2 * padding_1
@@ -329,7 +329,7 @@ class UpNextDetector(object):
                 + blank_token * 2 * padding_1
                 + border_token
             )
-            + border_token * width
+            + border_token * width * 2
         )
 
     @staticmethod
