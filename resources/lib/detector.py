@@ -484,7 +484,7 @@ class UpNextDetector(object):
     def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def _evaluate_similarity(self, image_hash, filtered_hash=None):
+    def _evaluate_similarity(self, image_hash, filtered_hash):
         is_match = False
         possible_match = False
 
@@ -500,7 +500,7 @@ class UpNextDetector(object):
         # Calculate similarity between current hash and representative hash
         stats['credits'] = self._calc_similarity(
             self.hashes.data.get(self.hash_index['credits']),
-            filtered_hash or image_hash
+            filtered_hash
         ) - self._evaluate_uncertainty(5, image_hash, filtered_hash)
         # Match if current hash matches representative hash or if current hash
         # is blank
@@ -550,8 +550,8 @@ class UpNextDetector(object):
 
         return stats
 
-    def _evaluate_uncertainty(self, scaling, image_hash, filtered_hash=None):
-        if filtered_hash:
+    def _evaluate_uncertainty(self, scaling, image_hash, filtered_hash):
+        if filtered_hash != image_hash:
             weights = self._generate_mask(filtered_hash)
         else:
             weights = self.hashes.data.get(self.hash_index['mask'])
@@ -763,7 +763,7 @@ class UpNextDetector(object):
                     {'method': self._image_resize,
                      'args': [self.hashes.hash_size]},
                 ]
-            )) if SETTINGS.detector_filter else None
+            )) if SETTINGS.detector_filter else image_hash
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
@@ -776,7 +776,7 @@ class UpNextDetector(object):
 
                 self._print_hash(
                     self.hashes.data.get(self.hash_index['credits']),
-                    filtered_hash or image_hash,
+                    filtered_hash,
                     self.hashes.hash_size,
                     'Hash {0:2.1f}% similar to typical credits'.format(
                         stats['credits']
