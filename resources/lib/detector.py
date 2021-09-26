@@ -349,6 +349,22 @@ class UpNextDetector(object):
         )
 
     @staticmethod
+    def _image_auto_contrast(image, *_args, **_kwargs):
+        histogram = image.histogram()
+
+        values = [value for value, num in enumerate(histogram) if num]
+        min_value = values[0]
+        max_value = values[-1]
+        if max_value <= min_value:
+            return image
+
+        scale = 255 / (max_value - min_value)
+        offset = min_value * scale
+
+        return image.point([min(255, max(0, int(i * scale - offset)))
+                            for i in range(256)])
+
+    @staticmethod
     def _image_brightness(image, factor, **_kwargs):
         return ImageEnhance.Brightness(image).enhance(factor)
 
@@ -385,6 +401,13 @@ class UpNextDetector(object):
         return image
 
     @staticmethod
+    def _image_multiply(image1, image2, iterations=1, **_kwargs):
+        for _ in range(iterations):
+            image1 = ImageChops.multiply(image1, image2)
+
+        return image1
+
+    @staticmethod
     def _image_process(image, image_operations):
         for operation in image_operations:
             method = operation.get('method')
@@ -392,7 +415,7 @@ class UpNextDetector(object):
                 continue
             args = operation.get('args', [])
             kwargs = operation.get('kwargs', {})
-            image = method(image, *args, **kwargs)
+            image = method(image, *args, **kwargs) or image
 
         return image
 
@@ -404,6 +427,10 @@ class UpNextDetector(object):
             )
 
         return image
+
+    @staticmethod
+    def _image_save(image, filename, **_kwargs):
+        image.save(filename)
 
     @classmethod
     def _generate_image_hash(cls, image):
@@ -703,11 +730,11 @@ class UpNextDetector(object):
                 break
 
             image = self._image_format(image, self.capture_size)
-
             # Resize and generate median absolute deviation from median hash
             image_hash = self._generate_image_hash(self._image_process(
                 image,
                 image_operations=[
+                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'image.png')]},
                     {'method': self._image_resize,
                      'args': [self.hashes.hash_size]}
                 ]
@@ -722,24 +749,20 @@ class UpNextDetector(object):
                          'args': [100]},
                         {'method': self._image_brightness,
                          'args': [0.1]},
+                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter1.png')]},
                         {'method': self._image_find_edges},
+                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter2.png')]},
                         {'method': self._image_morph,
-                         'args': [[
-                             '4:(... .01 ...)->1',  # dilate
-                         ], [
-                             '4:(... .10 ...)->0',  # erode
-                         ], [
-                             '4:(... .10 ...)->0',  # erode
-                         ], [
-                             '4:(... .11 ...)->1',  # connected
-                         ]]},
-                    ]
-                )
-                filtered_image = self._image_process(
-                    image,
-                    image_operations=[
-                        {'method': ImageChops.multiply,
-                         'args': [filtered_image]},
+                         'args': [
+                             ['4:(... .01 ...)->1',
+                              '4:(... .0. ..1)->1'],
+                             ['4:(... .10 ...)->0'],
+                             ['4:(... .10 ...)->0'],
+                         ]},
+                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter3.png')]},
+                        {'method': self._image_multiply,
+                         'args': [self._image_auto_contrast(image), 5]},
+                        # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filtered.png')]},
                         {'method': self._image_resize,
                          'args': [self.hashes.hash_size]},
                     ]
