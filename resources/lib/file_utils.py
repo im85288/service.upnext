@@ -11,11 +11,11 @@ import xbmcvfs
 def make_legal_filename(filename, prefix='', suffix=''):
     """Returns a legal filename, from an arbitrary string input, as a string"""
 
-    filename = ''.join((
-        prefix,
-        filename,
-        suffix
-    ))
+    filename = ''.join((prefix, filename, suffix))
+    # xbmcvfs.makeLegalFilename doesn't actually do what it is meant to do - it
+    # creates a legal path, not a legal filename. Try to workaround issue here
+    filename = ''.join('_' if i in '\\/:*?<>| ' else i for i in filename)
+
     try:
         filename = xbmcvfs.makeLegalFilename(filename)
     except AttributeError:
