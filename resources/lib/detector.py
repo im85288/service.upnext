@@ -262,7 +262,7 @@ class UpNextDetector(object):
 
     @staticmethod
     def _xor(bit1, bit2):
-        return bool((bit1 or bit2) and (bit1 != bit2))
+        return bool((bit1 or bit2) and (bit2 != bit1 != None))
 
     @staticmethod
     def _capture_resolution(max_size=None):
