@@ -239,8 +239,8 @@ class UpNextDetector(object):
         # Check whether each pixel is equal
         bits_eq = sum(map(UpNextDetector._eq, hash1, hash2))
         bits_xor = map(UpNextDetector._xor, hash1, hash2)
-        bits_xor_hash1 = sum(map(UpNextDetector._and, bits_xor, hash1)) * 0.25
-        bits_xor_hash2 = sum(map(UpNextDetector._and, bits_xor, hash2)) * 0.75
+        bits_xor_hash1 = sum(map(UpNextDetector._and, bits_xor, hash1))
+        bits_xor_hash2 = sum(map(UpNextDetector._and, bits_xor, hash2))
 
         ignored_bits = hash1.count(None)
         bit_compare = bits_eq - bits_xor_hash1 - bits_xor_hash2
