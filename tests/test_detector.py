@@ -179,7 +179,7 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         return
 
     test_image_path = 'tests/images/'
-    match_level = 80
+    match_level = 85
     matches = 0
     false_positives = 0
     false_positives_deviation = 0
@@ -209,7 +209,7 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         hash1 = detector.UpNextDetector._generate_image_hash(image1)  # pylint: disable=protected-access
         hash2 = detector.UpNextDetector._generate_image_hash(image2)  # pylint: disable=protected-access
 
-        similarity = detector.UpNextDetector._calc_similarity(hash1, hash2)  # pylint: disable=protected-access
+        similarity = detector.UpNextDetector._hash_similarity(hash1, hash2)  # pylint: disable=protected-access
         is_match = similarity >= match_level
 
         if is_match is expected_result:
@@ -224,8 +224,8 @@ def test_hash_compare():  # pylint: disable=too-many-locals
             detector.UpNextDetector._print_hash(  # pylint: disable=protected-access
                 hash1,
                 hash2,
-                hash_size,
-                result_summary.format(
+                size=hash_size,
+                prefix=result_summary.format(
                     file1,
                     file2,
                     similarity,
