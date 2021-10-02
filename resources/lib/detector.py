@@ -453,7 +453,7 @@ class UpNextDetector(object):
 
     @staticmethod
     def _image_save(image, filename, **_kwargs):
-        image_output_enabled = True
+        image_output_enabled = False
         if SETTINGS.detector_debug and image_output_enabled:
             try:
                 image.save(os.path.join(_SAVE_PATH, filename))
