@@ -685,7 +685,7 @@ class UpNextDetector(object):
             # stored as second hash.
             data={
                 self.hash_index['credits_small']:
-                    self._generate_initial_hash(*hash_size, 2),
+                    self._generate_initial_hash(*hash_size, pad_height=2),
                 self.hash_index['credits_large']:
                     self._generate_initial_hash(*hash_size),
             },
