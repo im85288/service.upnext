@@ -381,7 +381,6 @@ class UpNextDetector(object):
 
     @staticmethod
     def _image_contrast(image, factor, **_kwargs):
-        # return ImageEnhance.Contrast(image).enhance(factor)
         data = image.getdata()
         mean = int((sum(data) / len(data)) + 0.5)
         image2 = Image.new('L', image.size, mean)
