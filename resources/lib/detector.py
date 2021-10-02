@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 import json
 import os.path
 import timeit
-from PIL import Image, ImageChops, ImageEnhance, ImageFilter, ImageMorph
+from PIL import Image, ImageChops, ImageFilter, ImageMorph
 import xbmc
 from settings import SETTINGS
 import constants
@@ -177,7 +177,6 @@ class UpNextDetector(object):
         # Settings
         'match_number',
         'mismatch_number',
-        'significance_level',
         # Variables
         'capture_size',
         'capture_ar',
@@ -214,6 +213,22 @@ class UpNextDetector(object):
         self._sigterm = utils.create_event()
 
     @staticmethod
+    def _and(bit1, bit2):
+        return bool(bit1 and bit2)
+
+    @staticmethod
+    def _eq(bit1, bit2):
+        return (bit1 == bit2) * (1 if bit2 else 0.5)
+
+    @staticmethod
+    def _mul(bit1, bit2):
+        return bit1 * bit2
+
+    @staticmethod
+    def _xor(bit1, bit2):
+        return bool((bit1 or bit2) and (bit2 != bit1 is not None))
+
+    @staticmethod
     def _calc_median(vals):
         """Method to calculate median value of a list of values by sorting and
             indexing the list"""
@@ -224,45 +239,6 @@ class UpNextDetector(object):
         if num_vals % 2:
             return vals[pivot]
         return (vals[pivot] + vals[pivot - 1]) / 2
-
-    @staticmethod
-    def _calc_similarity(hash1, hash2):
-        """Method to compare the similarity between two image hashes"""
-
-        # Check that hashes are not empty and that dimensions are equal
-        if not hash1 or not hash2:
-            return 0
-        num_pixels = len(hash1)
-        if num_pixels != len(hash2):
-            return 0
-
-        # Check whether each pixel is equal
-        bits_eq = sum(map(UpNextDetector._eq, hash1, hash2))
-        bits_xor = map(UpNextDetector._xor, hash1, hash2)
-        bits_xor_hash1 = sum(map(UpNextDetector._and, bits_xor, hash1))
-        bits_xor_hash2 = sum(map(UpNextDetector._and, bits_xor, hash2))
-
-        ignored_bits = hash1.count(None)
-        bit_compare = bits_eq - bits_xor_hash1 - bits_xor_hash2
-
-        # Evaluate similarity as a percentage of un-ignored pixels in the hash
-        return max(0, 100 * bit_compare / (num_pixels - ignored_bits))
-
-    @staticmethod
-    def _and(bit1, bit2):
-        return bool(bit1 and bit2)
-
-    @staticmethod
-    def _eq(bit1, bit2):
-        return bit1 == bit2
-
-    @staticmethod
-    def _mul(bit1, bit2):
-        return bit1 * bit2
-
-    @staticmethod
-    def _xor(bit1, bit2):
-        return bool((bit1 or bit2) and (bit2 != bit1 != None))
 
     @staticmethod
     def _capture_resolution(max_size=None):
@@ -287,49 +263,60 @@ class UpNextDetector(object):
         return (width, height), aspect_ratio
 
     @staticmethod
-    def _generate_initial_hash(width, height):
+    def _enable_filter(image_hash):
+        if not SETTINGS.detector_filter:
+            return False
+
+        num_bits = len(image_hash)
+        significant_bits = sum(image_hash)
+        significance = 100 * significant_bits / num_bits
+
+        return significance >= SETTINGS.detect_significance
+
+    @staticmethod
+    def _generate_initial_hash(hash_width, hash_height, pad_height=0):
         blank_token = (0, )
         pixel_token = (1, )
         border_token = (0, )
         ignore_token = (None, )
 
-        padding_1 = min(3 * width // 16, 3)
-        padding_2 = min(2 * width // 16, 2)
+        pad_width = min(int(3 * hash_width / 16), 3)
+        pad_width_alt = min(int(2 * hash_width / 16), 2)
 
         return (
-            border_token * width * 2
+            border_token * hash_width * pad_height
             + (
                 border_token
-                + blank_token * 2 * padding_1
-                + ignore_token * (width - 4 * padding_1 - 2)
-                + blank_token * 2 * padding_1
+                + blank_token * 2 * pad_width
+                + ignore_token * (hash_width - 4 * pad_width - 2)
+                + blank_token * 2 * pad_width
                 + border_token
             )
             + ((
                 border_token
-                + blank_token * padding_1
-                + ignore_token * padding_1
-                + pixel_token * (width - 4 * padding_1 - 2)
-                + ignore_token * padding_1
-                + blank_token * padding_1
+                + blank_token * pad_width
+                + ignore_token * pad_width
+                + pixel_token * (hash_width - 4 * pad_width - 2)
+                + ignore_token * pad_width
+                + blank_token * pad_width
                 + border_token
             ) + (
                 border_token
-                + blank_token * padding_2
-                + ignore_token * padding_2
-                + pixel_token * (width - 4 * padding_2 - 2)
-                + ignore_token * padding_2
-                + blank_token * padding_2
+                + blank_token * pad_width_alt
+                + ignore_token * pad_width_alt
+                + pixel_token * (hash_width - 4 * pad_width_alt - 2)
+                + ignore_token * pad_width_alt
+                + blank_token * pad_width_alt
                 + border_token
-            )) * ((height - 6) // 2)
+            )) * ((hash_height - 2 * pad_height - 2) // 2)
             + (
                 border_token
-                + blank_token * 2 * padding_1
-                + ignore_token * (width - 4 * padding_1 - 2)
-                + blank_token * 2 * padding_1
+                + blank_token * 2 * pad_width
+                + ignore_token * (hash_width - 4 * pad_width - 2)
+                + blank_token * 2 * pad_width
                 + border_token
             )
-            + border_token * width * 2
+            + border_token * hash_width * pad_height
         )
 
     @staticmethod
@@ -342,45 +329,71 @@ class UpNextDetector(object):
         min_mask = 0.25
 
         return tuple(
-            mask if pixel == masked_value else
-            fuzzy_mask if pixel == fuzzy_value else
+            mask if bit == masked_value else
+            fuzzy_mask if bit == fuzzy_value else
             min_mask
-            for pixel in image_hash
+            for bit in image_hash
         )
 
     @staticmethod
-    def _image_auto_contrast(image, *_args, **_kwargs):
-        histogram = image.histogram()
+    def _image_auto_level(image, cutoff_lo=0, cutoff_hi=100, **_kwargs):
+        if cutoff_lo == 0 and cutoff_hi == 100:
+            min_value, max_value = image.getextrema()
+        elif cutoff_hi <= cutoff_lo:
+            return image
+        else:
+            histogram = image.histogram()[1:]
+            percent_total = sum(histogram) // 100
+            if not percent_total:
+                return image
+            cutoff_lo = cutoff_lo * percent_total
+            cutoff_hi = cutoff_hi * percent_total
 
-        values = [value for value, num in enumerate(histogram) if num]
-        min_value = values[0]
-        max_value = values[-1]
-        if max_value <= min_value:
+            running_total = 0
+            min_value = 0
+            max_value = 255
+            for value, num in enumerate(histogram):
+                if not num:
+                    continue
+                running_total += num
+                if running_total < cutoff_lo:
+                    min_value = value
+                elif running_total >= cutoff_hi:
+                    max_value = value
+                    break
+
+        if max_value > min_value:
+            scale = 255 / (max_value - min_value)
+        else:
             return image
 
-        scale = 255 / (max_value - min_value)
-        offset = min_value * scale
-
-        return image.point([min(255, max(0, int(i * scale - offset)))
-                            for i in range(256)])
-
-    @staticmethod
-    def _image_brightness(image, factor, **_kwargs):
-        return ImageEnhance.Brightness(image).enhance(factor)
+        return image.point([
+            min(255, max(0, int((17 * (i // 16) - min_value) * scale)))
+            for i in range(256)
+        ])
 
     @staticmethod
-    def _image_contrast(image, factor, **_kwargs):
-        return ImageEnhance.Contrast(image).enhance(factor)
-
-    @staticmethod
-    def _image_find_edges(image, *_args, **_kwargs):
-        # Basic contour filtering to emphasise blocks of text when hashing
-        image = image.filter(ImageFilter.FIND_EDGES)
+    def _image_conditional_filter(image, *filters, **_kwargs):
+        condition = filters[0]
+        image_filters = filters[1:]
+        for image_filter in image_filters:
+            if condition and not condition(image):
+                break
+            image = image.filter(image_filter)
 
         return image
 
     @staticmethod
-    def _image_format(image, buffer_size):
+    def _image_contrast(image, factor, **_kwargs):
+        # return ImageEnhance.Contrast(image).enhance(factor)
+        data = image.getdata()
+        mean = int((sum(data) / len(data)) + 0.5)
+        image2 = Image.new('L', image.size, mean)
+
+        return Image.blend(image2, image, factor)
+
+    @staticmethod
+    def _image_format(image, buffer_size, **_kwargs):
         # Convert captured image data from BGRA to RGBA
         image[0::4], image[2::4] = image[2::4], image[0::4]
 
@@ -401,20 +414,30 @@ class UpNextDetector(object):
         return image
 
     @staticmethod
-    def _image_multiply(image1, image2, iterations=1, **_kwargs):
-        for _ in range(iterations):
-            image1 = ImageChops.multiply(image1, image2)
+    def _image_multiply_mask(mask, original, **_kwargs):
+        image = ImageChops.multiply(mask, original)
+        histogram = original.histogram()
+        target = 0.05 * max(histogram[0], sum(histogram[1:]))
+        iterations = 10
 
-        return image1
+        while iterations > 0:
+            image = ImageChops.multiply(image, original)
+            significant_pixels = sum(image.histogram()[1:])
+            if significant_pixels <= target:
+                break
+            iterations -= 1
+
+        return image
 
     @staticmethod
     def _image_process(image, image_operations):
         for operation in image_operations:
-            method = operation.get('method')
-            if not method:
+            num_params = len(operation)
+            if not num_params:
                 continue
-            args = operation.get('args', [])
-            kwargs = operation.get('kwargs', {})
+            method = operation[0]
+            args = operation[1] if num_params > 1 else []
+            kwargs = operation[2] if num_params > 2 else {}
             image = method(image, *args, **kwargs) or image
 
         return image
@@ -430,7 +453,12 @@ class UpNextDetector(object):
 
     @staticmethod
     def _image_save(image, filename, **_kwargs):
-        image.save(filename)
+        image_output_enabled = True
+        if SETTINGS.detector_debug and image_output_enabled:
+            try:
+                image.save(os.path.join(_SAVE_PATH, filename))
+            except (IOError, OSError):
+                pass
 
     @classmethod
     def _generate_image_hash(cls, image):
@@ -447,7 +475,56 @@ class UpNextDetector(object):
         return tuple(image.getdata())
 
     @classmethod
-    def _print_hash(cls, hash1, hash2, size=None, prefix=None):
+    def _hash_fuzz(cls, image_hash, masking_hash, factor=5):
+        weights = cls._generate_mask(masking_hash)
+
+        significant_bits = sum(map(cls._mul, image_hash, weights))
+        significance = 100 * significant_bits / len(image_hash)
+        delta = significance - SETTINGS.detect_significance
+
+        return factor * delta / SETTINGS.detect_significance
+
+    @classmethod
+    def _hash_similarity(cls, baseline_hash, image_hash, filtered_hash=None):
+        """Method to compare the similarity between two image hashes"""
+
+        # Check that hashes are not empty and that dimensions are equal
+        if not baseline_hash or not image_hash:
+            return 0
+
+        compare_hash = filtered_hash or image_hash
+
+        num_pixels = len(baseline_hash)
+        if num_pixels != len(compare_hash):
+            return 0
+
+        # Check whether each pixel is equal
+        bits_eq = sum(map(cls._eq, baseline_hash, compare_hash))
+        bits_xor = map(cls._xor, baseline_hash, compare_hash)
+        bits_xor_baseline = sum(map(cls._and, bits_xor, baseline_hash))
+        bits_xor_compare = sum(map(cls._and, bits_xor, compare_hash))
+
+        weighted_total = (
+            num_pixels
+            - baseline_hash.count(None)
+            - (min(baseline_hash.count(0), compare_hash.count(0)) / 2)
+        )
+        bit_compare = bits_eq - bits_xor_baseline - bits_xor_compare
+
+        # Evaluate similarity as a percentage of un-ignored pixels in the hash
+        similarity = max(0, 100 * bit_compare / weighted_total)
+
+        if not filtered_hash:
+            uncertainty = 0
+        elif filtered_hash != image_hash:
+            uncertainty = cls._hash_fuzz(image_hash, filtered_hash)
+        else:
+            uncertainty = cls._hash_fuzz(image_hash, baseline_hash)
+
+        return similarity - uncertainty
+
+    @classmethod
+    def _print_hash(cls, hash1, hash2, hash3=None, size=None, prefix=None):
         """Method to print two image hashes, side by side, to the Kodi log"""
 
         if hash1 is None or hash2 is None:
@@ -462,12 +539,13 @@ class UpNextDetector(object):
 
         cls.log('\n\t\t\t'.join(
             [prefix if prefix else '-' * (7 + 4 * size[0])]
-            + ['{0} | {1} | {2}'.format(
+            + ['{0} | {1} | {2} | {3}'.format(
                 size,
                 UpNextHashStore.hash_to_int(hash1),
-                UpNextHashStore.hash_to_int(hash2)
+                UpNextHashStore.hash_to_int(hash2),
+                UpNextHashStore.hash_to_int(hash3) if hash3 else '',
             )]
-            + ['{0:>3} |{1}|{2}|'.format(
+            + ['{0:>3} |{1}|{2}|{3}{4}'.format(
                 row,
                 ' '.join([
                     '+' if bit else '-' if bit is None else ' '
@@ -476,7 +554,12 @@ class UpNextDetector(object):
                 ' '.join([
                     '+' if bit else '-' if bit is None else ' '
                     for bit in hash2[row:row + size[0]]
-                ])
+                ]),
+                ' '.join([
+                    '+' if bit else '-' if bit is None else ' '
+                    for bit in hash3[row:row + size[0]]
+                ]) if hash3 else '',
+                '|' if hash3 else ''
             ) for row in range(0, num_pixels, size[0])]
         ))
 
@@ -498,10 +581,15 @@ class UpNextDetector(object):
         }
 
         # Calculate similarity between current hash and representative hash
-        stats['credits'] = self._calc_similarity(
-            self.hashes.data.get(self.hash_index['credits']),
+        stats['credits'] = max(self._hash_similarity(
+            self.hashes.data.get(self.hash_index['credits_small']),
+            image_hash,
             filtered_hash
-        ) - self._evaluate_uncertainty(5, image_hash, filtered_hash)
+        ), self._hash_similarity(
+            self.hashes.data.get(self.hash_index['credits_large']),
+            image_hash,
+            filtered_hash
+        ))
         # Match if current hash matches representative hash or if current hash
         # is blank
         is_match = (
@@ -514,7 +602,7 @@ class UpNextDetector(object):
             return stats
 
         # Calculate similarity between current hash and previous hash
-        stats['previous'] = self._calc_similarity(
+        stats['previous'] = self._hash_similarity(
             self.hashes.data.get(self.hash_index['previous']),
             image_hash
         )
@@ -532,7 +620,7 @@ class UpNextDetector(object):
 
         old_hashes = self.past_hashes.window(self.hash_index['current'], 60)
         for self.hash_index['episodes'], old_hash in old_hashes.items():
-            stats['episodes'] = self._calc_similarity(
+            stats['episodes'] = self._hash_similarity(
                 old_hash,
                 image_hash
             )
@@ -549,18 +637,6 @@ class UpNextDetector(object):
             self._hash_match_miss()
 
         return stats
-
-    def _evaluate_uncertainty(self, scaling, image_hash, filtered_hash):
-        if filtered_hash != image_hash:
-            weights = self._generate_mask(filtered_hash)
-        else:
-            weights = self.hashes.data.get(self.hash_index['mask'])
-
-        significant_bits = sum(map(UpNextDetector._mul, image_hash, weights))
-        significance = 100 * significant_bits / len(image_hash)
-        delta = significance - self.significance_level
-
-        return scaling * delta / self.significance_level
 
     def _hash_match_hit(self):
         with self._lock:
@@ -598,10 +674,9 @@ class UpNextDetector(object):
             'current': (0, 0, 0),
             # Previous hash
             'previous': None,
-            # Representative end credits hash
-            'credits': (0, 0, constants.UNDEFINED),
-            # Significance mask of representative end credits hash
-            'mask': (0, 1, constants.UNDEFINED),
+            # Representative end credits hashes
+            'credits_small': (0, 0, constants.UNDEFINED),
+            'credits_large': (0, 1, constants.UNDEFINED),
             # Other episodes hash
             'episodes': None,
             # Detected end credits timestamp from end of file
@@ -614,7 +689,6 @@ class UpNextDetector(object):
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
         # Hashes for currently playing episode
-        initial_hash = self._generate_initial_hash(*hash_size)
         self.hashes = UpNextHashStore(
             hash_size=hash_size,
             seasonid=self.state.get_season_identifier(),
@@ -623,14 +697,13 @@ class UpNextDetector(object):
             # background stored as first hash. Masked significance weights
             # stored as second hash.
             data={
-                self.hash_index['credits']: initial_hash,
-                self.hash_index['mask']: self._generate_mask(initial_hash)
+                self.hash_index['credits_small']:
+                    self._generate_initial_hash(*hash_size, 2),
+                self.hash_index['credits_large']:
+                    self._generate_initial_hash(*hash_size),
             },
             timestamps={}
         )
-
-        # Set max significance level to 25% as default
-        self.significance_level = SETTINGS.detect_significance
 
         # Hashes from previously played episodes
         self.past_hashes = UpNextHashStore(hash_size=hash_size)
@@ -729,41 +802,60 @@ class UpNextDetector(object):
                 self.queue.task_done()
                 break
 
-            image = self._image_format(image, self.capture_size)
-            # Resize and generate median absolute deviation from median hash
-            image_hash = self._generate_image_hash(self._image_process(
+            image = self._image_process(
                 image,
                 image_operations=[
-                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'image.png')]},
-                    {'method': self._image_resize,
-                     'args': [self.hashes.hash_size]}
+                    [self._image_format, [self.capture_size]],
+                    [self._image_auto_level],
+                    [self._image_save, ['image.bmp']],
                 ]
+            )
+            # Resize and generate median absolute deviation from median hash
+            image_hash = self._generate_image_hash(self._image_resize(
+                image, self.hashes.hash_size
             ))
             filtered_hash = self._generate_image_hash(self._image_process(
                 image,
                 image_operations=[
-                    {'method': self._image_contrast,
-                     'args': [100]},
-                    {'method': self._image_brightness,
-                     'args': [0.1]},
-                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter1.png')]},
-                    {'method': self._image_find_edges},
-                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter2.png')]},
-                    {'method': self._image_morph,
-                     'args': [
-                         ['4:(... .01 ...)->1',
-                          '4:(... .0. ..1)->1'],
-                         ['4:(... .10 ...)->0'],
-                         ['4:(... .10 ...)->0'],
-                     ]},
-                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filter3.png')]},
-                    {'method': self._image_multiply,
-                     'args': [self._image_auto_contrast(image), 5]},
-                    # {'method': self._image_save, 'args': [os.path.join(_SAVE_PATH, 'filtered.png')]},
-                    {'method': self._image_resize,
-                     'args': [self.hashes.hash_size]},
+                    [self._image_contrast, [100]],
+                    [self._image_save, ['filter1.bmp']],
+                    [self._image_morph, [
+                        # Remove noise and fill corners
+                        [
+                            '1:(.0. 010 .0.)->0',
+                            '1:(.1. 101 .1.)->1',
+                            '4:(000 01. 0..)->0',
+                            '4:(111 10. 1..)->1',
+                        ],
+                        # Find edges
+                        [
+                            '1:(... .1. ...)->0',
+                            '4:(01. .1. ...)->1',
+                            '4:(.10 .1. ...)->1',
+                            '4:(.1. 01. ...)->1',
+                            '4:(10. .0. ...)->1',
+                            '4:(.01 .0. ...)->1',
+                            '4:(.0. 10. ...)->1',
+                        ],
+                        # Dilate
+                        [
+                            '4:(.1. .0. ...)->1',
+                            '4:(1.. .0. ...)->1',
+                        ],
+                    ]],
+                    [self._image_save, ['filter2.bmp']],
+                    [self._image_multiply_mask, [image]],
+                    [self._image_save, ['filter3.bmp']],
+                    [self._image_conditional_filter, [
+                        None,
+                        ImageFilter.BoxBlur(3),
+                    ]],
+                    [self._image_save, ['filter4.bmp']],
+                    [self._image_auto_level, [93.75, 100]],
+                    [self._image_save, ['filtered.bmp']],
+                    [self._image_resize, [self.hashes.hash_size]],
                 ]
-            )) if SETTINGS.detector_filter else image_hash
+            )) if self._enable_filter(image_hash=image_hash) else image_hash
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
@@ -775,10 +867,11 @@ class UpNextDetector(object):
                 ))
 
                 self._print_hash(
-                    self.hashes.data.get(self.hash_index['credits']),
+                    self.hashes.data.get(self.hash_index['credits_small']),
                     filtered_hash,
-                    self.hashes.hash_size,
-                    'Hash {0:2.1f}% similar to typical credits'.format(
+                    self.hashes.data.get(self.hash_index['credits_large']),
+                    size=self.hashes.hash_size,
+                    prefix='Hash {0:2.1f}% similar to typical credits'.format(
                         stats['credits']
                     )
                 )
@@ -786,8 +879,8 @@ class UpNextDetector(object):
                 self._print_hash(
                     self.hashes.data.get(self.hash_index['previous']),
                     image_hash,
-                    self.hashes.hash_size,
-                    'Hash {0:2.1f}% similar to previous frame'.format(
+                    size=self.hashes.hash_size,
+                    prefix='Hash {0:2.1f}% similar to previous frame'.format(
                         stats['previous']
                     )
                 )
@@ -795,8 +888,8 @@ class UpNextDetector(object):
                 self._print_hash(
                     self.past_hashes.data.get(self.hash_index['episodes']),
                     image_hash,
-                    self.hashes.hash_size,
-                    'Hash {0:2.1f}% similar to other episodes'.format(
+                    size=self.hashes.hash_size,
+                    prefix='Hash {0:2.1f}% similar to other episodes'.format(
                         stats['episodes']
                     )
                 )
