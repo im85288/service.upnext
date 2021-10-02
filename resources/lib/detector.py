@@ -373,12 +373,8 @@ class UpNextDetector(object):
         ])
 
     @staticmethod
-    def _image_conditional_filter(image, *filters, **_kwargs):
-        condition = filters[0]
-        image_filters = filters[1:]
-        for image_filter in image_filters:
-            if condition and not condition(image):
-                break
+    def _image_filter(image, *filters, **_kwargs):
+        for image_filter in filters:
             image = image.filter(image_filter)
 
         return image
@@ -450,15 +446,6 @@ class UpNextDetector(object):
             )
 
         return image
-
-    @staticmethod
-    def _image_save(image, filename, **_kwargs):
-        image_output_enabled = False
-        if SETTINGS.detector_debug and image_output_enabled:
-            try:
-                image.save(os.path.join(_SAVE_PATH, filename))
-            except (IOError, OSError):
-                pass
 
     @classmethod
     def _generate_image_hash(cls, image):
@@ -807,7 +794,6 @@ class UpNextDetector(object):
                 image_operations=[
                     [self._image_format, [self.capture_size]],
                     [self._image_auto_level],
-                    [self._image_save, ['image.bmp']],
                 ]
             )
             # Resize and generate median absolute deviation from median hash
@@ -818,41 +804,21 @@ class UpNextDetector(object):
                 image,
                 image_operations=[
                     [self._image_contrast, [100]],
-                    [self._image_save, ['filter1.bmp']],
                     [self._image_morph, [
                         # Remove noise and fill corners
-                        [
-                            '1:(.0. 010 .0.)->0',
-                            '1:(.1. 101 .1.)->1',
-                            '4:(000 01. 0..)->0',
-                            '4:(111 10. 1..)->1',
-                        ],
+                        ['1:(.0. 010 .0.)->0', '1:(.1. 101 .1.)->1',
+                            '4:(000 01. 0..)->0', '4:(111 10. 1..)->1'],
                         # Find edges
-                        [
-                            '1:(... .1. ...)->0',
-                            '4:(01. .1. ...)->1',
-                            '4:(.10 .1. ...)->1',
-                            '4:(.1. 01. ...)->1',
-                            '4:(10. .0. ...)->1',
-                            '4:(.01 .0. ...)->1',
-                            '4:(.0. 10. ...)->1',
-                        ],
+                        ['1:(... .1. ...)->0', '4:(01. .1. ...)->1',
+                            '4:(.10 .1. ...)->1', '4:(.1. 01. ...)->1',
+                            '4:(10. .0. ...)->1', '4:(.01 .0. ...)->1',
+                            '4:(.0. 10. ...)->1'],
                         # Dilate
-                        [
-                            '4:(.1. .0. ...)->1',
-                            '4:(1.. .0. ...)->1',
-                        ],
+                        ['4:(.1. .0. ...)->1', '4:(1.. .0. ...)->1'],
                     ]],
-                    [self._image_save, ['filter2.bmp']],
                     [self._image_multiply_mask, [image]],
-                    [self._image_save, ['filter3.bmp']],
-                    [self._image_conditional_filter, [
-                        None,
-                        ImageFilter.BoxBlur(3),
-                    ]],
-                    [self._image_save, ['filter4.bmp']],
+                    [self._image_filter, [ImageFilter.BoxBlur(3)]],
                     [self._image_auto_level, [93.75, 100]],
-                    [self._image_save, ['filtered.bmp']],
                     [self._image_resize, [self.hashes.hash_size]],
                 ]
             )) if self._enable_filter(image_hash=image_hash) else image_hash
