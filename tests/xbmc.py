@@ -7,7 +7,6 @@
 
 from __future__ import absolute_import, division, print_function, unicode_literals
 import os
-import array
 import json
 import random
 import sys
@@ -274,10 +273,10 @@ class RenderCapture:
 
     def getImage(self, msecs=None):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc RenderCapture class getImage() method '''
-        return array.array('B', [
+        return bytearray((
             random.getrandbits(8) if i % 4 != 3 else 255
             for i in range(self._width * self._height * 4)
-        ])
+        ))
 
 
 def executebuiltin(string, wait=False):  # pylint: disable=unused-argument
