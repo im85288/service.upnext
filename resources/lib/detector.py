@@ -198,8 +198,8 @@ class UpNextDetector(object):
 
         self.player = player
         self.state = state
-        self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
-        self.workers = []
+        self.queue = None
+        self.workers = None
 
         self.match_counts = {
             'hits': 0,
@@ -699,15 +699,28 @@ class UpNextDetector(object):
         self._hash_match_reset()
 
     def _queue_clear(self):
+        if not self.queue:
+            return
+
         with self.queue.mutex:
             self.queue.queue.clear()
             self.queue.all_tasks_done.notify_all()
             self.queue.unfinished_tasks = 0
 
     def _queue_flush(self):
+        if not self.workers or not self.queue:
+            return
+
         for worker in self.workers:
             if worker.is_alive():
-                self.queue.put_nowait(None)
+                try:
+                    self.queue.put_nowait(None)
+                except queue.Full:
+                    pass
+
+    def _queue_init(self):
+        del self.queue
+        self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
 
     def _queue_push(self):
         capturer = self.queue.get()
@@ -751,6 +764,7 @@ class UpNextDetector(object):
 
         del capturer
         self.queue.task_done()
+        self._queue_clear()
 
     def _worker(self):
         """Detection loop captures Kodi render buffer every 1s to create an
@@ -913,9 +927,8 @@ class UpNextDetector(object):
 
         # Otherwise run the detector in a new thread
         self.log('Started')
-        self._running.set()
 
-        self._queue_clear()
+        self._queue_init()
         self.queue.put_nowait(xbmc.RenderCapture())
         self.workers = [utils.run_threaded(self._queue_push)]
         self.workers += [
@@ -925,6 +938,8 @@ class UpNextDetector(object):
             )
             for start_delay in range(SETTINGS.detector_threads - 1)
         ]
+
+        self._running.set()
         self.queue.join()
         self._queue_flush()
 
@@ -941,7 +956,8 @@ class UpNextDetector(object):
             else:
                 self._sigstop.set()
 
-            for idx, worker in enumerate(self.workers):
+            self._queue_flush()
+            for idx, worker in enumerate(self.workers or []):
                 if worker.is_alive():
                     worker.join(5)
                 if worker.is_alive():
@@ -952,7 +968,9 @@ class UpNextDetector(object):
         # Free references/resources
         with self._lock:
             del self.workers
-            self.workers = []
+            self.workers = None
+            del self.queue
+            self.queue = None
             if terminate:
                 # Invalidate collected hashes if not needed for later use
                 self.hashes.invalidate()
