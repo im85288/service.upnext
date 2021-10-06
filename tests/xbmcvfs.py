@@ -6,6 +6,7 @@
 # pylint: disable=invalid-name
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+import io
 import os
 from xbmcextra import __KODI_MATRIX__
 
@@ -18,7 +19,7 @@ class File:
         else:
             mode = 'rb'
 
-        self._file = open(path, mode=mode, encoding='utf-8')  # pylint: disable=consider-using-with
+        self._file = io.open(path, mode=mode, encoding='utf-8')  # pylint: disable=consider-using-with
 
     def __enter__(self):
         return self
