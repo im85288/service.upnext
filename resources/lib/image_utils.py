@@ -2,6 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 """Implements image manipulation and filtering helper functions"""
 
+from __future__ import absolute_import, division, unicode_literals
 from PIL import Image, ImageChops, ImageFilter, ImageMorph
 from settings import SETTINGS
 
@@ -63,9 +64,7 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
         min_value = 0
 
     return image.point([
-        min(255, max(0,
-            int((17 * (i // 16) - min_value) * scale)
-        ))
+        min(255, max(0, int((17 * (i // 16) - min_value) * scale)))
         for i in range(256)
     ])
 
