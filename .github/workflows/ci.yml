@@ -9,10 +9,11 @@ jobs:
     env:
       PYTHONIOENCODING: utf-8
       PYTHONPATH: ${{ github.workspace }}/resources/lib:${{ github.workspace }}/tests
+      TESTS_ENABLED: [2.7, 3.8]
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 ]
+        python-version: [2.7, 3.5, 3.6, 3.7, 3.8, 3.9]
     steps:
     - name: Check out ${{ github.sha }} from repository ${{ github.repository }}
       uses: actions/checkout@v2
@@ -36,18 +37,18 @@ jobs:
       if: always()
     - name: Run pytest
       run: pytest
-      if: contains([2.7, 3.8], matrix.python-version)
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
       continue-on-error: true
     - name: Upload code coverage to CodeCov
-      if: contains([2.7, 3.8], matrix.python-version)
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
       uses: codecov/codecov-action@v1
       continue-on-error: true
     - name: Fix coverage.xml source path
       run: sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage.xml
-      if: contains([2.7, 3.8], matrix.python-version)
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
       continue-on-error: true
     - name: Analyze with SonarCloud
-      if: contains([2.7, 3.8], matrix.python-version)
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
       uses: SonarSource/sonarcloud-github-action@master
       with:
         args: >
