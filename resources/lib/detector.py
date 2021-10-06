@@ -354,7 +354,7 @@ class UpNextDetector(object):
         return image
 
     @classmethod
-    def _create_image_hash(cls, image):
+    def _calc_image_hash(cls, image):
         # Transform image to show absolute deviation from median pixel luma
         median_pixel = cls._calc_median(image.getdata())
         image = image.point([abs(i - median_pixel) for i in range(256)])
@@ -723,10 +723,10 @@ class UpNextDetector(object):
                 save_file='image'
             )
             # Resize and generate median absolute deviation from median hash
-            image_hash = self._create_image_hash(image_utils.image_resize(
+            image_hash = self._calc_image_hash(image_utils.image_resize(
                 image, self.hashes.hash_size
             ))
-            filtered_hash = self._create_image_hash(self._image_process(
+            filtered_hash = self._calc_image_hash(self._image_process(
                 image,
                 image_operations=[
                     [image_utils.image_auto_level, [75, 100, True]],
