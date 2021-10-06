@@ -167,7 +167,7 @@ def test_representative_hash():
     hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
     test_hash = detector.UpNextDetector._generate_initial_hash(*hash_size)  # pylint: disable=protected-access
-    detector.UpNextDetector._print_hash(test_hash, test_hash, hash_size)  # pylint: disable=protected-access
+    detector.UpNextDetector._print_hashes([test_hash], hash_size)  # pylint: disable=protected-access
 
     test_complete = True
     assert test_complete is True
@@ -221,9 +221,8 @@ def test_hash_compare():  # pylint: disable=too-many-locals
                 'matched: {3},'
                 'actual: {4}'
             )
-            detector.UpNextDetector._print_hash(  # pylint: disable=protected-access
-                hash1,
-                hash2,
+            detector.UpNextDetector._print_hashes(  # pylint: disable=protected-access
+                [hash1, hash2],
                 size=hash_size,
                 prefix=result_summary.format(
                     file1,
