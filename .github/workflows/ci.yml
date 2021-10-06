@@ -9,7 +9,7 @@ jobs:
     env:
       PYTHONIOENCODING: utf-8
       PYTHONPATH: ${{ github.workspace }}/resources/lib:${{ github.workspace }}/tests
-      TESTS_ENABLED: [2.7, 3.8]
+      TESTS_ENABLED: '2.7, 3.8'
     strategy:
       fail-fast: false
       matrix:
