@@ -706,7 +706,18 @@ class UpNextDetector(object):
         self.mismatch_number = SETTINGS.detect_mismatches
         self._hash_match_reset()
 
-    def _push_frame_to_queue(self):
+    def _queue_clear(self):
+        with self.queue.mutex:
+            self.queue.queue.clear()
+            self.queue.all_tasks_done.notify_all()
+            self.queue.unfinished_tasks = 0
+
+    def _queue_flush(self):
+        for worker in self.workers:
+            if worker.is_alive():
+                self.queue.put_nowait(None)
+
+    def _queue_push(self):
         capturer = self.queue.get()
 
         abort = False
@@ -768,6 +779,7 @@ class UpNextDetector(object):
                 image = self.queue.get(timeout=SETTINGS.detector_threads)
                 if image is None:
                     self.queue.task_done()
+                if not isinstance(image, bytearray):
                     raise queue.Empty
             except queue.Empty:
                 self.log('Exiting: queue empty')
@@ -916,8 +928,9 @@ class UpNextDetector(object):
         self.log('Started')
         self._running.set()
 
+        self._queue_clear()
         self.queue.put_nowait(xbmc.RenderCapture())
-        self.workers = [utils.run_threaded(self._push_frame_to_queue)]
+        self.workers = [utils.run_threaded(self._queue_push)]
         self.workers += [
             utils.run_threaded(
                 self._worker,
@@ -926,10 +939,8 @@ class UpNextDetector(object):
             for start_delay in range(SETTINGS.detector_threads - 1)
         ]
         self.queue.join()
-        self.queue.put_nowait(None)
+        self._queue_flush()
 
-        if any(worker.is_alive() for worker in self.workers):
-            self.stop()
         self.log('Stopped')
         self._running.clear()
         self._sigstop.clear()
