@@ -510,44 +510,36 @@ class UpNextDetector(object):
         return similarity - uncertainty
 
     @classmethod
-    def _print_hash(cls, hash1, hash2, hash3=None, size=None, prefix=None):
+    def _print_hashes(cls, hashes, size=None, prefix=''):
         """Method to print two image hashes, side by side, to the Kodi log"""
 
-        if hash1 is None or hash2 is None:
+        if hashes:
+            hashes = [image_hash for image_hash in hashes if image_hash]
+        if not hashes:
             return
-        num_pixels = len(hash1)
-        if num_pixels != len(hash2):
-            return
+
+        num_bits = len(hashes[0])
+        hashes = [image_hash for image_hash in hashes
+                  if len(image_hash) == num_bits]
 
         if not size:
-            size = int(num_pixels ** 0.5)
-            size = (size, size)
+            size = int(num_bits ** 0.5)
+            size = [size, size]
+        row_length = size[0]
 
-        cls.log('\n\t\t\t'.join(
-            [prefix if prefix else '-' * (7 + 4 * size[0])]
-            + ['{0} | {1} | {2} | {3}'.format(
+        cls.log('\n\t\t\t'.join([
+            prefix,
+            '{0}|{1}|'.format(
                 size,
-                UpNextHashStore.hash_to_int(hash1),
-                UpNextHashStore.hash_to_int(hash2),
-                UpNextHashStore.hash_to_int(hash3) if hash3 else '',
-            )]
-            + ['{0:>3} |{1}|{2}|{3}{4}'.format(
-                row,
-                ' '.join([
-                    '+' if bit else '-' if bit is None else ' '
-                    for bit in hash1[row:row + size[0]]
-                ]),
-                ' '.join([
-                    '+' if bit else '-' if bit is None else ' '
-                    for bit in hash2[row:row + size[0]]
-                ]),
-                ' '.join([
-                    '+' if bit else '-' if bit is None else ' '
-                    for bit in hash3[row:row + size[0]]
-                ]) if hash3 else '',
-                '|' if hash3 else ''
-            ) for row in range(0, num_pixels, size[0])]
-        ))
+                '|'.join(str(UpNextHashStore.hash_to_int(image_hash))
+                         for image_hash in hashes)
+            )
+        ] + ['{0:>3}|{1}|'.format(
+            row,
+            '|'.join(' '.join('+' if bit else '-' if bit is None else ' '
+                              for bit in image_hash[row:row + row_length])
+                     for image_hash in hashes)
+        ) for row in range(0, num_bits, row_length)]))
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):
@@ -843,31 +835,26 @@ class UpNextDetector(object):
                     self.match_counts, self.match_number, self.mismatch_number
                 ))
 
-                self._print_hash(
-                    self.hashes.data.get(self.hash_index['credits_small']),
-                    filtered_hash,
-                    self.hashes.data.get(self.hash_index['credits_large']),
+                self._print_hashes(
+                    [self.hashes.data.get(self.hash_index['credits_small']),
+                     filtered_hash,
+                     self.hashes.data.get(self.hash_index['credits_large'])],
                     size=self.hashes.hash_size,
                     prefix='Hash {0:2.1f}% similar to typical credits'.format(
                         stats['credits']
                     )
                 )
 
-                self._print_hash(
-                    self.hashes.data.get(self.hash_index['previous']),
-                    image_hash,
+                self._print_hashes(
+                    [self.hashes.data.get(self.hash_index['previous']),
+                     image_hash,
+                     self.past_hashes.data.get(self.hash_index['episodes'])],
                     size=self.hashes.hash_size,
-                    prefix='Hash {0:2.1f}% similar to previous frame'.format(
-                        stats['previous']
-                    )
-                )
-
-                self._print_hash(
-                    self.past_hashes.data.get(self.hash_index['episodes']),
-                    image_hash,
-                    size=self.hashes.hash_size,
-                    prefix='Hash {0:2.1f}% similar to other episodes'.format(
-                        stats['episodes']
+                    prefix='Hash {0:2.1f}% similar to previous hash{1}'.format(
+                        stats['previous'],
+                        ' and {0:2.1f}% similar to other episodes'.format(
+                            stats['episodes']
+                        ) if self.hash_index['episodes'] else ''
                     )
                 )
 
