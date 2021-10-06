@@ -5,11 +5,11 @@ from __future__ import absolute_import, division, unicode_literals
 import json
 import os.path
 import timeit
-from PIL import Image, ImageChops, ImageFilter, ImageMorph
 import xbmc
 from settings import SETTINGS
 import constants
 import file_utils
+import image_utils
 import utils
 try:
     import queue
@@ -336,118 +336,25 @@ class UpNextDetector(object):
         )
 
     @staticmethod
-    def _image_auto_level(image, cutoff_lo=0, cutoff_hi=100, **_kwargs):
-        if cutoff_lo == 0 and cutoff_hi == 100:
-            min_value, max_value = image.getextrema()
-        elif cutoff_hi <= cutoff_lo:
-            return image
-        else:
-            histogram = image.histogram()[1:]
-            percent_total = sum(histogram) // 100
-            if not percent_total:
-                return image
-            cutoff_lo = cutoff_lo * percent_total
-            cutoff_hi = cutoff_hi * percent_total
-
-            running_total = 0
-            min_value = 0
-            max_value = 255
-            for value, num in enumerate(histogram):
-                if not num:
-                    continue
-                running_total += num
-                if running_total < cutoff_lo:
-                    min_value = value
-                elif running_total >= cutoff_hi:
-                    max_value = value
-                    break
-
-        if max_value > min_value:
-            scale = 255 / (max_value - min_value)
-        else:
-            return image
-
-        return image.point([
-            min(255, max(0, int((17 * (i // 16) - min_value) * scale)))
-            for i in range(256)
-        ])
-
-    @staticmethod
-    def _image_filter(image, *filters, **_kwargs):
-        for image_filter in filters:
-            image = image.filter(image_filter)
-
-        return image
-
-    @staticmethod
-    def _image_contrast(image, factor, **_kwargs):
-        data = image.getdata()
-        mean = int((sum(data) / len(data)) + 0.5)
-        image2 = Image.new('L', image.size, mean)
-
-        return Image.blend(image2, image, factor)
-
-    @staticmethod
-    def _image_format(image, buffer_size, **_kwargs):
-        # Convert captured image data from BGRA to RGBA
-        image[0::4], image[2::4] = image[2::4], image[0::4]
-
-        # Convert to greyscale to reduce size of data by a factor of 4
-        image = Image.frombuffer(
-            'RGBA', buffer_size, image, 'raw', 'RGBA', 0, 1
-        ).convert('L')
-
-        return image
-
-    @staticmethod
-    def _image_morph(image, *patterns_list, **_kwargs):
-        for patterns in patterns_list:
-            _, image = ImageMorph.MorphOp(
-                patterns=patterns
-            ).apply(image)
-
-        return image
-
-    @staticmethod
-    def _image_multiply_mask(mask, original, **_kwargs):
-        image = ImageChops.multiply(mask, original)
-        histogram = original.histogram()
-        target = 0.05 * max(histogram[0], sum(histogram[1:]))
-        iterations = 10
-
-        while iterations > 0:
-            image = ImageChops.multiply(image, original)
-            significant_pixels = sum(image.histogram()[1:])
-            if significant_pixels <= target:
-                break
-            iterations -= 1
-
-        return image
-
-    @staticmethod
-    def _image_process(image, image_operations):
-        for operation in image_operations:
+    def _image_process(image, image_operations, save_file=None):
+        for step, operation in enumerate(image_operations):
             num_params = len(operation)
-            if not num_params:
-                continue
             method = operation[0]
             args = operation[1] if num_params > 1 else []
-            kwargs = operation[2] if num_params > 2 else {}
-            image = method(image, *args, **kwargs) or image
-
-        return image
-
-    @staticmethod
-    def _image_resize(image, size, **_kwargs):
-        if size and size != image.size:
-            image = image.resize(
-                size, resample=SETTINGS.detector_resize_method
-            )
+            image = method(image, *args) or image
+            if save_file:
+                filename = '{0}_{1}_{2}.bmp'.format(
+                    save_file, step, method.__name__
+                )
+                try:
+                    image.save(os.path.join(_SAVE_PATH, filename))
+                except (IOError, OSError):
+                    pass
 
         return image
 
     @classmethod
-    def _generate_image_hash(cls, image):
+    def _create_image_hash(cls, image):
         # Transform image to show absolute deviation from median pixel luma
         median_pixel = cls._calc_median(image.getdata())
         image = image.point([abs(i - median_pixel) for i in range(256)])
@@ -809,35 +716,31 @@ class UpNextDetector(object):
             image = self._image_process(
                 image,
                 image_operations=[
-                    [self._image_format, [self.capture_size]],
-                    [self._image_auto_level],
-                ]
+                    [image_utils.image_format, [self.capture_size]],
+                    [image_utils.image_filter, [image_utils.UNSHARP_MASK]],
+                    [image_utils.image_auto_level, [25, 100, True]],
+                ],
+                save_file='image'
             )
             # Resize and generate median absolute deviation from median hash
-            image_hash = self._generate_image_hash(self._image_resize(
+            image_hash = self._create_image_hash(image_utils.image_resize(
                 image, self.hashes.hash_size
             ))
-            filtered_hash = self._generate_image_hash(self._image_process(
+            filtered_hash = self._create_image_hash(self._image_process(
                 image,
                 image_operations=[
-                    [self._image_contrast, [100]],
-                    [self._image_morph, [
-                        # Remove noise and fill corners
-                        ['1:(.0. 010 .0.)->0', '1:(.1. 101 .1.)->1',
-                            '4:(000 01. 0..)->0', '4:(111 10. 1..)->1'],
-                        # Find edges
-                        ['1:(... .1. ...)->0', '4:(01. .1. ...)->1',
-                            '4:(.10 .1. ...)->1', '4:(.1. 01. ...)->1',
-                            '4:(10. .0. ...)->1', '4:(.01 .0. ...)->1',
-                            '4:(.0. 10. ...)->1'],
-                        # Dilate
-                        ['4:(.1. .0. ...)->1', '4:(1.. .0. ...)->1'],
+                    [image_utils.image_auto_level, [75, 100, True]],
+                    [image_utils.image_filter, [image_utils.FIND_EDGES]],
+                    [image_utils.image_morph, [
+                        True, image_utils.DENOISE_LUT, image_utils.DILATE_LUT
                     ]],
-                    [self._image_multiply_mask, [image]],
-                    [self._image_filter, [ImageFilter.BoxBlur(3)]],
-                    [self._image_auto_level, [93.75, 100]],
-                    [self._image_resize, [self.hashes.hash_size]],
-                ]
+                    [image_utils.image_multiply_mask, [image]],
+                    [image_utils.image_filter, [
+                        image_utils.DETAIL_REDUCE_FILTER, True
+                    ]],
+                    [image_utils.image_resize, [self.hashes.hash_size]],
+                ],
+                save_file='filter'
             )) if self._enable_filter(image_hash=image_hash) else image_hash
 
             # Check if current hash matches with previous hash, typical end
