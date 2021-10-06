@@ -36,18 +36,18 @@ jobs:
       if: always()
     - name: Run pytest
       run: pytest
-      if: matrix.python-version == '3.8'
+      if: contains([2.7, 3.8], matrix.python-version)
       continue-on-error: true
     - name: Upload code coverage to CodeCov
-      if: matrix.python-version == '3.8'
+      if: contains([2.7, 3.8], matrix.python-version)
       uses: codecov/codecov-action@v1
       continue-on-error: true
     - name: Fix coverage.xml source path
       run: sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage.xml
-      if: matrix.python-version == '3.8'
+      if: contains([2.7, 3.8], matrix.python-version)
       continue-on-error: true
     - name: Analyze with SonarCloud
-      if: matrix.python-version == '3.8'
+      if: contains([2.7, 3.8], matrix.python-version)
       uses: SonarSource/sonarcloud-github-action@master
       with:
         args: >
