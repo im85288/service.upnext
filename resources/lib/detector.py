@@ -243,34 +243,6 @@ class UpNextDetector(object):
         return (vals[pivot] + vals[pivot - 1]) / 2
 
     @staticmethod
-    def _get_video_aspect_ratio(_cache=[None]):  # pylint: disable=dangerous-default-value
-        if not _cache[0]:
-            _cache[0] = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
-
-        return _cache[0]
-
-    @staticmethod
-    def _get_video_capture_resolution(max_size=None, aspect_ratio=1):
-        """Method to detect playing video resolution and aspect ratio and
-           return a scaled down resolution tuple and aspect ratio for use in
-           capturing the video frame buffer at a specific size/resolution"""
-
-        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
-        width = int(width.replace(',', ''))
-        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
-        height = int(height.replace(',', ''))
-
-        # Capturing render buffer at higher resolution captures more detail
-        # depending on Kodi scaling function used, but slows down processing.
-        # Limit captured data to max_size (in kB)
-        if max_size:
-            max_size = max_size * 8 * 1024
-            height = min(int((max_size / aspect_ratio) ** 0.5), height)
-            width = min(int(height * aspect_ratio), width)
-
-        return width, height
-
-    @staticmethod
     def _generate_initial_hash(hash_width, hash_height, pad_height=0):
         blank_token = (0, )
         pixel_token = (1, )
@@ -331,6 +303,34 @@ class UpNextDetector(object):
             min_mask
             for bit in image_hash
         )
+
+    @staticmethod
+    def _get_video_aspect_ratio(_cache=[None]):  # pylint: disable=dangerous-default-value
+        if not _cache[0]:
+            _cache[0] = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
+
+        return _cache[0]
+
+    @staticmethod
+    def _get_video_capture_resolution(max_size=None, aspect_ratio=1):
+        """Method to detect playing video resolution and aspect ratio and
+           return a scaled down resolution tuple and aspect ratio for use in
+           capturing the video frame buffer at a specific size/resolution"""
+
+        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
+        width = int(width.replace(',', ''))
+        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
+        height = int(height.replace(',', ''))
+
+        # Capturing render buffer at higher resolution captures more detail
+        # depending on Kodi scaling function used, but slows down processing.
+        # Limit captured data to max_size (in kB)
+        if max_size:
+            max_size = max_size * 8 * 1024
+            height = min(int((max_size / aspect_ratio) ** 0.5), height)
+            width = min(int(height * aspect_ratio), width)
+
+        return width, height
 
     @staticmethod
     def _image_process(image, image_operations, save_file=None):
