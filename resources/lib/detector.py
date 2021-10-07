@@ -182,8 +182,6 @@ class UpNextDetector(object):
         'match_number',
         'mismatch_number',
         # Variables
-        'capture_size',
-        'capture_ar',
         'capture_interval',
         'hash_index',
         'match_counts',
@@ -245,12 +243,18 @@ class UpNextDetector(object):
         return (vals[pivot] + vals[pivot - 1]) / 2
 
     @staticmethod
-    def _capture_resolution(max_size=None):
+    def _get_video_aspect_ratio(_cache=[None]):  # pylint: disable=dangerous-default-value
+        if not _cache[0]:
+            _cache[0] = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
+
+        return _cache[0]
+
+    @staticmethod
+    def _get_video_capture_resolution(max_size=None, aspect_ratio=1):
         """Method to detect playing video resolution and aspect ratio and
            return a scaled down resolution tuple and aspect ratio for use in
            capturing the video frame buffer at a specific size/resolution"""
 
-        aspect_ratio = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
         width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
         width = int(width.replace(',', ''))
         height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
@@ -264,7 +268,7 @@ class UpNextDetector(object):
             height = min(int((max_size / aspect_ratio) ** 0.5), height)
             width = min(int(height * aspect_ratio), width)
 
-        return (width, height), aspect_ratio
+        return width, height
 
     @staticmethod
     def _generate_initial_hash(hash_width, hash_height, pad_height=0):
@@ -583,10 +587,6 @@ class UpNextDetector(object):
             self.match_counts['detected'] = False
 
     def _init_hashes(self):
-        # Limit captured data to increase processing speed
-        self.capture_size, self.capture_ar = self._capture_resolution(
-            max_size=SETTINGS.detector_data_limit
-        )
         # Set minimum capture interval to decrease capture rate
         self.capture_interval = 0.5
 
@@ -607,7 +607,7 @@ class UpNextDetector(object):
         }
 
         # Hash size as (width, height)
-        hash_size = [8 * self.capture_ar, 8]
+        hash_size = [8 * self._get_video_aspect_ratio(_cache=[None]), 8]
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
@@ -668,13 +668,13 @@ class UpNextDetector(object):
         self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
 
     def _queue_push(self):
-        capturer = self.queue.get()
+        capturer, size = self.queue.get()
 
         abort = False
         while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
             loop_start = timeit.default_timer()
 
-            capturer.capture(*self.capture_size)
+            capturer.capture(*size)
             image = capturer.getImage()
 
             # Capture failed or was skipped, retry with less data
@@ -689,15 +689,16 @@ class UpNextDetector(object):
 
                 if SETTINGS.detector_data_limit > 8:
                     SETTINGS.detector_data_limit -= 8
-                self.capture_size, self.capture_ar = self._capture_resolution(  # pylint: disable=attribute-defined-outside-init
-                    max_size=SETTINGS.detector_data_limit
+                size = self._get_video_capture_resolution(
+                    max_size=SETTINGS.detector_data_limit,
+                    aspect_ratio=self._get_video_aspect_ratio()
                 )
                 del capturer
                 capturer = xbmc.RenderCapture()
                 continue
 
             try:
-                self.queue.put(image, timeout=self.capture_interval)
+                self.queue.put([image, size], timeout=self.capture_interval)
                 loop_time = timeit.default_timer() - loop_start
                 if loop_time >= self.capture_interval:
                     raise queue.Full
@@ -727,14 +728,16 @@ class UpNextDetector(object):
 
         while not (self._sigterm.is_set() or self._sigstop.is_set()):
             try:
-                image = self.queue.get(timeout=SETTINGS.detector_threads)
-                if image is None:
-                    self.queue.task_done()
+                image, size = self.queue.get(timeout=SETTINGS.detector_threads)
                 if not isinstance(image, bytearray):
                     raise queue.Empty
-            except queue.Empty:
-                self.log('Exiting: queue empty')
+            except (TypeError, ValueError):
+                self.log('Queue empty - exiting')
+                self.queue.task_done()
                 break
+            except queue.Empty:
+                self.log('Queue empty - retry')
+                continue
 
             with self.player as check_fail:
                 play_time = self.player.getTime()
@@ -752,7 +755,7 @@ class UpNextDetector(object):
                 break
 
             image_hash, filtered_hash = self._create_hashes(
-                image, self.capture_size, self.hashes.hash_size
+                image, size, self.hashes.hash_size
             )
 
             # Check if current hash matches with previous hash, typical end
@@ -841,7 +844,13 @@ class UpNextDetector(object):
         self.log('Started')
 
         self._queue_init()
-        self.queue.put_nowait(xbmc.RenderCapture())
+        self.queue.put_nowait([
+            xbmc.RenderCapture(),
+            self._get_video_capture_resolution(
+                max_size=SETTINGS.detector_data_limit,
+                aspect_ratio=self._get_video_aspect_ratio()
+            )
+        ])
         self.workers = [utils.run_threaded(self._queue_push)]
         self.workers += [
             utils.run_threaded(
