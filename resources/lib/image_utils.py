@@ -30,8 +30,6 @@ def _radial_mask(size, output_cache=[None]):  # pylint: disable=dangerous-defaul
 
 
 def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
-    if cutoff_hi <= cutoff_lo:
-        return image
     if cutoff_hi - cutoff_lo == 100:
         min_value, max_value = image.getextrema()
     else:
@@ -43,8 +41,8 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
         cutoff_hi = cutoff_hi * percent_total
 
         running_total = 0
-        min_value = 0
-        max_value = 255
+        min_value = None
+        max_value = None
         for value, num in enumerate(histogram):
             if not num:
                 continue
@@ -56,9 +54,8 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
                 max_value = value
                 break
 
-    if max_value <= min_value:
-        return image
-
+    min_value = min_value or 0
+    max_value = max_value or 255
     scale = 255 / (max_value - min_value)
     if saturate:
         min_value = 0
@@ -75,14 +72,6 @@ def image_filter(image, filter_method, mask=False):
     if mask:
         return image.paste(filtered_image, mask=_radial_mask(image.size))
     return filtered_image
-
-
-def image_contrast(image, factor):
-    data = image.getdata()
-    mean = int((sum(data) / len(data)) + 0.5)
-    image2 = Image.new('L', image.size, mean)
-
-    return Image.blend(image2, image, factor)
 
 
 def image_format(image, buffer_size):
