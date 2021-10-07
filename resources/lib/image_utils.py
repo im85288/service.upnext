@@ -10,9 +10,10 @@ from settings import SETTINGS
 UNSHARP_MASK = ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
 if SETTINGS.detector_filter:
     FIND_EDGES = ImageFilter.FIND_EDGES()
-    DETAIL_REDUCE_FILTER = ImageFilter.ModeFilter(3)
+    COARSE_DETAIL_FILTER = ImageFilter.ModeFilter(3)
+    FINE_DETAIL_FILTER = ImageFilter.ModeFilter(5)
     DENOISE_LUT = ImageMorph.LutBuilder(patterns=[
-        '4:(.0. 01. ...)->0'
+        '4:(.0. 01. ...)->0', '4:(.1. 10. ...)->1'
     ]).build_lut()
     DILATE_LUT = ImageMorph.LutBuilder(patterns=[
         '4:(.1. .0. ...)->1', '4:(1.. .0. ...)->1'

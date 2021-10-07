@@ -392,13 +392,13 @@ class UpNextDetector(object):
             image_operations=[
                 [image_utils.image_auto_level, [75, 100, True]],
                 [image_utils.image_filter, [image_utils.FIND_EDGES]],
-                [image_utils.image_filter, [image_utils.DETAIL_REDUCE_FILTER]],
+                [image_utils.image_filter, [image_utils.COARSE_DETAIL_FILTER]],
                 [image_utils.image_morph, [
                     True, image_utils.DENOISE_LUT, image_utils.DILATE_LUT
                 ]],
                 [image_utils.image_multiply_mask, [image]],
                 [image_utils.image_filter, [
-                    image_utils.DETAIL_REDUCE_FILTER, True
+                    image_utils.FINE_DETAIL_FILTER, True
                 ]],
             ],
             save_file='filter'
