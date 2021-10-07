@@ -418,7 +418,7 @@ class UpNextDetector(object):
 
     @classmethod
     def _print_hashes(cls, hashes, size=None, prefix=''):
-        """Method to print two image hashes, side by side, to the Kodi log"""
+        """Method to print image hashes, side by side, to the Kodi log"""
 
         if hashes:
             hashes = [image_hash for image_hash in hashes if image_hash]
@@ -757,7 +757,7 @@ class UpNextDetector(object):
                      filtered_hash,
                      self.hashes.data.get(self.hash_index['credits_large'])],
                     size=self.hashes.hash_size,
-                    prefix='Hash {0:2.1f}% similar to typical credits'.format(
+                    prefix='{0:.1f}% similar to typical credits'.format(
                         stats['credits']
                     )
                 )
@@ -767,11 +767,9 @@ class UpNextDetector(object):
                      image_hash,
                      self.past_hashes.data.get(self.hash_index['episodes'])],
                     size=self.hashes.hash_size,
-                    prefix='Hash {0:2.1f}% similar to previous hash{1}'.format(
-                        stats['previous'],
-                        ' and {0:2.1f}% similar to other episodes'.format(
-                            stats['episodes']
-                        ) if self.hash_index['episodes'] else ''
+                    prefix=('{0:.1f}% similar to previous hash, '
+                            '{1:.1f}% similar to other episodes').format(
+                        stats['previous'], stats['episodes']
                     )
                 )
 
