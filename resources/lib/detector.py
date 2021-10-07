@@ -782,10 +782,10 @@ class UpNextDetector(object):
                      image_hash,
                      self.past_hashes.data.get(self.hash_index['episodes'])],
                     size=self.hashes.hash_size,
-                    prefix=('{0:.1f}% similar to previous hash, '
-                            '{1:.1f}% similar to other episodes').format(
-                        stats['previous'], stats['episodes']
-                    )
+                    prefix=(
+                        '{0:.1f}% similar to previous hash, '
+                        '{1:.1f}% similar to other episodes'
+                    ).format(stats['previous'], stats['episodes'])
                 )
 
                 self.log(profiler.get_stats(reuse=True))
