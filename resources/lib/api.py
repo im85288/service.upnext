@@ -167,7 +167,7 @@ def get_playlist_position():
 
     # Use actual playlistid rather than xbmc.PLAYLIST_VIDEO as Kodi sometimes
     # plays video content in a music playlist
-    playlistid = get_playlistid(playlistid_cache=[None])
+    playlistid = get_playlistid(_cache=[None])
     if playlistid is None:
         return None
 
@@ -274,12 +274,12 @@ def play_plugin_item(data, encoding, resume=False):
     log('No plugin data available for playback', utils.LOGWARNING)
 
 
-def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-value
+def get_playerid(_cache=[None]):  # pylint: disable=dangerous-default-value
     """Function to get active player playerid"""
 
     # We don't need to actually get playerid everytime, cache and reuse instead
-    if playerid_cache[0] is not None:
-        return playerid_cache[0]
+    if _cache[0] is not None:
+        return _cache[0]
 
     # Sometimes Kodi gets confused and uses a music playlist for video content,
     # so get the first active player instead, default to video player.
@@ -300,21 +300,21 @@ def get_playerid(playerid_cache=[None]):  # pylint: disable=dangerous-default-va
         log('No active player', utils.LOGWARNING)
         return None
 
-    playerid_cache[0] = playerid
+    _cache[0] = playerid
     return playerid
 
 
-def get_playlistid(playlistid_cache=[None]):  # pylint: disable=dangerous-default-value
+def get_playlistid(_cache=[None]):  # pylint: disable=dangerous-default-value
     """Function to get playlistid of active player"""
 
     # We don't need to get playlistid everytime, cache and reuse instead
-    if playlistid_cache[0] is not None:
-        return playlistid_cache[0]
+    if _cache[0] is not None:
+        return _cache[0]
 
     result = utils.jsonrpc(
         method='Player.GetProperties',
         params={
-            'playerid': get_playerid(playerid_cache=[None]),
+            'playerid': get_playerid(_cache=[None]),
             'properties': ['playlistid'],
         }
     )

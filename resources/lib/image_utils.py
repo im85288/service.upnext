@@ -19,14 +19,14 @@ if SETTINGS.detector_filter:
     ]).build_lut()
 
 
-def _radial_mask(size, output_cache=[None]):  # pylint: disable=dangerous-default-value
-    if not output_cache[0] or size != output_cache[0].size:
-        output_cache[0] = image_auto_level(
+def _radial_mask(size, _cache=[None]):  # pylint: disable=dangerous-default-value
+    if not _cache[0] or size != _cache[0].size:
+        _cache[0] = image_auto_level(
             Image.radial_gradient('L').resize(size, resample=Image.HAMMING),
             50, 100, True
         )
 
-    return output_cache[0]
+    return _cache[0]
 
 
 def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
