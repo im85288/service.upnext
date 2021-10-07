@@ -61,9 +61,13 @@ class UpNextHashStore(object):
     def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def is_valid(self, seasonid=None, episode_number=None):
+    def is_valid(self, seasonid=None, episode_number=None, for_saving=False):
         # Non-episodic video is being played
         if not self.seasonid or self.episode_number == constants.UNDEFINED:
+            return False
+
+        # Playlist with no episode details
+        if for_saving and self.seasonid[:len('_playlist')] == '_playlist':
             return False
 
         # No new episode details, assume current hashes are still valid
@@ -780,8 +784,7 @@ class UpNextDetector(object):
             self.hash_index['previous'] = self.hash_index['current']
 
             # Store timestamps if credits are detected
-            if self.credits_detected():
-                self.update_timestamp(play_time)
+            self.update_timestamp(play_time)
 
             self.queue.task_done()
 
@@ -884,7 +887,7 @@ class UpNextDetector(object):
     def store_data(self):
         # Only store data for videos that are grouped by season (i.e. same show
         # title, same season number)
-        if not self.hashes.is_valid():
+        if not self.hashes.is_valid(for_saving=True):
             return
 
         self.past_hashes.hash_size = self.hashes.hash_size
@@ -902,8 +905,8 @@ class UpNextDetector(object):
         self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
-        # Timestamp already stored
-        if self.hash_index['detected_at']:
+        # Timestamp already stored or credits not detected
+        if self.hash_index['detected_at'] or not self.credits_detected():
             return
 
         with self._lock:

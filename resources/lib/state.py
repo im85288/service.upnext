@@ -243,6 +243,13 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
             current_item = api.get_now_playing()
             source = 'playlist'
 
+            if not current_item.get('showtitle'):
+                current_item['showtitle'] = '_playlist'
+            if current_item.get('season') == constants.UNDEFINED:
+                current_item['season'] = 0
+            if current_item.get('episode') == constants.UNDEFINED:
+                current_item['episode'] = playlist_position
+
         elif media_type == 'episode':
             current_item = self._get_library_now_playing()
             source = 'library'
@@ -380,7 +387,7 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
     def _set_season_identifier(self):
         showtitle = self.current_item['details'].get('showtitle')
         season = self.current_item['details'].get('season')
-        if not showtitle or not season or season == constants.UNDEFINED:
+        if not showtitle or season == constants.UNDEFINED:
             self.season_identifier = None
         else:
             self.season_identifier = '_'.join((str(showtitle), str(season)))
