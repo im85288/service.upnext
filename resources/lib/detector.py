@@ -267,17 +267,6 @@ class UpNextDetector(object):
         return (width, height), aspect_ratio
 
     @staticmethod
-    def _enable_filter(image_hash):
-        if not SETTINGS.detector_filter:
-            return False
-
-        num_bits = len(image_hash)
-        significant_bits = sum(image_hash)
-        significance = 100 * significant_bits / num_bits
-
-        return significance >= SETTINGS.detect_significance
-
-    @staticmethod
     def _generate_initial_hash(hash_width, hash_height, pad_height=0):
         blank_token = (0, )
         pixel_token = (1, )
@@ -370,6 +359,51 @@ class UpNextDetector(object):
         image = image.point([i > median_pixel for i in range(256)])
 
         return tuple(image.getdata())
+
+    @classmethod
+    def _create_hashes(cls, image, image_size, hash_size):
+        image = cls._image_process(
+            image,
+            image_operations=[
+                [image_utils.image_format, [image_size]],
+                [image_utils.image_filter, [image_utils.UNSHARP_MASK]],
+                [image_utils.image_auto_level, [25, 100]],
+            ],
+            save_file='image'
+        )
+
+        image_hash = cls._calc_image_hash(image_utils.image_resize(
+            image, hash_size
+        ))
+
+        if not SETTINGS.detector_filter:
+            return image_hash, image_hash
+
+        significance = 100 * sum(image_hash) / len(image_hash)
+        if significance < SETTINGS.detect_significance:
+            return image_hash, image_hash
+
+        filtered_image = cls._image_process(
+            image,
+            image_operations=[
+                [image_utils.image_auto_level, [75, 100, True]],
+                [image_utils.image_filter, [image_utils.FIND_EDGES]],
+                [image_utils.image_filter, [image_utils.DETAIL_REDUCE_FILTER]],
+                [image_utils.image_morph, [
+                    True, image_utils.DENOISE_LUT, image_utils.DILATE_LUT
+                ]],
+                [image_utils.image_multiply_mask, [image]],
+                [image_utils.image_filter, [
+                    image_utils.DETAIL_REDUCE_FILTER, True
+                ]],
+            ],
+            save_file='filter'
+        )
+        filtered_hash = cls._calc_image_hash(image_utils.image_resize(
+            filtered_image, hash_size
+        ))
+
+        return image_hash, filtered_hash
 
     @classmethod
     def _hash_fuzz(cls, image_hash, masking_hash, factor=5):
@@ -717,35 +751,9 @@ class UpNextDetector(object):
                 self.queue.task_done()
                 break
 
-            image = self._image_process(
-                image,
-                image_operations=[
-                    [image_utils.image_format, [self.capture_size]],
-                    [image_utils.image_filter, [image_utils.UNSHARP_MASK]],
-                    [image_utils.image_auto_level, [25, 100, True]],
-                ],
-                save_file='image'
+            image_hash, filtered_hash = self._create_hashes(
+                image, self.capture_size, self.hashes.hash_size
             )
-            # Resize and generate median absolute deviation from median hash
-            image_hash = self._calc_image_hash(image_utils.image_resize(
-                image, self.hashes.hash_size
-            ))
-            filtered_hash = self._calc_image_hash(self._image_process(
-                image,
-                image_operations=[
-                    [image_utils.image_auto_level, [75, 100, True]],
-                    [image_utils.image_filter, [image_utils.FIND_EDGES]],
-                    [image_utils.image_morph, [
-                        True, image_utils.DENOISE_LUT, image_utils.DILATE_LUT
-                    ]],
-                    [image_utils.image_multiply_mask, [image]],
-                    [image_utils.image_filter, [
-                        image_utils.DETAIL_REDUCE_FILTER, True
-                    ]],
-                    [image_utils.image_resize, [self.hashes.hash_size]],
-                ],
-                save_file='filter'
-            )) if self._enable_filter(image_hash=image_hash) else image_hash
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
