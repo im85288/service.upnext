@@ -732,9 +732,8 @@ class UpNextDetector(object):
                 image, size = self.queue.get(timeout=SETTINGS.detector_threads)
                 if not isinstance(image, bytearray):
                     raise queue.Empty
-            except (TypeError, ValueError):
+            except TypeError:
                 self.log('Queue empty - exiting')
-                self.queue.task_done()
                 break
             except queue.Empty:
                 self.log('Queue empty - retry')
