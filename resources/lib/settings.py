@@ -122,7 +122,8 @@ class UpNextSettings(object):
 
         self.detector_save_path = utils.get_setting('detectorSavePath')
         self.detector_threads = utils.get_setting_int('detectorThreads')
-        self.detector_data_limit = utils.get_setting_int('detectorDataLimit')
+        data_limit = utils.get_setting_int('detectorDataLimit')
+        self.detector_data_limit = data_limit - data_limit % 8
         self.detector_filter = utils.get_setting_bool('detectorFilter')
         self.detector_resize_method = constants.PIL_RESIZE_METHODS.get(
             utils.get_setting_int('detectorResizeMethod', default=1)

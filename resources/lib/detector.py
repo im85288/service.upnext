@@ -685,13 +685,15 @@ class UpNextDetector(object):
                 self.log('Capture failed using {0}kB data limit'.format(
                     SETTINGS.detector_data_limit
                 ), utils.LOGWARNING)
+                SETTINGS.detector_data_limit = (
+                    SETTINGS.detector_data_limit - 8
+                ) or 8
 
-                if SETTINGS.detector_data_limit > 8:
-                    SETTINGS.detector_data_limit -= 8
                 size = self._get_video_capture_resolution(
                     max_size=SETTINGS.detector_data_limit,
                     aspect_ratio=self._get_video_aspect_ratio()
                 )
+
                 del capturer
                 capturer = xbmc.RenderCapture()
                 continue
