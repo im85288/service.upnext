@@ -3,7 +3,6 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import json
-import os.path
 import timeit
 import xbmc
 from settings import SETTINGS
@@ -17,8 +16,10 @@ except ImportError:
     import Queue as queue
 
 # Create directory where all stored hashes will be saved
-_SAVE_PATH = file_utils.translate_path(SETTINGS.detector_save_path)
-file_utils.create_directory(_SAVE_PATH)
+SETTINGS.detector_save_path = file_utils.get_legal_path(
+    SETTINGS.detector_save_path
+)
+file_utils.create_directory(SETTINGS.detector_save_path)
 
 
 class UpNextHashStore(object):
@@ -86,8 +87,9 @@ class UpNextHashStore(object):
         self.episode_number = constants.UNDEFINED
 
     def load(self, identifier):
-        filename = file_utils.make_legal_filename(identifier, suffix='.json')
-        target = os.path.join(_SAVE_PATH, filename)
+        target = file_utils.get_legal_filename(
+            identifier, prefix=SETTINGS.detector_save_path, suffix='.json'
+        )
         try:
             with open(target, mode='r', encoding='utf-8') as target_file:
                 hashes = json.load(target_file)
@@ -129,8 +131,9 @@ class UpNextHashStore(object):
             'timestamps': self.timestamps
         }
 
-        filename = file_utils.make_legal_filename(identifier, suffix='.json')
-        target = os.path.join(_SAVE_PATH, filename)
+        target = file_utils.get_legal_filename(
+            identifier, prefix=SETTINGS.detector_save_path, suffix='.json'
+        )
         try:
             with open(target, mode='w', encoding='utf-8') as target_file:
                 json.dump(output, target_file, indent=4)
@@ -340,11 +343,12 @@ class UpNextDetector(object):
             args = operation[1] if num_params > 1 else []
             image = method(image, *args) or image
             if save_file:
-                filename = '{0}_{1}_{2}.bmp'.format(
-                    save_file, step, method.__name__
+                target = file_utils.get_legal_filename(
+                    '{0}_{1}_{2}'.format(save_file, step, method.__name__),
+                    prefix=SETTINGS.detector_save_path, suffix='.bmp'
                 )
                 try:
-                    image.save(os.path.join(_SAVE_PATH, filename))
+                    image.save(target)
                 except (IOError, OSError):
                     pass
 

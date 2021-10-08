@@ -4,30 +4,12 @@
 
 from __future__ import absolute_import, division, unicode_literals
 import errno
+import os.path
 import xbmc
 import xbmcvfs
 
 
-def make_legal_filename(filename, prefix='', suffix=''):
-    """Returns a legal filename, from an arbitrary string input, as a string"""
-
-    filename = ''.join((prefix, filename, suffix))
-    # xbmcvfs.makeLegalFilename doesn't actually do what it is meant to do - it
-    # creates a legal path, not a legal filename. Try to workaround issue here
-    filename = ''.join('_' if i in '\\/:*?<>| ' else i for i in filename)
-
-    try:
-        filename = xbmcvfs.makeLegalFilename(filename)
-    except AttributeError:
-        xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
-        filename = xbmcvfs.makeLegalFilename(filename)
-
-    if filename.endswith('/'):
-        filename = filename[:-1]
-    return filename
-
-
-def translate_path(path):
+def _translate_path(path):
     """Returns a real path, translated from a special:// path, as a string"""
 
     try:
@@ -35,6 +17,43 @@ def translate_path(path):
     except AttributeError:
         xbmcvfs.translatePath = xbmc.translatePath
         return xbmcvfs.translatePath(path)
+
+
+def sanitise(string):
+    return ''.join('_' if i in '\\/:*?"<>| ' else i for i in string)
+
+
+def get_legal_filename(filename, path='', prefix='', suffix=''):
+    """Returns a legal filename, from an arbitrary string input, as a string"""
+
+    # xbmcvfs.makeLegalFilename doesn't actually do what it is meant to do - it
+    # creates a legal path, not a legal filename. Try to workaround issue here
+    filename = sanitise(filename)
+    filename = ''.join((prefix, filename, suffix))
+
+    try:
+        filename = xbmcvfs.makeLegalFilename(filename)
+    except AttributeError:
+        xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
+        filename = xbmcvfs.makeLegalFilename(filename)
+
+    if path:
+        filename = os.path.join(get_legal_path(path), filename)
+
+    return filename
+
+
+def get_legal_path(path):
+    """Returns a legal path, with a trailing path separator, from an arbitrary
+       string input, as a string"""
+
+    try:
+        path = xbmcvfs.makeLegalFilename(_translate_path(path))
+    except AttributeError:
+        xbmcvfs.makeLegalFilename = xbmc.makeLegalFilename
+        path = xbmcvfs.makeLegalFilename(_translate_path(path))
+
+    return os.path.join(path, '')
 
 
 def create_directory(path):
