@@ -10,8 +10,7 @@ from settings import SETTINGS
 UNSHARP_MASK = ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
 if SETTINGS.detector_filter:
     FIND_EDGES = ImageFilter.FIND_EDGES()
-    COARSE_DETAIL_FILTER = ImageFilter.ModeFilter(3)
-    FINE_DETAIL_FILTER = ImageFilter.ModeFilter(5)
+    DETAIL_FILTER = ImageFilter.ModeFilter(3)
     DENOISE_LUT = ImageMorph.LutBuilder(patterns=[
         '4:(.0. 01. ...)->0', '4:(.1. 10. ...)->1'
     ]).build_lut()
@@ -22,19 +21,31 @@ if SETTINGS.detector_filter:
 
 def _radial_mask(size, _cache=[None]):  # pylint: disable=dangerous-default-value
     if not _cache[0] or size != _cache[0].size:
-        _cache[0] = image_auto_level(
-            Image.radial_gradient('L').resize(size, resample=Image.HAMMING),
-            50, 100, True
-        )
+        mask = Image.radial_gradient('L')
+        mask = mask.resize(size, resample=Image.HAMMING)
+        mask = image_bit_depth(mask, 3)
+        mask = image_auto_level(mask, 12.5, 87.5, True)
+        _cache[0] = mask
 
     return _cache[0]
 
 
-def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
+def image_bit_depth(image, bit_depth):
+    output_values = 2 ** bit_depth
+    band = 256 / output_values
+    scale = 256 / (output_values - 1)
+
+    return image.point([
+        min(255, max(0, int(scale * (i // band))))
+        for i in range(256)
+    ])
+
+
+def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, clip=False):
     if cutoff_hi - cutoff_lo == 100:
         min_value, max_value = image.getextrema()
     else:
-        histogram = image.histogram()[1:]
+        histogram = image.histogram()
         percent_total = sum(histogram) // 100
         if not percent_total:
             return image
@@ -42,8 +53,8 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
         cutoff_hi = cutoff_hi * percent_total
 
         running_total = 0
-        min_value = None
-        max_value = None
+        min_value = 0
+        max_value = 255
         for value, num in enumerate(histogram):
             if not num:
                 continue
@@ -51,18 +62,19 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, saturate=False):
             running_total += num
             if running_total <= cutoff_lo:
                 min_value = value
-            elif running_total >= cutoff_hi:
+            elif running_total > cutoff_hi:
                 max_value = value
                 break
 
-    min_value = min_value or 0
-    max_value = max_value or 255
-    scale = 255 / (max_value - min_value)
-    if saturate:
+    scale = 255 / ((max_value - min_value) or 1)
+    offset = 0
+    if not clip:
+        offset = min_value
         min_value = 0
+        max_value = 255
 
     return image.point([
-        min(255, max(0, int((17 * (i // 16) - min_value) * scale)))
+        min(max_value, max(min_value, int(scale * (i - offset))))
         for i in range(256)
     ])
 
