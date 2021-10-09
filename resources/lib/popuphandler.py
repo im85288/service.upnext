@@ -165,23 +165,6 @@ class UpNextPopupHandler(object):
             popup_state, source, ' using queue' if self.state.queued else ''
         ))
 
-    def _post_run(self, play_next, keep_playing):
-        # Update playback state
-        self.state.playing_next = play_next
-        self.state.keep_playing = keep_playing
-
-        # Dequeue and stop playback if not playing next file
-        if not play_next and self.state.queued:
-            self.state.queued = api.dequeue_next_item()
-        if not keep_playing:
-            self.log('Stopping playback', utils.LOGINFO)
-            self.player.stop()
-
-        # Reset signals
-        self._sigstop.clear()
-        self._sigterm.clear()
-        self._running.clear()
-
     def _remove_popup(self):
         if not self._has_popup():
             return
@@ -194,18 +177,15 @@ class UpNextPopupHandler(object):
         self.popup = None
 
     def _run(self):
-        self.log('Started')
-        self._running.set()
-
         next_item, source = self.state.get_next()
         # No next item to play, get out of here
         if not next_item:
             self.log('Exiting: no next item to play')
             play_next = False
             keep_playing = True
-            self._post_run(play_next, keep_playing)
             has_next_item = False
-            return has_next_item
+            restart = False
+            return has_next_item, play_next, keep_playing, restart
 
         # Add next file to playlist if existing playlist is not being used
         if SETTINGS.enable_queue and source[-len('playlist'):] != 'playlist':
@@ -236,47 +216,40 @@ class UpNextPopupHandler(object):
         # Popup closed prematurely
         if popup_state['abort']:
             self.log('Exiting: popup force closed', utils.LOGWARNING)
+            play_next = False
+            keep_playing = False
             has_next_item = False
+            restart = False
 
         # Shuffle start request
         elif popup_state['shuffle_start']:
             self.log('Exiting: shuffle requested')
+            play_next = False
+            keep_playing = True
             has_next_item = False
-            popup_state['abort'] = True
+            restart = True
 
         elif not (popup_state['auto_play'] or popup_state['play_now']):
             self.log('Exiting: playback not selected')
-            has_next_item = True
-            popup_state['abort'] = True
-
-        if popup_state['abort']:
             play_next = False
             # Stop playing if Stop button was clicked on popup, or if Still
             # Watching? popup was shown (to prevent unwanted playback that can
-            # occur if fast forwarding through popup), or not starting shuffle
+            # occur if fast forwarding through popup)
             keep_playing = (
-                not popup_state['stop']
-                and (
-                    popup_state['show_upnext']
-                    or popup_state['shuffle_start']
-                )
+                popup_state['show_upnext'] and not popup_state['stop']
             )
-            self._post_run(play_next, keep_playing)
+            has_next_item = False
+            restart = False
 
-            # Run again if shuffle started to get new random episode
-            if popup_state['shuffle_start']:
-                return self._run()
+        else:
+            # Request playback of next file based on source and type
+            self._play_next_video(next_item, source, popup_state)
+            play_next = True
+            keep_playing = True
+            has_next_item = True
+            restart = False
 
-            return has_next_item
-
-        # Request playback of next file based on source and type
-        self._play_next_video(next_item, source, popup_state)
-
-        play_next = True
-        keep_playing = True
-        self._post_run(play_next, keep_playing)
-        has_next_item = True
-        return has_next_item
+        return has_next_item, play_next, keep_playing, restart
 
     def _show_popup(self):
         if not self._has_popup():
@@ -345,23 +318,44 @@ class UpNextPopupHandler(object):
     def cancel(self):
         self.stop()
 
-    def start(self, called=[False]):  # pylint: disable=dangerous-default-value
+    def start(self):
         # Exit if popuphandler previously requested
-        if called[0]:
+        if self._running.is_set():
             has_next_item = False
             return has_next_item
-        # Stop any existing popuphandler
-        self.stop()
-        called[0] = True
 
-        # Show popup and get new playback state
-        has_next_item = self._run()
+        self.log('Started')
+        self._running.set()
 
-        called[0] = False
+        while True:
+            # Show popup and get new playback state
+            has_next_item, play_next, keep_playing, restart = self._run()
+
+            # Update playback state
+            self.state.playing_next = play_next
+            self.state.keep_playing = keep_playing
+
+            # Dequeue and stop playback if not playing next file
+            if not play_next and self.state.queued:
+                self.state.queued = api.dequeue_next_item()
+            if not keep_playing:
+                self.log('Stopping playback', utils.LOGINFO)
+                self.player.stop()
+
+            # Run again if shuffle started to get new random episode
+            if not restart:
+                break
+
+        # Reset signals
+        self.log('Stopped')
+        self._sigstop.clear()
+        self._sigterm.clear()
+        self._running.clear()
+
         return has_next_item
 
     def stop(self, terminate=False):
-        # Set terminate or stop signals if detector is running
+        # Set terminate or stop signals if popuphandler is running
         if self._running.is_set():
             if terminate:
                 self._sigterm.set()

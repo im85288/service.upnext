@@ -346,11 +346,10 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Stop detector and release resources
         self._stop_detector(terminate=True)
 
-    def _start_tracking(self, called=[False]):  # pylint: disable=dangerous-default-value
+    def _start_tracking(self):
         # Exit if tracking disabled
-        if not self.state.is_tracking() or called[0]:
+        if not self.state.is_tracking():
             return
-        called[0] = True
 
         # Remove remnants from previous operations
         self._stop_detector()
@@ -363,14 +362,12 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Exit if not playing, paused, or rewinding
         if not playback or playback['speed'] < 1:
             self.log('Skip tracking: nothing playing', utils.LOGINFO)
-            called[0] = False
             return
 
         # Stop tracking if new stream started
         if self.state.get_tracked_file() != playback['file']:
             self.log('Unknown file playing', utils.LOGWARNING)
             self.state.set_tracking(False)
-            called[0] = False
             return
 
         # Determine time until popup is required, scaled to real time
@@ -402,8 +399,6 @@ class UpNextMonitor(xbmc.Monitor, object):
                 self._launch_popup,
                 delay=popup_delay
             )
-
-        called[0] = False
 
     def _stop_detector(self, terminate=False):
         if self._detector:
