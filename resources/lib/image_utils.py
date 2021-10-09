@@ -3,31 +3,14 @@
 """Implements image manipulation and filtering helper functions"""
 
 from __future__ import absolute_import, division, unicode_literals
-from PIL import Image, ImageChops, ImageFilter, ImageMorph
+from PIL import Image, ImageChops, ImageFilter
 from settings import SETTINGS
 
 
+_RADIAL_MASK = [None]
+DETAIL_FILTER = ImageFilter.ModeFilter(3)
+FIND_EDGES = ImageFilter.FIND_EDGES()
 UNSHARP_MASK = ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
-if SETTINGS.detector_filter:
-    FIND_EDGES = ImageFilter.FIND_EDGES()
-    DETAIL_FILTER = ImageFilter.ModeFilter(3)
-    DENOISE_LUT = ImageMorph.LutBuilder(patterns=[
-        '4:(.0. 01. ...)->0', '4:(.1. 10. ...)->1'
-    ]).build_lut()
-    DILATE_LUT = ImageMorph.LutBuilder(patterns=[
-        '4:(.1. .0. ...)->1', '4:(1.. .0. ...)->1'
-    ]).build_lut()
-
-
-def _radial_mask(size, _cache=[None]):  # pylint: disable=dangerous-default-value
-    if not _cache[0] or size != _cache[0].size:
-        mask = Image.radial_gradient('L')
-        mask = mask.resize(size, resample=Image.HAMMING)
-        mask = image_bit_depth(mask, 3)
-        mask = image_auto_level(mask, 12.5, 87.5, True)
-        _cache[0] = mask
-
-    return _cache[0]
 
 
 def image_bit_depth(image, bit_depth):
@@ -82,9 +65,17 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, clip=False):
 def image_filter(image, filter_method, mask=False):
     filtered_image = image.filter(filter_method)
 
-    if mask:
-        return image.paste(filtered_image, mask=_radial_mask(image.size))
-    return filtered_image
+    if not mask:
+        return filtered_image
+
+    if not _RADIAL_MASK[0] or image.size != _RADIAL_MASK[0].size:
+        radial_mask = Image.radial_gradient('L')
+        radial_mask = radial_mask.resize(image.size, resample=Image.HAMMING)
+        radial_mask = image_bit_depth(radial_mask, 3)
+        radial_mask = image_auto_level(radial_mask, 12.5, 87.5, True)
+        _RADIAL_MASK[0] = radial_mask
+
+    return image.paste(filtered_image, mask=_RADIAL_MASK[0])
 
 
 def image_format(image, buffer_size):
@@ -95,15 +86,6 @@ def image_format(image, buffer_size):
     image = Image.frombuffer(
         'RGBA', buffer_size, image, 'raw', 'RGBA', 0, 1
     ).convert('L')
-
-    return image
-
-
-def image_morph(image, precompiled, *morph_list):
-    for morph in morph_list:
-        if not precompiled:
-            morph = ImageMorph.LutBuilder(patterns=morph).build_lut()
-        _, image = ImageMorph.MorphOp(lut=morph).apply(image)
 
     return image
 
