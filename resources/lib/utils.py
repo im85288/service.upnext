@@ -449,8 +449,14 @@ def create_event():
     return threading.Event()
 
 
-def run_threaded(target, delay=None, *args, **kwargs):
+def run_threaded(target, delay=None, args=None, kwargs=None):
     """Executes the target in a separate thread or timer"""
+
+    if args is None:
+        args = ()
+
+    if kwargs is None:
+        kwargs = {}
 
     if delay is not None:
         thread = threading.Timer(delay, target, args=args, kwargs=kwargs)
