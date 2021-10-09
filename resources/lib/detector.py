@@ -337,10 +337,8 @@ class UpNextDetector(object):
 
     @staticmethod
     def _image_process(image, image_operations, save_file=None):
-        for step, operation in enumerate(image_operations):
-            num_params = len(operation)
-            method = operation[0]
-            args = operation[1] if num_params > 1 else []
+        for step, args in enumerate(image_operations):
+            method = args.pop(0)
             image = method(image, *args) or image
             if save_file:
                 target = file_utils.get_legal_filename(
@@ -373,9 +371,9 @@ class UpNextDetector(object):
         image = cls._image_process(
             image,
             image_operations=[
-                [image_utils.image_format, [image_size]],
-                [image_utils.image_filter, [image_utils.UNSHARP_MASK]],
-                [image_utils.image_bit_depth, [3]],
+                [image_utils.image_format, image_size],
+                [image_utils.image_filter, image_utils.UNSHARP_MASK],
+                [image_utils.image_bit_depth, 3],
             ],
             save_file='image'
         )
@@ -394,10 +392,10 @@ class UpNextDetector(object):
         filtered_image = cls._image_process(
             image,
             image_operations=[
-                [image_utils.image_auto_level, [87.5, 100, True]],
-                [image_utils.image_filter, [image_utils.FIND_EDGES]],
-                [image_utils.image_multiply_mask, [image]],
-                [image_utils.image_filter, [image_utils.DETAIL_FILTER, True]],
+                [image_utils.image_auto_level, 87.5, 100, True],
+                [image_utils.image_filter, image_utils.FIND_EDGES],
+                [image_utils.image_multiply_mask, image],
+                [image_utils.image_filter, image_utils.DETAIL_FILTER, True],
                 [image_utils.image_auto_level],
             ],
             save_file='filter'
