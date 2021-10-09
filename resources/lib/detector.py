@@ -340,7 +340,7 @@ class UpNextDetector(object):
         for step, args in enumerate(image_operations):
             method = args.pop(0)
             image = method(image, *args) or image
-            if save_file:
+            if save_file and SETTINGS.detector_debug:
                 target = file_utils.get_legal_filename(
                     '{0}_{1}_{2}'.format(save_file, step, method.__name__),
                     prefix=SETTINGS.detector_save_path, suffix='.bmp'
