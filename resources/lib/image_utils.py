@@ -27,8 +27,7 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100,
         min_value, max_value = image.getextrema()
 
     elif cutoff_method == 'level':
-        histogram = image.histogram()
-        levels = [value for value, num in enumerate(histogram) if num]
+        levels = [value for value, num in enumerate(image.histogram()) if num]
         percentage = len(levels) / 100
         cutoff_hi = max(cutoff_hi, cutoff_lo + (1 / percentage))
         cutoff_lo = int(cutoff_lo * percentage)
@@ -38,8 +37,8 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100,
         max_value = levels[cutoff_hi]
 
     elif cutoff_method == 'count':
-        histogram = image.histogram()
-        percentage = sum(histogram) / 100
+        levels = image.histogram()
+        percentage = sum(levels) / 100
         if not percentage:
             return image
         cutoff_lo = int(cutoff_lo * percentage)
@@ -48,7 +47,7 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100,
         running_total = 0
         min_value = 0
         max_value = 255
-        for value, num in enumerate(histogram):
+        for value, num in enumerate(levels):
             if not num:
                 continue
 
