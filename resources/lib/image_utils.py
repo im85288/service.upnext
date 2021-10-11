@@ -14,26 +14,36 @@ UNSHARP_MASK = ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
 
 
 def image_bit_depth(image, bit_depth):
-    output_values = 2 ** bit_depth
-    band = 256 / output_values
-    scale = 256 / (output_values - 1)
+    num_levels = 2 ** bit_depth
+    bit_mask = ~((2 ** (8 - bit_depth)) - 1)
+    scale = num_levels / (num_levels - 1)
 
-    return image.point([
-        min(255, max(0, int(scale * (i // band))))
-        for i in range(256)
-    ])
+    return image.point([scale * (i & bit_mask) for i in range(256)])
 
 
-def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, clip=False):
+def image_auto_level(image, cutoff_lo=0, cutoff_hi=100,
+                     cutoff_method='count', clip=False):
     if cutoff_hi - cutoff_lo == 100:
         min_value, max_value = image.getextrema()
-    else:
+
+    elif cutoff_method == 'level':
         histogram = image.histogram()
-        percent_total = sum(histogram) // 100
-        if not percent_total:
+        levels = [value for value, num in enumerate(histogram) if num]
+        percentage = len(levels) / 100
+        cutoff_hi = max(cutoff_hi, cutoff_lo + (1 / percentage))
+        cutoff_lo = int(cutoff_lo * percentage)
+        cutoff_hi = int(cutoff_hi * percentage) - 1
+
+        min_value = levels[cutoff_lo]
+        max_value = levels[cutoff_hi]
+
+    elif cutoff_method == 'count':
+        histogram = image.histogram()
+        percentage = sum(histogram) / 100
+        if not percentage:
             return image
-        cutoff_lo = cutoff_lo * percent_total
-        cutoff_hi = cutoff_hi * percent_total
+        cutoff_lo = int(cutoff_lo * percentage)
+        cutoff_hi = int(cutoff_hi * percentage)
 
         running_total = 0
         min_value = 0
@@ -49,9 +59,10 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100, clip=False):
                 max_value = value
                 break
 
-    scale = 255 / ((max_value - min_value) or 1)
+    scale = 1
     offset = 0
     if not clip:
+        scale = 255 / ((max_value - min_value) or 1)
         offset = min_value
         min_value = 0
         max_value = 255
@@ -72,7 +83,9 @@ def image_filter(image, filter_method, mask=False):
         radial_mask = Image.radial_gradient('L')
         radial_mask = radial_mask.resize(image.size, resample=Image.HAMMING)
         radial_mask = image_bit_depth(radial_mask, 3)
-        radial_mask = image_auto_level(radial_mask, 12.5, 87.5, True)
+        radial_mask = image_auto_level(radial_mask, 25, 87.5,
+                                       cutoff_method='level', clip=True)
+        radial_mask.save(SETTINGS.detector_save_path + '0_mask.bmp')
         _RADIAL_MASK[0] = radial_mask
 
     return image.paste(filtered_image, mask=_RADIAL_MASK[0])

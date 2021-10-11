@@ -377,8 +377,8 @@ class UpNextDetector(object):
             image,
             image_operations=[
                 [image_utils.image_format, image_size],
+                [image_utils.image_auto_level],
                 [image_utils.image_filter, image_utils.UNSHARP_MASK],
-                [image_utils.image_bit_depth, 3],
             ],
             save_file='1_image'
         )
@@ -397,11 +397,12 @@ class UpNextDetector(object):
         filtered_image = cls._image_process(
             image,
             image_operations=[
-                [image_utils.image_auto_level, 87.5, 100, True],
+                [image_utils.image_bit_depth, 3],
+                [image_utils.image_auto_level, 75, 100, 'level', True],
                 [image_utils.image_filter, image_utils.FIND_EDGES],
                 [image_utils.image_multiply_mask, image],
                 [image_utils.image_filter, image_utils.DETAIL_FILTER, True],
-                [image_utils.image_auto_level],
+                [image_utils.image_auto_level, 75, 100, 'level'],
             ],
             save_file='2_filter'
         )
