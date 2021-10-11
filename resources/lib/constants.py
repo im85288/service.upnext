@@ -25,7 +25,7 @@ UNWATCHED_EPISODE_THUMB = 2
 DEFAULT_SPOILERS = [
     UNWATCHED_MOVIE_PLOT,
     UNWATCHED_EPISODE_PLOT,
-    UNWATCHED_EPISODE_THUMB
+    UNWATCHED_EPISODE_THUMB,
 ]
 NO_SPOILER_IMAGE = 'OverlaySpoiler.png'
 NO_SPOILER_ART = {
@@ -39,7 +39,7 @@ NO_SPOILER_ART = {
 
 BOOL_STRING_VALUES = {
     'false': False,
-    'true': True
+    'true': True,
 }
 
 LOG_ENABLE_DISABLED = 0
@@ -52,7 +52,7 @@ PLUGIN_TYPES = (
     'plugin_play_url',
     'plugin_play_url_playlist',
     'plugin_play_info',
-    'plugin_play_info_playlist'
+    'plugin_play_info_playlist',
 )
 PLUGIN_DATA_ERROR = 0
 PLUGIN_PLAYLIST = 1
@@ -68,14 +68,14 @@ POPUP_MIN_DURATION = 5
 POPUP_POSITIONS = {
     0: 'bottom',
     1: 'centre',
-    2: 'top'
+    2: 'top',
 }
 
 POPUP_ACCENT_COLOURS = {
     0: 'FFFF4081',
     1: 'FFFF2A00',
     2: 'FF84DE02',
-    3: 'FF3399FF'
+    3: 'FF3399FF',
 }
 
 DEMO_SEEK_15S = 1

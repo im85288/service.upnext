@@ -74,9 +74,9 @@ class UpNextSettings(object):
         self.simple_mode = utils.get_setting_bool('simpleMode')
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')
         self.skin_popup = utils.get_setting_bool('enablePopupSkin')
-        self.popup_position = constants.POPUP_POSITIONS[
+        self.popup_position = constants.POPUP_POSITIONS.get(
             utils.get_setting_int('popupPosition', default=0)
-        ]
+        )
 
         accent_colour = constants.POPUP_ACCENT_COLOURS.get(
             utils.get_setting_int('popupAccentColour', default=0)
