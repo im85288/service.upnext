@@ -340,7 +340,7 @@ class UpNextDetector(object):
         for step, args in enumerate(image_operations):
             method = args.pop(0)
             image = method(image, *args) or image
-            if save_file and SETTINGS.detector_debug:
+            if save_file and SETTINGS.detector_debug_save:
                 target = file_utils.get_legal_filename(
                     '{0}_{1}_{2}'.format(save_file, step, method.__name__),
                     prefix=SETTINGS.detector_save_path, suffix='.bmp'
@@ -375,7 +375,7 @@ class UpNextDetector(object):
                 [image_utils.image_filter, image_utils.UNSHARP_MASK],
                 [image_utils.image_bit_depth, 3],
             ],
-            save_file='image'
+            save_file='1_image'
         )
 
         image_hash = cls._calc_image_hash(image_utils.image_resize(
@@ -398,7 +398,7 @@ class UpNextDetector(object):
                 [image_utils.image_filter, image_utils.DETAIL_FILTER, True],
                 [image_utils.image_auto_level],
             ],
-            save_file='filter'
+            save_file='2_filter'
         )
         filtered_hash = cls._calc_image_hash(image_utils.image_resize(
             filtered_image, hash_size

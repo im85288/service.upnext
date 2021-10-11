@@ -427,6 +427,10 @@ msgctxt "#30825"
 msgid "Enable detector debug logging and profiling"
 msgstr ""
 
+msgctxt "#30826"
+msgid "Enable saving detector debug image output"
+msgstr ""
+
 msgctxt "#30830"
 msgid "Re-trigger a playback start event on addon start"
 msgstr ""

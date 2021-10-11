@@ -25,6 +25,7 @@ class UpNextSettings(object):
         'detect_significance',
         'detector_data_limit',
         'detector_debug',
+        'detector_debug_save',
         'detector_filter',
         'detector_resize_method',
         'detector_save_path',
@@ -141,6 +142,7 @@ class UpNextSettings(object):
         )
 
         self.detector_debug = utils.get_setting_bool('detectorDebug')
+        self.detector_debug_save = utils.get_setting_bool('detectorDebugSave')
         self.start_trigger = utils.get_setting_bool('startTrigger')
 
 
