@@ -22,7 +22,7 @@
 		"detectorDebug": "true",
         "detectorDebugSave": "true",
 		"detectorFilter": "true",
-		"detectorResizeMethod": 1,
+		"detectorResizeMethod": 3,
 		"detectorSavePath": "special://profile/addon_data/service.upnext/detector/",
 		"detectorThreads": "2",
 		"disableNextUp": "false",
