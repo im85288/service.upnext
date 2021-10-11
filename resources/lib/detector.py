@@ -42,7 +42,7 @@ class UpNextHashStore(object):
             'episode_number', constants.UNDEFINED
         )
         self.data = kwargs.get('data', {})
-        self.timestamps = kwargs.get('timestamps', {})
+        self.timestamps = kwargs.get('timestamps', {self.episode_number: None})
 
     @staticmethod
     def int_to_hash(val, hash_size):
@@ -143,31 +143,36 @@ class UpNextHashStore(object):
                      utils.LOGWARNING)
         return output
 
-    def window(self, hash_index, size, include_all=False):
-        # Get all hash indexes for episodes where the hash timestamps are
-        # approximately equal (+/- an index offset)
-        invalid_idx = constants.UNDEFINED
-        current_idx = constants.UNDEFINED if include_all else hash_index[2]
-        # Matching time period from start of file
-        min_start_time = hash_index[1] - size
-        max_start_time = hash_index[1] + size
-        # Matching time period from end of file
-        min_end_time = hash_index[0] - size
-        max_end_time = hash_index[0] + size
+    def window(self, hash_index,
+               size=SETTINGS.detect_matches, all_episodes=False):
+        """Get sets of hashes, either from all episodes or only from the first
+        and last episodes, where the timestamps are approximately equal (+/- an
+        adjustable offset) to the timestamps of the reference hash index"""
 
-        # Limit selection criteria for old hash storage format
-        if self.version < 0.2:
-            invalid_idx = 0
-            min_start_time = constants.UNDEFINED
-            max_start_time = constants.UNDEFINED
+        end_time, start_time, episode = hash_index
+
+        if all_episodes:
+            excluded_episodes = [constants.UNDEFINED]
+            selected_episodes = self.timestamps.keys()
+        else:
+            excluded_episodes = [constants.UNDEFINED, episode]
+            selected_episodes = {min(self.timestamps), max(self.timestamps)}
+
+        # Matching time period from start of file
+        min_start_time = start_time - size
+        max_start_time = start_time + size
+        # Matching time period from end of file
+        min_end_time = end_time - size
+        max_end_time = end_time + size
 
         return {
-            hash_index: self.data[hash_index]
-            for hash_index in self.data
-            if invalid_idx != hash_index[-1] != current_idx
+            (end_time, start_time, episode): self.data[hash_index]
+            for end_time, start_time, episode in self.data
+            if episode in selected_episodes
+            and episode not in excluded_episodes
             and (
-                min_start_time <= hash_index[-2] <= max_start_time
-                or min_end_time <= hash_index[0] <= max_end_time
+                min_start_time <= start_time <= max_start_time
+                or min_end_time <= end_time <= max_end_time
             )
         }
 
@@ -219,7 +224,7 @@ class UpNextDetector(object):
 
     @staticmethod
     def _and(bit1, bit2):
-        return bool(bit1 and bit2)
+        return 1 if (bit1 and bit2) else 0
 
     @staticmethod
     def _eq(bit1, bit2):
@@ -231,7 +236,7 @@ class UpNextDetector(object):
 
     @staticmethod
     def _xor(bit1, bit2):
-        return bool((bit1 or bit2) and (bit2 != bit1 is not None))
+        return 1 if ((bit1 or bit2) and (bit2 != bit1 is not None)) else 0
 
     @staticmethod
     def _calc_median(vals):
@@ -542,7 +547,7 @@ class UpNextDetector(object):
             self._hash_match_hit()
             return stats
 
-        old_hashes = self.past_hashes.window(self.hash_index['current'], 60)
+        old_hashes = self.past_hashes.window(self.hash_index['current'])
         for self.hash_index['episodes'], old_hash in old_hashes.items():
             stats['episodes'] = self._hash_similarity(
                 old_hash,
@@ -622,7 +627,6 @@ class UpNextDetector(object):
                 self.hash_index['credits_large']:
                     self._generate_initial_hash(*hash_size),
             },
-            timestamps={}
         )
 
         # Hashes from previously played episodes
@@ -906,16 +910,12 @@ class UpNextDetector(object):
             return
 
         self.past_hashes.hash_size = self.hashes.hash_size
+        self.past_hashes.timestamps.update(self.hashes.timestamps)
         # If credit were detected only store the previous +/- 5s of hashes to
         # reduce false positives when comparing to other episodes
-        if self.match_counts['detected']:
-            self.past_hashes.data.update(self.hashes.window(
-                self.hash_index['detected_at'], 5, include_all=True
-            ))
-            self.past_hashes.timestamps.update(self.hashes.timestamps)
-        # Otherwise store all hashes for comparison with other episodes
-        else:
-            self.past_hashes.data.update(self.hashes.data)
+        self.past_hashes.data.update(self.hashes.window(
+            self.hash_index['detected_at'], all_episodes=True
+        ) if self.match_counts['detected'] else self.hashes.data)
 
         self.past_hashes.save(self.hashes.seasonid)
 
