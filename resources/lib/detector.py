@@ -227,7 +227,7 @@ class UpNextDetector(object):
         return 1 if (bit1 and bit2) else 0
 
     @staticmethod
-    def _eq(bit1, bit2):
+    def _eq_biased(bit1, bit2):
         return (bit1 == bit2) * (1 if bit2 else 0.5)
 
     @staticmethod
@@ -437,7 +437,7 @@ class UpNextDetector(object):
             return 0
 
         # Check whether each pixel is equal
-        bits_eq = sum(map(cls._eq, baseline_hash, compare_hash))
+        bits_eq = sum(map(cls._eq_biased, baseline_hash, compare_hash))
         bits_xor = map(cls._xor, baseline_hash, compare_hash)
         bits_xor_baseline = sum(map(cls._and, bits_xor, baseline_hash))
         bits_xor_compare = sum(map(cls._and, bits_xor, compare_hash))
