@@ -84,7 +84,8 @@ def image_filter(image, filter_method, mask=False):
         radial_mask = image_bit_depth(radial_mask, 3)
         radial_mask = image_auto_level(radial_mask, 25, 87.5,
                                        cutoff_method='level', clip=True)
-        radial_mask.save(SETTINGS.detector_save_path + '0_mask.bmp')
+        if SETTINGS.detector_debug_save:
+            radial_mask.save(SETTINGS.detector_save_path + '0_mask.bmp')
         _RADIAL_MASK[0] = radial_mask
 
     return image.paste(filtered_image, mask=_RADIAL_MASK[0])
