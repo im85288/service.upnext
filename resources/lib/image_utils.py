@@ -10,7 +10,7 @@ from settings import SETTINGS
 _RADIAL_MASK = [None]
 DETAIL_FILTER = ImageFilter.ModeFilter(3)
 FIND_EDGES = ImageFilter.FIND_EDGES()
-UNSHARP_MASK = ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
+UNSHARP_MASK = ImageFilter.UnsharpMask(radius=2, percent=150, threshold=16)
 
 
 def _min_max(value, min_value, max_value):
