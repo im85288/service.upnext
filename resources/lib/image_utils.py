@@ -13,6 +13,12 @@ FIND_EDGES = ImageFilter.FIND_EDGES()
 UNSHARP_MASK = ImageFilter.UnsharpMask(radius=1, percent=150, threshold=3)
 
 
+def _min_max(value, min_value, max_value):
+    return (min_value if value <= min_value
+            else max_value if value >= max_value
+            else value)
+
+
 def image_bit_depth(image, bit_depth):
     num_levels = 2 ** bit_depth
     bit_mask = ~((2 ** (8 - bit_depth)) - 1)
@@ -62,12 +68,12 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100,
     offset = 0
     if not clip:
         scale = 255 / ((max_value - min_value) or 1)
-        offset = min_value
+        offset = scale * min_value
         min_value = 0
         max_value = 255
 
     return image.point([
-        min(max_value, max(min_value, int(scale * (i - offset))))
+        _min_max(int(scale * i - offset), min_value, max_value)
         for i in range(256)
     ])
 
