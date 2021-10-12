@@ -95,7 +95,7 @@ class Profiler(object):
             self.Stats(
                 self._profiler,
                 stream=output_stream
-            ).sort_stats('cumulative').print_stats(20)
+            ).strip_dirs().sort_stats('cumulative').print_stats(20)
         # Occurs when no stats were able to be generated from profiler
         except TypeError:
             pass
