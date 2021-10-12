@@ -14,9 +14,11 @@ UNSHARP_MASK = ImageFilter.UnsharpMask(radius=2, percent=150, threshold=16)
 
 
 def _min_max(value, min_value, max_value):
-    return (min_value if value <= min_value
-            else max_value if value >= max_value
-            else value)
+    if value <= min_value:
+        return min_value
+    if value >= max_value:
+        return max_value
+    return value
 
 
 def image_bit_depth(image, bit_depth):
@@ -67,7 +69,7 @@ def image_auto_level(image, cutoff_lo=0, cutoff_hi=100,
     scale = 1
     offset = 0
     if not clip:
-        scale = 255 / ((max_value - min_value) or 1)
+        scale = 255 / _min_max(max_value - min_value, 1, 255)
         offset = scale * min_value
         min_value = 0
         max_value = 255
