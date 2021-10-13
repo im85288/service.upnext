@@ -43,6 +43,7 @@ class UpNextSettings(object):
         'show_stop_button',
         'simple_mode',
         'skin_popup',
+        'start_delay',
         'start_trigger',
         'unwatched_only',
     )
@@ -118,6 +119,7 @@ class UpNextSettings(object):
         self.detect_enabled = utils.get_setting_bool('detectPlayTime')
         self.detect_period = utils.get_setting_int('detectPeriod')
 
+        self.start_delay = utils.get_setting_int('startDelay')
         self.disabled = utils.get_setting_bool('disableNextUp')
         self.enable_queue = utils.get_setting_bool('enableQueue')
 

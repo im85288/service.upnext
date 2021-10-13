@@ -44,6 +44,7 @@
 		"popupCustomAccentColourR": "255",
 		"popupPosition": "2",
 		"simpleMode": "false",
+        "startDelay": "5",
 		"startTrigger": "true",
 		"stopAfterClose": "true",
 		"trackerMode": "2"

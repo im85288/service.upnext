@@ -65,7 +65,7 @@ class UpNextMonitor(xbmc.Monitor, object):
 
         # onPlayBackEnded for current file can trigger after next file starts
         # Wait additional 5s after onPlayBackEnded or last start
-        wait_count = 5 * start_num
+        wait_count = SETTINGS.start_delay * start_num
         while not self.abortRequested() and wait_count > 0:
             self.waitForAbort(1)
             wait_count -= 1

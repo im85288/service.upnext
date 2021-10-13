@@ -299,6 +299,10 @@ msgctxt "#30701"
 msgid "Troubleshooting"
 msgstr ""
 
+msgctxt "#30702"
+msgid "Start delay"
+msgstr ""
+
 msgctxt "#30703"
 msgid "Disable UpNext"
 msgstr ""
