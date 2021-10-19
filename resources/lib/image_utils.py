@@ -393,6 +393,9 @@ def image_filter(image, method, extent=None, original=None, difference=False):
 
 
 def image_format(image, buffer_size):
+    if isinstance(image, Image.Image):
+        return image.convert('L')
+
     # Convert captured image data from BGRA to RGBA
     image[0::4], image[2::4] = image[2::4], image[0::4]
 
