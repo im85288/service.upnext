@@ -655,37 +655,28 @@ class UpNextDetector(object):
             self.queue.all_tasks_done.notify_all()
             self.queue.unfinished_tasks = 0
 
-    def _queue_flush(self):
-        if not self.workers or not self.queue:
-            return
-
-        for worker in self.workers:
-            if worker.is_alive():
-                try:
-                    self.queue.put_nowait(None)
-                except queue.Full:
-                    pass
-
     def _queue_init(self):
         del self.queue
         self.queue = queue.Queue(maxsize=SETTINGS.detector_threads)
 
     def _queue_push(self):
-        capturer, size = self.queue.get()
+        capturer, size = self._queue_pull()
 
         abort = False
         while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
             loop_start = timeit.default_timer()
+
+            with self.player as check_fail:
+                check_fail = self.player.get_speed() != 1
+            if check_fail:
+                self.log('Stop capture: nothing playing')
+                break
 
             capturer.capture(*size)
             image = capturer.getImage()
 
             # Capture failed or was skipped, retry with less data
             if not image or image[-1] != 255:
-                if not self.player.isPlaying():
-                    self.log('Stop capture: nothing playing')
-                    break
-
                 self.log('Capture failed using {0}kB data limit'.format(
                     SETTINGS.detector_data_limit
                 ), utils.LOGWARNING)
@@ -708,14 +699,29 @@ class UpNextDetector(object):
                 if loop_time >= self.capture_interval:
                     raise queue.Full
                 abort = utils.wait(self.capture_interval - loop_time)
+            except AttributeError:
+                self.log('Stop capture: detector stopped')
+                break
             except queue.Full:
                 self.log('Capture/detection desync', utils.LOGWARNING)
                 abort = utils.abort_requested()
                 continue
 
         del capturer
-        self.queue.task_done()
+        self._queue_task_done()
         self._queue_clear()
+
+    def _queue_pull(self, timeout=None):
+        if not self.queue:
+            return None
+
+        return self.queue.get(timeout=timeout)
+
+    def _queue_task_done(self):
+        if not self.queue or not self.queue.unfinished_tasks:
+            return
+
+        self.queue.task_done()
 
     def _worker(self):
         """Detection loop captures Kodi render buffer every 1s to create an
@@ -732,17 +738,6 @@ class UpNextDetector(object):
             profiler = utils.Profiler()
 
         while not (self._sigterm.is_set() or self._sigstop.is_set()):
-            try:
-                image, size = self.queue.get(timeout=SETTINGS.detector_threads)
-                if not isinstance(image, bytearray):
-                    raise queue.Empty
-            except TypeError:
-                self.log('Queue empty - exiting')
-                break
-            except queue.Empty:
-                self.log('Queue empty - retry')
-                continue
-
             with self.player as check_fail:
                 play_time = self.player.getTime()
                 self.hash_index['current'] = (
@@ -751,12 +746,21 @@ class UpNextDetector(object):
                     self.hashes.episode_number
                 )
                 # Only capture if playing at normal speed
-                # check_fail = self.player.get_speed() != 1
-                check_fail = False
+                check_fail = self.player.get_speed() != 1
             if check_fail:
                 self.log('No file is playing')
-                self.queue.task_done()
                 break
+
+            try:
+                image, size = self._queue_pull(SETTINGS.detector_threads)
+                if not isinstance(image, bytearray):
+                    raise queue.Empty
+            except TypeError:
+                self.log('Queue empty - exiting')
+                break
+            except queue.Empty:
+                self.log('Queue empty - retry')
+                continue
 
             image_hash, filtered_hash = self._create_hashes(
                 image, size, self.hashes.hash_size
@@ -801,7 +805,26 @@ class UpNextDetector(object):
             # Store timestamps if credits are detected
             self.update_timestamp(play_time)
 
-            self.queue.task_done()
+            self._queue_task_done()
+
+        self._queue_task_done()
+
+    def _worker_release(self):
+        if not self.workers or not self.queue:
+            return
+
+        for idx, worker in enumerate(self.workers):
+            if worker.is_alive():
+                try:
+                    self.queue.put_nowait(None)
+                except queue.Full:
+                    pass
+                worker.join(SETTINGS.detector_threads * self.capture_interval)
+
+            if worker.is_alive():
+                self.log('Worker {0}({1}) is taking too long to stop'.format(
+                    idx, worker.ident
+                ), utils.LOGWARNING)
 
     def is_alive(self):
         return self._running.is_set()
@@ -866,7 +889,7 @@ class UpNextDetector(object):
 
         self._running.set()
         self.queue.join()
-        self._queue_flush()
+        self._worker_release()
 
         self.log('Stopped')
         self._running.clear()
@@ -881,14 +904,8 @@ class UpNextDetector(object):
             else:
                 self._sigstop.set()
 
-            self._queue_flush()
-            for idx, worker in enumerate(self.workers or []):
-                if worker.is_alive():
-                    worker.join(5)
-                if worker.is_alive():
-                    self.log('Worker {0}({1}) failed to stop cleanly'.format(
-                        idx, worker.ident
-                    ), utils.LOGWARNING)
+            self._queue_clear()
+            self._worker_release()
 
         # Free references/resources
         with self._lock:
