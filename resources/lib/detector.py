@@ -387,11 +387,8 @@ class UpNextDetector(object):
             image, hash_size
         ))
 
-        if not SETTINGS.detector_filter:
-            return image_hash, image_hash
-
-        significance = 100 * sum(image_hash) / len(image_hash)
-        if significance < SETTINGS.detect_significance:
+        if (not SETTINGS.detector_filter or SETTINGS.detect_significance >
+                100 * sum(image_hash) / len(image_hash)):
             return image_hash, image_hash
 
         filtered_image = cls._image_process(
