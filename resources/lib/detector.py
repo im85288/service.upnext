@@ -342,12 +342,16 @@ class UpNextDetector(object):
 
     @staticmethod
     def _image_process(image, image_operations, save_file=None):
+        image = image.copy()
         for step, args in enumerate(image_operations):
             method = args.pop(0)
             image = method(image, *args) or image
             if save_file and SETTINGS.detector_debug_save:
                 target = file_utils.get_legal_filename(
-                    '{0}_{1}_{2}'.format(save_file, step, method.__name__),
+                    '{0}_{1}_{2}_{3}'.format(
+                        save_file, step, method.__name__,
+                        [arg for arg in args if isinstance(arg, (str, int))]
+                    ),
                     prefix=SETTINGS.detector_save_path, suffix='.bmp'
                 )
                 try:
@@ -377,12 +381,9 @@ class UpNextDetector(object):
             image,
             image_operations=[
                 [image_utils.image_format, image_size],
-                [image_utils.image_auto_level],
-                [image_utils.image_filter, image_utils.UNSHARP_MASK],
             ],
             save_file='1_image'
         )
-
         image_hash = cls._calc_image_hash(image_utils.image_resize(
             image, hash_size
         ))
@@ -394,12 +395,14 @@ class UpNextDetector(object):
         filtered_image = cls._image_process(
             image,
             image_operations=[
-                [image_utils.image_bit_depth, 3],
-                [image_utils.image_auto_level, 75, 100, 'level', True],
-                [image_utils.image_filter, image_utils.FIND_EDGES],
-                [image_utils.image_multiply_mask, image],
-                [image_utils.image_filter, image_utils.DETAIL_FILTER, True],
-                [image_utils.image_auto_level, 75, 100, 'level'],
+                [image_utils.image_auto_contrast],
+                [image_utils.image_filter, 'GAUSSIAN,3'],
+                [image_utils.image_filter, 'UNSHARP_MASK,2,100,16',
+                    'FADE_OUT', image],
+                [image_utils.image_conditional_filter,
+                    (((63, 255, 0, 255),), ()),
+                    'MEDIAN,3', 'THRESHOLD', 'ALL', None, True],
+                [image_utils.image_multiply_mask, image, 50],
             ],
             save_file='2_filter'
         )
