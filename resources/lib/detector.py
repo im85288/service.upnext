@@ -257,8 +257,8 @@ class UpNextDetector(object):
         border_token = (0, )
         ignore_token = (None, )
 
-        pad_width = min(int(3 * hash_width / 16), 3)
-        pad_width_alt = min(int(2 * hash_width / 16), 2)
+        pad_width = (3 * hash_width // 16) - (hash_width // 16)
+        pad_width_alt = (2 * hash_width // 16) - (hash_width // 16)
 
         return (
             border_token * hash_width * pad_height
@@ -620,10 +620,14 @@ class UpNextDetector(object):
             # background stored as first hash. Masked significance weights
             # stored as second hash.
             data={
-                self.hash_index['credits_small']:
-                    self._generate_initial_hash(*hash_size, pad_height=2),
-                self.hash_index['credits_large']:
-                    self._generate_initial_hash(*hash_size),
+                self.hash_index['credits_small']: self._generate_initial_hash(
+                    *hash_size,
+                    pad_height=(hash_size[1] // 4)
+                ),
+                self.hash_index['credits_large']: self._generate_initial_hash(
+                    *hash_size,
+                    pad_height=(hash_size[1] // 8)
+                ),
             },
         )
 
