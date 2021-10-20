@@ -24,7 +24,7 @@
 		"detectorFilter": "true",
 		"detectorResizeMethod": 3,
 		"detectorSavePath": "special://profile/addon_data/service.upnext/detector/",
-		"detectorThreads": "5",
+		"detectorThreads": "3",
 		"disableNextUp": "false",
 		"enableDemoMode": "true",
 		"enablePlaylist": "true",
