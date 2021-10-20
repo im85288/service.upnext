@@ -194,7 +194,7 @@ class UpNextPopupHandler(object):
         # Create Kodi dialog to show UpNext or Still Watching? popup
         popup_state = self._create_popup(next_item, source)
         # Show popup and update state of controls
-        popup_state = self._show_and_update_popup(popup_state)
+        popup_state = self._update_popup(popup_state)
         # Close dialog once we are done with it
         self._remove_popup()
 
@@ -260,7 +260,7 @@ class UpNextPopupHandler(object):
             utils.set_property('service.upnext.dialog', 'true')
             return True
 
-    def _show_and_update_popup(self, popup_state):
+    def _update_popup(self, popup_state):
         # Get video details, exit if no video playing or no popup available
         with self.player as check_fail:
             total_time = self.player.getTotalTime()
@@ -365,14 +365,14 @@ class UpNextPopupHandler(object):
         # Wait until execution has finished to ensure references/resources can
         # be safely released. Can't use self._running.wait(5) as popuphandler
         # does not run in a separate thread even if stop() can.
-        timeout = 5
+        timeout = 1
         wait_time = 0.1
         while self._running.is_set() and not utils.wait(wait_time):
             timeout -= wait_time
             if timeout <= 0:
                 break
         if self._running.is_set():
-            self.log('Failed to stop cleanly', utils.LOGWARNING)
+            self.log('Popup taking too long to close', utils.LOGWARNING)
 
         # Free references/resources
         if terminate:

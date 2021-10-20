@@ -456,6 +456,8 @@ class UpNextMonitor(xbmc.Monitor, object):
         # Free references/resources
         self._stop_detector(terminate=True)
         self._stop_popuphandler(terminate=True)
+        self.waitForAbort(1)
+
         del self.state
         self.state = None
         self.log('Cleanup state')

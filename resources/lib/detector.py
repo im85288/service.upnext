@@ -901,6 +901,7 @@ class UpNextDetector(object):
 
             self._queue_clear()
             self._worker_release()
+            utils.wait(1)
 
         # Free references/resources
         with self._lock:
