@@ -15,12 +15,6 @@ try:
 except ImportError:
     import Queue as queue
 
-# Create directory where all stored hashes will be saved
-SETTINGS.detector_save_path = file_utils.get_legal_path(
-    SETTINGS.detector_save_path
-)
-file_utils.create_directory(SETTINGS.detector_save_path)
-
 
 class UpNextHashStore(object):
     """Class to store/save/load hashes used by UpNextDetector"""
@@ -636,7 +630,7 @@ class UpNextDetector(object):
 
         # Hashes from previously played episodes
         self.past_hashes = UpNextHashStore(hash_size=hash_size)
-        if self.hashes.is_valid():
+        if SETTINGS.detector_save_path and self.hashes.is_valid():
             self.past_hashes.load(self.hashes.seasonid)
 
         # Number of consecutive frame matches required for a positive detection
@@ -939,7 +933,8 @@ class UpNextDetector(object):
             self.hash_index['detected_at'], all_episodes=True
         ) if self.match_counts['detected'] else self.hashes.data)
 
-        self.past_hashes.save(self.hashes.seasonid)
+        if SETTINGS.detector_save_path:
+            self.past_hashes.save(self.hashes.seasonid)
 
     def update_timestamp(self, play_time):
         # Timestamp already stored or credits not detected
