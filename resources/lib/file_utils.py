@@ -19,8 +19,16 @@ def _translate_path(path):
         return xbmcvfs.translatePath(path)
 
 
-def sanitise(string):
-    return ''.join('_' if i in '\\/:*?"<>| ' else i for i in string)
+def create_directory(path):
+    """Create a directory from a path string"""
+
+    try:
+        if not (xbmcvfs.exists(path) or xbmcvfs.mkdirs(path)):
+            raise IOError(path)
+    except (IOError, OSError) as error:
+        if error.errno != errno.EEXIST:
+            raise
+    return True
 
 
 def get_legal_filename(filename, path='', prefix='', suffix=''):
@@ -56,13 +64,19 @@ def get_legal_path(path):
     return os.path.join(path, '')
 
 
-def create_directory(path):
-    """Create a directory from a path string"""
+def make_legal_path(path):
+    """Create a directory, from an arbitrary string input and return the legal
+       path, with a trailing path separator, as a string or an empty string if
+       the directory was not able to be created"""
 
-    try:
-        if not (xbmcvfs.exists(path) or xbmcvfs.mkdirs(path)):
-            raise IOError(path)
-    except (IOError, OSError) as error:
-        if error.errno != errno.EEXIST:
-            raise
-    return True
+    path = get_legal_path(path)
+    if create_directory(path):
+        return path
+    return ''
+
+
+def sanitise(string):
+    """Replace characters in a string, that are not valid for a Windows path,
+       with an underscore"""
+
+    return ''.join('_' if i in '\\/:*?"<>| ' else i for i in string)
