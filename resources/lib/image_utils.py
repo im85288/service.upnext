@@ -108,9 +108,15 @@ def _precompute(method, size=None):
 
     elif element == 'BORDER_MASK':
         element = _border_mask(size, *args)
+        if SETTINGS.detector_debug_save:
+            element.save('{0}_{1}.bmp'.format(
+                SETTINGS.detector_save_path, method))
 
     elif element == 'FADE_MASK':
         element = _fade_mask(size, *args)
+        if SETTINGS.detector_debug_save:
+            element.save('{0}_{1}.bmp'.format(
+                SETTINGS.detector_save_path, method))
 
     elif element == 'RankFilter':
         filter_size = args[0]
@@ -126,7 +132,7 @@ def _precompute(method, size=None):
     return element
 
 
-def image_auto_contrast(image, cutoff=(0, 100, 0.33)):  # pylint: disable=too-many-locals
+def image_auto_contrast(image, cutoff=(0, 100, 0.33), debug=False):  # pylint: disable=too-many-locals
     segments = 8
 
     image = image_auto_level(image, *cutoff)
@@ -166,6 +172,10 @@ def image_auto_contrast(image, cutoff=(0, 100, 0.33)):  # pylint: disable=too-ma
 
             output.paste(new_segment, box=new_segment_location,
                          mask=segment_mask)
+            if debug and SETTINGS.detector_debug_save:
+                output.save('{0}{1}_auto_contrast_{2}.{3}.bmp'.format(
+                    SETTINGS.detector_save_path, debug,
+                    vertical_idx, horizontal_idx))
 
     image.paste(output, box=crop_box)
     return image
@@ -214,21 +224,21 @@ def image_bit_depth(image, bit_depth):
 
 
 def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=too-many-locals
-                             filter_args=(None, )):
+                             filter_args=(None, ), debug=False):
     aggregate_image = image_filter(image, *filter_args)
     data = enumerate(zip(image.getdata(), aggregate_image.getdata()))
     inclusions = enumerate(rules[0])
     exclusions = enumerate(rules[1])
     width = image.size[0]
 
-    if SETTINGS.detector_debug_save:
+    if debug and SETTINGS.detector_debug_save:
         data = tuple(data)
         inclusions = tuple(inclusions)
         exclusions = tuple(exclusions)
         rules = inclusions + exclusions
 
-        aggregate_image.save('{0}conditional_{1}.bmp'.format(
-            SETTINGS.detector_save_path, filter_args[0]))
+        aggregate_image.save('{0}{1}_{2}.bmp'.format(
+            SETTINGS.detector_save_path, debug, filter_args[0]))
 
         for idx, (local_min, local_max, percent_lo, percent_hi) in rules:
             debug_output = Image.new('L', image.size, 0)
@@ -242,8 +252,9 @@ def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disa
                     or percent_hi >= pixel / aggregate > percent_lo
                 )
             ], fill=255)
-            debug_output.save('{0}conditional_{1}_{2}.bmp'.format(
-                SETTINGS.detector_save_path, filter_args[0], rules[idx]))
+            debug_output.save('{0}{1}_{2}_{3}.bmp'.format(
+                SETTINGS.detector_save_path, debug, filter_args[0],
+                rules[idx]))
 
     if output != 'FILTER':
         image = Image.new('L', image.size, 0)
