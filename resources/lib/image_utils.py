@@ -105,7 +105,7 @@ def _precompute(method, size=None):
     return element
 
 
-def image_auto_contrast(image, cutoff=(0, 100, 0.33)):
+def image_auto_contrast(image, cutoff=(0, 100, 0.33)):  # pylint: disable=too-many-locals
     segments = 8
 
     image = image_auto_level(image, *cutoff)
@@ -130,8 +130,8 @@ def image_auto_contrast(image, cutoff=(0, 100, 0.33)):
         (segment_width + 2 * border_size, segment_height + 2 * border_size)
     )
 
-    for vertical_idx in range(0, segments):
-        for horizontal_idx in range(0, segments):
+    for vertical_idx in range(segments):
+        for horizontal_idx in range(segments):
             horizontal_position = horizontal_idx * segment_width
             vertical_position = vertical_idx * segment_height
             new_segment_location = [
@@ -188,23 +188,24 @@ def image_bit_depth(image, bit_depth):
     return image.point([scale * (i & bit_mask) for i in range(256)])
 
 
-def image_conditional_filter(image, inclusions=(), exclusions=(), output=None,
+def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=too-many-locals
                              filter_args=(None, )):
     aggregate_image = image_filter(image, *filter_args)
     data = enumerate(zip(image.getdata(), aggregate_image.getdata()))
-    inclusions = enumerate(inclusions)
-    exclusions = enumerate(exclusions)
+    inclusions = enumerate(rules[0])
+    exclusions = enumerate(rules[1])
     width = image.size[0]
 
     if SETTINGS.detector_debug_save:
         data = tuple(data)
         inclusions = tuple(inclusions)
         exclusions = tuple(exclusions)
+        rules = inclusions + exclusions
 
         aggregate_image.save('{0}conditional_{1}.bmp'.format(
             SETTINGS.detector_save_path, filter_args[0]))
 
-        for idx, (local_min, local_max, percent_lo, percent_hi) in inclusions:
+        for idx, (local_min, local_max, percent_lo, percent_hi) in rules:
             debug_output = Image.new('L', image.size, 0)
             draw_canvas = ImageDraw.Draw(debug_output)
             draw_canvas.point([
@@ -216,23 +217,8 @@ def image_conditional_filter(image, inclusions=(), exclusions=(), output=None,
                     or percent_hi >= pixel / aggregate > percent_lo
                 )
             ], fill=255)
-            debug_output.save('{0}conditional_{1}_include_{2}.bmp'.format(
-                SETTINGS.detector_save_path, filter_args[0], inclusions[idx]))
-
-        for idx, (local_min, local_max, percent_lo, percent_hi) in exclusions:
-            debug_output = Image.new('L', image.size, 0)
-            draw_canvas = ImageDraw.Draw(debug_output)
-            draw_canvas.point([
-                (idx % width, idx // width)
-                for idx, (pixel, aggregate) in data
-                if (local_max >= aggregate > local_min)
-                and (
-                    not aggregate
-                    or percent_hi >= pixel / aggregate > percent_lo
-                )
-            ], fill=255)
-            debug_output.save('{0}conditional_{1}_exclude_{2}.bmp'.format(
-                SETTINGS.detector_save_path, filter_args[0], exclusions[idx]))
+            debug_output.save('{0}conditional_{1}_{2}.bmp'.format(
+                SETTINGS.detector_save_path, filter_args[0], rules[idx]))
 
     if output != 'FILTER':
         image = Image.new('L', image.size, 0)
