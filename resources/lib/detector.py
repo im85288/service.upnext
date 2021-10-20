@@ -393,9 +393,7 @@ class UpNextDetector(object):
                 [image_utils.image_filter, 'GaussianBlur,3'],
                 [image_utils.image_filter, 'UnsharpMask,2,100,16',
                  'FADE_OUT', image],
-                [image_utils.image_conditional_filter,
-                 (((63, 255, 0, 255),), ()), 'THRESHOLD',
-                 ('MedianFilter,3', 'ALL', None, True)],
+                [image_utils.image_percentile_deviation, 50, 32],
                 [image_utils.image_multiply_mask, image, 50],
             ],
             save_file='2_filter'

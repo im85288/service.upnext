@@ -353,6 +353,39 @@ def image_invert(image):
     return ImageChops.invert(image)
 
 
+def image_percentile_deviation(image, deviation, skip, filter_size=3, rank=50):
+    aggregate_image = image_filter(
+        image,
+        'RankFilter,{0},{1}'.format(filter_size, rank),
+        'ALL', None, True
+    )
+    histogram = aggregate_image.histogram()
+
+    deviation = deviation / 100
+    target = int(
+        deviation * ((image.size[0] * image.size[1]) - sum(histogram[:skip]))
+    )
+    running_total = 0
+
+    for val, num in enumerate(histogram[skip:]):
+        if not num:
+            continue
+
+        running_total += num
+        if running_total > target:
+            target = val + skip
+            break
+    else:
+        target = 255
+
+    mask = aggregate_image.point(
+        [255 if (i < target) else 0 for i in range(256)]
+    )
+    image.paste(0, mask=mask)
+
+    return image
+
+
 def image_multiply_mask(image, base_image, reduction=25):
     image = ImageChops.multiply(image, base_image)
     total_pixels = image.size[0] * image.size[1]
