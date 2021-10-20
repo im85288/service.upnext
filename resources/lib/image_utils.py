@@ -10,32 +10,8 @@ from settings import SETTINGS
 _PRECOMPUTED = {}
 
 
-def _min_max(value, min_value=0, max_value=255):
-    if value <= min_value:
-        return min_value
-    if value >= max_value:
-        return max_value
-    return value
-
-
-def _box_fade_mask(size, level_start, level_stop, border_size, steps, power):
-    steps_scale = steps ** power
-    padding_scale = border_size / steps_scale
-    level_scale = (level_stop - level_start) / steps_scale
-
-    element = Image.new('L', size, level_start)
-    for step in range(steps + 1):
-        step_scale = step ** power
-        padding = max(step, int(step_scale * padding_scale))
-        level = level_start + int(step_scale * level_scale)
-
-        border = _precompute('BORDER_BOX,1,1,{0}'.format(padding), size)
-        element.paste(level, box=border['box'])
-
-    return element
-
-
-def _border_box(size, horizontal_segments, vertical_segments, border_size):
+def _border_box(size, horizontal_segments, vertical_segments,  # pylint: disable=too-many-locals
+                left_size, top_size=None, right_size=None, bottom_size=None):
     width, height = size
 
     border_left_right = width % horizontal_segments
@@ -46,12 +22,20 @@ def _border_box(size, horizontal_segments, vertical_segments, border_size):
     border_top = border_top_bottom // 2
     border_bottom = height - border_top_bottom + border_top
 
+    if top_size is None:
+        top_size = right_size = bottom_size = left_size
+    if right_size is None:
+        right_size = left_size
+        bottom_size = top_size
+    if bottom_size is None:
+        bottom_size = top_size
+
     element = {
         'box': [
-            border_left + border_size,
-            border_top + border_size,
-            border_right - border_size,
-            border_bottom - border_size,
+            border_left + left_size,
+            border_top + top_size,
+            border_right - right_size,
+            border_bottom - bottom_size,
         ],
         'size': size,
     }
@@ -70,6 +54,43 @@ def _border_mask(size, border_size, border_colour, fill_colour):
     return element
 
 
+def _fade_mask(size, level_start, level_stop, steps, power,  # pylint: disable=too-many-locals
+               left_size, top_size=None, right_size=None, bottom_size=None):
+    if top_size is None:
+        top_size = right_size = bottom_size = left_size
+    if right_size is None:
+        right_size = left_size
+        bottom_size = top_size
+    if bottom_size is None:
+        bottom_size = top_size
+
+    steps_scale = steps ** power
+    padding_left_scale = left_size / steps_scale
+    padding_top_scale = top_size / steps_scale
+    padding_right_scale = right_size / steps_scale
+    padding_bottom_scale = bottom_size / steps_scale
+    level_scale = (level_stop - level_start) / steps_scale
+
+    element = Image.new('L', size, level_start)
+    for step in range(steps + 1):
+        step_scale = step ** power
+        padding_left = max(left_size and 1,
+                           int(step_scale * padding_left_scale))
+        padding_top = max(top_size and 1,
+                          int(step_scale * padding_top_scale))
+        padding_right = max(right_size and 1,
+                            int(step_scale * padding_right_scale))
+        padding_bottom = max(bottom_size and 1,
+                             int(step_scale * padding_bottom_scale))
+        level = level_start + int(step_scale * level_scale)
+
+        border = _precompute('BORDER_BOX,1,1,{0},{1},{2},{3}'.format(
+            padding_left, padding_top, padding_right, padding_bottom), size)
+        element.paste(level, box=border['box'])
+
+    return element
+
+
 def _precompute(method, size=None):
     element = _PRECOMPUTED.get(method)
     if element:
@@ -82,14 +103,14 @@ def _precompute(method, size=None):
     element, _, args = method.partition(',')
     args = [int(arg) for arg in args.split(',') if arg]
 
-    if element == 'BOX_FADE_MASK':
-        element = _box_fade_mask(size, *args)
-
-    elif element == 'BORDER_BOX':
+    if element == 'BORDER_BOX':
         element = _border_box(size, *args)
 
     elif element == 'BORDER_MASK':
         element = _border_mask(size, *args)
+
+    elif element == 'FADE_MASK':
+        element = _fade_mask(size, *args)
 
     elif element == 'RankFilter':
         filter_size = args[0]
@@ -126,7 +147,7 @@ def image_auto_contrast(image, cutoff=(0, 100, 0.33)):  # pylint: disable=too-ma
         segment_size
     )['box']
     segment_mask = _precompute(
-        'BOX_FADE_MASK,0,255,{0},{0},1'.format(border_size * 2),
+        'FADE_MASK,0,255,{0},3,{0},{0},0,0'.format(border_size * 2),
         (segment_width + 2 * border_size, segment_height + 2 * border_size)
     )
 
@@ -165,17 +186,21 @@ def image_auto_level(image, min_value=0, max_value=100, clip=0):
         min_value = int(min_value * percentage)
         min_value = levels[min_value]
 
-    scale = 1
-    offset = 0
-    if 1 > clip >= 0:
-        clip = 255 * _min_max((max_value - min_value) / 255, clip, 1)
-        scale = 255 / _min_max(clip, 1, 255)
+    if min_value >= max_value:
+        return image
+
+    if clip < 1:
+        scale = 1 / max(clip, (max_value - min_value) / 255)
         offset = scale * min_value
-        min_value = 0
-        max_value = 255
+
+        _int = int
+        return image.point([
+            _int(scale * i - offset)
+            for i in range(256)
+        ])
 
     return image.point([
-        _min_max(int(scale * i - offset), min_value, max_value)
+        min_value if i <= min_value else max_value if i >= max_value else i
         for i in range(256)
     ])
 
@@ -322,7 +347,7 @@ def image_filter(image, method, extent=None, original=None, difference=False):
         border_size = max(10, int(0.25 * min(image.size)))
         mask = (255, 0) if direction == 'IN' else (0, 255)
         mask = _precompute(
-            'BOX_FADE_MASK,{1},{2},{0},{0},1'.format(border_size, *mask),
+            'FADE_MASK,{1},{2},{0},1,{0}'.format(border_size, *mask),
             image.size
         )
 
