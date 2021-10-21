@@ -343,7 +343,7 @@ class UpNextDetector(object):
         )
 
         if (not SETTINGS.detector_filter
-            or SETTINGS.detect_significance
+                or SETTINGS.detect_significance
                 > 100 * sum(image_hash) / len(image_hash)):
             return image_hash, image_hash
 
