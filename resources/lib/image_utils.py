@@ -419,7 +419,7 @@ def detail_reduce(image, base_image, reduction=25,
     return image
 
 
-def deviation(image, deviation, skip, filter_size=3, rank=50):
+def deviation(image, percentile, skip_levels, filter_size=3, rank=50):
     aggregate_image = apply_filter(
         image,
         'RankFilter,{0},{1}'.format(filter_size, rank),
@@ -427,19 +427,20 @@ def deviation(image, deviation, skip, filter_size=3, rank=50):
     )
     histogram = aggregate_image.histogram()
 
-    deviation = deviation / 100
+    percentile = percentile / 100
     target = int(
-        deviation * ((image.size[0] * image.size[1]) - sum(histogram[:skip]))
+        ((image.size[0] * image.size[1]) - sum(histogram[:skip_levels]))
+        * percentile
     )
     running_total = 0
 
-    for val, num in enumerate(histogram[skip:]):
+    for val, num in enumerate(histogram[skip_levels:]):
         if not num:
             continue
 
         running_total += num
         if running_total > target:
-            target = val + skip
+            target = val + skip_levels
             break
     else:
         target = 255
