@@ -203,31 +203,46 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
-        image1 = image1.convert('L').resize(hash_size, resample=Image.BOX)
-        image2 = image2.convert('L').resize(hash_size, resample=Image.BOX)
+        hash1, filtered_hash1 = detector.UpNextDetector._create_hashes(  # pylint: disable=protected-access
+            image1, image1.size, hash_size
+        )
+        hash2, filtered_hash2 = detector.UpNextDetector._create_hashes(  # pylint: disable=protected-access
+            image2, image2.size, hash_size
+        )
 
-        hash1 = detector.UpNextDetector._calc_image_hash(image1)  # pylint: disable=protected-access
-        hash2 = detector.UpNextDetector._calc_image_hash(image2)  # pylint: disable=protected-access
-
-        similarity = detector.UpNextDetector._hash_similarity(hash1, hash2)  # pylint: disable=protected-access
+        similarity_0 = detector.UpNextDetector._hash_similarity(  # pylint: disable=protected-access
+            hash1, hash2
+        )
+        similarity_1 = detector.UpNextDetector._hash_similarity(  # pylint: disable=protected-access
+            hash1, hash2, filtered_hash2
+        )
+        similarity_2 = detector.UpNextDetector._hash_similarity(  # pylint: disable=protected-access
+            hash2, hash1, filtered_hash1
+        )
+        similarity_3 = detector.UpNextDetector._hash_similarity(  # pylint: disable=protected-access
+            filtered_hash1, filtered_hash2
+        )
+        similarity = max(similarity_0, similarity_1, similarity_2)
         is_match = similarity >= match_level
 
         if is_match is expected_result:
             matches += 1
         else:
             result_summary = (
-                'Comparing: {0} & {1},'
-                'similarity: {2:2.1f}%,'
-                'matched: {3},'
-                'actual: {4}'
+                'Comparing: {0} & {1}, '
+                'similarity: {2:2.1f}% / {3:2.1f}% / {4:2.1f}% / {5:2.1f}%, '
+                'matched: {6}, actual: {7}'
             )
             detector.UpNextDetector._print_hashes(  # pylint: disable=protected-access
-                [hash1, hash2],
+                [hash1, hash2, filtered_hash1, filtered_hash2],
                 size=hash_size,
                 prefix=result_summary.format(
                     file1,
                     file2,
-                    similarity,
+                    similarity_0,
+                    similarity_1,
+                    similarity_2,
+                    similarity_3,
                     is_match,
                     expected_result
                 )
