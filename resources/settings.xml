@@ -48,7 +48,7 @@
 		<setting label="30732" type="slider" id="detectorThreads" default="3" range="2,1,6" option="int"/>
 		<setting label="30733" type="slider" id="detectorDataLimit" default="16" range="8,8,256" option="int"/>
 		<setting label="30734" type="bool" id="detectorFilter" default="true"/>
-		<setting label="30735" type="enum" id="detectorResizeMethod" lvalues="30736|30737|30738|30739|30740|30741" default="3"/>
+		<setting label="30735" type="enum" id="detectorResizeMethod" lvalues="30736|30737|30738|30739|30740|30741" default="1"/>
 		<setting label="30742" type="slider" id="detectLevel" default="90" range="50,1,100" option="int"/>
 		<setting label="30743" type="slider" id="detectSignificance" default="25" range="1,1,50" option="int"/>
 		<setting label="30744" type="slider" id="detectMatches" default="5" range="1,1,10" option="int"/>

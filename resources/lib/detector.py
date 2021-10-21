@@ -551,7 +551,7 @@ class UpNextDetector(object):
 
     def _init_hashes(self):
         # Set minimum capture interval to decrease capture rate
-        self.capture_interval = 0.5
+        self.capture_interval = 1
 
         self.hash_index = {
             # Hash indexes are tuples containing the following data:
