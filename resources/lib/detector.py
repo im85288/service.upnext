@@ -233,18 +233,6 @@ class UpNextDetector(object):
         return 1 if ((bit1 or bit2) and (bit2 != bit1 is not None)) else 0
 
     @staticmethod
-    def _calc_median(vals):
-        """Method to calculate median value of a list of values by sorting and
-            indexing the list"""
-
-        num_vals = len(vals)
-        pivot = num_vals // 2
-        vals = sorted(vals)
-        if num_vals % 2:
-            return vals[pivot]
-        return (vals[pivot] + vals[pivot - 1]) / 2
-
-    @staticmethod
     def _generate_initial_hash(hash_width, hash_height, pad_height=0):
         blank_token = (0, )
         pixel_token = (1, )
@@ -334,73 +322,53 @@ class UpNextDetector(object):
 
         return width, height
 
-    @staticmethod
-    def _image_process(image, image_operations, save_file=None):
-        image = image.copy()
-        for step, args in enumerate(image_operations):
-            method = args.pop(0)
-            image = method(image, *args) or image
-            if save_file and SETTINGS.detector_debug_save:
-                target = file_utils.get_legal_filename(
-                    '{0}_{1}_{2}_{3}'.format(
-                        save_file, step, method.__name__,
-                        [arg for arg in args if isinstance(arg, (str, int))]
-                    ),
-                    prefix=SETTINGS.detector_save_path, suffix='.bmp'
-                )
-                try:
-                    image.save(target)
-                except (IOError, OSError):
-                    pass
-
-        return image
-
     @classmethod
-    def _calc_image_hash(cls, image):
-        # Transform image to show absolute deviation from median pixel luma
-        median_pixel = cls._calc_median(image.getdata())
-        image = image.point([abs(i - median_pixel) for i in range(256)])
-
-        # Calculate median absolute deviation from the median to represent
-        # significant pixels and use transformed image as the hash of the
-        # current video frame
-        median_pixel = cls._calc_median(image.getdata())
-        image = image.point([i > median_pixel for i in range(256)])
-
-        return tuple(image.getdata())
-
-    @classmethod
-    def _create_hashes(cls, image, image_size, hash_size):
-        image = cls._image_process(
-            image,
-            image_operations=[
-                [image_utils.image_format, image_size],
+    def _create_hashes(cls, image_data, image_size, hash_size):
+        image = image_utils.process(
+            None,
+            pipeline=[
+                [image_utils.import_data, image_data, image_size],
             ],
             save_file='1_image'
         )
-        image_hash = cls._calc_image_hash(image_utils.image_resize(
-            image, hash_size
-        ))
 
-        if (not SETTINGS.detector_filter or SETTINGS.detect_significance >
-                100 * sum(image_hash) / len(image_hash)):
+        image_hash = image_utils.process(
+            image,
+            pipeline=[
+                [image_utils.resize, hash_size],
+                [image_utils.create_hash],
+                [image_utils.export_data],
+            ],
+            save_file='3_hash_image'
+        )
+
+        if (not SETTINGS.detector_filter
+            or SETTINGS.detect_significance
+                > 100 * sum(image_hash) / len(image_hash)):
             return image_hash, image_hash
 
-        filtered_image = cls._image_process(
+        filtered_image = image_utils.process(
             image,
-            image_operations=[
-                [image_utils.image_auto_contrast],
-                [image_utils.image_filter, 'GaussianBlur,3'],
-                [image_utils.image_filter, 'UnsharpMask,2,100,16',
+            pipeline=[
+                [image_utils.adaptive_contrast, 8, (5, 95, (0.33, None))],
+                [image_utils.apply_filter, 'GaussianBlur,3'],
+                [image_utils.apply_filter, 'UnsharpMask,2,100,16',
                  'FADE_OUT', image],
-                [image_utils.image_percentile_deviation, 50, 32],
-                [image_utils.image_multiply_mask, image, 50],
+                [image_utils.deviation, 75, 32],
+                [image_utils.detail_reduce, image, 50],
             ],
             save_file='2_filter'
         )
-        filtered_hash = cls._calc_image_hash(image_utils.image_resize(
-            filtered_image, hash_size
-        ))
+
+        filtered_hash = image_utils.process(
+            filtered_image,
+            pipeline=[
+                [image_utils.resize, hash_size],
+                [image_utils.create_hash],
+                [image_utils.export_data],
+            ],
+            save_file='4_hash_filter'
+        )
 
         return image_hash, filtered_hash
 
@@ -668,10 +636,10 @@ class UpNextDetector(object):
                 break
 
             capturer.capture(*size)
-            image = capturer.getImage()
+            image_data = capturer.getImage()
 
             # Capture failed or was skipped, retry with less data
-            if not image or image[-1] != 255:
+            if not image_data or image_data[-1] != 255:
                 self.log('Capture failed using {0}kB data limit'.format(
                     SETTINGS.detector_data_limit
                 ), utils.LOGWARNING)
@@ -689,14 +657,20 @@ class UpNextDetector(object):
                 continue
 
             try:
-                self.queue.put([image, size], timeout=self.capture_interval)
+                self.queue.put(
+                    (image_data, size), timeout=self.capture_interval
+                )
+
                 loop_time = timeit.default_timer() - loop_start
                 if loop_time >= self.capture_interval:
                     raise queue.Full
+
                 abort = utils.wait(self.capture_interval - loop_time)
+
             except AttributeError:
                 self.log('Stop capture: detector stopped')
                 break
+
             except queue.Full:
                 self.log('Capture/detection desync', utils.LOGWARNING)
                 abort = utils.abort_requested()
@@ -747,8 +721,8 @@ class UpNextDetector(object):
                 break
 
             try:
-                image, size = self._queue_pull(SETTINGS.detector_threads)
-                if not isinstance(image, bytearray):
+                image_data, size = self._queue_pull(SETTINGS.detector_threads)
+                if not isinstance(image_data, bytearray):
                     raise queue.Empty
             except TypeError:
                 self.log('Queue empty - exiting')
@@ -758,7 +732,7 @@ class UpNextDetector(object):
                 continue
 
             image_hash, filtered_hash = self._create_hashes(
-                image, size, self.hashes.hash_size
+                image_data, size, self.hashes.hash_size
             )
 
             # Check if current hash matches with previous hash, typical end

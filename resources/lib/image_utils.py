@@ -54,8 +54,21 @@ def _border_mask(size, border_size, border_colour, fill_colour):
     return element
 
 
+def _calc_median(vals):
+    """Method to calculate median value of a list of values by sorting and
+        indexing the list"""
+
+    num_vals = len(vals)
+    pivot = num_vals // 2
+    vals = sorted(vals)
+    if num_vals % 2:
+        return vals[pivot]
+    return (vals[pivot] + vals[pivot - 1]) / 2
+
+
 def _fade_mask(size, level_start, level_stop, steps, power,  # pylint: disable=too-many-locals
-               left_size, top_size=None, right_size=None, bottom_size=None):
+               left_size, top_size=None, right_size=None, bottom_size=None,
+               _int=int, _max=max):
     if top_size is None:
         top_size = right_size = bottom_size = left_size
     if right_size is None:
@@ -74,24 +87,25 @@ def _fade_mask(size, level_start, level_stop, steps, power,  # pylint: disable=t
     element = Image.new('L', size, level_start)
     for step in range(steps + 1):
         step_scale = step ** power
-        padding_left = max(left_size and 1,
-                           int(step_scale * padding_left_scale))
-        padding_top = max(top_size and 1,
-                          int(step_scale * padding_top_scale))
-        padding_right = max(right_size and 1,
-                            int(step_scale * padding_right_scale))
-        padding_bottom = max(bottom_size and 1,
-                             int(step_scale * padding_bottom_scale))
-        level = level_start + int(step_scale * level_scale)
+        padding_left = _max(left_size and 1,
+                            _int(step_scale * padding_left_scale))
+        padding_top = _max(top_size and 1,
+                           _int(step_scale * padding_top_scale))
+        padding_right = _max(right_size and 1,
+                             _int(step_scale * padding_right_scale))
+        padding_bottom = _max(bottom_size and 1,
+                              _int(step_scale * padding_bottom_scale))
+        level = level_start + _int(step_scale * level_scale)
 
         border = _precompute('BORDER_BOX,1,1,{0},{1},{2},{3}'.format(
             padding_left, padding_top, padding_right, padding_bottom), size)
         element.paste(level, box=border['box'])
 
+    element = apply_filter(element, 'BoxBlur,{0}'.format(min(size) // 8))
     return element
 
 
-def _precompute(method, size=None):
+def _precompute(method, size=None, _int=int, _float=float):
     element = _PRECOMPUTED.get(method)
     if element:
         image_size = getattr(element, 'size', None)
@@ -101,9 +115,13 @@ def _precompute(method, size=None):
             return element
 
     element, _, args = method.partition(',')
-    args = [int(arg) for arg in args.split(',') if arg]
+    args = [_float(arg) if '.' in arg else _int(arg)
+            for arg in args.split(',') if arg]
 
-    if element == 'BORDER_BOX':
+    if element == 'BINARY_LUT':
+        element = (0, ) * 128 + (1, ) * 128
+
+    elif element == 'BORDER_BOX':
         element = _border_box(size, *args)
 
     elif element == 'BORDER_MASK':
@@ -132,10 +150,7 @@ def _precompute(method, size=None):
     return element
 
 
-def image_auto_contrast(image, cutoff=(0, 100, 0.33), debug=False):  # pylint: disable=too-many-locals
-    segments = 8
-
-    image = image_auto_level(image, *cutoff)
+def adaptive_contrast(image, segments=8, cutoff=(5, 95, (0.25, None)), debug=False):  # pylint: disable=too-many-locals
     crop_box = _precompute(
         'BORDER_BOX,{0},{0},0'.format(segments),
         image.size
@@ -145,16 +160,16 @@ def image_auto_contrast(image, cutoff=(0, 100, 0.33), debug=False):  # pylint: d
 
     segment_width = output.size[0] // segments
     segment_height = output.size[1] // segments
-    segment_size = (segment_width, segment_height)
 
-    border_size = max(5, int(0.25 * min(segment_size)))
+    left_border = max(5, int(1 * segment_width))
+    top_border = max(5, int(1 * segment_height))
     segment_border_box = _precompute(
-        'BORDER_BOX,1,1,-{0}'.format(border_size),
-        segment_size
+        'BORDER_BOX,1,1,{0},{1}'.format(-left_border, -top_border),
+        (segment_width, segment_height)
     )['box']
     segment_mask = _precompute(
-        'FADE_MASK,0,255,{0},3,{0},{0},0,0'.format(border_size * 2),
-        (segment_width + 2 * border_size, segment_height + 2 * border_size)
+        'FADE_MASK,0,255,10,0.33,{0},{1}'.format(left_border, top_border),
+        (segment_width + 2 * left_border, segment_height + 2 * top_border)
     )
 
     for vertical_idx in range(segments):
@@ -168,20 +183,21 @@ def image_auto_contrast(image, cutoff=(0, 100, 0.33), debug=False):  # pylint: d
                 segment_border_box[3] + vertical_position,
             ]
             new_segment = cropped_image.crop(new_segment_location)
-            new_segment = image_auto_level(new_segment, *cutoff)
+            new_segment = auto_level(new_segment, *cutoff)
 
             output.paste(new_segment, box=new_segment_location,
                          mask=segment_mask)
             if debug and SETTINGS.detector_debug_save:
-                output.save('{0}{1}_auto_contrast_{2}.{3}.bmp'.format(
+                output.save('{0}{1}[{2}.{3}].bmp'.format(
                     SETTINGS.detector_save_path, debug,
-                    vertical_idx, horizontal_idx))
+                    vertical_idx, horizontal_idx
+                ))
 
     image.paste(output, box=crop_box)
     return image
 
 
-def image_auto_level(image, min_value=0, max_value=100, clip=0):
+def auto_level(image, min_value=0, max_value=100, clip=(0, None), _int=int):
     if max_value - min_value == 100:
         min_value, max_value = image.getextrema()
 
@@ -199,11 +215,19 @@ def image_auto_level(image, min_value=0, max_value=100, clip=0):
     if min_value >= max_value:
         return image
 
-    if clip < 1:
-        scale = 1 / max(clip, (max_value - min_value) / 255)
-        offset = scale * min_value
+    if clip[0] < 1:
+        offset = 0
+        if clip[1] == 0:
+            scale = max_value
+        elif clip[1] == 1:
+            scale = 255 - min_value
+            offset = min_value
+        else:
+            scale = 255
 
-        _int = int
+        scale = 1 / max(clip[0], (max_value - min_value) / scale)
+        offset = scale * (min_value - offset)
+
         return image.point([
             _int(scale * i - offset)
             for i in range(256)
@@ -215,17 +239,51 @@ def image_auto_level(image, min_value=0, max_value=100, clip=0):
     ])
 
 
-def image_bit_depth(image, bit_depth):
-    num_levels = 2 ** bit_depth
-    bit_mask = ~((2 ** (8 - bit_depth)) - 1)
-    scale = num_levels / (num_levels - 1)
+def apply_filter(image, method, extent=None, original=None, difference=False):
+    if difference:
+        difference = original.copy() if original else image
 
-    return image.point([scale * (i & bit_mask) for i in range(256)])
+    if original:
+        original = original.copy()
+        filtered_image = original.filter(_precompute(method))
+    else:
+        filtered_image = image.filter(_precompute(method))
+
+    if not extent or extent == 'ALL':
+        mask = None
+
+    elif extent == 'TRIM':
+        border_size = max(1, int(0.005 * max(image.size)))
+        mask = _precompute(
+            'BORDER_MASK,{0},0,255'.format(border_size),
+            image.size
+        )
+        image = mask
+
+    else:
+        background, _, direction = extent.partition('_')
+
+        if background == 'BLACK':
+            image = Image.new('L', image.size, 0)
+
+        border_size = max(10, int(0.25 * min(image.size)))
+        mask = (255, 0) if direction == 'IN' else (0, 255)
+        mask = _precompute(
+            'FADE_MASK,{1},{2},{0},1,{0}'.format(border_size, *mask),
+            image.size
+        )
+
+    image = image.copy()
+    image.paste(filtered_image, mask=mask)
+
+    if difference:
+        return ImageChops.difference(difference, image)
+    return image
 
 
-def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=too-many-locals
-                             filter_args=(None, ), debug=False):
-    aggregate_image = image_filter(image, *filter_args)
+def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=too-many-locals
+                       filter_args=(None, ), debug=False):
+    aggregate_image = apply_filter(image, *filter_args)
     data = enumerate(zip(image.getdata(), aggregate_image.getdata()))
     inclusions = enumerate(rules[0])
     exclusions = enumerate(rules[1])
@@ -237,8 +295,9 @@ def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disa
         exclusions = tuple(exclusions)
         rules = inclusions + exclusions
 
-        aggregate_image.save('{0}{1}_{2}.bmp'.format(
-            SETTINGS.detector_save_path, debug, filter_args[0]))
+        aggregate_image.save('{0}{1}[{2}].bmp'.format(
+            SETTINGS.detector_save_path, debug, filter_args[0]
+        ))
 
         for idx, (local_min, local_max, percent_lo, percent_hi) in rules:
             debug_output = Image.new('L', image.size, 0)
@@ -252,9 +311,10 @@ def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disa
                     or percent_hi >= pixel / aggregate > percent_lo
                 )
             ], fill=255)
-            debug_output.save('{0}{1}_{2}_{3}.bmp'.format(
-                SETTINGS.detector_save_path, debug, filter_args[0],
-                rules[idx]))
+            debug_output.save('{0}{1}[{2}][{3}].bmp'.format(
+                SETTINGS.detector_save_path, debug,
+                filter_args[0], rules[idx]
+            ))
 
     if output != 'FILTER':
         image = Image.new('L', image.size, 0)
@@ -328,69 +388,39 @@ def image_conditional_filter(image, rules=((), ()), output=None,  # pylint: disa
     return image
 
 
-def image_filter(image, method, extent=None, original=None, difference=False):
-    if difference:
-        difference = original.copy() if original else image
+def create_hash(image, _abs=abs):
+    # Transform image to show absolute deviation from median pixel luma
+    median_pixel = _calc_median(image.getdata())
+    image = image.point([_abs(i - median_pixel) for i in range(256)])
 
-    if original:
-        original = original.copy()
-        filtered_image = original.filter(_precompute(method))
-    else:
-        filtered_image = image.filter(_precompute(method))
-
-    if not extent or extent == 'ALL':
-        mask = None
-
-    elif extent == 'TRIM':
-        border_size = max(1, int(0.005 * max(image.size)))
-        mask = _precompute(
-            'BORDER_MASK,{0},0,255'.format(border_size),
-            image.size
-        )
-        image = mask
-
-    else:
-        background, _, direction = extent.partition('_')
-
-        if background == 'BLACK':
-            image = Image.new('L', image.size, 0)
-
-        border_size = max(10, int(0.25 * min(image.size)))
-        mask = (255, 0) if direction == 'IN' else (0, 255)
-        mask = _precompute(
-            'FADE_MASK,{1},{2},{0},1,{0}'.format(border_size, *mask),
-            image.size
-        )
-
-    image = image.copy()
-    image.paste(filtered_image, mask=mask)
-
-    if difference:
-        return ImageChops.difference(difference, image)
-    return image
-
-
-def image_format(image, buffer_size):
-    if isinstance(image, Image.Image):
-        return image.convert('L')
-
-    # Convert captured image data from BGRA to RGBA
-    image[0::4], image[2::4] = image[2::4], image[0::4]
-
-    # Convert to greyscale to reduce size of data by a factor of 4
-    image = Image.frombuffer(
-        'RGBA', buffer_size, image, 'raw', 'RGBA', 0, 1
-    ).convert('L')
+    # Calculate median absolute deviation from the median to represent
+    # significant pixels and use transformed image as the hash of the
+    # current video frame
+    median_pixel = _calc_median(image.getdata())
+    image = image.point([255 if (i > median_pixel) else 0 for i in range(256)])
 
     return image
 
 
-def image_invert(image):
-    return ImageChops.invert(image)
+def detail_reduce(image, base_image, reduction=25,
+                  _multiply=ImageChops.multiply):
+    image = _multiply(image, base_image)
+    total_pixels = image.size[0] * image.size[1]
+    histogram = base_image.histogram()
+    significant_pixels = max(histogram[0], total_pixels - histogram[0])
+    target = (100 - reduction) * significant_pixels / 100
+
+    for _ in range(10):
+        image = _multiply(image, base_image)
+        significant_pixels = total_pixels - image.histogram()[0]
+        if significant_pixels <= target:
+            break
+
+    return image
 
 
-def image_percentile_deviation(image, deviation, skip, filter_size=3, rank=50):
-    aggregate_image = image_filter(
+def deviation(image, deviation, skip, filter_size=3, rank=50):
+    aggregate_image = apply_filter(
         image,
         'RankFilter,{0},{1}'.format(filter_size, rank),
         'ALL', None, True
@@ -422,27 +452,79 @@ def image_percentile_deviation(image, deviation, skip, filter_size=3, rank=50):
     return image
 
 
-def image_multiply_mask(image, base_image, reduction=25):
-    image = ImageChops.multiply(image, base_image)
-    total_pixels = image.size[0] * image.size[1]
-    histogram = base_image.histogram()
-    significant_pixels = max(histogram[0], total_pixels - histogram[0])
-    target = (100 - reduction) * significant_pixels / 100
+def export_data(image):
+    return tuple(image.point(_precompute('BINARY_LUT')).getdata())
 
-    for _ in range(10):
-        image = ImageChops.multiply(image, base_image)
-        significant_pixels = total_pixels - image.histogram()[0]
-        if significant_pixels <= target:
-            break
+
+def import_data(image=None, data=None, buffer_size=None):
+    if isinstance(data, Image.Image):
+        image = data
+
+    elif isinstance(data, bytearray):
+        # Convert captured image data from BGRA to RGBA
+        data[0::4], data[2::4] = data[2::4], data[0::4]
+
+        # Convert to greyscale to reduce size of data by a factor of 4
+        image = Image.frombuffer(
+            'RGBA', buffer_size, data, 'raw', 'RGBA', 0, 1
+        )
+
+    if isinstance(image, Image.Image):
+        image = image.convert('L')
 
     return image
 
 
-def image_replace(image, replacement_image=None):
+def posterise(image, bit_depth):
+    num_levels = 2 ** bit_depth
+    bit_mask = ~((2 ** (8 - bit_depth)) - 1)
+    scale = num_levels / (num_levels - 1)
+
+    return image.point([scale * (i & bit_mask) for i in range(256)])
+
+
+def process(image, pipeline, save_file=None):
+    if isinstance(image, Image.Image):
+        image = image.copy()
+
+    for step, args in enumerate(pipeline):
+        method = args.pop(0)
+
+        target = save_file and SETTINGS.detector_debug_save
+        if target:
+            target = '{0}_{1}_{2}'.format(save_file, step, method.__name__)
+            if args:
+                target += '({0})'.format([
+                    arg for arg in args
+                    if isinstance(arg, (str, int, tuple, list))
+                    and arg != 'DEBUG'
+                ])
+                if args[-1] == 'DEBUG':
+                    args[-1] = target
+
+        image = method(image, *args) or image
+
+        if not isinstance(image, Image.Image):
+            break
+
+        if not target:
+            continue
+
+        try:
+            image.save('{0}{1}.bmp'.format(
+                SETTINGS.detector_save_path, target
+            ))
+        except (IOError, OSError):
+            pass
+
+    return image
+
+
+def replace_with_copy(image, replacement_image=None):
     return replacement_image.copy() if replacement_image else image.copy()
 
 
-def image_resize(image, size, method=None):
+def resize(image, size, method=None):
     if size != image.size:
         image = image.resize(
             size, resample=(method or SETTINGS.detector_resize_method)
