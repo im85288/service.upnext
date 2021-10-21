@@ -332,7 +332,7 @@ msgid "Data processing limit (kB/frame) [COLOR gray](higher is more accurate, sl
 msgstr ""
 
 msgctxt "#30734"
-msgid "Enable filtering to detect text in credits"
+msgid "Enable filtering to detect end credits"
 msgstr ""
 
 msgctxt "#30735"
