@@ -160,13 +160,13 @@ class UpNextHashStore(object):
         max_end_time = end_time + size
 
         return {
-            (end_time, start_time, episode): self.data[hash_index]
-            for end_time, start_time, episode in self.data
-            if episode in selected_episodes
-            and episode not in excluded_episodes
+            hash_index: self.data[hash_index]
+            for hash_index in self.data
+            if hash_index[2] in selected_episodes
+            and hash_index[2] not in excluded_episodes
             and (
-                min_start_time <= start_time <= max_start_time
-                or min_end_time <= end_time <= max_end_time
+                min_start_time <= hash_index[1] <= max_start_time
+                or min_end_time <= hash_index[0] <= max_end_time
             )
         }
 
