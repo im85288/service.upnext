@@ -300,14 +300,17 @@ class Api:
 
     def find_next_episode(self, result, current_file, include_watched, current_episode_id):
         found_match = False
+        current_library_file = current_file
         episodes = result.get('result', {}).get('episodes', [])
         for episode in episodes:
             # Find position of current episode
+            episode_library_file = episode.get('file')
             if current_episode_id == episode.get('episodeid'):
                 found_match = True
+                current_library_file = episode_library_file
                 continue
             # Check if it may be a multi-part episode
-            if episode.get('file') == current_file:
+            if episode_library_file in (current_file, current_library_file):
                 continue
             # Skip already watched episodes?
             if not include_watched and episode.get('playcount') > 0:
