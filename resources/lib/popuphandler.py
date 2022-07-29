@@ -213,33 +213,27 @@ class UpNextPopupHandler(object):
             encoding='base64'
         )
 
+        play_next = False
+        # Stop playing if Stop button was clicked on popup, or if Still
+        # Watching? popup was shown (to prevent unwanted playback that can
+        # occur if fast forwarding through popup or if race condition occurs
+        # between player starting and popup terminating)
+        keep_playing = popup_state['show_upnext'] and not popup_state['stop']
+        has_next_item = False
+        restart = False
+
         # Popup closed prematurely
         if popup_state['abort']:
             self.log('Exiting: popup force closed', utils.LOGWARNING)
-            play_next = False
-            keep_playing = False
-            has_next_item = False
-            restart = False
 
         # Shuffle start request
         elif popup_state['shuffle_start']:
             self.log('Exiting: shuffle requested')
-            play_next = False
             keep_playing = True
-            has_next_item = False
             restart = True
 
         elif not (popup_state['auto_play'] or popup_state['play_now']):
             self.log('Exiting: playback not selected')
-            play_next = False
-            # Stop playing if Stop button was clicked on popup, or if Still
-            # Watching? popup was shown (to prevent unwanted playback that can
-            # occur if fast forwarding through popup)
-            keep_playing = (
-                popup_state['show_upnext'] and not popup_state['stop']
-            )
-            has_next_item = False
-            restart = False
 
         else:
             # Request playback of next file based on source and type
@@ -247,7 +241,6 @@ class UpNextPopupHandler(object):
             play_next = True
             keep_playing = True
             has_next_item = True
-            restart = False
 
         return has_next_item, play_next, keep_playing, restart
 
