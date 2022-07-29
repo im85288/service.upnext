@@ -204,7 +204,7 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
         image1, filtered_image1 = detector.UpNextDetector._create_images(  # pylint: disable=protected-access
-            image1, hash_size
+            image1, image1.size
         )
         hash1 = detector.UpNextDetector._create_hash(image1, hash_size)  # pylint: disable=protected-access
         filtered_hash1 = detector.UpNextDetector._create_hash(   # pylint: disable=protected-access
@@ -212,7 +212,7 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         )
 
         image2, filtered_image2 = detector.UpNextDetector._create_images(  # pylint: disable=protected-access
-            image1, hash_size
+            image2, image2.size
         )
         hash2 = detector.UpNextDetector._create_hash(image2, hash_size)  # pylint: disable=protected-access
         filtered_hash2 = detector.UpNextDetector._create_hash(  # pylint: disable=protected-access
