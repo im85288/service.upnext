@@ -9,7 +9,7 @@ import utils
 
 
 _PRECOMPUTED = {
-    '_STACK': None,
+    '_STACK': [],
 }
 
 
@@ -717,7 +717,7 @@ def threshold(image):
     ]
 
     target = max(variance)
-    target = max([idx for idx, val in enumerate(variance) if val == target])
+    target = max([idx for idx, val in enumerate(variance) if val == target])  # pylint: disable=consider-using-generator
     target = target + 1
 
     image = image.point([255 if (i > target) else 0 for i in range(256)])

@@ -137,12 +137,12 @@ def run(argv):
 
     if content_type == 'action' and content_handler:
         return content_handler(addon_handle, addon_id, **addon_args)
-    
+
     if content_handler:
         content_items = content_handler(addon_handle, addon_id, **addon_args)
     elif content_items:
         content_items = generate_listing(addon_handle, addon_id, content_items)
-    
+
     if content_type and content_items:
         xbmcplugin.setContent(addon_handle, content_type)
         listing_complete = xbmcplugin.addDirectoryItems(
@@ -154,6 +154,7 @@ def run(argv):
     xbmcplugin.endOfDirectory(
         addon_handle, listing_complete, updateListing=False, cacheToDisc=True
     )
+    return listing_complete
 
 
 PLUGIN_CONTENT = {

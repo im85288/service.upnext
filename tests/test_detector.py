@@ -203,11 +203,20 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
-        hash1, filtered_hash1 = detector.UpNextDetector._create_hashes(  # pylint: disable=protected-access
-            image1, image1.size, hash_size
+        image1, filtered_image1 = detector.UpNextDetector._create_images(  # pylint: disable=protected-access
+            image1, hash_size
         )
-        hash2, filtered_hash2 = detector.UpNextDetector._create_hashes(  # pylint: disable=protected-access
-            image2, image2.size, hash_size
+        hash1 = detector.UpNextDetector._create_hash(image1, hash_size)  # pylint: disable=protected-access
+        filtered_hash1 = detector.UpNextDetector._create_hash(   # pylint: disable=protected-access
+            filtered_image1, hash_size
+        )
+
+        image2, filtered_image2 = detector.UpNextDetector._create_images(  # pylint: disable=protected-access
+            image1, hash_size
+        )
+        hash2 = detector.UpNextDetector._create_hash(image2, hash_size)  # pylint: disable=protected-access
+        filtered_hash2 = detector.UpNextDetector._create_hash(  # pylint: disable=protected-access
+            filtered_image2, hash_size
         )
 
         similarity_0 = detector.UpNextDetector._hash_similarity(  # pylint: disable=protected-access

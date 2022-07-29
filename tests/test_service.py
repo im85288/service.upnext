@@ -29,8 +29,8 @@ def test_plugin():
         return
 
     dbid = dummydata.LIBRARY['episodes'][0]['episodeid']
-    test_complete = plugin.handler([
-        'plugin://service.upnext/', '1', '?play={0}'.format(dbid)
+    test_complete = plugin.run([
+        'plugin://service.upnext/play', '1', '?dbid={0}'.format(dbid)
     ])
     assert test_complete is True
 
