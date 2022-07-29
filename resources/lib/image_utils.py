@@ -5,7 +5,6 @@
 from __future__ import absolute_import, division, unicode_literals
 from PIL import Image, ImageChops, ImageDraw, ImageFilter
 from settings import SETTINGS
-import utils
 
 
 _PRECOMPUTED = {
@@ -158,7 +157,7 @@ def _histogram_rank(input_data, percentile, skip_levels=0):
     return target
 
 
-def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
+def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,  # pylint: disable=too-many-branches
                 _int=int, _float=float):
     element = _PRECOMPUTED.get(method)
     if element:
@@ -673,7 +672,7 @@ def resize(image, size, method=None):
     return image
 
 
-def threshold(image):
+def threshold(image):  # pylint: disable=too-many-locals
     histogram = image.histogram()
 
     cum_sum = [0] * 256

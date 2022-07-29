@@ -39,7 +39,7 @@ def generate_library_plugin_data(current_episode, addon_id, state=None):
     return upnext_info
 
 
-def generate_listing(addon_handle, addon_id, items):
+def generate_listing(addon_handle, addon_id, items):  # pylint: disable=unused-argument
     listing = []
     for item in items:
         content = PLUGIN_CONTENT.get(item)
@@ -54,24 +54,24 @@ def generate_listing(addon_handle, addon_id, items):
             listitem.setArt(content.get('art'))
         is_folder = content.get('content_type') != 'action'
 
-        listing += (url, listitem, is_folder),
+        listing += ((url, listitem, is_folder),)
 
     return listing
 
 
-def generate_next_episodes_list(addon_handle, addon_id, **kwargs):
+def generate_next_episodes_list(addon_handle, addon_id, **kwargs):  # pylint: disable=unused-argument
     pass
 
 
-def generate_next_movies_list(addon_handle, addon_id, **kwargs):
+def generate_next_movies_list(addon_handle, addon_id, **kwargs):  # pylint: disable=unused-argument
     pass
 
 
-def generate_next_media_list(addon_handle, addon_id, **kwargs):
+def generate_next_media_list(addon_handle, addon_id, **kwargs):  # pylint: disable=unused-argument
     pass
 
 
-def open_settings(addon_handle, addon_id, **kwargs):
+def open_settings(addon_handle, addon_id, **kwargs):  # pylint: disable=unused-argument
     utils.get_addon(addon_id).openSettings()
     return True
 
