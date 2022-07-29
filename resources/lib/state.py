@@ -73,7 +73,7 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
         utils.log(msg, name=cls.__name__, level=level)
 
     def reset(self):
-        self.__init__(reset=True)
+        self.__init__(reset=True)  # pylint: disable=unnecessary-dunder-call
 
     def reset_item(self):
         self.current_item = None
