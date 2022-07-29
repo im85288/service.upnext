@@ -274,7 +274,7 @@ def play_plugin_item(data, encoding, resume=False):
     log('No plugin data available for playback', utils.LOGWARNING)
 
 
-def get_playerid(_cache=[None]):  # pylint: disable=dangerous-default-value
+def get_playerid(_cache=[None], retry_attempts=3):  # pylint: disable=dangerous-default-value
     """Function to get active player playerid"""
 
     # We don't need to actually get playerid everytime, cache and reuse instead
@@ -282,12 +282,24 @@ def get_playerid(_cache=[None]):  # pylint: disable=dangerous-default-value
         return _cache[0]
 
     # Sometimes Kodi gets confused and uses a music playlist for video content,
-    # so get the first active player instead, default to video player.
-    result = utils.jsonrpc(
-        method='Player.GetActivePlayers'
-    )
+    # so get the first active player instead, default to video player. Wait 1s
+    # and retry in case of delay in getting response.
+    attempts_left = 1 + retry_attempts
+    while attempts_left > 0:
+        result = utils.jsonrpc(method='Player.GetActivePlayers').get('result')
+
+        if result:
+            break
+
+        attempts_left -= 1
+        if attempts_left > 0:
+            utils.wait(1)
+    else:
+        log('No active player', utils.LOGWARNING)
+        return None
+
     result = [
-        player for player in result.get('result', [{}])
+        player for player in result
         if player.get('type', 'video') in PLAYER_PLAYLIST
     ]
 
@@ -340,21 +352,30 @@ def get_player_speed():
     return result
 
 
-def get_now_playing(properties=None):
+def get_now_playing(properties=None, retry_attempts=3):
     """Function to get detail of currently playing item"""
 
-    result = utils.jsonrpc(
-        method='Player.GetItem',
-        params={
-            'playerid': get_playerid(),
-            'properties': (
-                EPISODE_PROPERTIES if properties is None else properties
-            ),
-        }
-    )
-    result = result.get('result', {}).get('item')
+    # Retry in case of delay in getting response.
+    attempts_left = 1 + retry_attempts
+    while attempts_left > 0:
+        result = utils.jsonrpc(
+            method='Player.GetItem',
+            params={
+                'playerid': get_playerid(),
+                'properties': (
+                    EPISODE_PROPERTIES if properties is None else properties
+                ),
+            }
+        )
+        result = result.get('result', {}).get('item')
 
-    if not result:
+        if result:
+            break
+
+        attempts_left -= 1
+        if attempts_left > 0:
+            utils.wait(1)
+    else:
         log('Now playing item info not found', utils.LOGWARNING)
         return None
 
