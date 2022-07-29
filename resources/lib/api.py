@@ -312,6 +312,7 @@ def get_playerid(_cache=[None], retry_attempts=3):  # pylint: disable=dangerous-
         log('No active player', utils.LOGWARNING)
         return None
 
+    log('Selected playerid: {0}'.format(playerid))
     _cache[0] = playerid
     return playerid
 
