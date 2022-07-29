@@ -520,7 +520,7 @@ def has_credits(image, filtered_image, save_file=None):
         )
         output_image = Image.new('L', image.size, 0)
         output_image.paste(image, mask=expanded_filtered_image)
-        if save_file: # and SETTINGS.detector_debug_save:
+        if save_file and SETTINGS.detector_debug_save:
             output_image.save('{0}{1}_2.bmp'.format(
                 SETTINGS.detector_save_path, save_file
             ))
