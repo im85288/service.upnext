@@ -362,17 +362,14 @@ def get_now_playing(properties=None):
     return result
 
 
-def get_next_from_library(episodeid=constants.UNDEFINED,
+def get_next_from_library(episode=constants.UNDEFINED,
                           tvshowid=None,
                           unwatched_only=False,
                           next_season=True,
-                          random=False,
-                          episode=None):
+                          random=False):
     """Function to get show and next episode details from Kodi library"""
 
-    episode = episode.copy() if episode else get_from_library(episodeid)
-
-    if not episode:
+    if not episode or episode == constants.UNDEFINED:
         log('No next episode found, current episode not in library',
             utils.LOGWARNING)
         episode = None

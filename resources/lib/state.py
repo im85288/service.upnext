@@ -127,12 +127,16 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
 
         # Next episode from Kodi library
         else:
-            next_item, new_season = api.get_next_from_library(
+            current_item = api.get_from_library(
                 self.episodeid,
-                self.tvshowid,
-                SETTINGS.unwatched_only,
-                SETTINGS.next_season,
-                self.shuffle_on
+                self.tvshowid
+            )
+            next_item, new_season = api.get_next_from_library(
+                episode=current_item,
+                tvshowid=self.tvshowid,
+                unwatched_only=SETTINGS.unwatched_only,
+                next_season=SETTINGS.next_season,
+                random=self.shuffle_on
             )
             source = 'library'
             # Show Still Watching? popup if next episode is from next season
