@@ -6,4 +6,4 @@ polib
 pylint
 tox
 pytest-cov
-https://github.com/ruuk/script.module.addon.signals.git
+git+https://github.com/ruuk/script.module.addon.signals.git@master#egg=AddonSignals
