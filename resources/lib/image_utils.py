@@ -84,7 +84,7 @@ def _calc_median(vals):
     return (vals[pivot] + vals[pivot - 1]) / 2
 
 
-def _fade_mask(size, level_start, level_stop, steps, power, *box,  # pylint: disable=too-many-locals
+def _fade_mask(size, level_start, level_stop, steps, power, box,  # pylint: disable=too-many-locals
                _int=int, _max=max):
     dimensions = len(box)
     if not dimensions:
@@ -98,7 +98,7 @@ def _fade_mask(size, level_start, level_stop, steps, power, *box,  # pylint: dis
         left, top, right = box
         bottom = top
     else:
-        left, top, right, bottom = box
+        left, top, right, bottom = box[:4]
 
     steps_scale = steps ** power
     padding_left_scale = left / steps_scale
@@ -189,6 +189,8 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,  # pylint
             ))
 
     elif element == 'FADE_MASK':
+        # Split args to avoid Python2 syntax error in definition of _fade_mask
+        args = args[:4]+[args[4:]]
         element = _fade_mask(size, *args)
         if debug:
             element.save('{0}_{1}.bmp'.format(
