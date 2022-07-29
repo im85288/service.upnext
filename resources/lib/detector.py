@@ -352,7 +352,7 @@ class UpNextDetector(object):
             queue=[
                 [image_utils.posterise, 3],
                 [image_utils.adaptive_filter, (8, 1, True),
-                 image_utils.auto_level, 5, 95, (0.33, None)],
+                 image_utils.auto_level, (5, 95, (0.33, None))],
                 [image_utils.apply_filter,
                  'UnsharpMask,20,400,64', 'TRIM'],
                 [image_utils.apply_filter,

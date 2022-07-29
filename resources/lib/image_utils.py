@@ -190,7 +190,7 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,  # pylint
 
     elif element == 'FADE_MASK':
         # Split args to avoid Python2 syntax error in definition of _fade_mask
-        args = args[:4]+[args[4:]]
+        args = args[:4] + [args[4:]]
         element = _fade_mask(size, *args)
         if debug:
             element.save('{0}_{1}.bmp'.format(
@@ -241,7 +241,7 @@ def _precision(number, decimal_places=3):
     return int(number * factor) / factor
 
 
-def adaptive_filter(image, sampling, method, *args, save_file=None):  # pylint: disable=too-many-locals
+def adaptive_filter(image, sampling, method, args=(), save_file=None):  # pylint: disable=too-many-locals
     segments, overlap, mask = sampling
 
     crop_box = _precompute('BORDER_BOX,{0},{0},1'.format(segments), image.size)
