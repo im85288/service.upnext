@@ -1,4 +1,3 @@
-git+git://github.com/ruuk/script.module.addon.signals.git@master#egg=AddonSignals
 codecov
 python-dateutil
 pillow
@@ -7,3 +6,4 @@ polib
 pylint
 tox
 pytest-cov
+https://github.com/ruuk/script.module.addon.signals.git@master#egg=AddonSignals

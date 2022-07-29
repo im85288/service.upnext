@@ -1,15 +1,21 @@
 # Test caches
 *.py[cod]
+.pyc
+.pyo
+.pyd
 .coverage*
+.coverage
 coverage.xml
 htmlcov/
 .pytest_cache/
 .tox/
 tests/images/
 tests/userdata/addon_data/
+.pylintrc
 
 # Backups
 *.py.old
+.py.old
 
 # Logs
 kodi-addon-checker-report.log
