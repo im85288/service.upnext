@@ -295,22 +295,11 @@ class UpNextDetector(object):
         )
 
     @staticmethod
-    def _get_video_aspect_ratio(_cache=[None]):  # pylint: disable=dangerous-default-value
-        if not _cache[0]:
-            _cache[0] = float(xbmc.getInfoLabel('Player.Process(VideoDAR)'))
-
-        return _cache[0]
-
-    @staticmethod
-    def _get_video_capture_resolution(max_size=None, aspect_ratio=1):
-        """Method to detect playing video resolution and aspect ratio and
-           return a scaled down resolution tuple and aspect ratio for use in
+    def _get_video_capture_resolution(max_size=None):
+        """Method to return a scaled down capture resolution tuple for use in
            capturing the video frame buffer at a specific size/resolution"""
 
-        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
-        width = int(width.replace(',', ''))
-        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
-        height = int(height.replace(',', ''))
+        width, height, aspect_ratio = UpNextDetector._get_video_resolution()
 
         # Capturing render buffer at higher resolution captures more detail
         # depending on Kodi scaling function used, but slows down processing.
@@ -331,6 +320,17 @@ class UpNextDetector(object):
             ],
             save_file='1_image'
         )
+    @staticmethod
+    def _get_video_resolution():
+        """Method to detect playing video resolution and aspect ratio"""
+
+        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
+        width = int(width.replace(',', ''))
+        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
+        height = int(height.replace(',', ''))
+        aspect_ratio = width / height
+
+        return width, height, aspect_ratio
 
         image_hash = image_utils.process(
             image,
@@ -570,7 +570,7 @@ class UpNextDetector(object):
         }
 
         # Hash size as (width, height)
-        hash_size = [8 * self._get_video_aspect_ratio(_cache=[None]), 8]
+        hash_size = [8 * self._get_video_resolution()[2], 8]
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
@@ -648,8 +648,7 @@ class UpNextDetector(object):
                 ) or 8
 
                 size = self._get_video_capture_resolution(
-                    max_size=SETTINGS.detector_data_limit,
-                    aspect_ratio=self._get_video_aspect_ratio()
+                    max_size=SETTINGS.detector_data_limit
                 )
 
                 del capturer
@@ -843,8 +842,7 @@ class UpNextDetector(object):
         self.queue.put_nowait([
             xbmc.RenderCapture(),
             self._get_video_capture_resolution(
-                max_size=SETTINGS.detector_data_limit,
-                aspect_ratio=self._get_video_aspect_ratio()
+                max_size=SETTINGS.detector_data_limit
             )
         ])
         self.workers = [utils.run_threaded(self._queue_push)]
