@@ -3,10 +3,12 @@
 """This is the actual UpNext plugin handler"""
 
 from __future__ import absolute_import, division, unicode_literals
+import xbmcgui
 import xbmcplugin
 import api
 import constants
 import upnext
+import utils
 
 try:
     from urllib.parse import parse_qs, urlparse
@@ -32,48 +34,173 @@ def generate_library_plugin_data(current_episode, addon_id, state=None):
     upnext_info = {
         'current_episode': current_episode,
         'next_episode': next_episode,
-        'play_url': 'plugin://{0}/?play={1}'.format(addon_id, next_dbid)
+        'play_url': 'plugin://{0}/play/?dbid={1}'.format(addon_id, next_dbid)
     }
     return upnext_info
 
 
+def generate_listing(addon_handle, addon_id, items):
+    listing = []
+    for item in items:
+        content = PLUGIN_CONTENT.get(item)
+        if not content:
+            continue
+
+        url = 'plugin://{0}/{1}'.format(addon_id, item)
+        listitem = xbmcgui.ListItem(
+            label=content.get('label', ''), path=url, offscreen=True
+        )
+        if 'art' in content:
+            listitem.setArt(content.get('art'))
+        is_folder = content.get('content_type') != 'action'
+
+        listing += (url, listitem, is_folder),
+
+    return listing
+
+
+def generate_next_episodes_list(addon_handle, addon_id, **kwargs):
+    pass
+
+
+def generate_next_movies_list(addon_handle, addon_id, **kwargs):
+    pass
+
+
+def generate_next_media_list(addon_handle, addon_id, **kwargs):
+    pass
+
+
+def open_settings(addon_handle, addon_id, **kwargs):
+    utils.get_addon(addon_id).openSettings()
+    return True
+
+
 def parse_plugin_url(url):
     if not url:
-        return None, None
+        return None, None, None
+
     parsed_url = urlparse(url)
-    if parsed_url.scheme != 'plugin':
-        return None, None
-    return parsed_url, parse_qs(parsed_url.query)
+    addon_type = parsed_url.scheme
+    if addon_type != 'plugin':
+        return None, None, None
+
+    addon_id = parsed_url.netloc
+    addon_path = parsed_url.path
+    addon_args = parse_qs(parsed_url.query)
+
+    return addon_id, addon_path, addon_args
 
 
-def handler(argv):
-    plugin_url, args = parse_plugin_url(argv[0] + argv[2])
-    if not plugin_url:
-        return False
-
-    dbid = int(args.get('play', [constants.UNDEFINED])[0])
+def play_media(addon_handle, addon_id, **kwargs):
+    dbid = int(kwargs.get('dbid', [constants.UNDEFINED])[0])
     if dbid == constants.UNDEFINED:
         return False
 
     current_episode = api.get_from_library(dbid)
     if not current_episode:
         xbmcplugin.setResolvedUrl(
-            int(argv[1]), False, upnext.create_listitem({})
+            addon_handle, False, upnext.create_listitem({})
         )
         return False
 
     upnext_info = generate_library_plugin_data(
         current_episode=current_episode,
-        addon_id=plugin_url.netloc
+        addon_id=addon_id
     )
     if not upnext_info:
         xbmcplugin.setResolvedUrl(
-            int(argv[1]), False, upnext.create_listitem({})
+            addon_handle, False, upnext.create_listitem({})
         )
         return False
 
     xbmcplugin.setResolvedUrl(
-        int(argv[1]), True, upnext_info['current_episode']
+        addon_handle, True, upnext_info['current_episode']
     )
-    upnext.send_signal(plugin_url.netloc, upnext_info)
+    upnext.send_signal(addon_id, upnext_info)
     return True
+
+
+def run(argv):
+    addon_handle = int(argv[1])
+    addon_id, addon_path, addon_args = parse_plugin_url(argv[0] + argv[2])
+    if not addon_path:
+        return False
+
+    content = PLUGIN_CONTENT.get(addon_path)
+    if not content:
+        return False
+
+    content_type = content.get('content_type')
+    content_items = content.get('items')
+    content_handler = content.get('handler')
+
+    if content_type == 'action' and content_handler:
+        return content_handler(addon_handle, addon_id, **addon_args)
+    
+    if content_handler:
+        content_items = content_handler(addon_handle, addon_id, **addon_args)
+    elif content_items:
+        content_items = generate_listing(addon_handle, addon_id, content_items)
+    
+    if content_type and content_items:
+        xbmcplugin.setContent(addon_handle, content_type)
+        listing_complete = xbmcplugin.addDirectoryItems(
+            addon_handle, content_items, len(content_items)
+        )
+    else:
+        listing_complete = False
+
+    xbmcplugin.endOfDirectory(
+        addon_handle, listing_complete, updateListing=False, cacheToDisc=True
+    )
+
+
+PLUGIN_CONTENT = {
+    '/': {
+        'label': 'Home',
+        'content_type': 'files',
+        'items': [
+            '/next_episodes',
+            '/next_movies',
+            '/next_media',
+            '/settings',
+        ],
+    },
+    '/next_episodes': {
+        'label': 'In-progress and Next-up Episodes',
+        'art': {
+            'icon': 'DefaultInProgressShows.png',
+        },
+        'content_type': 'episodes',
+        'handler': generate_next_episodes_list,
+    },
+    '/next_movies': {
+        'label': 'In-progress and Next-up Movies',
+        'art': {
+            'icon': 'DefaultMovies.png',
+        },
+        'content_type': 'movies',
+        'handler': generate_next_movies_list,
+    },
+    '/next_media': {
+        'label': 'In-progress and Next-up Media',
+        'art': {
+            'icon': 'DefaultVideo.png'
+        },
+        'content_type': 'videos',
+        'handler': generate_next_media_list,
+    },
+    '/settings': {
+        'label': 'Settings',
+        'art': {
+            'icon': 'DefaultAddonProgram.png'
+        },
+        'content_type': 'action',
+        'handler': open_settings,
+    },
+    '/play': {
+        'content_type': 'action',
+        'handler': play_media,
+    },
+}

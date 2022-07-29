@@ -7,4 +7,4 @@ import sys
 import plugin
 
 
-plugin.handler(sys.argv)
+plugin.run(sys.argv)
