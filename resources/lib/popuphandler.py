@@ -365,7 +365,12 @@ class UpNextPopupHandler(object):
             if timeout <= 0:
                 break
         if self._running.is_set():
-            self.log('Popup taking too long to close', utils.LOGWARNING)
+            if self._has_popup():
+                self.log('Popup taking too long to close', utils.LOGWARNING)
+            else:
+                self._sigstop.clear()
+                self._sigterm.clear()
+                self._running.clear()
 
         # Free references/resources
         if terminate:
