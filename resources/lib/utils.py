@@ -115,21 +115,45 @@ class Profiler(object):
         return output
 
 
-# Not sure why this is needed but Kodi sometimes thinks the addon is disabled
-# when it is starting the service. Some kind of race condition?
-try:
-    ADDON = xbmcaddon.Addon(constants.ADDON_ID)
-except RuntimeError:
-    ADDON = xbmcaddon.Addon()
-_KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
+def wait(timeout=None):
+    if not timeout:
+        timeout = 0
+    elif timeout < 0:
+        timeout = 0.1
+    return xbmc.Monitor().waitForAbort(timeout)
 
 
-def get_addon(addon_id=None):
+def abort_requested():
+    return xbmc.Monitor().abortRequested()
+
+
+def get_addon(addon_id=None, retry_attempts=3):
     """Return addon instance"""
 
-    if addon_id:
-        return xbmcaddon.Addon(addon_id)
-    return xbmcaddon.Addon()
+    addon = None
+
+    # Not sure why the retries are needed but Kodi sometimes thinks the addon
+    # is disabled when it is starting the service. Some kind of race condition?
+    attempts_left = 1 + retry_attempts
+    while attempts_left > 0:
+        try:
+            if addon_id:
+                addon = xbmcaddon.Addon(addon_id)
+            else:
+                addon = xbmcaddon.Addon()
+            break
+        except RuntimeError:
+            pass
+
+        attempts_left -= 1
+        if attempts_left > 0:
+            wait(1)
+
+    return addon
+
+
+ADDON = get_addon(constants.ADDON_ID)
+_KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
 
 
 def get_addon_info(key):
@@ -487,18 +511,6 @@ def time_to_seconds(time_str):
         pass
 
     return seconds
-
-
-def wait(timeout=None):
-    if not timeout:
-        timeout = 0
-    elif timeout < 0:
-        timeout = 0.1
-    return xbmc.Monitor().waitForAbort(timeout)
-
-
-def abort_requested():
-    return xbmc.Monitor().abortRequested()
 
 
 def calc_wait_time(end_time=None, start_time=0, rate=None):
