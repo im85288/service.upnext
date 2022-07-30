@@ -222,7 +222,7 @@ class UpNextDetector(object):
 
     @staticmethod
     def _eq_biased(bit1, bit2):
-        return (bit1 == bit2) * (1 if bit2 else 0.5)
+        return (bit1 == bit2) * (1 if bit2 else 0.75)
 
     @staticmethod
     def _mul(bit1, bit2):
