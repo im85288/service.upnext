@@ -531,8 +531,7 @@ def has_credits(image, filtered_image, save_file=None):
                 SETTINGS.detector_save_path, save_file
             ))
 
-        has_credits = (expanded_entropy / filtered_entropy) < 1.10
-        return has_credits, output_image
+        return (expanded_entropy / filtered_entropy) < 1.10, output_image
 
     return False, None
 
