@@ -511,7 +511,7 @@ class UpNextDetector(object):
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not SETTINGS.detector_debug:
             self._hash_match_hit()
-            return stats, image_hash, filtered_hash
+            return stats, (image_hash, filtered_hash, expanded_hash)
 
         # Calculate similarity between current hash and previous hash
         stats['previous'] = self._hash_similarity(
@@ -528,7 +528,7 @@ class UpNextDetector(object):
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not SETTINGS.detector_debug:
             self._hash_match_hit()
-            return stats, image_hash, filtered_hash
+            return stats, (image_hash, filtered_hash, expanded_hash)
 
         old_hashes = self.past_hashes.window(self.hash_index['current'])
         for self.hash_index['episodes'], old_hash in old_hashes.items():
