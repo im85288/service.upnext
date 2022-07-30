@@ -250,9 +250,9 @@ def test_hash_compare():  # pylint: disable=too-many-locals
             try:
                 image1.close()
                 image2.close()
-            except Exception:
+            except Exception:  # pylint: disable=broad-except
                 continue
-            print(error_msg)
+            print(error_msg)  # pylint: disable=superfluous-parens
             continue
 
         aspect_ratio = image1.width / image1.height
