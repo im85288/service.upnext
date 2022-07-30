@@ -510,25 +510,31 @@ def export_data(image):
 
 def has_credits(image, filtered_image, save_file=None):
     filtered_image = apply_filter(filtered_image, 'BoxBlur,1')
-    expanded_filtered_image = apply_filter(filtered_image, 'BoxBlur,20')
-    expanded_entropy = image.entropy(mask=expanded_filtered_image)
     filtered_entropy = image.entropy(mask=filtered_image)
+
+    expanded_image = apply_filter(filtered_image, 'BoxBlur,20')
+    expanded_entropy = image.entropy(mask=expanded_image)
 
     if filtered_entropy and expanded_entropy:
         filtered_image = filtered_image.point(
             _precompute('ALL_PASS_LUT')
         )
-        expanded_filtered_image = expanded_filtered_image.point(
+        expanded_image = expanded_image.point(
             _precompute('ALL_PASS_LUT')
         )
+
         output_image = Image.new('L', image.size, 0)
-        output_image.paste(image, mask=expanded_filtered_image)
+        output_image.paste(image, mask=expanded_image)
+
         if save_file and SETTINGS.detector_debug_save:
             output_image.save('{0}{1}_2.bmp'.format(
                 SETTINGS.detector_save_path, save_file
             ))
-        return expanded_entropy / filtered_entropy, output_image
-    return 0, None
+
+        has_credits = (expanded_entropy / filtered_entropy) < 1.10
+        return has_credits, output_image
+
+    return False, None
 
 
 def image_stack(index):

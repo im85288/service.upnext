@@ -222,7 +222,7 @@ class UpNextDetector(object):
 
     @staticmethod
     def _eq_biased(bit1, bit2):
-        return (bit1 == bit2) * (1 if bit2 else 0.75)
+        return (bit1 == bit2) * (1 if bit2 else 0.5)
 
     @staticmethod
     def _mul(bit1, bit2):
@@ -474,11 +474,10 @@ class UpNextDetector(object):
             ],
             # save_file='3_expanded'
         )
-        # self.log(has_credits)
-        has_credits = has_credits < 1.15
 
         image_hash = self._create_hash(image, hash_size)
         filtered_hash = self._create_hash(filtered_image, hash_size)
+        expanded_hash = None
 
         if has_credits:
             expanded_hash = self._create_hash(expanded_image, hash_size)
@@ -495,8 +494,8 @@ class UpNextDetector(object):
             ))
 
             stats['detected'] = self._hash_similarity(
-                image_hash,
                 filtered_hash,
+                image_hash,
                 expanded_hash
             )
 
@@ -505,7 +504,7 @@ class UpNextDetector(object):
         is_match = (
             not any(image_hash)
             or has_credits and (
-                stats['detected'] >= SETTINGS.detect_level
+                stats['detected'] >= SETTINGS.detect_level - 5
                 or stats['credits'] >= SETTINGS.detect_level
             )
         )
@@ -549,7 +548,7 @@ class UpNextDetector(object):
         elif not possible_match:
             self._hash_match_miss()
 
-        return stats, image_hash, filtered_hash
+        return stats, (image_hash, filtered_hash, expanded_hash)
 
     def _hash_match_hit(self):
         with self._lock:
@@ -757,9 +756,10 @@ class UpNextDetector(object):
 
             # Check if current hash matches with previous hash, typical end
             # credits hash, or other episode hashes
-            stats, image_hash, filtered_hash = self._evaluate_similarity(
+            stats, hashes = self._evaluate_similarity(
                 image, filtered_image, self.hashes.hash_size
             )
+            image_hash, filtered_hash, expanded_hash = hashes
 
             if SETTINGS.detector_debug:
                 self.log('Match: {0[hits]}/{1}, Miss: {0[misses]}/{2}'.format(
@@ -769,6 +769,7 @@ class UpNextDetector(object):
                 self._print_hashes(
                     [self.hashes.data.get(self.hash_index['credits_small']),
                      filtered_hash,
+                     expanded_hash,
                      self.hashes.data.get(self.hash_index['credits_large'])],
                     size=self.hashes.hash_size,
                     prefix=(
