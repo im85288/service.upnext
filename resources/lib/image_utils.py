@@ -121,8 +121,10 @@ def _fade_mask(size, level_start, level_stop, steps, power, box,  # pylint: disa
                               _int(step_scale * padding_bottom_scale))
         level = level_start + _int(step_scale * level_scale)
 
-        border = _precompute('BORDER_BOX,1,1,{0},{1},{2},{3}'.format(
-            padding_left, padding_top, padding_right, padding_bottom), size
+        border = _precompute(
+            'BORDER_BOX,1,1,{0},{1},{2},{3}'.format(
+                padding_left, padding_top, padding_right, padding_bottom
+            ), size
         )
 
         element.paste(level, box=border['box'])
@@ -260,8 +262,8 @@ def adaptive_filter(image, sampling, method, args=(), save_file=None):  # pylint
     )
     segment_border_box = segment_border_box['box']
 
-    mask = _precompute('FADE_MASK,0,255,10,0.33,{0},{1}'.format(
-        left_border, top_border),
+    mask = _precompute(
+        'FADE_MASK,0,255,10,0.33,{0},{1}'.format(left_border, top_border),
         (segment_width + 2 * left_border, segment_height + 2 * top_border)
     ) if mask else None
 
@@ -346,8 +348,8 @@ def apply_filter(image, method, extent=None, original=None, output_op=None):
 
     elif extent == 'TRIM':
         border = _precompute('BORDER_BOX,8,8,1', image.size)['box']
-        mask = _precompute('BORDER_MASK,0,255,{0},{1},{2},{3}'.format(
-            *border), image.size
+        mask = _precompute(
+            'BORDER_MASK,0,255,{0},{1},{2},{3}'.format(*border), image.size
         )
         image = mask
 
@@ -359,8 +361,8 @@ def apply_filter(image, method, extent=None, original=None, output_op=None):
 
         border = max(10, int(0.25 * min(image.size)))
         mask = (255, 0) if direction == 'IN' else (0, 255)
-        mask = _precompute('FADE_MASK,{1},{2},{0},3,{0}'.format(
-            border, *mask), image.size
+        mask = _precompute(
+            'FADE_MASK,{1},{2},{0},3,{0}'.format(border, *mask), image.size
         )
 
     image = image.copy()
@@ -632,7 +634,7 @@ def process(data, queue, save_file=None, debug=SETTINGS.detector_debug_save,
                 for idx in [idx for idx, arg in args_enum if arg == 'DEBUG']:
                     args[idx] = save_file
 
-        for idx in [idx for idx, arg in args_enum
+        for idx in [idx for idx, arg in args_enum  # pylint: disable=undefined-loop-variable
                     if _callable(arg)
                     and arg.__name__ == '_image_stack_fetch']:
             args[idx] = args[idx]()
