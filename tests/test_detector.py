@@ -246,7 +246,13 @@ def test_hash_compare():  # pylint: disable=too-many-locals
         try:
             image1 = Image.open(test_image_path + file1)
             image2 = Image.open(test_image_path + file2)
-        except (IOError, OSError):
+        except (IOError, OSError) as error_msg:
+            try:
+                image1.close()
+                image2.close()
+            except Exception:
+                continue
+            print(error_msg)
             continue
 
         aspect_ratio = image1.width / image1.height
