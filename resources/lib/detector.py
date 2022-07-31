@@ -343,6 +343,7 @@ class UpNextDetector(object):
             image_data,
             queue=[
                 [image_utils.import_data, image_size],
+                [image_utils.auto_level, 5, 95, (0.33, None)],
             ],
             # save_file='1_image'
         )
