@@ -417,22 +417,18 @@ class UpNextDetector(object):
         return similarity - uncertainty
 
     @classmethod
-    def _print_hashes(cls, hashes, size=None, prefix=''):
+    def _print_hashes(cls, hashes, size, prefix=''):
         """Method to print image hashes, side by side, to the Kodi log"""
 
-        if hashes:
-            hashes = [image_hash for image_hash in hashes if image_hash]
         if not hashes:
             return
 
-        num_bits = len(hashes[0])
-        hashes = [image_hash for image_hash in hashes
-                  if len(image_hash) == num_bits]
-
-        if not size:
-            size = int(num_bits ** 0.5)
-            size = [size, size]
+        num_bits = size[0] * size[1]
         row_length = size[0]
+
+        hashes = [image_hash if image_hash and len(image_hash) == num_bits
+                  else (0, ) * num_bits
+                  for image_hash in hashes]
 
         cls.log('\n\t\t\t'.join([
             prefix,
