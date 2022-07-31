@@ -489,20 +489,18 @@ class UpNextDetector(object):
                 filtered_hash
             ))
 
-            stats['detected'] = self._hash_similarity(
-                filtered_hash,
-                image_hash,
-                expanded_hash
+            # Estimate of detection relevance
+            stats['detected'] = stats['credits'] * self._hash_similarity(
+                expanded_hash, image_hash, filtered_hash
+            ) / self._hash_similarity(
+                filtered_hash, image_hash, expanded_hash
             )
 
         # Match if current hash matches representative hash or if current hash
         # is blank
         is_match = (
             not any(image_hash)
-            or has_credits and (
-                stats['detected'] >= SETTINGS.detect_level - 5
-                or stats['credits'] >= SETTINGS.detect_level
-            )
+            or stats['credits'] >= SETTINGS.detect_level
         )
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not SETTINGS.detector_debug:
@@ -516,10 +514,13 @@ class UpNextDetector(object):
         )
         # Possible match if current hash matches previous hash
         possible_match = stats['previous'] >= SETTINGS.detect_level
-        # Match if hash is also somewhat similar to representative hash
+        # Match if detection estimate indicates result was relevant
         is_match = is_match or (
-            stats['credits'] >= SETTINGS.detect_level - 5
-            and possible_match
+            possible_match and
+            stats['detected'] >= (
+                SETTINGS.detect_level -
+                (0.004 * stats['previous'] * stats['credits'])
+            )
         )
         # Unless debugging, return if match found, otherwise continue checking
         if is_match and not SETTINGS.detector_debug:
