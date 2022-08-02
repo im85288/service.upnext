@@ -70,22 +70,23 @@
                     <control type="image">
                         <width>250</width>
                         <height>141</height>
-                        <texture>$INFO[Window.Property(landscape)]</texture>
+                        <texture>$INFO[Window.Property(thumb)]</texture>
                         <aspectratio>scale</aspectratio>
+                        <visible>!String.IsEmpty(Window.Property(thumb))</visible>
                     </control>
                     <control type="image">
                         <width>250</width>
                         <height>141</height>
                         <texture>$INFO[Window.Property(fanart)]</texture>
                         <aspectratio>scale</aspectratio>
-                        <visible>String.IsEmpty(Window.Property(landscape))</visible>
+                        <visible>String.IsEmpty(Window.Property(thumb)) + !String.IsEmpty(Window.Property(fanart))</visible>
                     </control>
                     <control type="image">
                         <width>250</width>
                         <height>141</height>
-                        <texture>$INFO[Window.Property(thumb)]</texture>
+                        <texture>$INFO[Window.Property(landscape)]</texture>
                         <aspectratio>scale</aspectratio>
-                        <visible>String.IsEmpty(Window.Property(landscape)) + String.IsEmpty(Window.Property(fanart))</visible>
+                        <visible>String.IsEmpty(Window.Property(thumb)) + String.IsEmpty(Window.Property(fanart)) + !String.IsEmpty(Window.Property(landscape))</visible>
                     </control>
                     <control type="progress" id="3014">
                         <width>250</width>
