@@ -85,6 +85,13 @@ class UpNextMonitor(xbmc.Monitor, object):
             return
         self.state.starting = 0
 
+        if (playback['file'].startswith((
+                'bluray://', 'dvd://', 'udf://', 'iso9660://', 'cdda://'))
+                or playback['file'].endswith((
+                    '.bdmv', '.iso', '.ifo'))):
+            self.log('Skip video check: Blu-ray/DVD/CD playing')
+            return
+
         if utils.get_property('PseudoTVRunning') == 'True':
             self.log('Skip video check: PsuedoTV detected')
             return
