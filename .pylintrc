@@ -16,3 +16,4 @@ disable=
     too-many-return-statements,
     too-many-statements,
     useless-super-delegation,
+    consider-using-f-string,

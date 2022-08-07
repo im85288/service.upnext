@@ -209,7 +209,7 @@ class Api:
 
     def get_now_playing(self):
         # Seems to work too fast loop whilst waiting for it to become active
-        result = dict()
+        result = {}
         while not result.get('result'):
             result = jsonrpc(method='Player.GetActivePlayers')
             self.log('Got active player %s' % result, 2)
