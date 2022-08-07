@@ -129,7 +129,7 @@ class UpNextPopupHandler(object):
 
     def _play_next_video(self, next_item, source, popup_state):
         # Primary method is to play next playlist item
-        if source[-len('playlist'):] == 'playlist' or self.state.queued:
+        if source.endswith('playlist') or self.state.queued:
             # Can't just seek to end of file as this triggers inconsistent Kodi
             # behaviour:
             # - Will sometimes continue playing past the end of the file
@@ -149,7 +149,7 @@ class UpNextPopupHandler(object):
                 )
 
         # Fallback plugin playback method, used if plugin provides play_info
-        elif source[:len('plugin')] == 'plugin':
+        elif source.startswith('plugin'):
             api.play_plugin_item(
                 self.state.data,
                 self.state.encoding,
@@ -188,7 +188,7 @@ class UpNextPopupHandler(object):
             return has_next_item, play_next, keep_playing, restart
 
         # Add next file to playlist if existing playlist is not being used
-        if SETTINGS.enable_queue and source[-len('playlist'):] != 'playlist':
+        if SETTINGS.enable_queue and not source.endswith('playlist'):
             self.state.queued = api.queue_next_item(self.state.data, next_item)
 
         # Create Kodi dialog to show UpNext or Still Watching? popup
