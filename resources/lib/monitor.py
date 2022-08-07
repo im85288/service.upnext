@@ -24,7 +24,7 @@ class UpNextMonitor(Monitor):
         """Log wrapper"""
         ulog(msg, name=self.__class__.__name__, level=level)
 
-    def run(self):
+    def run(self):  # pylint: disable=too-many-branches
         """Main service loop"""
         self.log('Service started', 0)
 
