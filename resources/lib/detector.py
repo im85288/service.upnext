@@ -62,7 +62,7 @@ class UpNextHashStore(object):
             return False
 
         # Playlist with no episode details
-        if for_saving and self.seasonid[:len('_playlist')] == '_playlist':
+        if for_saving and self.seasonid.startswith(constants.MIXED_PLAYLIST):
             return False
 
         # No new episode details, assume current hashes are still valid

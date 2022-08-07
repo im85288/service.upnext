@@ -186,8 +186,8 @@ def get_playlist_position():
     return None
 
 
-def get_next_in_playlist(position, unwatched_only=False):
-    """Function to get details of next episode in playlist"""
+def get_from_playlist(position, unwatched_only=False):
+    """Function to get details of item in playlist"""
 
     result = utils.jsonrpc(
         method='Playlist.GetItems',
@@ -203,7 +203,7 @@ def get_next_in_playlist(position, unwatched_only=False):
     )
     items = result.get('result', {}).get('items')
 
-    # Get first unwatched item in the list of remaining playlist entries
+    # Get first unwatched item in the list of playlist entries
     if unwatched_only and items:
         position_offset, item = next(
             (
@@ -213,13 +213,14 @@ def get_next_in_playlist(position, unwatched_only=False):
             (0, None)
         )
         position += position_offset
-    # Or just get the first item in the list of remaining playlist entries
+    # Or just get the first item in the list of playlist entries
     else:
         item = items[0] if items else None
 
-    # Don't check if next item is an episode, just use it if it is there
+    # Don't check if item is an episode, just use it if it is there
     if not item:  # item.get('type') != 'episode':
-        log('No next item found in playlist', utils.LOGWARNING)
+        log('No item in playlist at position {0}'.format(position),
+            utils.LOGWARNING)
         return None
 
     # Playlist item may not have had video info details set
@@ -231,17 +232,18 @@ def get_next_in_playlist(position, unwatched_only=False):
         utils.get_int(item, 'id')
     )
     item['tvshowid'] = utils.get_int(item, 'tvshowid')
+    item['showtitle'] = item.get('showtitle', constants.MIXED_PLAYLIST)
     # If missing season/episode, change to empty string to avoid episode
     # formatting issues ("S-1E-1") in UpNext popup
     if utils.get_int(item, 'season') == constants.UNDEFINED:
         item['season'] = ''
     if utils.get_int(item, 'episode') == constants.UNDEFINED:
-        item['episode'] = ''
+        item['episode'] = position
 
     # Store current playlist position for later use
     item['playlist_position'] = position
 
-    log('Next item in playlist at position {0}: {1}'.format(position, item))
+    log('Item in playlist at position {0}: {1}'.format(position, item))
     return item
 
 

@@ -46,6 +46,8 @@ LOG_ENABLE_DISABLED = 0
 LOG_ENABLE_INFO = 1
 LOG_ENABLE_DEBUG = 2
 
+MIXED_PLAYLIST = '_mixedplaylist'
+
 PLUGIN_TYPES = (
     'plugin_data_error',
     'plugin_playlist',
