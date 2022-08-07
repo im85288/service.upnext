@@ -310,7 +310,7 @@ class Api:
                 current_library_file = episode_library_file
                 continue
             # Check if it may be a multi-part episode
-            if episode_library_file == current_file or episode_library_file == current_library_file:
+            if episode_library_file in (current_file, current_library_file):
                 continue
             # Skip already watched episodes?
             if not include_watched and episode.get('playcount') > 0:
