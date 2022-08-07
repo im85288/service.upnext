@@ -64,6 +64,15 @@ class UpNextMonitor(Monitor):
                 self.playback_manager.demo.hide()
                 continue
 
+            if (current_file.startswith((
+                    'bluray://', 'dvd://', 'udf://', 'iso9660://', 'cdda://'))
+                    or current_file.endswith((
+                        '.bdmv', '.iso', '.ifo'))):
+                self.log('Up Next tracking stopped, Blu-ray/DVD/CD playing', 2)
+                self.player.disable_tracking()
+                self.playback_manager.demo.hide()
+                continue
+
             if last_file and last_file == from_unicode(current_file):
                 # Already processed this playback before
                 continue
