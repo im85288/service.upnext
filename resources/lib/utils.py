@@ -19,18 +19,25 @@ import statichelper
 class Profiler(object):
     """Class used to profile a block of code"""
 
-    __slots__ = ('_profiler', )
+    __slots__ = ('_profiler', '_name', )
 
     from cProfile import Profile
     from pstats import Stats
     try:
-        from StringIO import StringIO
-    except ImportError:
         from io import StringIO
+    except ImportError:
+        from StringIO import StringIO
     from functools import wraps
 
-    def __init__(self):
+    def __init__(self, name=__name__):
+        self._name = name
         self._create_profiler()
+
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        log(self.get_stats(reuse=False), name=self._name, level=LOGDEBUG)
 
     @classmethod
     def profile(cls, func):
@@ -90,17 +97,12 @@ class Profiler(object):
     def get_stats(self, flush=True, reuse=False):
         self.disable()
 
-        output_stream = self.StringIO()
-        try:
+        with self.StringIO() as output_stream:
             self.Stats(
                 self._profiler,
                 stream=output_stream
             ).strip_dirs().sort_stats('cumulative').print_stats(20)
-        # Occurs when no stats were able to be generated from profiler
-        except TypeError:
-            pass
-        output = output_stream.getvalue()
-        output_stream.close()
+            output = output_stream.getvalue()
 
         if not reuse:
             # If profiler is not being reused then do nothing
