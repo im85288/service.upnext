@@ -97,12 +97,17 @@ class Profiler(object):
     def get_stats(self, flush=True, reuse=False):
         self.disable()
 
-        with self.StringIO() as output_stream:
+        output_stream = self.StringIO()
+        try:
             self.Stats(
                 self._profiler,
                 stream=output_stream
             ).strip_dirs().sort_stats('cumulative').print_stats(20)
-            output = output_stream.getvalue()
+        # Occurs when no stats were able to be generated from profiler
+        except TypeError:
+            pass
+        output = output_stream.getvalue()
+        output_stream.close()
 
         if not reuse:
             # If profiler is not being reused then do nothing
