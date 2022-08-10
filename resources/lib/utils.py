@@ -24,9 +24,9 @@ class Profiler(object):
     from cProfile import Profile
     from pstats import Stats
     try:
-        from io import StringIO
-    except ImportError:
         from StringIO import StringIO
+    except ImportError:
+        from io import StringIO
     from functools import wraps
 
     def __init__(self, name=__name__):
