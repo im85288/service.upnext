@@ -345,7 +345,7 @@ class UpNextDetector(object):
                 [image_utils.import_data, image_size],
                 [image_utils.auto_level, 5, 95, (0.33, None)],
             ],
-            # save_file='1_image'
+            save_file='1_image'
         )
 
         filtered_image = image_utils.process(
@@ -363,7 +363,7 @@ class UpNextDetector(object):
                  'GaussianBlur,5', 'TRIM', None, 'multiply'],
                 [image_utils.threshold],
             ],
-            # save_file='2_filter'
+            save_file='2_filter'
         )
 
         return image, filtered_image
@@ -469,7 +469,7 @@ class UpNextDetector(object):
             queue=[
                 [image_utils.has_credits, filtered_image]
             ],
-            # save_file='3_expanded'
+            save_file='3_expanded'
         )
 
         image_hash = self._create_hash(image, hash_size)

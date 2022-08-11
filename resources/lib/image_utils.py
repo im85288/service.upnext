@@ -159,15 +159,14 @@ def _histogram_rank(input_data, percentile, skip_levels=0):
     return target
 
 
-def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,  # pylint: disable=too-many-branches
+def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
                 _int=int, _float=float):
     element = _PRECOMPUTED.get(method)
-    if element:
-        image_size = getattr(element, 'size', None)
-        if size == image_size:
+    try:
+        if element and size == getattr(element, 'size', element.get('size')):
             return element
-        if not image_size and size == element['size']:
-            return element
+    except AttributeError:
+        pass
 
     element, _, args = method.partition(',')
     args = [_float(arg) if '.' in arg else _int(arg) if arg else None
@@ -176,28 +175,23 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,  # pylint
     if element == 'ALL_PASS_LUT':
         element = [255] * 256
         element[0] = 0
+        debug = False
 
     elif element == 'BIT_DEPTH_LUT':
         element = _bit_depth_lut(*args)
+        debug = False
 
     elif element == 'BORDER_BOX':
         element = _border_box(size, *args)
+        debug = False
 
     elif element == 'BORDER_MASK':
         element = _border_mask(size, *args)
-        if debug:
-            element.save('{0}_{1}.bmp'.format(
-                SETTINGS.detector_save_path, method
-            ))
 
     elif element == 'FADE_MASK':
         # Split args to avoid Python2 syntax error in definition of _fade_mask
         args = args[:4] + [args[4:]]
         element = _fade_mask(size, *args)
-        if debug:
-            element.save('{0}_{1}.bmp'.format(
-                SETTINGS.detector_save_path, method
-            ))
 
     elif element == 'RankFilter':
         filter_size = args[0]
@@ -209,6 +203,11 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,  # pylint
         element = getattr(ImageFilter, element)
         if callable(element):
             element = element(*args) if args else element()
+
+    if debug:
+        element.save('{0}_{1}.bmp'.format(
+            SETTINGS.detector_save_path, method
+        ))
 
     _PRECOMPUTED[method] = element
     return element
