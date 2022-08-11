@@ -19,7 +19,7 @@ import statichelper
 class Profiler(object):
     """Class used to profile a block of code"""
 
-    __slots__ = ('_profiler', '_name', )
+    __slots__ = ('_profiler', 'name', )
 
     from cProfile import Profile
     from pstats import Stats
@@ -30,14 +30,14 @@ class Profiler(object):
     from functools import wraps
 
     def __init__(self, name=__name__):
-        self._name = name
+        self.name = name
         self._create_profiler()
 
     def __enter__(self):
         return self
 
     def __exit__(self, exc_type, exc_value, traceback):
-        log(self.get_stats(reuse=False), name=self._name, level=LOGDEBUG)
+        log(self.get_stats(reuse=False), name=self.name, level=LOGDEBUG)
 
     @classmethod
     def profile(cls, func):
@@ -50,10 +50,6 @@ class Profiler(object):
                2) run the function being profiled;
                3) print out profiler result to the log; and
                4) return result of function call"""
-
-            profiler = cls()
-            result = func(*args, **kwargs)
-            stats = profiler.get_stats()
 
             name = getattr(func, '__qualname__', None)
             if name:
@@ -78,7 +74,8 @@ class Profiler(object):
             else:
                 name = func.__name__
 
-            log(stats, name=name, level=LOGDEBUG)
+            with cls(name):
+                result = func(*args, **kwargs)
 
             return result
 
