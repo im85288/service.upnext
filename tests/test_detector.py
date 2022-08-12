@@ -225,7 +225,7 @@ def test_representative_hash():
     assert test_complete is True
 
 
-def test_hash_compare():  # pylint: disable=too-many-locals
+def test_hash_compare():  # pylint: disable=too-many-locals,too-many-statements
     if SKIP_TEST_ALL or SKIP_TEST_HASH_COMPARE:
         assert True
         return

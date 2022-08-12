@@ -1,19 +1,15 @@
 [MESSAGES CONTROL]
 disable=
     bad-option-value,
-    consider-using-f-string,
     duplicate-code,
+    consider-using-f-string,
     fixme,
     import-outside-toplevel,
     line-too-long,
     missing-docstring,
-    old-style-class,
-    super-on-old-class,
-    too-few-public-methods,
-    too-many-arguments,
-    too-many-function-args,
-    too-many-instance-attributes,
-    too-many-return-statements,
-    too-many-statements,
     useless-super-delegation,
     useless-object-inheritance,
+    super-on-old-class,
+    super-with-arguments,
+    too-many-instance-attributes
+    

@@ -11,7 +11,7 @@ import os
 from xbmcextra import __KODI_MATRIX__
 
 
-class File:
+class File(object):
     ''' A reimplementation of the xbmcvfs File() function '''
     def __init__(self, path, mode=None):
         if mode == 'w':
@@ -61,7 +61,7 @@ class File:
 def Stat(path):
     ''' A reimplementation of the xbmcvfs Stat() function '''
 
-    class stat:  # pylint: disable=too-few-public-methods
+    class stat(object):  # pylint: disable=too-few-public-methods
         ''' A reimplementation of the xbmcvfs stat class '''
 
         def __init__(self, path):

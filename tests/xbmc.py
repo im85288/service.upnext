@@ -55,7 +55,7 @@ _GLOBAL_SETTINGS = global_settings()
 _PO = import_language(language=_GLOBAL_SETTINGS.get('locale.language'))
 
 
-class Keyboard:
+class Keyboard(object):
     ''' A stub implementation of the xbmc Keyboard class '''
 
     def __init__(self, line='', heading=''):
@@ -73,21 +73,29 @@ class Keyboard:
         return 'test'
 
 
-class Monitor:
+class Monitor(object):
     ''' A stub implementation of the xbmc Monitor class '''
+
+    __slots__ = ('__weakref__', )
+
     _instances = WeakValueDictionary()
-    _instance_number = 0
     _aborted = threading.Event()
 
-    def __init__(self):
+    def __new__(cls):
         ''' A stub constructor for the xbmc Monitor class '''
-        if not Monitor._instance_number:
-            abort_timer = threading.Thread(target=self._timer)
+
+        self = super(Monitor, cls).__new__(cls)
+
+        if not cls._instances:
+            abort_timer = threading.Thread(target=self._timer)  # pylint: disable=protected-access
             abort_timer.daemon = True
             abort_timer.start()
 
-        Monitor._instances[Monitor._instance_number] = self
-        Monitor._instance_number += 1
+        cls._instances[id(self)] = self
+        return self
+
+    def __del__(self):
+        del Monitor._instances[id(self)]
 
     def _timer(self):
         abort_times = [90, 120]
@@ -121,7 +129,7 @@ class Monitor:
         return Monitor._aborted.is_set()
 
 
-class Player:
+class Player(object):
     ''' A stub implementation of the xbmc Player class '''
 
     def __init__(self):
@@ -175,7 +183,7 @@ class Player:
         return InfoTagVideo()
 
 
-class PlayList:
+class PlayList(object):
     ''' A stub implementation of the xbmc PlayList class '''
 
     def __init__(self, playList):
@@ -190,7 +198,7 @@ class PlayList:
         return 1
 
 
-class InfoTagVideo():
+class InfoTagVideo(object):
     ''' A stub implementation of the xbmc InfoTagVideo class '''
 
     def __init__(self, tags=None):
@@ -258,7 +266,7 @@ class InfoTagVideo():
         return self._tags.get('mediatype', '')
 
 
-class RenderCapture:
+class RenderCapture(object):
     ''' A stub implementation of the xbmc RenderCapture class '''
 
     def __init__(self):
@@ -543,7 +551,7 @@ def getRegion(key):
     return _REGIONS.get(key)
 
 
-def log(msg, level):
+def log(msg, level=LOGDEBUG):
     ''' A reimplementation of the xbmc log() function '''
     if level in (LOGERROR, LOGFATAL):
         print('\033[31;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))

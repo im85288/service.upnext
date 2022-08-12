@@ -14,7 +14,7 @@ ADDON_SETTINGS = addon_settings()
 PO = import_language(language=GLOBAL_SETTINGS.get('locale.language'))
 
 
-class Addon:
+class Addon(object):
     ''' A reimplementation of the xbmcaddon Addon class '''
 
     def __init__(self, id=ADDON_ID):  # pylint: disable=redefined-builtin

@@ -54,7 +54,7 @@ class UpNextMonitor(xbmc.Monitor, object):
     def log(cls, msg, level=utils.LOGDEBUG):
         utils.log(msg, name=cls.__name__, level=level)
 
-    def _check_video(self, data=None, encoding=None):
+    def _check_video(self, data=None, encoding=None):  # pylint: disable=too-many-return-statements
         # Only process one start at a time unless plugin data has been received
         if self.state.starting and not data:
             return

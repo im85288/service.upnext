@@ -4,8 +4,8 @@
 ''' This file implements the Kodi xbmcplugin module, either using stubs or alternative functionality '''
 
 # pylint: disable=invalid-name,unused-argument
-from __future__ import absolute_import, division, print_function, unicode_literals
 
+from __future__ import absolute_import, division, print_function, unicode_literals
 from xbmc import log, LOGINFO, LOGFATAL
 from xbmcextra import kodi_to_ansi, uri_to_path
 

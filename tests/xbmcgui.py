@@ -6,6 +6,7 @@
 # pylint: disable=invalid-name,too-many-arguments,unused-argument
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+from random import randint
 from xbmc import InfoTagVideo
 from xbmcextra import kodi_to_ansi, __KODI_MATRIX__
 
@@ -14,34 +15,68 @@ ACTION_STOP = 13
 NOTIFICATION_INFO = 'info'
 
 
-class Control:  # pylint: disable=too-few-public-methods
+class Control(object):  # pylint: disable=too-few-public-methods
     ''' A reimplementation of the xbmcgui Control class '''
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui Control class '''
+        self.Id = randint(0, 9999)
+        self.x = 0
+        self.y = 0
+        self.width = 0
+        self.height = 0
+
+    def getId(self):
+        ''' A stub implementation for the xbmcgui Control class getId() method '''
+        return self.Id
 
 
-class ControlLabel(Control):
+class ControlLabel(Control):  # pylint: disable=too-many-instance-attributes
     ''' A reimplementation of the xbmcgui ControlLabel class '''
 
-    def __init__(self):  # pylint: disable=super-init-not-called
+    def __init__(self, x, y, width, height, label, font='font13',
+                 textColor='0xFFFFFFFF', disabledColor='0xFFF3300F',
+                 alignment=0, hasPath=False, angle=0):
         ''' A stub constructor for the xbmcgui ControlLabel class '''
+        super(ControlLabel, self).__init__()
+        self.x = x
+        self.y = y
+        self.width = width
+        self.height = height
+        self.label = label
+        self.label2 = ''
+        self.font = font
+        self.textColor = textColor
+        self.disabledColor = disabledColor
+        self.shadowColor = '0xFF000000'
+        self.focusedColor = '0xFF00FFFF'
+        self.alignment = alignment
+        self.hasPath = hasPath
+        self.angle = angle
 
-    @staticmethod
-    def getLabel():
+    def getLabel(self):
         ''' A stub implementation for the xbmcgui ControlLabel class getLabel() method '''
-        return 'Label'
+        return self.label
 
-    @staticmethod
-    def setLabel(label='', font=None, textColor=None, disabledColor=None, shadowColor=None, focusedColor=None, label2=''):
-        ''' A stub implementation for the xbmcgui ControlLabel class getLabel() method '''
+    def setLabel(self, label, font='font13', textColor='0xFFFFFFFF',
+                 disabledColor='0xFFF3300F', shadowColor='0xFF000000',
+                 focusedColor='0xFF00FFFF', label2=''):
+        ''' A stub implementation for the xbmcgui ControlLabel class setLabel() method '''
+        self.label = label
+        self.label2 = label2
+        self.font = font
+        self.textColor = textColor
+        self.disabledColor = disabledColor
+        self.shadowColor = '0xFF000000'
+        self.focusedColor = '0xFF00FFFF'
 
 
 class ControlProgress(Control):
     ''' A reimplementation of the xbmcgui ControlProgress class '''
 
-    def __init__(self):  # pylint: disable=super-init-not-called
+    def __init__(self):
         ''' A stub constructor for the xbmcgui ControlLabel class '''
+        super(ControlProgress, self).__init__()
         self._percentage = 0.0
 
     def setPercent(self, percent):
@@ -51,7 +86,7 @@ class ControlProgress(Control):
         return self._percentage
 
 
-class Dialog:
+class Dialog(object):
     ''' A reimplementation of the xbmcgui Dialog class '''
 
     def __init__(self):
@@ -106,7 +141,7 @@ class Dialog:
         return 'special://masterprofile/addon_data/script.module.inputstreamhelper/'
 
 
-class DialogProgress:
+class DialogProgress(object):
     ''' A reimplementation of the xbmcgui DialogProgress '''
 
     def __init__(self):
@@ -143,7 +178,7 @@ class DialogProgress:
             print('\033[1G\033[37;44;1mPROGRESS:\033[35;49;1m [%d%%]\033[39;0m' % (percentage), end='')
 
 
-class DialogBusy:
+class DialogBusy(object):
     ''' A reimplementation of the xbmcgui DialogBusy '''
 
     def __init__(self):
@@ -158,7 +193,7 @@ class DialogBusy:
         ''' A stub implementation for the xbmcgui DialogBusy class create() method '''
 
 
-class ListItem:
+class ListItem(object):
     ''' A reimplementation of the xbmcgui ListItem class '''
 
     def __init__(self, label='', label2='', iconImage='', thumbnailImage='', path='', offscreen=False):
@@ -253,7 +288,7 @@ class Window(object):
         ''' A stub implementation for the xbmcgui Window class getControl() method '''
         if controlID == 3014:
             return ControlProgress()
-        return ControlLabel()
+        return ControlLabel(0, 0, 10, 10, 'Label')
 
     def getProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class getProperty() method '''
@@ -285,7 +320,7 @@ class WindowXML(Window):
             isMedia=False
     ):
         ''' A stub constructor for the xbmcgui WindowXML class '''
-        super(WindowXML, self).__init__()  # pylint: disable=super-with-arguments
+        super(WindowXML, self).__init__()
 
 
 class WindowXMLDialog(WindowXML):
@@ -299,7 +334,7 @@ class WindowXMLDialog(WindowXML):
             defaultRes="720p"
     ):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
-        super(WindowXMLDialog, self).__init__(  # pylint: disable=super-with-arguments
+        super(WindowXMLDialog, self).__init__(
             xmlFilename,
             scriptPath,
             defaultSkin,
