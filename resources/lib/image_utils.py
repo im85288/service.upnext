@@ -84,8 +84,9 @@ def _calc_median(vals):
     return (vals[pivot] + vals[pivot - 1]) / 2
 
 
-def _fade_mask(size, level_start, level_stop, steps, power, box,  # pylint: disable=too-many-locals
-               _int=int, _max=max):
+def _fade_mask(size, level_start, level_stop, steps, power, box,  # pylint: disable=too-many-arguments, too-many-locals
+               _format=str.format, _int=int, _max=max,
+               _paste=Image.Image.paste):
     dimensions = len(box)
     if not dimensions:
         left = top = right = bottom = 0
@@ -122,12 +123,13 @@ def _fade_mask(size, level_start, level_stop, steps, power, box,  # pylint: disa
         level = level_start + _int(step_scale * level_scale)
 
         border = _precompute(
-            'BORDER_BOX,1,1,{0},{1},{2},{3}'.format(
+            _format(
+                'BORDER_BOX,1,1,{0},{1},{2},{3}',
                 padding_left, padding_top, padding_right, padding_bottom
             ), size
         )
 
-        element.paste(level, box=border['box'])
+        _paste(element, level, box=border['box'])
 
     element = apply_filter(element, 'GaussianBlur,{0}'.format(min(size) // 8))
     return element
@@ -159,8 +161,7 @@ def _histogram_rank(input_data, percentile, skip_levels=0):
     return target
 
 
-def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
-                _int=int, _float=float):
+def _precompute(method, size=None, debug=SETTINGS.detector_debug_save):
     element = _PRECOMPUTED.get(method)
     try:
         if element and size == getattr(element, 'size', element.get('size')):
@@ -169,8 +170,7 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
         pass
 
     element, _, args = method.partition(',')
-    args = [_float(arg) if '.' in arg else _int(arg) if arg else None
-            for arg in args.split(',')] if args else None
+    args = _to_numbers(args)
 
     if element == 'ALL_PASS_LUT':
         element = [255] * 256
@@ -178,20 +178,20 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
         debug = False
 
     elif element == 'BIT_DEPTH_LUT':
-        element = _bit_depth_lut(*args)
+        element = _bit_depth_lut(*args)  # pylint: disable=no-value-for-parameter
         debug = False
 
     elif element == 'BORDER_BOX':
-        element = _border_box(size, *args)
+        element = _border_box(size, *args)  # pylint: disable=no-value-for-parameter
         debug = False
 
     elif element == 'BORDER_MASK':
-        element = _border_mask(size, *args)
+        element = _border_mask(size, *args)  # pylint: disable=no-value-for-parameter
 
     elif element == 'FADE_MASK':
         # Split args to avoid Python2 syntax error in definition of _fade_mask
         args = args[:4] + [args[4:]]
-        element = _fade_mask(size, *args)
+        element = _fade_mask(size, *args)  # pylint: disable=no-value-for-parameter
 
     elif element == 'RankFilter':
         filter_size = args[0]
@@ -202,7 +202,7 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
     else:
         element = getattr(ImageFilter, element)
         if callable(element):
-            element = element(*args) if args else element()
+            element = element(*args)
 
     if debug:
         element.save('{0}_{1}.bmp'.format(
@@ -213,7 +213,8 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save,
     return element
 
 
-def _process_args(args, image, sentinel='~', _int=int):
+def _process_args(args, image, sentinel='~',
+                  _format=str.format, _int=int, _split=str.split):
     histogram = None
 
     for idx, arg in enumerate(args):
@@ -223,14 +224,14 @@ def _process_args(args, image, sentinel='~', _int=int):
         except TypeError:
             continue
 
-        prefix, placeholder, postfix = arg.split(sentinel)
+        prefix, placeholder, postfix = _split(arg, sentinel)
         placeholder = _int(placeholder)
 
         histogram = histogram if histogram else image.histogram()
         replacement = _histogram_rank(histogram, placeholder)
 
         if prefix or postfix:
-            replacement = '{0}{1}{2}'.format(prefix, placeholder, postfix)
+            replacement = _format('{0}{1}{2}', prefix, placeholder, postfix)
 
         args[idx] = replacement
 
@@ -242,32 +243,48 @@ def _precision(number, decimal_places=3):
     return int(number * factor) / factor
 
 
-def adaptive_filter(image, sampling, method, args=(), save_file=None):  # pylint: disable=too-many-locals
+def _to_numbers(args, _int=int, _float=float, _split=str.split):
+    if not args:
+        return []
+
+    return [
+        _float(arg) if '.' in arg else
+        _int(arg) if arg else None
+        for arg in _split(args, ',')
+    ]
+
+
+def adaptive_filter(image, sampling, method, args=(), save_file=None,  # pylint: disable=too-many-locals
+                    _crop=Image.Image.crop, _copy=Image.Image.copy,
+                    _format=str.format, _int=int, _paste=Image.Image.paste,
+                    _range=range, _save=Image.Image.save):
     segments, overlap, mask = sampling
 
-    crop_box = _precompute('BORDER_BOX,{0},{0},1'.format(segments), image.size)
+    crop_box = _precompute(
+        _format('BORDER_BOX,{0},{0},1', segments), image.size
+    )
     crop_box = crop_box['box']
-    cropped_image = image.crop(crop_box)
-    output = cropped_image.copy()
+    cropped_image = _crop(image, crop_box)
+    output = _copy(cropped_image)
 
     segment_width = output.size[0] // segments
     segment_height = output.size[1] // segments
 
-    left_border = int(overlap * segment_width)
-    top_border = int(overlap * segment_height)
+    left_border = _int(overlap * segment_width)
+    top_border = _int(overlap * segment_height)
     segment_border_box = _precompute(
-        'BORDER_BOX,1,1,{0},{1}'.format(-left_border, -top_border),
+        _format('BORDER_BOX,1,1,{0},{1}', -left_border, -top_border),
         (segment_width, segment_height)
     )
     segment_border_box = segment_border_box['box']
 
     mask = _precompute(
-        'FADE_MASK,0,255,10,0.33,{0},{1}'.format(left_border, top_border),
+        _format('FADE_MASK,0,255,10,0.33,{0},{1}', left_border, top_border),
         (segment_width + 2 * left_border, segment_height + 2 * top_border)
     ) if mask else None
 
-    for vertical_idx in range(segments):
-        for horizontal_idx in range(segments):
+    for vertical_idx in _range(segments):
+        for horizontal_idx in _range(segments):
             horizontal_position = horizontal_idx * segment_width
             vertical_position = vertical_idx * segment_height
             new_segment_location = [
@@ -276,17 +293,18 @@ def adaptive_filter(image, sampling, method, args=(), save_file=None):  # pylint
                 segment_border_box[2] + horizontal_position,
                 segment_border_box[3] + vertical_position,
             ]
-            new_segment = cropped_image.crop(new_segment_location)
+            new_segment = _crop(cropped_image, new_segment_location)
             new_segment = method(new_segment, *args)
 
-            output.paste(new_segment, box=new_segment_location, mask=mask)
+            _paste(output, new_segment, box=new_segment_location, mask=mask)
             if save_file and SETTINGS.detector_debug_save:
-                output.save('{0}{1}[{2}.{3}].bmp'.format(
+                _save(output, _format(
+                    '{0}{1}[{2}.{3}].bmp',
                     SETTINGS.detector_save_path, save_file,
                     vertical_idx, horizontal_idx
                 ))
 
-    image.paste(output, box=crop_box)
+    _paste(image, output, box=crop_box)
     return image
 
 
@@ -374,7 +392,10 @@ def apply_filter(image, method, extent=None, original=None, output_op=None):
 
 
 def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=too-many-locals
-                       filter_args=(None, ), save_file=None):
+                       filter_args=(None, ), save_file=None,
+                       _draw=ImageDraw.Draw, _format=str.format,
+                       _new=Image.new, _point=ImageDraw.ImageDraw.point,
+                       _save=Image.Image.save, _tuple=tuple):
     aggregate_image = apply_filter(image, *filter_args)
     data = enumerate(zip(image.getdata(), aggregate_image.getdata()))
     inclusions = enumerate(rules[0])
@@ -382,20 +403,21 @@ def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=to
     width = image.size[0]
 
     if save_file and SETTINGS.detector_debug_save:
-        data = tuple(data)
-        inclusions = tuple(inclusions)
-        exclusions = tuple(exclusions)
+        data = _tuple(data)
+        inclusions = _tuple(inclusions)
+        exclusions = _tuple(exclusions)
         rules = inclusions + exclusions
 
-        aggregate_image.save('{0}{1}[{2}].bmp'.format(
+        aggregate_image.save(_format(
+            '{0}{1}[{2}].bmp',
             SETTINGS.detector_save_path, save_file,
             filter_args[0]
         ))
 
         for idx, (local_min, local_max, percent_lo, percent_hi) in rules:
-            debug_output = Image.new('L', image.size, 0)
-            draw_canvas = ImageDraw.Draw(debug_output)
-            draw_canvas.point([
+            debug_output = _new('L', image.size, 0)
+            draw_canvas = _draw(debug_output)
+            _point(draw_canvas, [
                 (idx % width, idx // width)
                 for idx, (pixel, aggregate) in data
                 if (local_max >= aggregate > local_min)
@@ -404,19 +426,20 @@ def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=to
                     or percent_hi >= pixel / aggregate > percent_lo
                 )
             ], fill=255)
-            debug_output.save('{0}{1}[{2}][{3}].bmp'.format(
+            _save(debug_output, _format(
+                '{0}{1}[{2}][{3}].bmp',
                 SETTINGS.detector_save_path, save_file,
                 filter_args[0],
                 rules[idx]
             ))
 
     if output != 'FILTER':
-        image = Image.new('L', image.size, 0)
+        image = _new('L', image.size, 0)
 
     if output == 'THRESHOLD':
-        draw_canvas = ImageDraw.Draw(image)
+        draw_canvas = _draw(image)
         _ = [[
-            draw_canvas.point((idx % width, idx // width), fill=pixel)
+            _point(draw_canvas, (idx % width, idx // width), fill=pixel)
             for idx, (pixel, aggregate) in data
             if (local_max >= aggregate > local_min)
             and (
@@ -435,9 +458,9 @@ def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=to
         ] for _, (local_min, local_max, percent_lo, percent_hi) in inclusions]
 
     elif output[:6] == 'FILTER':
-        draw_canvas = ImageDraw.Draw(image)
+        draw_canvas = _draw(image)
         _ = [[
-            draw_canvas.point((idx % width, idx // width), fill=aggregate)
+            _point(draw_canvas, (idx % width, idx // width), fill=aggregate)
             for idx, (pixel, aggregate) in data
             if (local_max >= aggregate > local_min)
             and (
@@ -456,9 +479,9 @@ def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=to
         ] for _, (local_min, local_max, percent_lo, percent_hi) in inclusions]
 
     else:  # if output == 'MASK':
-        draw_canvas = ImageDraw.Draw(image)
+        draw_canvas = _draw(image)
         _ = [
-            draw_canvas.point([
+            _point(draw_canvas, [
                 (idx % width, idx // width)
                 for idx, (pixel, aggregate) in data
                 if (local_max >= aggregate > local_min)
@@ -482,9 +505,10 @@ def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=to
     return image
 
 
-def detail_reduce(image, base_image, reduction=25, _mul=ImageChops.multiply):
+def detail_reduce(image, base_image, reduction=25,
+                  _histogram=Image.Image.histogram, _mul=ImageChops.multiply):
     total_pixels = image.size[0] * image.size[1]
-    histogram = base_image.histogram()
+    histogram = _histogram(base_image)
     if _histogram_rank(histogram, reduction, 0) < 16:
         reduction = 0
     significant_pixels = total_pixels - histogram[0]
@@ -492,7 +516,7 @@ def detail_reduce(image, base_image, reduction=25, _mul=ImageChops.multiply):
 
     for _ in range(10):
         image = _mul(image, base_image)
-        new_significant_pixels = total_pixels - image.histogram()[0]
+        new_significant_pixels = total_pixels - _histogram(image)[0]
         if (new_significant_pixels <= target or
                 0.9 * significant_pixels < new_significant_pixels):
             break
@@ -613,22 +637,27 @@ def posterise(image, bit_depth):
 
 
 def process(data, queue, save_file=None, debug=SETTINGS.detector_debug_save,
-            _callable=callable, _isinstance=isinstance):
+            _append=list.append, _callable=callable, _copy=Image.Image.copy,
+            _enumerate=enumerate, _float=float, _format=str.format, _int=int,
+            _isinstance=isinstance, _list=list, _pop=list.pop, _str=str,
+            _save=Image.Image.save, _tuple=tuple):
     _PRECOMPUTED['_STACK'] = []
     if _isinstance(data, Image.Image):
         data = data.copy()
     debug = debug and save_file
 
     for step, args in enumerate(queue):
-        method = args.pop(0)
+        method = _pop(args, 0)
 
-        args_enum = enumerate(args)
+        args_enum = _enumerate(args)
         if debug:
-            args_enum = tuple(args_enum)
-            save_file = '{0}_{1}_{2}'.format(debug, step, method.__name__)
+            args_enum = _tuple(args_enum)
+            save_file = _format('{0}_{1}_{2}', debug, step, method.__name__)
             if args:
-                save_file = '{1}{0}'.format([
-                    arg if _isinstance(arg, (int, float, list, str, tuple))
+                save_file = _format('{1}{0}', [
+                    arg if _isinstance(
+                        arg, (_int, _float, _list, _str, _tuple)
+                    )
                     else arg.__name__ if _callable(arg)
                     else type(arg).__name__
                     for _, arg in args_enum
@@ -644,22 +673,22 @@ def process(data, queue, save_file=None, debug=SETTINGS.detector_debug_save,
             args[idx] = args[idx]()
 
         output = method(data, *args)
-        _PRECOMPUTED['_STACK'].append(output)
+        _append(_PRECOMPUTED['_STACK'], output)
 
         if _isinstance(output, Image.Image):
-            data = output.copy()
+            data = _copy(output)
         elif output:
             data = output
             continue
         else:
             continue
 
-        if not save_file:
+        if not debug:
             continue
 
         try:
-            data.save('{0}{1}.bmp'.format(
-                SETTINGS.detector_save_path, save_file
+            _save(data, _format(
+                '{0}{1}.bmp', SETTINGS.detector_save_path, save_file
             ))
         except (IOError, OSError):
             pass
