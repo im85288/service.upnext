@@ -711,6 +711,7 @@ class UpNextDetector(object):
 
         self.queue.task_done()
 
+    @utils.Profiler(enabled=SETTINGS.detector_debug, lazy=True)
     def _worker(self):
         """Detection loop captures Kodi render buffer every 1s to create an
            image hash. Hash is compared to the previous hash to determine
@@ -721,9 +722,6 @@ class UpNextDetector(object):
 
            A consecutive number of matching frames must be detected to confirm
            that end credits are playing."""
-
-        if SETTINGS.detector_debug:
-            profiler = utils.Profiler()
 
         while not (self._sigterm.is_set() or self._sigstop.is_set()):
             with self.player as check_fail:
@@ -786,8 +784,6 @@ class UpNextDetector(object):
                         '{1:.1f}% similar to other episodes'
                     ).format(stats['previous'], stats['episodes'])
                 )
-
-                self.log(profiler.get_stats(reuse=True))
 
             # Store current hash for comparison with next video frame
             self.hashes.data[self.hash_index['current']] = image_hash

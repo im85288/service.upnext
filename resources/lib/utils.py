@@ -19,31 +19,61 @@ import statichelper
 class Profiler(object):
     """Class used to profile a block of code"""
 
-    __slots__ = ('_profiler', 'name', )
+    __slots__ = ('__weakref__', '_enabled', '_profiler', '_reuse', 'name', )
 
-    from cProfile import Profile
-    from pstats import Stats
+    from cProfile import Profile as _Profile
+    from pstats import Stats as _Stats
     try:
-        from StringIO import StringIO
+        from StringIO import StringIO as _StringIO
     except ImportError:
-        from io import StringIO
-    from functools import wraps
+        from io import StringIO as _StringIO
+    from functools import wraps as _wraps
+    from weakref import proxy as _proxy, ref as _ref
 
-    def __init__(self, name=__name__):
+    _instances = set()
+
+    def __new__(cls, *args, **kwargs):
+        self = super(Profiler, cls).__new__(cls)
+        cls.__init__(self, *args, **kwargs)
+        cls._instances.add(self)
+        return cls._proxy(self)
+
+    def __init__(self, enabled=True, lazy=False, name=__name__, reuse=False):
+        self._enabled = enabled
+        self._profiler = None
+        self._reuse = reuse
         self.name = name
-        self._create_profiler()
+
+        if enabled and not lazy:
+            self._create_profiler()
+
+    def __del__(self):
+        Profiler._instances.discard(self)
 
     def __enter__(self):
-        return self
+        if not self._enabled:
+            return
+
+        if not self._profiler:
+            self._create_profiler()
 
     def __exit__(self, exc_type, exc_value, traceback):
-        log(self.get_stats(reuse=False), name=self.name, level=LOGDEBUG)
+        if not self._enabled:
+            return
 
-    @classmethod
-    def profile(cls, func):
+        log(self.get_stats(reuse=self._reuse), name=self.name, level=LOGDEBUG)
+        if not self._reuse:
+            self.__del__()
+
+    def __call__(self, func=None, name=__name__, reuse=False):
         """Decorator used to profile function calls"""
 
-        @cls.wraps(func)
+        if not func:
+            self._reuse = reuse
+            self.name = name
+            return self
+
+        @Profiler._wraps(func)
         def wrapper(*args, **kwargs):
             """Wrapper to:
                1) create a new Profiler instance;
@@ -74,29 +104,41 @@ class Profiler(object):
             else:
                 name = func.__name__
 
-            with cls(name):
+            self.name = name
+            with self:
                 result = func(*args, **kwargs)
 
             return result
 
+        if not self._enabled:
+            self.__del__()
+            return func
         return wrapper
 
     def _create_profiler(self):
-        self._profiler = self.Profile()
+        self._profiler = self._Profile()
         self._profiler.enable()
 
     def disable(self):
-        self._profiler.disable()
+        if self._profiler:
+            self._profiler.disable()
 
-    def enable(self):
-        self._profiler.enable()
+    def enable(self, flush=False):
+        self._enabled = True
+        if flush or not self._profiler:
+            self._create_profiler()
+        else:
+            self._profiler.enable()
 
     def get_stats(self, flush=True, reuse=False):
+        if not (self._enabled and self._profiler):
+            return None
+
         self.disable()
 
-        output_stream = self.StringIO()
+        output_stream = self._StringIO()
         try:
-            self.Stats(
+            self._Stats(
                 self._profiler,
                 stream=output_stream
             ).strip_dirs().sort_stats('cumulative').print_stats(20)
@@ -106,15 +148,9 @@ class Profiler(object):
         output = output_stream.getvalue()
         output_stream.close()
 
-        if not reuse:
-            # If profiler is not being reused then do nothing
-            pass
-        elif flush:
-            # If stats are flushed then create a new profiler
-            self._create_profiler()
-        else:
-            # If stats are accumulating then re-enable existing profiler
-            self.enable()
+        if reuse:
+            # If stats are accumulating then enable existing/new profiler
+            self.enable(flush)
 
         return output
 
