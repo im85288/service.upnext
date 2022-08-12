@@ -358,7 +358,7 @@ class UpNextPopupHandler(object):
         # Wait until execution has finished to ensure references/resources can
         # be safely released. Can't use self._running.wait(5) as popuphandler
         # does not run in a separate thread even if stop() can.
-        timeout = 1
+        timeout = 5
         wait_time = 0.1
         while self._running.is_set() and not utils.wait(wait_time):
             timeout -= wait_time
