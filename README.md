@@ -1,8 +1,8 @@
-[![GitHub release](https://img.shields.io/github/release/im85288/service.upnext.svg)](https://github.com/im85288/service.upnext/releases)
-[![CI](https://github.com/im85288/service.upnext/workflows/CI/badge.svg)](https://github.com/im85288/service.upnext/actions?query=workflow:CI)
-[![Codecov status](https://img.shields.io/codecov/c/github/im85288/service.upnext/master)](https://codecov.io/gh/im85288/service.upnext/branch/master)
+[![GitHub release](https://img.shields.io/github/release/MoojMidge/service.upnext.svg)](https://github.com/MoojMidge/service.upnext/releases)
+[![CI](https://github.com/MoojMidge/service.upnext/workflows/CI/badge.svg)](https://github.com/MoojMidge/service.upnext/actions?query=workflow:CI)
+[![Codecov status](https://img.shields.io/codecov/c/github/MoojMidge/service.upnext/master)](https://codecov.io/gh/MoojMidge/service.upnext/branch/master)
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv2-yellow.svg)](https://opensource.org/licenses/GPL-2.0)
-[![Contributors](https://img.shields.io/github/contributors/im85288/service.upnext.svg)](https://github.com/im85288/service.upnext/graphs/contributors)
+[![Contributors](https://img.shields.io/github/contributors/MoojMidge/service.upnext.svg)](https://github.com/MoojMidge/service.upnext/graphs/contributors)
 
 # Up Next - Proposes to play the next episode automatically
 
