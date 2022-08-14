@@ -207,7 +207,8 @@ class UpNextDetector(object):
 
         self.match_counts = {
             'hits': 0,
-            'misses': 0
+            'misses': 0,
+            'detected': False
         }
         self._lock = utils.create_lock()
         self._init_hashes()
@@ -488,6 +489,10 @@ class UpNextDetector(object):
                 self.hashes.data.get(self.hash_index['credits_large']),
                 image_hash,
                 filtered_hash
+            ), self._hash_similarity(
+                self.hashes.data.get(self.hash_index['credits_full']),
+                image_hash,
+                filtered_hash
             ))
 
             # Estimate of detection relevance
@@ -583,6 +588,7 @@ class UpNextDetector(object):
             # Representative end credits hashes
             'credits_small': (0, 0, constants.UNDEFINED),
             'credits_large': (0, 1, constants.UNDEFINED),
+            'credits_full': (0, 2, constants.UNDEFINED),
             # Other episodes hash
             'episodes': None,
             # Detected end credits timestamp from end of file
@@ -610,6 +616,9 @@ class UpNextDetector(object):
                 self.hash_index['credits_large']: self._generate_initial_hash(
                     *hash_size,
                     pad_height=(hash_size[1] // 8)
+                ),
+                self.hash_index['credits_full']: self._generate_initial_hash(
+                    *hash_size
                 ),
             },
         )
@@ -763,10 +772,11 @@ class UpNextDetector(object):
                 ))
 
                 self._print_hashes(
-                    [self.hashes.data.get(self.hash_index['credits_small']),
-                     filtered_hash,
+                    [filtered_hash,
                      expanded_hash,
-                     self.hashes.data.get(self.hash_index['credits_large'])],
+                     self.hashes.data.get(self.hash_index['credits_small']),
+                     self.hashes.data.get(self.hash_index['credits_large']),
+                     self.hashes.data.get(self.hash_index['credits_full'])],
                     size=self.hashes.hash_size,
                     prefix=(
                         '{0:.1f}% similar to typical credits, '
