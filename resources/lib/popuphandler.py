@@ -16,6 +16,7 @@ class UpNextPopupHandler(object):
         'state',
         'popup',
         '_running',
+        '_sigcont',
         '_sigstop',
         '_sigterm',
     )
@@ -27,6 +28,7 @@ class UpNextPopupHandler(object):
         self.state = state
         self.popup = None
         self._running = utils.create_event()
+        self._sigcont = utils.create_event()
         self._sigstop = utils.create_event()
         self._sigterm = utils.create_event()
 
@@ -221,9 +223,11 @@ class UpNextPopupHandler(object):
         # Watching? popup was shown (to prevent unwanted playback that can
         # occur if fast forwarding through popup or if race condition occurs
         # between player starting and popup terminating)
-        keep_playing = popup_state['show_upnext'] and not popup_state['stop']
+        keep_playing = not popup_state['stop'] and (
+            popup_state['show_upnext'] or self._sigcont.is_set()
+        )
         has_next_item = False
-        restart = False
+        restart = self._sigcont.is_set()
 
         # Popup closed prematurely
         if popup_state['abort']:
@@ -341,25 +345,32 @@ class UpNextPopupHandler(object):
             if not play_next and self.state.queued:
                 self.state.queued = api.dequeue_next_item()
 
-            # Run again if shuffle started to get new random episode
+            # Run again if shuffle started to get new random episode, or
+            # restart triggered
             if not restart:
                 break
+            if self._sigcont.is_set():
+                self._sigstop.clear()
+                self._sigcont.clear()
 
         # Reset signals
         self.log('Stopped')
+        self._sigcont.clear()
         self._sigstop.clear()
         self._sigterm.clear()
         self._running.clear()
 
         return has_next_item
 
-    def stop(self, terminate=False):
+    def stop(self, restart=False, terminate=False):
         # Set terminate or stop signals if popuphandler is running
         if self._running.is_set():
             if terminate:
                 self._sigterm.set()
             else:
                 self._sigstop.set()
+                if restart:
+                    self._sigcont.set()
 
         # Wait until execution has finished to ensure references/resources can
         # be safely released. Can't use self._running.wait(5) as popuphandler
@@ -374,6 +385,7 @@ class UpNextPopupHandler(object):
             if self._has_popup():
                 self.log('Popup taking too long to close', utils.LOGWARNING)
             else:
+                self._sigcont.clear()
                 self._sigstop.clear()
                 self._sigterm.clear()
                 self._running.clear()

@@ -219,7 +219,10 @@ class UpNextMonitor(xbmc.Monitor, object):
 
     def _event_handler_upnext_trigger(self, **_kwargs):
         # Remove remnants from previous operations
-        self._stop_popuphandler()
+        self._stop_popuphandler(restart=True)
+        # If existing popuphandler is running, allow it to restart
+        if self.popuphandler:
+            return
 
         # Get playback details and use VideoPlayer.Time infolabel over
         # xbmc.Player.getTime() as the infolabel appears to update quicker
@@ -420,14 +423,14 @@ class UpNextMonitor(xbmc.Monitor, object):
                 self.detector = None
                 self.log('Cleanup detector')
 
-    def _stop_popuphandler(self, terminate=False):
+    def _stop_popuphandler(self, restart=False, terminate=False):
         if self._popuphandler:
             self._popuphandler.cancel()
             del self._popuphandler
             self._popuphandler = None
 
         if self.popuphandler:
-            self.popuphandler.stop(terminate=terminate)
+            self.popuphandler.stop(restart=restart, terminate=terminate)
             if terminate:
                 del self.popuphandler
                 self.popuphandler = None
