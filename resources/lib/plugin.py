@@ -46,7 +46,7 @@ def generate_listing(addon_handle, addon_id, items):  # pylint: disable=unused-a
         if not content:
             continue
 
-        url = 'plugin://{0}/{1}'.format(addon_id, item)
+        url = 'plugin://{0}{1}'.format(addon_id, item)
         listitem = xbmcgui.ListItem(
             label=content.get('label', ''), path=url, offscreen=True
         )
@@ -86,7 +86,7 @@ def parse_plugin_url(url):
         return None, None, None
 
     addon_id = parsed_url.netloc
-    addon_path = parsed_url.path
+    addon_path = parsed_url.path.rstrip('/') or '/'
     addon_args = parse_qs(parsed_url.query)
 
     return addon_id, addon_path, addon_args
@@ -124,9 +124,6 @@ def play_media(addon_handle, addon_id, **kwargs):
 def run(argv):
     addon_handle = int(argv[1])
     addon_id, addon_path, addon_args = parse_plugin_url(argv[0] + argv[2])
-    if not addon_path:
-        return False
-
     content = PLUGIN_CONTENT.get(addon_path)
     if not content:
         return False
