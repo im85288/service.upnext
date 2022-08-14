@@ -334,12 +334,12 @@ class UpNextPopupHandler(object):
             self.state.playing_next = play_next
             self.state.keep_playing = keep_playing
 
-            # Dequeue and stop playback if not playing next file
-            if not play_next and self.state.queued:
-                self.state.queued = api.dequeue_next_item()
+            # Stop playback and dequeue if not playing next file
             if not keep_playing:
                 self.log('Stopping playback', utils.LOGINFO)
                 self.player.stop()
+            if not play_next and self.state.queued:
+                self.state.queued = api.dequeue_next_item()
 
             # Run again if shuffle started to get new random episode
             if not restart:
