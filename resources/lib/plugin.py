@@ -98,27 +98,22 @@ def play_media(addon_handle, addon_id, **kwargs):
         return False
 
     current_episode = api.get_from_library(dbid)
-    if not current_episode:
-        xbmcplugin.setResolvedUrl(
-            addon_handle, False, upnext.create_listitem({})
-        )
-        return False
-
     upnext_info = generate_library_plugin_data(
         current_episode=current_episode,
         addon_id=addon_id
-    )
-    if not upnext_info:
-        xbmcplugin.setResolvedUrl(
-            addon_handle, False, upnext.create_listitem({})
-        )
-        return False
+    ) if current_episode else None
+
+    if upnext_info:
+        resolved = True
+        upnext.send_signal(addon_id, upnext_info)
+    else:
+        resolved = False
+        upnext_info = {'current_episode': upnext.create_listitem({})}
 
     xbmcplugin.setResolvedUrl(
-        addon_handle, True, upnext_info['current_episode']
+        addon_handle, resolved, upnext_info['current_episode']
     )
-    upnext.send_signal(addon_id, upnext_info)
-    return True
+    return resolved
 
 
 def run(argv):
