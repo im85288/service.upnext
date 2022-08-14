@@ -198,11 +198,13 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save):
         max_size = filter_size * filter_size
         rank = min(max_size - 1, int(max_size * args[1] / 100))
         element = ImageFilter.RankFilter(filter_size, rank)
+        debug = False
 
     else:
         element = getattr(ImageFilter, element)
         if callable(element):
             element = element(*args)
+        debug = False
 
     if debug:
         element.save('{0}_{1}.bmp'.format(
