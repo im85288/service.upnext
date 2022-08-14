@@ -13,10 +13,10 @@ def log(msg, level=utils.LOGWARNING):
     utils.log(msg, name=__name__, level=level)
 
 
-def _copy_episode_details(upnext_info):
+def _copy_episode_details(upnext_data):
     # If next episode information is not provided, fake it
-    if not upnext_info.get('next_episode'):
-        episode = upnext_info['current_episode']
+    if not upnext_data.get('next_episode'):
+        episode = upnext_data['current_episode']
         episode['episodeid'] = constants.UNDEFINED
         episode['art'] = {}
         # Next provided episode may not be the next consecutive episode so we
@@ -33,11 +33,11 @@ def _copy_episode_details(upnext_info):
         episode['rating'] = 0
         episode['firstaired'] = ''
         episode['runtime'] = 0
-        upnext_info['next_episode'] = episode
+        upnext_data['next_episode'] = episode
 
     # If current episode information is not provided, fake it
-    elif not upnext_info.get('current_episode'):
-        episode = upnext_info['next_episode']
+    elif not upnext_data.get('current_episode'):
+        episode = upnext_data['next_episode']
         episode['episodeid'] = constants.UNDEFINED
         episode['art'] = {}
         episode['title'] = ''
@@ -48,9 +48,9 @@ def _copy_episode_details(upnext_info):
         episode['rating'] = 0
         episode['firstaired'] = ''
         episode['runtime'] = 0
-        upnext_info['current_episode'] = episode
+        upnext_data['current_episode'] = episode
 
-    return upnext_info
+    return upnext_data
 
 
 def create_listitem(episode):
@@ -109,10 +109,15 @@ def send_signal(sender, upnext_info):
         return
 
     # Extract ListItem or InfoTagVideo details for use by UpNext
+    upnext_data = {}
     for key, val in upnext_info.items():
         thumb = ''
         fanart = ''
         tvshowid = str(constants.UNDEFINED)
+
+        if key in required_plugin_info:
+            upnext_data[key] = val
+            continue
 
         if isinstance(val, xbmcgui.ListItem):
             thumb = val.getArt('thumb')
@@ -137,7 +142,7 @@ def send_signal(sender, upnext_info):
         # Prefer user rating over scraped rating
         rating = val.getUserRating() or val.getRating()
 
-        upnext_info[key] = {
+        upnext_data[key] = {
             'episodeid': val.getDbId(),
             'tvshowid': tvshowid,
             'title': val.getTitle(),
@@ -155,11 +160,11 @@ def send_signal(sender, upnext_info):
             'runtime': runtime
         }
 
-    upnext_info = _copy_episode_details(upnext_info)
+    upnext_data = _copy_episode_details(upnext_data)
 
     utils.event(
         sender=sender,
         message='upnext_data',
-        data=upnext_info,
+        data=upnext_data,
         encoding='base64'
     )
