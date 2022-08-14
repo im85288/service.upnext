@@ -232,13 +232,12 @@ def get_from_playlist(position, unwatched_only=False):
         utils.get_int(item, 'id')
     )
     item['tvshowid'] = utils.get_int(item, 'tvshowid')
-    item['showtitle'] = item.get('showtitle', constants.MIXED_PLAYLIST)
     # If missing season/episode, change to empty string to avoid episode
     # formatting issues ("S-1E-1") in UpNext popup
     if utils.get_int(item, 'season') == constants.UNDEFINED:
         item['season'] = ''
     if utils.get_int(item, 'episode') == constants.UNDEFINED:
-        item['episode'] = position
+        item['episode'] = ''
 
     # Store current playlist position for later use
     item['playlist_position'] = position

@@ -247,6 +247,14 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
             current_item = api.get_from_playlist(playlist_position - 1)
             source = 'playlist'
 
+            if current_item:
+                if not current_item.get('showtitle'):
+                    current_item['showtitle'] = constants.MIXED_PLAYLIST
+                if not current_item['season']:
+                    current_item['season'] = 0
+                if not current_item['episode']:
+                    current_item['episode'] = playlist_position
+
         elif media_type == 'episode':
             current_item = self._get_library_now_playing()
             source = 'library'
