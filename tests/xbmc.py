@@ -306,6 +306,15 @@ def _filter_walker(filter_object, seeking):
                 return found
     return None
 
+def _application_getproperties(params):
+    if params.get('properties') == ['version']:
+        return json.dumps(dict(
+            id=1,
+            jsonrpc='2.0',
+            result=dict(version=dict(major=(19 if __KODI_MATRIX__ else 18)))
+        ))
+    return False
+
 
 def _settings_getsettingvalue(params):
     key = params.get('setting')
@@ -471,6 +480,7 @@ def _playlist_remove(params):  # pylint: disable=unused-argument
 
 
 _JSONRPC_methods = {
+    'Application.GetProperties': _application_getproperties,
     'Settings.GetSettingValue': _settings_getsettingvalue,
     'Player.GetActivePlayers': _player_getactiveplayers,
     'Player.GetProperties': _player_getproperties,

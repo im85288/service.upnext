@@ -168,6 +168,18 @@ def abort_requested():
     return xbmc.Monitor().abortRequested()
 
 
+def jsonrpc(**kwargs):
+    """Perform JSONRPC calls"""
+
+    response = not kwargs.pop('no_response', False)
+    if response and 'id' not in kwargs:
+        kwargs.update(id=0)
+    if 'jsonrpc' not in kwargs:
+        kwargs.update(jsonrpc='2.0')
+    result = xbmc.executeJSONRPC(json.dumps(kwargs))
+    return json.loads(result) if response else result
+
+
 def get_addon(addon_id=None, retry_attempts=3):
     """Return addon instance"""
 
@@ -194,7 +206,10 @@ def get_addon(addon_id=None, retry_attempts=3):
 
 
 ADDON = get_addon(constants.ADDON_ID)
-_KODI_VERSION = float(xbmc.getInfoLabel('System.BuildVersion').split()[0])
+_KODI_MAJOR_VERSION = jsonrpc(
+    method='Application.GetProperties',
+    params={'properties': ['version']}
+).get('result').get('version').get('major')
 
 
 def get_addon_info(key):
@@ -218,7 +233,7 @@ def get_addon_path():
 def supports_python_api(version):
     """Return True if Kodi supports target Python API version"""
 
-    return _KODI_VERSION >= version
+    return _KODI_MAJOR_VERSION >= version
 
 
 def get_property(key, window_id=constants.WINDOW_HOME):
@@ -435,18 +450,6 @@ def log(msg, name=__name__, level=LOGINFO):
     msg = '[{0}] {1} -> {2}'.format(get_addon_id(), name, msg)
     # Convert back for older Kodi versions
     xbmc.log(statichelper.from_unicode(msg), level=level)
-
-
-def jsonrpc(**kwargs):
-    """Perform JSONRPC calls"""
-
-    response = not kwargs.pop('no_response', False)
-    if response and 'id' not in kwargs:
-        kwargs.update(id=0)
-    if 'jsonrpc' not in kwargs:
-        kwargs.update(jsonrpc='2.0')
-    result = xbmc.executeJSONRPC(json.dumps(kwargs))
-    return json.loads(result) if response else result
 
 
 def get_global_setting(setting):
