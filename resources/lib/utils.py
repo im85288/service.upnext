@@ -48,7 +48,7 @@ class Profiler(object):
             self._create_profiler()
 
     def __del__(self):
-        Profiler._instances.discard(self)
+        self.__class__._instances.discard(self)  # pylint: disable=protected-access
 
     def __enter__(self):
         if not self._enabled:
@@ -61,7 +61,8 @@ class Profiler(object):
         if not self._enabled:
             return
 
-        log(self.get_stats(reuse=self._reuse), name=self.name, level=LOGDEBUG)
+        log('Profiling stats: {0}'.format(self.get_stats(reuse=self._reuse)),
+            name=self.name, level=LOGDEBUG)
         if not self._reuse:
             self.__del__()
 
@@ -73,7 +74,7 @@ class Profiler(object):
             self.name = name
             return self
 
-        @Profiler._wraps(func)
+        @self.__class__._wraps(func)  # pylint: disable=protected-access
         def wrapper(*args, **kwargs):
             """Wrapper to:
                1) create a new Profiler instance;
