@@ -557,7 +557,7 @@ class UpNextDetector(object):
         with self._lock:
             self.match_counts['hits'] += 1
             self.match_counts['misses'] = 0
-            self.match_counts['detected'] = (
+            self.match_counts['detected'] = self.match_counts['detected'] or (
                 self.match_counts['hits'] >= self.match_number
             )
 
