@@ -60,7 +60,14 @@ def generate_listing(addon_handle, addon_id, items):  # pylint: disable=unused-a
 
 
 def generate_next_episodes_list(addon_handle, addon_id, **kwargs):  # pylint: disable=unused-argument
-    pass
+    listing = []
+    next_episodes = api.get_upnext_from_library()
+    for episode in next_episodes:
+        url = episode['file']
+        listitem = upnext.create_listitem(episode)
+        listing += ((url, listitem, False),)
+
+    return listing
 
 
 def generate_next_movies_list(addon_handle, addon_id, **kwargs):  # pylint: disable=unused-argument

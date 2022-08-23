@@ -56,10 +56,14 @@ def _copy_episode_details(upnext_data):
 def create_listitem(episode):
     """Create a xbmcgui.ListItem from provided episode details"""
 
+    show_title = episode.get('showtitle', '')
+    episode_title = episode.get('title', '')
+    file_path = episode.get('file', '')
+
     kwargs = {
-        'label': episode.get('title', ''),
-        'label2': '',
-        'path': episode.get('file', '')
+        'label': episode_title,
+        'label2': show_title,
+        'path': file_path
     }
     if utils.supports_python_api(18):
         kwargs['offscreen'] = True
@@ -69,10 +73,10 @@ def create_listitem(episode):
         type='Video',
         infoLabels={
             'dbid': episode.get('episodeid', constants.UNDEFINED),
-            'path': episode.get('file', ''),
-            'title': episode.get('title', ''),
+            'path': file_path,
+            'title': episode_title,
             'plot': episode.get('plot', ''),
-            'tvshowtitle': episode.get('showtitle', ''),
+            'tvshowtitle': show_title,
             'season': episode.get('season', constants.UNDEFINED),
             'episode': episode.get('episode', constants.UNDEFINED),
             'rating': str(float(episode.get('rating', 0.0))),
@@ -85,12 +89,19 @@ def create_listitem(episode):
             'mediatype': 'episode'
         }
     )
+
+    resume = episode.get('resume', {})
+    listitem.setProperty('resumetime', str(resume.get('position')))
+    listitem.setProperty('totaltime', str(resume.get('total')))
+
     listitem.setProperty(
         'tvshowid', str(episode.get('tvshowid', constants.UNDEFINED))
     )
+
     listitem.setArt(episode.get('art', {}))
+
     listitem.setProperty('isPlayable', 'true')
-    listitem.setPath(episode.get('file', ''))
+    listitem.setPath(file_path)
     if utils.supports_python_api(18):
         listitem.setIsFolder(False)
 

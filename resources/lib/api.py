@@ -634,3 +634,121 @@ def handle_just_watched(episodeid, playcount,
         if 'resume' in params else '',
         '' if params else ', no change'
     ), utils.LOGDEBUG)
+
+
+def get_upnext_from_library(limit=25):
+    """Function to get in-progress and next episode details from Kodi library"""
+
+    limits = {
+        'start': 0,
+        'end': limit
+    }
+    limit_one = {
+        'start': 0,
+        'end': 1
+    }
+
+    filter_regular_season = {
+        'field': 'season',
+        'operator': 'greaterthan',
+        'value': '0'
+    }
+    filter_inprogress = {
+        'field': 'inprogress',
+        'operator': 'true',
+        'value': ''
+    }
+    filter_watched = {
+        'field': 'playcount',
+        'operator': 'greaterthan',
+        'value': '0'
+    }
+    filter_unwatched = {
+        'field': 'playcount',
+        'operator': 'lessthan',
+        'value': '1'
+    }
+    filter_this_season = {
+        'field': 'season',
+        'operator': 'is',
+        'value': '-1'
+    }
+    filter_next_season = {
+        'field': 'season',
+        'operator': 'greaterthan',
+        'value': '-1'
+    }
+    filter_next_episode = {
+        'field': 'episode',
+        'operator': 'greaterthan',
+        'value': '-1'
+    }
+
+    sort_lastplayed = {
+        'method': 'lastplayed',
+        'order': 'descending'
+    }
+    sort_episode = {
+        'method': 'episode',
+        'order': 'ascending'
+    }
+
+    inprogress = utils.jsonrpc(
+        method='VideoLibrary.GetTVShows',
+        params={
+            'sort': sort_lastplayed,
+            'limits': limits,
+            'filter': filter_inprogress
+        }
+    )
+    inprogress = inprogress.get('result', {}).get('tvshows', [])
+
+    next_episodes = []
+    for tvshow in inprogress:
+        current_episode = utils.jsonrpc(
+            method='VideoLibrary.GetEpisodes',
+            params={
+                'tvshowid': tvshow['tvshowid'],
+                'properties': ['season', 'episode'],
+                'sort': sort_lastplayed,
+                'limits': limit_one,
+                'filter': {'and': [
+                    filter_regular_season,
+                    {'or': [filter_inprogress, filter_watched]}
+                ]}
+            }
+        )
+        current_episode = current_episode.get('result', {}).get('episodes')
+        if not current_episode:
+            continue
+
+        current_episode = current_episode[0]
+        current_season = str(current_episode['season'])
+        current_episode = str(current_episode['episode'] - 1)
+        filter_this_season['value'] = current_season
+        filter_next_season['value'] = current_season
+        filter_next_episode['value'] = current_episode
+
+        next_episode = utils.jsonrpc(
+            method='VideoLibrary.GetEpisodes',
+            params={
+                'tvshowid': tvshow['tvshowid'],
+                'properties': EPISODE_PROPERTIES,
+                'sort': sort_episode,
+                'limits': limit_one,
+                'filter': {'and': [
+                    filter_unwatched,
+                    {'or': [
+                        {'and': [
+                            filter_this_season,
+                            filter_next_episode
+                        ]},
+                        filter_next_season
+                    ]}
+                ]}
+            }
+        )
+        next_episode = next_episode.get('result', {}).get('episodes', [])
+        next_episodes += next_episode
+
+    return next_episodes
