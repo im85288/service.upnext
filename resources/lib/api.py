@@ -68,6 +68,127 @@ PLAYER_PLAYLIST = {
     'audio': xbmc.PLAYLIST_MUSIC   # 0
 }
 
+_QUERY_LIMITS = {
+    'start': 0,
+    'end': -1
+}
+_QUERY_LIMIT_ONE = {
+    'start': 0,
+    'end': 1
+}
+
+_FILTER_NOT_FILE = {
+    'field': 'filename',
+    'operator': 'isnot',
+    'value': '-1'
+}
+_FILTER_NOT_PATH = {
+    'field': 'path',
+    'operator': 'isnot',
+    'value': '-1'
+}
+_FILTER_NOT_FILEPATH = {
+    'or': [
+        _FILTER_NOT_FILE,
+        _FILTER_NOT_PATH
+    ]
+}
+
+_FILTER_SEARCH_TVSHOW = {
+    'field': 'title',
+    'operator': 'is',
+    'value': '-1'
+}
+_FILTER_INPROGRESS = {
+    'field': 'inprogress',
+    'operator': 'true',
+    'value': ''
+}
+
+_FILTER_WATCHED = {
+    'field': 'playcount',
+    'operator': 'greaterthan',
+    'value': '0'
+}
+_FILTER_UNWATCHED = {
+    'field': 'playcount',
+    'operator': 'lessthan',
+    'value': '1'
+}
+
+_FILTER_REGULAR_SEASON = {
+    'field': 'season',
+    'operator': 'greaterthan',
+    'value': '0'
+}
+_FILTER_THIS_SEASON = {
+    'field': 'season',
+    'operator': 'is',
+    'value': '-1'
+}
+_FILTER_NEXT_SEASON = {
+    'field': 'season',
+    'operator': 'greaterthan',
+    'value': '-1'
+}
+
+_FILTER_THIS_EPISODE = {
+    'field': 'episode',
+    'operator': 'is',
+    'value': '-1'
+}
+_FILTER_NEXT_EPISODE = {
+    'field': 'episode',
+    'operator': 'greaterthan',
+    'value': '-1'
+}
+
+_FILTER_SEARCH_EPISODE = {
+    'and': [
+        _FILTER_THIS_SEASON,
+        _FILTER_THIS_EPISODE
+    ]
+}
+_FILTER_CURRENT_EPISODE = {
+    'and': [
+        _FILTER_REGULAR_SEASON,
+        {
+            'or': [
+                _FILTER_INPROGRESS,
+                _FILTER_WATCHED
+            ]
+        }
+    ]
+}
+_FILTER_UPNEXT_EPISODE = {
+    'and': [
+        _FILTER_UNWATCHED,
+        {
+            'or': [
+                {
+                    'and': [
+                        _FILTER_THIS_SEASON,
+                        _FILTER_NEXT_EPISODE
+                    ]
+                },
+                _FILTER_NEXT_SEASON
+            ]
+        }
+    ]
+}
+
+_SORT_LASTPLAYED = {
+    'method': 'lastplayed',
+    'order': 'descending'
+}
+_SORT_EPISODE = {
+    'method': 'episode',
+    'order': 'ascending'
+}
+_SORT_RANDOM = {
+    'method': 'random'
+}
+
 
 def log(msg, level=utils.LOGDEBUG):
     """Log wrapper"""
@@ -400,57 +521,35 @@ def get_next_from_library(episode=constants.UNDEFINED,
         return episode, new_season
 
     (path, filename) = os.path.split(episode['file'])
+    _FILTER_NOT_FILE['value'] = filename
+    _FILTER_NOT_PATH['value'] = path
     filters = [
         # Check that both next filename and path are different to current
         # to deal with different file naming schemes e.g.
         # Season 1/Episode 1.mkv
         # Season 1/Episode 1/video.mkv
         # Season 1/Episode 1-2-3.mkv
-        {'or': [
-            {
-                'field': 'filename',
-                'operator': 'isnot',
-                'value': filename
-            },
-            {
-                'field': 'path',
-                'operator': 'isnot',
-                'value': path
-            }
-        ]}
+        _FILTER_NOT_FILEPATH
     ]
 
     if unwatched_only:
         # Exclude watched episodes
-        filters.append({
-            'field': 'playcount',
-            'operator': 'lessthan',
-            'value': '1'
-        })
+        filters.append(_FILTER_UNWATCHED)
 
     if not random:
         # Next episode in current season
+        _FILTER_THIS_SEASON['value'] = str(episode['season'])
+        _FILTER_NEXT_EPISODE['value'] = str(episode['episode'])
+        _FILTER_NEXT_SEASON['value'] = str(episode['season'])
         episode_filter = {'and': [
-            {
-                'field': 'season',
-                'operator': 'is',
-                'value': str(episode['season'])
-            },
-            {
-                'field': 'episode',
-                'operator': 'greaterthan',
-                'value': str(episode['episode'])
-            }
+            _FILTER_THIS_SEASON,
+            _FILTER_NEXT_EPISODE
         ]}
         # Next episode in next season
         if next_season:
             episode_filter = [
                 episode_filter,
-                {
-                    'field': 'season',
-                    'operator': 'greaterthan',
-                    'value': str(episode['season'])
-                }
+                _FILTER_NEXT_SEASON
             ]
             episode_filter = {'or': episode_filter}
         filters.append(episode_filter)
@@ -466,10 +565,10 @@ def get_next_from_library(episode=constants.UNDEFINED,
             'tvshowid': tvshowid,
             'properties': EPISODE_PROPERTIES,
             'sort': (
-                {'method': 'random'} if random
-                else {'order': 'ascending', 'method': 'episode'}
+                _SORT_RANDOM if random
+                else _SORT_EPISODE
             ),
-            'limits': {'start': 0, 'end': 1},
+            'limits': _QUERY_LIMIT_ONE,
             'filter': filters
         }
     )
@@ -528,16 +627,13 @@ def get_from_library(episodeid, tvshowid=None):
 def get_tvshowid(title):
     """Function to search Kodi library for tshowid by title"""
 
+    _FILTER_SEARCH_TVSHOW['value'] = title
     result = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
         params={
             'properties': [],
-            'limits': {'start': 0, 'end': 1},
-            'filter': {
-                'field': 'title',
-                'operator': 'is',
-                'value': title
-            }
+            'limits': _QUERY_LIMIT_ONE,
+            'filter': _FILTER_SEARCH_TVSHOW
         }
     )
     result = result.get('result', {}).get('tvshows')
@@ -553,27 +649,16 @@ def get_episodeid(tvshowid, season, episode):
     """Function to search Kodi library for episodeid by tvshowid, season, and
        episode"""
 
-    filters = [
-        {
-            'field': 'season',
-            'operator': 'is',
-            'value': str(season)
-        },
-        {
-            'field': 'episode',
-            'operator': 'is',
-            'value': str(episode)
-        }
-    ]
-    filters = {'and': filters}
+    _FILTER_THIS_SEASON['value'] = str(season)
+    _FILTER_THIS_EPISODE['value'] = str(episode)
 
     result = utils.jsonrpc(
         method='VideoLibrary.GetEpisodes',
         params={
             'tvshowid': tvshowid,
             'properties': [],
-            'limits': {'start': 0, 'end': 1},
-            'filter': filters
+            'limits': _QUERY_LIMIT_ONE,
+            'filter': _FILTER_SEARCH_EPISODE
         }
     )
     result = result.get('result', {}).get('episodes')
@@ -639,83 +724,28 @@ def handle_just_watched(episodeid, playcount,
 def get_upnext_from_library(limit=25):
     """Function to get in-progress and next episode details from Kodi library"""
 
-    limits = {
-        'start': 0,
-        'end': limit
-    }
-    limit_one = {
-        'start': 0,
-        'end': 1
-    }
-
-    filter_regular_season = {
-        'field': 'season',
-        'operator': 'greaterthan',
-        'value': '0'
-    }
-    filter_inprogress = {
-        'field': 'inprogress',
-        'operator': 'true',
-        'value': ''
-    }
-    filter_watched = {
-        'field': 'playcount',
-        'operator': 'greaterthan',
-        'value': '0'
-    }
-    filter_unwatched = {
-        'field': 'playcount',
-        'operator': 'lessthan',
-        'value': '1'
-    }
-    filter_this_season = {
-        'field': 'season',
-        'operator': 'is',
-        'value': '-1'
-    }
-    filter_next_season = {
-        'field': 'season',
-        'operator': 'greaterthan',
-        'value': '-1'
-    }
-    filter_next_episode = {
-        'field': 'episode',
-        'operator': 'greaterthan',
-        'value': '-1'
-    }
-
-    sort_lastplayed = {
-        'method': 'lastplayed',
-        'order': 'descending'
-    }
-    sort_episode = {
-        'method': 'episode',
-        'order': 'ascending'
-    }
-
+    _QUERY_LIMITS['value'] = limit
     inprogress = utils.jsonrpc(
         method='VideoLibrary.GetTVShows',
         params={
-            'sort': sort_lastplayed,
-            'limits': limits,
-            'filter': filter_inprogress
+            'properties': [],
+            'sort': _SORT_LASTPLAYED,
+            'limits': _QUERY_LIMITS,
+            'filter': _FILTER_INPROGRESS
         }
     )
     inprogress = inprogress.get('result', {}).get('tvshows', [])
 
-    next_episodes = []
+    upnext_episodes = []
     for tvshow in inprogress:
         current_episode = utils.jsonrpc(
             method='VideoLibrary.GetEpisodes',
             params={
                 'tvshowid': tvshow['tvshowid'],
                 'properties': ['season', 'episode'],
-                'sort': sort_lastplayed,
-                'limits': limit_one,
-                'filter': {'and': [
-                    filter_regular_season,
-                    {'or': [filter_inprogress, filter_watched]}
-                ]}
+                'sort': _SORT_LASTPLAYED,
+                'limits': _QUERY_LIMIT_ONE,
+                'filter': _FILTER_CURRENT_EPISODE
             }
         )
         current_episode = current_episode.get('result', {}).get('episodes')
@@ -725,30 +755,21 @@ def get_upnext_from_library(limit=25):
         current_episode = current_episode[0]
         current_season = str(current_episode['season'])
         current_episode = str(current_episode['episode'] - 1)
-        filter_this_season['value'] = current_season
-        filter_next_season['value'] = current_season
-        filter_next_episode['value'] = current_episode
+        _FILTER_THIS_SEASON['value'] = current_season
+        _FILTER_NEXT_SEASON['value'] = current_season
+        _FILTER_NEXT_EPISODE['value'] = current_episode
 
-        next_episode = utils.jsonrpc(
+        upnext_episode = utils.jsonrpc(
             method='VideoLibrary.GetEpisodes',
             params={
                 'tvshowid': tvshow['tvshowid'],
                 'properties': EPISODE_PROPERTIES,
-                'sort': sort_episode,
-                'limits': limit_one,
-                'filter': {'and': [
-                    filter_unwatched,
-                    {'or': [
-                        {'and': [
-                            filter_this_season,
-                            filter_next_episode
-                        ]},
-                        filter_next_season
-                    ]}
-                ]}
+                'sort': _SORT_EPISODE,
+                'limits': _QUERY_LIMIT_ONE,
+                'filter': _FILTER_UPNEXT_EPISODE
             }
         )
-        next_episode = next_episode.get('result', {}).get('episodes', [])
-        next_episodes += next_episode
+        upnext_episode = upnext_episode.get('result', {}).get('episodes', [])
+        upnext_episodes += upnext_episode
 
-    return next_episodes
+    return upnext_episodes
