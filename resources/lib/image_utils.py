@@ -215,8 +215,14 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save):
     return element
 
 
+try:
+    _SPLIT = unicode.split
+except NameError:
+    _SPLIT = str.split
+
+
 def _process_args(args, image, sentinel='~',
-                  _format=str.format, _int=int, _split=str.split):
+                  _format=str.format, _int=int, _split=_SPLIT):
     histogram = None
 
     for idx, arg in enumerate(args):
@@ -245,7 +251,7 @@ def _precision(number, decimal_places=3):
     return int(number * factor) / factor
 
 
-def _to_numbers(args, _int=int, _float=float, _split=str.split):
+def _to_numbers(args, _int=int, _float=float, _split=_SPLIT):
     if not args:
         return []
 
