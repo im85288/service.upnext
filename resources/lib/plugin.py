@@ -88,8 +88,7 @@ def parse_plugin_url(url):
         return None, None, None
 
     parsed_url = urlparse(url)
-    addon_type = parsed_url.scheme
-    if addon_type != 'plugin':
+    if parsed_url.scheme != 'plugin':
         return None, None, None
 
     addon_id = parsed_url.netloc
