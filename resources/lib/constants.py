@@ -37,9 +37,15 @@ NO_SPOILER_ART = {
     'thumb': NO_SPOILER_IMAGE,
 }
 
-BOOL_STRING_VALUES = {
+VALUE_FROM_STR = {
     'false': False,
     'true': True,
+}
+VALUE_TO_STR = {
+    None: '',
+    False: 'false',
+    True: 'true',
+    UNDEFINED: '-1',
 }
 
 LOG_ENABLE_DISABLED = 0
