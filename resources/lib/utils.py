@@ -28,6 +28,7 @@ class Profiler(object):
     except ImportError:
         from io import StringIO as _StringIO
     from functools import wraps as _wraps
+    _wraps = staticmethod(_wraps)
     from weakref import proxy as _proxy, ref as _ref
 
     _instances = set()
