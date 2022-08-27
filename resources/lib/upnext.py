@@ -59,10 +59,16 @@ def create_listitem(episode):
     show_title = episode.get('showtitle', '')
     episode_title = episode.get('title', '')
     file_path = episode.get('file', '')
+    season = episode.get('season', '')
+    episode_number = episode.get('episode', '')
+    season_episode = (
+        '{0}x{1}'.format(season, episode_number) if season and episode_number
+        else episode_number
+    )
+    label_tokens = [show_title, season_episode, episode_title]
 
     kwargs = {
-        'label': episode_title,
-        'label2': show_title,
+        'label': ' - '.join(token for token in label_tokens if token),
         'path': file_path
     }
     if utils.supports_python_api(18):
@@ -77,8 +83,8 @@ def create_listitem(episode):
             'title': episode_title,
             'plot': episode.get('plot', ''),
             'tvshowtitle': show_title,
-            'season': episode.get('season', constants.UNDEFINED),
-            'episode': episode.get('episode', constants.UNDEFINED),
+            'season': season or constants.UNDEFINED,
+            'episode': episode_number or constants.UNDEFINED,
             'rating': str(float(episode.get('rating', 0.0))),
             'aired': episode.get('firstaired', ''),
             'premiered': episode.get('firstaired', ''),

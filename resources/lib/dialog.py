@@ -118,7 +118,8 @@ class UpNextPopup(xbmcgui.WindowXMLDialog, object):
             self.setProperty('episode', episode)
             self.setProperty(
                 'seasonepisode',
-                '{0}x{1}'.format(season, episode) if season else episode
+                '{0}x{1}'.format(season, episode) if season and episode
+                else episode
             )
             firstaired, firstaired_string = utils.localize_date(
                 self.item.get('firstaired', '')
