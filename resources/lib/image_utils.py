@@ -12,6 +12,14 @@ _PRECOMPUTED = {
 }
 
 
+try:
+    _FORMAT = unicode.format
+    _SPLIT = unicode.split
+except NameError:
+    _FORMAT = str.format
+    _SPLIT = str.split
+
+
 def _bit_depth_lut(bit_depth, scale=None, _int=int):
     num_levels = 2 ** bit_depth
     bit_mask = ~((2 ** (8 - bit_depth)) - 1)
@@ -85,7 +93,7 @@ def _calc_median(vals):
 
 
 def _fade_mask(size, level_start, level_stop, steps, power, box,  # pylint: disable=too-many-arguments, too-many-locals
-               _format=str.format, _int=int, _max=max,
+               _format=_FORMAT, _int=int, _max=max,
                _paste=Image.Image.paste):
     dimensions = len(box)
     if not dimensions:
@@ -215,14 +223,8 @@ def _precompute(method, size=None, debug=SETTINGS.detector_debug_save):
     return element
 
 
-try:
-    _SPLIT = unicode.split
-except NameError:
-    _SPLIT = str.split
-
-
 def _process_args(args, image, sentinel='~',
-                  _format=str.format, _int=int, _split=_SPLIT):
+                  _format=_FORMAT, _int=int, _split=_SPLIT):
     histogram = None
 
     for idx, arg in enumerate(args):
@@ -264,7 +266,7 @@ def _to_numbers(args, _int=int, _float=float, _split=_SPLIT):
 
 def adaptive_filter(image, sampling, method, args=(), save_file=None,  # pylint: disable=too-many-locals
                     _crop=Image.Image.crop, _copy=Image.Image.copy,
-                    _format=str.format, _int=int, _paste=Image.Image.paste,
+                    _format=_FORMAT, _int=int, _paste=Image.Image.paste,
                     _range=range, _save=Image.Image.save):
     segments, overlap, mask = sampling
 
@@ -401,7 +403,7 @@ def apply_filter(image, method, extent=None, original=None, output_op=None):
 
 def conditional_filter(image, rules=((), ()), output=None,  # pylint: disable=too-many-locals
                        filter_args=(None, ), save_file=None,
-                       _draw=ImageDraw.Draw, _format=str.format,
+                       _draw=ImageDraw.Draw, _format=_FORMAT,
                        _new=Image.new, _point=ImageDraw.ImageDraw.point,
                        _save=Image.Image.save, _tuple=tuple):
     aggregate_image = apply_filter(image, *filter_args)
@@ -646,7 +648,7 @@ def posterise(image, bit_depth):
 
 def process(data, queue, save_file=None, debug=SETTINGS.detector_debug_save,
             _append=list.append, _callable=callable, _copy=Image.Image.copy,
-            _enumerate=enumerate, _float=float, _format=str.format, _int=int,
+            _enumerate=enumerate, _float=float, _format=_FORMAT, _int=int,
             _isinstance=isinstance, _list=list, _pop=list.pop, _str=str,
             _save=Image.Image.save, _tuple=tuple):
     _PRECOMPUTED['_STACK'] = []
