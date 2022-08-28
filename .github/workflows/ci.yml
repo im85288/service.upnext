@@ -36,7 +36,7 @@ jobs:
       run: make check-translations
       if: always()
     - name: Run pytest
-      run: pytest
+      run: pytest --log-cli-level=INFO
       if: contains(env.TESTS_ENABLED, matrix.python-version)
       continue-on-error: true
     - name: Upload code coverage to CodeCov

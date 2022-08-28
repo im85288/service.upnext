@@ -12,6 +12,7 @@ import random
 import sys
 import threading
 import time
+from datetime import datetime
 from weakref import WeakValueDictionary
 from xbmcextra import global_settings, import_language, __KODI_MATRIX__
 from dummydata import LIBRARY
@@ -25,6 +26,14 @@ if __KODI_MATRIX__:
     LOGERROR = 3
     LOGFATAL = 4
     LOGNONE = 5
+    _LOG_LEVELS = {
+        LOGDEBUG: 'DEBUG',
+        LOGINFO: 'INFO',
+        LOGWARNING: 'WARNING',
+        LOGERROR: 'ERROR',
+        LOGFATAL: 'FATAL',
+        LOGNONE: 'NONE'
+    }
 else:
     LOGDEBUG = 0
     LOGINFO = 1
@@ -34,9 +43,28 @@ else:
     LOGSEVERE = 5
     LOGFATAL = 6
     LOGNONE = 7
+    _LOG_LEVELS = {
+        LOGDEBUG: 'DEBUG',
+        LOGINFO: 'INFO',
+        LOGNOTICE: 'NOTICE',
+        LOGWARNING: 'WARNING',
+        LOGERROR: 'ERROR',
+        LOGSEVERE: 'SEVERE',
+        LOGFATAL: 'FATAL',
+        LOGNONE: 'NONE'
+    }
 
 PLAYLIST_MUSIC = 0
 PLAYLIST_VIDEO = 1
+_PLAYLIST_TYPE = random.randint(PLAYLIST_MUSIC, PLAYLIST_VIDEO)
+_PLAYER_TYPES = [
+    [dict(type='audio', playerid=PLAYLIST_MUSIC)],
+    [dict(type='video', playerid=PLAYLIST_VIDEO)],
+]
+_PLAYLIST = {
+    PLAYLIST_MUSIC: dict(position=0, playlist=[dict(file='dummy')]),
+    PLAYLIST_VIDEO: dict(position=0, playlist=[dict(file='dummy')]),
+}
 
 _INFO_LABELS = {
     'System.BuildVersion': '18.9' if __KODI_MATRIX__ else '19.0',
@@ -91,11 +119,16 @@ class Monitor(object):
             abort_timer.daemon = True
             abort_timer.start()
 
-        cls._instances[id(self)] = self
+        key = id(self)
+        cls._instances[key] = self
         return self
 
     def __del__(self):
-        del Monitor._instances[id(self)]
+        key = id(self)
+        if key in Monitor._instances:
+            del Monitor._instances[key]
+        else:
+            log('Monitor instance <{0}> already deleted'.format(key), LOGDEBUG)
 
     def _timer(self):
         abort_times = [90, 120]
@@ -131,6 +164,10 @@ class Monitor(object):
 
 class Player(object):
     ''' A stub implementation of the xbmc Player class '''
+    is_playing = False
+    file = ''
+    time = 0.0
+    duration = 0
 
     def __init__(self):
         ''' A stub constructor for the xbmc Player class '''
@@ -138,7 +175,10 @@ class Player(object):
 
     def play(self, item='', listitem=None, windowed=False, startpos=-1):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc Player class play() method '''
-        return
+        Player.file = item
+        Player.is_playing = True
+        Player.time = 0.0
+        Player.duration = 0
 
     def playnext(self):
         ''' A stub implementation for the xbmc Player class playnext() method '''
@@ -146,7 +186,10 @@ class Player(object):
 
     def stop(self):
         ''' A stub implementation for the xbmc Player class stop() method '''
-        return
+        Player.file = ''
+        Player.is_playing = False
+        Player.time = 0.0
+        Player.duration = 0
 
     def isExternalPlayer(self):
         ''' A stub implementation for the xbmc Player class isExternalPlayer() method '''
@@ -154,13 +197,16 @@ class Player(object):
 
     def getPlayingFile(self):
         ''' A stub implementation for the xbmc Player class getPlayingFile() method '''
-        return '/foo/bar'
+        if not Player.is_playing:
+            raise Exception
+        return Player.file
 
     def isPlaying(self):
         ''' A stub implementation for the xbmc Player class isPlaying() method '''
-        # Return True four times out of five
-        self._count += 1
-        return bool(self._count % 5 != 0)
+        # Return correct value four times out of five
+        if random.randint(1, 5) == 5:
+            return False
+        return Player.is_playing
 
     def seekTime(self, seekTime):  # pylint: disable=unused-argument
         ''' A stub implementation for the xbmc Player class seekTime() method '''
@@ -172,11 +218,15 @@ class Player(object):
 
     def getTotalTime(self):
         ''' A stub implementation for the xbmc Player class getTotalTime() method '''
-        return 0
+        if not Player.is_playing:
+            raise Exception
+        return Player.duration
 
     def getTime(self):
         ''' A stub implementation for the xbmc Player class getTime() method '''
-        return 0
+        if not Player.is_playing:
+            raise Exception
+        return Player.time
 
     def getVideoInfoTag(self):
         ''' A stub implementation for the xbmc Player class getVideoInfoTag() method '''
@@ -188,14 +238,15 @@ class PlayList(object):
 
     def __init__(self, playList):
         ''' A stub constructor for the xbmc PlayList class '''
+        self.playlist_type = playList
 
     def getposition(self):
         ''' A stub implementation for the xbmc PlayList class getposition() method '''
-        return 0
+        return _PLAYLIST[self.playlist_type]['position']
 
     def size(self):
         ''' A stub implementation for the xbmc PlayList class size() method '''
-        return 1
+        return len(_PLAYLIST[self.playlist_type]['playlist'])
 
 
 class InfoTagVideo(object):
@@ -306,6 +357,7 @@ def _filter_walker(filter_object, seeking):
                 return found
     return None
 
+
 def _application_getproperties(params):
     if params.get('properties') == ['version']:
         return json.dumps(dict(
@@ -329,11 +381,7 @@ def _player_getactiveplayers(params):  # pylint: disable=unused-argument
     return json.dumps(dict(
         id=1,
         jsonrpc='2.0',
-        result=[
-            [dict(type='video', playerid=1)],
-            [dict(type='audio', playerid=0)],
-            []
-        ][random.randint(0, 2)]
+        result=_PLAYER_TYPES[_PLAYLIST_TYPE]
     ))
 
 
@@ -348,7 +396,7 @@ def _player_getproperties(params):
         return json.dumps(dict(
             id=1,
             jsonrpc='2.0',
-            result=dict(playlistid=random.randint(-1, 2))
+            result=dict(playlistid=_PLAYLIST_TYPE)
         ))
     return False
 
@@ -444,7 +492,7 @@ def _videolibrary_gettvshowdetails(params):
 
 def _jsonrpc_notifyall(params):
     for ref in Monitor._instances.valuerefs():  # pylint: disable=protected-access
-        notification_handler = getattr(ref(), "onNotification", None)
+        notification_handler = getattr(ref(), 'onNotification', None)
         if callable(notification_handler):
             message = params.get('message')
             if not message:
@@ -467,15 +515,82 @@ def _jsonrpc_notifyall(params):
     return True
 
 
-def _player_open(params):  # pylint: disable=unused-argument
+def _player_open(params):
+    item = params['item']
+    item_file = None
+    if 'playlistid' in item:
+        _PLAYLIST[item['playlistid']]['position'] = item['position']
+        item = _PLAYLIST[item['playlistid']]['playlist'][item['position']]
+
+    if 'file' in item:
+        itemid = -1
+        item_file = item['file']
+    elif 'episodeid' in item:
+        itemid = item['episodeid']
+        item_file = json.loads(_videolibrary_getepisodedetails({
+            'episodeid': itemid
+        }))['result']['episodedetails'].get('file')
+
+    if item_file:
+        player = Player()
+        player.play(item_file)
+        _jsonrpc_notifyall({
+            'sender': 'xbmc',
+            'message': 'OnPlay',
+            'data': {
+                'item': {
+                    'id': itemid,
+                    'title': '',
+                    'type': 'episode',
+                },
+                'player': {
+                    'playerid': _PLAYLIST_TYPE,
+                    'speed': 1
+                }
+            }
+        })
+        _jsonrpc_notifyall({
+            'sender': 'xbmc',
+            'message': 'OnStop',
+            'data': {
+                'end': True,
+                'item': {
+                    'id': itemid,
+                    'title': '',
+                    'type': 'episode',
+                }
+            }
+        })
+        _jsonrpc_notifyall({
+            'sender': 'xbmc',
+            'message': 'OnAVStart',
+            'data': {
+                'item': {
+                    'id': itemid,
+                    'title': '',
+                    'type': 'episode',
+                },
+                'player': {
+                    'playerid': _PLAYLIST_TYPE,
+                    'speed': 1
+                }
+            }
+        })
     return True
 
 
-def _playlist_add(params):  # pylint: disable=unused-argument
+def _playlist_add(params):
+    _PLAYLIST[params['playlistid']]['playlist'] += [params['item']]
     return True
 
 
-def _playlist_remove(params):  # pylint: disable=unused-argument
+def _playlist_remove(params):
+    playlistid = params['playlistid']
+    position = params['position']
+    playlist = _PLAYLIST[playlistid]['playlist']
+    _PLAYLIST[playlistid]['playlist'] = (
+        playlist[:position] + playlist[position + 1:]
+    )
     return True
 
 
@@ -521,7 +636,7 @@ def executeJSONRPC(jsonrpccommand):
         return json.dumps(dict(
             id=1,
             jsonrpc='2.0',
-            result="OK"
+            result='OK'
         ))
     if return_val:
         return return_val
@@ -563,16 +678,35 @@ def getRegion(key):
 
 def log(msg, level=LOGDEBUG):
     ''' A reimplementation of the xbmc log() function '''
-    if level in (LOGERROR, LOGFATAL):
-        print('\033[31;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
-        if level == LOGFATAL:
-            raise Exception(msg)
-    elif level == LOGWARNING or (not __KODI_MATRIX__ and level == LOGINFO + 1):
-        print('\033[33;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
+
+    now = datetime.now()
+    thread_id = threading.current_thread().ident
+    level_name = _LOG_LEVELS[level]
+    component = 'general'
+    level_colour = '\033[32;1m'  # green FG, bold
+    msg_colour = '\033[37m'  # white FG
+    reset_colour = '\033[39;0m'
+
+    if LOGERROR <= level <= LOGFATAL:
+        level_colour = '\033[31;1m'  # red FG, bold
+    elif level == LOGWARNING:
+        level_colour = '\033[33;1m'  # yellow FG, bold
     elif level == LOGDEBUG:
-        print('\033[32;1m%s: \033[30;1m%s\033[39;0m' % (level, to_unicode(msg)))
-    else:
-        print('\033[32;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
+        level_colour = '\033[90;1m'  # grey FG, bold
+        msg_colour = '\033[90m'  # grey FG
+
+    print('{time} T:{thread_id}\t{level_colour}{level_name:>8} <{component}>: {msg_colour}{msg}{reset_colour}'.format(
+        time=now,
+        thread_id=thread_id,
+        level_colour=level_colour,
+        level_name=level_name,
+        component=component,
+        reset_colour=reset_colour,
+        msg_colour=msg_colour,
+        msg=to_unicode(msg)
+    ))
+    if level == LOGFATAL:
+        raise Exception(msg)
 
 
 def setContent(self, content):  # pylint: disable=unused-argument

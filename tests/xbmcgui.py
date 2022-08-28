@@ -275,6 +275,10 @@ class Window(object):
     def __init__(self, existingwindowId=-1):
         ''' A stub constructor for the xbmcgui Window class '''
         self.__window_properties__ = {}
+        try:
+            getattr(self, 'onInit')(self)
+        except (AttributeError, TypeError):
+            pass
 
     def clearProperty(self, key):
         ''' A stub implementation for the xbmcgui Window class clearProperty() method '''
