@@ -72,6 +72,7 @@ class UpNextSettings(object):
         self.log('Loading...')
         utils.ADDON = utils.get_addon(constants.ADDON_ID)
         utils.LOG_ENABLE_SETTING = utils.get_setting_int('logLevel')
+        utils.DEBUG_LOG_ENABLE = utils.get_global_setting('debug.showloginfo')
 
         self.simple_mode = utils.get_setting_bool('simpleMode')
         self.show_stop_button = utils.get_setting_bool('stopAfterClose')

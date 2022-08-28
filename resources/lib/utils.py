@@ -412,6 +412,16 @@ def event(message, data=None, sender=None, encoding='base64'):
     )
 
 
+def get_global_setting(setting):
+    """Get a Kodi setting"""
+
+    result = jsonrpc(
+        method='Settings.GetSettingValue',
+        params={'setting': setting}
+    )
+    return result.get('result', {}).get('value')
+
+
 # Log levels                      | v18 | v19
 LOGDEBUG = xbmc.LOGDEBUG        # |  0  |  0
 LOGINFO = xbmc.LOGINFO          # |  1  |  1
@@ -423,6 +433,7 @@ LOGFATAL = xbmc.LOGFATAL        # |  6  |  4
 LOGNONE = xbmc.LOGNONE          # |  7  |  5
 
 LOG_ENABLE_SETTING = get_setting_int('logLevel', echo=False)
+DEBUG_LOG_ENABLE = get_global_setting('debug.showloginfo')
 MIN_LOG_LEVEL = LOGINFO if supports_python_api(19) else LOGINFO + 1
 
 
@@ -443,7 +454,7 @@ def log(msg, name=__name__, level=LOGINFO):
         return
 
     # Force minimum required log level to display in Kodi event log
-    if level < MIN_LOG_LEVEL:  # pylint: disable=consider-using-max-builtin
+    if not DEBUG_LOG_ENABLE and level < MIN_LOG_LEVEL:  # pylint: disable=consider-using-max-builtin
         level = MIN_LOG_LEVEL
 
     # Convert to unicode for string formatting with Unicode literal
@@ -451,16 +462,6 @@ def log(msg, name=__name__, level=LOGINFO):
     msg = '[{0}] {1} -> {2}'.format(get_addon_id(), name, msg)
     # Convert back for older Kodi versions
     xbmc.log(statichelper.from_unicode(msg), level=level)
-
-
-def get_global_setting(setting):
-    """Get a Kodi setting"""
-
-    result = jsonrpc(
-        method='Settings.GetSettingValue',
-        params={'setting': setting}
-    )
-    return result.get('result', {}).get('value')
 
 
 def localize(string_id):
