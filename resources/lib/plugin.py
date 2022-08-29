@@ -141,7 +141,7 @@ def run(argv):
     elif content_items:
         content_items = generate_listing(addon_handle, addon_id, content_items)
 
-    if content_type and content_items:
+    if content_type and content_items is not None:
         xbmcplugin.setContent(addon_handle, content_type)
         listing_complete = xbmcplugin.addDirectoryItems(
             addon_handle, content_items, len(content_items)
@@ -161,8 +161,8 @@ PLUGIN_CONTENT = {
         'content_type': 'files',
         'items': [
             '/next_episodes',
-            '/next_movies',
-            '/next_media',
+            # '/next_movies',
+            # '/next_media',
             '/settings',
         ],
     },
