@@ -45,7 +45,7 @@ class UpNextPopup(xbmcgui.WindowXMLDialog, object):
         self.current_progress_percent = 100
         self.progress_control = None
 
-        xbmcgui.WindowXMLDialog.__init__(self, *args)
+        super(UpNextPopup, self).__init__(*args)
 
     # __enter__ and __exit__ allows UpNextPopup to be used as a contextmanager
     # to check whether popup is still open before accessing attributes

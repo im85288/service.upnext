@@ -48,7 +48,7 @@ class UpNextMonitor(xbmc.Monitor, object):
         self.popuphandler = None
         self.state = None
 
-        xbmc.Monitor.__init__(self)
+        super(UpNextMonitor, self).__init__()
 
     @classmethod
     def log(cls, msg, level=utils.LOGDEBUG):

@@ -276,7 +276,7 @@ class Window(object):
         ''' A stub constructor for the xbmcgui Window class '''
         self.__window_properties__ = {}
         try:
-            getattr(self, 'onInit')(self)
+            getattr(self, 'onInit')()
         except (AttributeError, TypeError):
             pass
 
@@ -304,7 +304,7 @@ class Window(object):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''
         if not isinstance(key, str if __KODI_MATRIX__ else (str, unicode)):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
             raise TypeError('Property name is not str or unicode')
-        if not isinstance(key, str if __KODI_MATRIX__ else (str, unicode)):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
+        if not isinstance(value, str if __KODI_MATRIX__ else (str, unicode)):  # noqa: F821; pylint: disable=undefined-variable,useless-suppression
             raise TypeError('Property value is not str or unicode')
         self.__window_properties__[key] = value
 
@@ -316,12 +316,8 @@ class WindowXML(Window):
     ''' A reimplementation of the xbmcgui WindowXML '''
 
     def __init__(
-            self,
-            xmlFilename,
-            scriptPath,
-            defaultSkin="Default",
-            defaultRes="720p",
-            isMedia=False
+            self, xmlFilename, scriptPath,
+            defaultSkin="Default", defaultRes="720p", isMedia=False
     ):
         ''' A stub constructor for the xbmcgui WindowXML class '''
         super(WindowXML, self).__init__()
@@ -331,16 +327,10 @@ class WindowXMLDialog(WindowXML):
     ''' A reimplementation of the xbmcgui WindowXMLDialog '''
 
     def __init__(
-            self,
-            xmlFilename,
-            scriptPath,
-            defaultSkin="Default",
-            defaultRes="720p"
+            self, xmlFilename, scriptPath,
+            defaultSkin="Default", defaultRes="720p"
     ):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
         super(WindowXMLDialog, self).__init__(
-            xmlFilename,
-            scriptPath,
-            defaultSkin,
-            defaultRes
+            xmlFilename, scriptPath, defaultSkin, defaultRes
         )

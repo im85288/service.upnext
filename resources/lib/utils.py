@@ -35,7 +35,7 @@ class Profiler(object):
 
     def __new__(cls, *args, **kwargs):
         self = super(Profiler, cls).__new__(cls)
-        cls.__init__(self, *args, **kwargs)
+        self.__init__(*args, **kwargs)
         cls._instances.add(self)
         return cls._proxy(self)
 
