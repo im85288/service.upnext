@@ -293,7 +293,7 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
             # episode details
             current_item = (
                 self.data.get('current_episode')
-                or api.get_now_playing()
+                or api.get_now_playing(retry=SETTINGS.api_retry_attempts)
             )
         else:
             current_item = None
@@ -305,7 +305,7 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
         return current_item
 
     def _get_library_now_playing(self):
-        current_item = api.get_now_playing()
+        current_item = api.get_now_playing(retry=SETTINGS.api_retry_attempts)
         if not current_item:
             return None
 

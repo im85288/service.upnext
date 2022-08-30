@@ -14,6 +14,7 @@ import polib
 
 
 __KODI_MATRIX__ = sys.version_info.major == 3
+_addon_directory = os.path.dirname(os.path.abspath(__file__)) + '/../'
 
 
 def kodi_to_ansi(string):
@@ -51,7 +52,7 @@ def read_addon_xml(path):
         type='xbmc.python.pluginsource',
     )
 
-    tree = ET.parse(path)
+    tree = ET.parse(_addon_directory + path)
     root = tree.getroot()
 
     info.update(root.attrib)  # Add 'id', 'name' and 'version'
@@ -79,7 +80,10 @@ def global_settings():
     ''' Use the global_settings file '''
     import json
     try:
-        with io.open('tests/userdata/global_settings.json', mode='r', encoding='utf-8') as f:
+        with io.open(
+            _addon_directory + 'tests/userdata/global_settings.json',
+            mode='r', encoding='utf-8'
+        ) as f:
             settings = json.load(f)
     except OSError as e:
         print("Error: Cannot use 'tests/userdata/global_settings.json' : %s" % e)
@@ -109,7 +113,10 @@ def addon_settings():
     ''' Use the addon_settings file '''
     import json
     try:
-        with io.open('tests/userdata/addon_settings.json', mode='r', encoding='utf-8') as f:
+        with io.open(
+            _addon_directory + 'tests/userdata/addon_settings.json',
+            mode='r', encoding='utf-8'
+        ) as f:
             settings = json.load(f)
     except OSError as e:
         print("Error: Cannot use 'tests/userdata/addon_settings.json' : %s" % e)
@@ -120,7 +127,11 @@ def addon_settings():
 
 def import_language(language):
     ''' Process the language.po file '''
-    return polib.pofile('resources/language/{language}/strings.po'.format(language=language))
+    return polib.pofile(
+        '{path}/resources/language/{language}/strings.po'.format(
+            path=_addon_directory, language=language
+        )
+    )
 
 
 ADDON_INFO = read_addon_xml('addon.xml')

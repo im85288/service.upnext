@@ -12,6 +12,7 @@ class UpNextSettings(object):
 
     __slots__ = (
         # Settings state variables
+        'api_retry_attempts',
         'auto_play',
         'auto_play_delay',
         'demo_cue',
@@ -123,6 +124,7 @@ class UpNextSettings(object):
 
         self.start_delay = utils.get_setting_int('startDelay')
         self.disabled = utils.get_setting_bool('disableNextUp')
+        self.api_retry_attempts = utils.get_setting_int('apiRetryAttempts')
         self.enable_queue = utils.get_setting_bool('enableQueue')
 
         # Create valid directory here so that it can be used whenever settings
