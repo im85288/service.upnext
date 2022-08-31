@@ -4,6 +4,17 @@
 [![License: GPLv3](https://img.shields.io/badge/License-GPLv2-yellow.svg)](https://opensource.org/licenses/GPL-2.0)
 [![Contributors](https://img.shields.io/github/contributors/MoojMidge/service.upnext.svg)](https://github.com/MoojMidge/service.upnext/graphs/contributors)
 
+Personal fork (commits are often untested and cause addon to break) that implements:
+- Automatic end credits detection
+- Provides UpNext video listing to act as a skin widget source
+- Multi-threaded event driven code
+- More skin, popup, and addon settings
+- Shuffle (random, non-sequential) playback mode
+- Improved compatibility with playlists, plugins, and other non-library media (plugins still require modification to integrate with UpNext, alternatively can just use playlists)
+- Built-in methods to simplify plugin integration
+
+Official release available through official Kodi addon repository and at https://github.com/im85288/service.upnext/
+
 # Up Next - Proposes to play the next episode automatically
 
 This Kodi add-on shows a Netflix-style notification for watching the next episode. After a few automatic iterations it asks the user if he is still there watching.
@@ -23,6 +34,9 @@ The add-on has various settings to fine-tune the experience, however the default
 For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
 
 ## Releases
+### 2.0.0+dev.0
+- Initial release
+
 ### v1.1.2 (2020-06-22)
 - Small bugfix release (@im85288)
 
