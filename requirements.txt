@@ -1,4 +1,4 @@
-git+git://github.com/ruuk/script.module.addon.signals.git@master#egg=AddonSignals
+git+https://github.com/ruuk/script.module.addon.signals.git@master#egg=AddonSignals
 codecov
 kodi-addon-checker; python_version >= '3.5'
 polib
