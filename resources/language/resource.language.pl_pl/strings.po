@@ -1,5 +1,5 @@
-# Service Up Next language file
-# Addon Name: Up Next
+# Service UpNext language file
+# Addon Name: UpNext
 # Addon id: service.upnext
 # Addon Provider: im85288
 msgid ""
