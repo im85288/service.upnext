@@ -145,7 +145,7 @@ msgstr "Zastosuj skórkę Kodi do okienka UpNext"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "Pokaż przycisk \"Zatrzymaj"\" zamiast przycisku \"Zamknij\""
+msgstr "Pokaż przycisk \"Zatrzymaj\" zamiast przycisku \"Zamknij\""
 
 msgctxt "#30506"
 msgid "Popup vertical position"
