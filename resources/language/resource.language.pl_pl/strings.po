@@ -1,5 +1,5 @@
-# Service Up Next language file
-# Addon Name: Up Next
+# Service UpNext language file
+# Addon Name: UpNext
 # Addon id: service.upnext
 # Addon Provider: im85288
 msgid ""
@@ -8,7 +8,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2018-02-26 13:31+0000\n"
-"Last-Translator: "
+"Last-Translator: notoco"
 "Language-Team: Polish\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -17,12 +17,13 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 "X-Generator: POEditor.com\n"
 
+### APPLICATION
 msgctxt "#30006"
-msgid "Watch Now"
+msgid "Watch now"
 msgstr "Oglądaj teraz"
 
 msgctxt "#30008"
-msgid "Up Next"
+msgid "Up next"
 msgstr "Kolejny"
 
 msgctxt "#30009"
@@ -38,8 +39,8 @@ msgid "Still there?"
 msgstr "Wciąż jesteś?"
 
 msgctxt "#30032"
-msgid "Enable on playlists"
-msgstr "Włącz na listach odtwarzania"
+msgid "Enable UpNext when using a playlist"
+msgstr "Włącz UpNext podczas używania list odtwarzania"
 
 msgctxt "#30033"
 msgid "Stop"
@@ -50,32 +51,32 @@ msgid "Close"
 msgstr "Zamknij"
 
 msgctxt "#30035"
-msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
-msgstr "Kontynuuj oglądanie za [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekundy"
+msgid "Continue watching in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Kontynuuj oglądanie za [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] sekund"
 
 msgctxt "#30036"
-msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
-msgstr "Kolejny za [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekundy"
+msgid "Up next in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Kolejny za [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] sekund"
 
 msgctxt "#30037"
-msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
-msgstr "Następny odcinek za [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekundy"
+msgid "Next video in [COLOR $INFO[Window.Property(accent_colour)]]$INFO[Window.Property(remaining)][/COLOR] seconds"
+msgstr "Następny odcinek za [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekund"
 
 msgctxt "#30038"
-msgid "Simple"
-msgstr "Simple"
+msgid ""
+msgstr ""
 
 msgctxt "#30039"
-msgid "Fancy"
-msgstr "Fancy"
+msgid ""
+msgstr ""
 
 msgctxt "#30040"
-msgid "Play next"
-msgstr "Odtwarzaj następny"
+msgid "Play next video automatically"
+msgstr "Odtwarzaj kolejny odcinek automatycznie "
 
 msgctxt "#30041"
-msgid "Stop playing"
-msgstr "Nie odtwarzaj"
+msgid "Stop playback at end of video"
+msgstr "Zatrzymaj odtwarzenie na końcu odcinka"
 
 msgctxt "#30042"
 msgid "None"
@@ -89,91 +90,298 @@ msgctxt "#30044"
 msgid "Debug"
 msgstr "Debug"
 
+msgctxt "#30045"
+msgid "Off"
+msgstr "Wyłącz"
+
+msgctxt "#30046"
+msgid "To 15s before end"
+msgstr "Do 15s. przed końcem"
+
+msgctxt "#30047"
+msgid "To popup start time"
+msgstr "Do czasu rozpoczęcia wyskakującego okienka"
+
+msgctxt "#30048"
+msgid "To detector start time"
+msgstr "Do czasu uruchomienia detektora"
+
 msgctxt "#30049"
-msgid "Next Episode"
+msgid "Next video"
 msgstr "Następny odcinek"
 
+msgctxt "#30050"
+msgid "Disabled"
+msgstr "Nieaktywne"
+
+msgctxt "#30051"
+msgid "Forced on"
+msgstr "WYmuszenie włączone"
+
+msgctxt "#30052"
+msgid "Forced off"
+msgstr "Wymuszenie wyłączone"
 
 ### SETTINGS
 msgctxt "#30500"
-msgid "Interface"
+msgid "Appearance"
 msgstr "Wygląd"
 
 msgctxt "#30501"
-msgid "Features"
-msgstr "Funkcje"
+msgid "Popup display"
+msgstr "Wygląd okienka"
+
+msgctxt "#30502"
+msgid "Skin customisation [COLOR gray](requires skin integration)[/COLOR]"
+msgstr "Dostosowanie skóry [COLOR gray](wymaga integracji ze skórką)[/COLOR]"
 
 msgctxt "#30503"
-msgid "Set the display mode for the notifications"
-msgstr "Ustaw tryb wyświetlania powiadomień"
+msgid "Show simple style popup"
+msgstr "Pokaż proste okienko"
+
+msgctxt "#30504"
+msgid "Apply Kodi skin to UpNext popup"
+msgstr "Zastosuj skórkę Kodi do okienka UpNext"
 
 msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
-msgstr "Pokaż przycisk \"Stop\" zamiast przycisku \"Zamknij\""
+msgstr "Pokaż przycisk \"Zatrzymaj\" zamiast przycisku \"Zamknij\""
+
+msgctxt "#30506"
+msgid "Popup vertical position"
+msgstr "Pozycja pionowa okienka"
+
+msgctxt "#30507"
+msgid "Bottom"
+msgstr "Dół"
+
+msgctxt "#30508"
+msgid "Centre"
+msgstr "Środek"
+
+msgctxt "#30509"
+msgid "Top"
+msgstr "Góra"
+
+msgctxt "#30510"
+msgid "Popup accent colour"
+msgstr "Kolor podświetlenia okienka"
+
+msgctxt "#30511"
+msgid "Default"
+msgstr "Domyślny"
+
+msgctxt "#30512"
+msgid "Red"
+msgstr "Czerwony"
+
+msgctxt "#30513"
+msgid "Green"
+msgstr "Zielony"
+
+msgctxt "#30514"
+msgid "Blue"
+msgstr "Niebieski"
+
+msgctxt "#30515"
+msgid "Custom"
+msgstr "Własny"
+
+msgctxt "#30516"
+msgid "Alpha channel"
+msgstr "Kanał przezroczystości"
+
+msgctxt "#30517"
+msgid "Red channel"
+msgstr "Kanał czerwony"
+
+msgctxt "#30518"
+msgid "Green channel"
+msgstr "Kanał zielony"
+
+msgctxt "#30519"
+msgid "Blue channel"
+msgstr "Kanał niebieski"
 
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr "Zachowanie"
 
 msgctxt "#30601"
-msgid "Features"
-msgstr "Funkcje"
+msgid "Playback"
+msgstr "Odtwarzanie"
 
 msgctxt "#30603"
-msgid "Default action when nothing selected"
-msgstr "Domyślna akcja, gdy nic nie wybrano"
+msgid "Default action after UpNext popup is shown"
+msgstr "Domysłna akcja po pokazaniu okienka UpNext"
 
 msgctxt "#30605"
-msgid "Include already watched episodes"
-msgstr "Uwzględnij oglądane odcinki"
+msgid "Play already watched videos"
+msgstr "Odtwarzaj obejrzene odcinki"
+
+msgctxt "#30606"
+msgid "Check if still watching [COLOR gray](stops auto playback if not still watching)[/COLOR]"
+msgstr "Sprawdź, czy nadal oglądasz [COLOR gray](zatrzymuje automatyczne odtwarzanie, jeśli nie nadal oglądasz)[/COLOR]"
 
 msgctxt "#30607"
-msgid "Number of episodes before \"Still there?\" query"
-msgstr "Liczba odcinków przed wyświetleniem zapytania \"Ciągle jesteś?\""
+msgid "Videos to play before checking if still watching"
+msgstr "Ilość odcinków do odtworzenia przed sprawdzeniem czy nadal oglądasz"
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
-msgstr "Liczba sekund przed końcem, aby wyświetlić powiadomienie"
+msgid "When credits time is known (e.g. Netflix) or detected"
+msgstr "Kiedy czas napisów końcowych jest znany (np. Netflix) lub wykrywany"
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
-msgstr "Dostosuj czas trwania autoodtwarzania według długości odcinka"
+msgid "Delay before default action is taken (in seconds)"
+msgstr "Opóźnienie przed podjęciem akcji domyślnej (w sekundach) "
 
 msgctxt "#30613"
-msgid "All episodes  [COLOR gray]any length[/COLOR]"
-msgstr "Wszystkie odcinki  [COLOR gray]dowolnej długości[/COLOR]"
+msgid "When credits time is unknown (e.g. local media, other)"
+msgstr "Gdy czas napisów końcowych jest nieznany (np. lokalne media, inne)"
 
 msgctxt "#30615"
-msgid "Very short episodes  [COLOR gray]< 10 mins[/COLOR]"
-msgstr "Bardzo krótkie odcinki  [COLOR gray]< 10 minut[/COLOR]"
+msgid "Customise popup time (in seconds) by video length"
+msgstr "Dostosuj czas pokazania okienka (w sekundach) wg długości odcinka"
 
 msgctxt "#30617"
-msgid "Short episodes  [COLOR gray]> 10 mins[/COLOR]"
-msgstr "Krótkie odcinki [COLOR gray]> 10 minut[/COLOR]"
+msgid "All videos [COLOR gray]any length[/COLOR]"
+msgstr "Wszystkie odcinki [COLOR gray]jakiejkolwiek długośi[/COLOR]"
 
 msgctxt "#30619"
-msgid "Medium episodes  [COLOR gray]> 20 mins[/COLOR]"
-msgstr "Średnie odcinki [COLOR gray]> 20 min[/COLOR]"
+msgid "Very short videos [COLOR gray]< 10 mins[/COLOR]"
+msgstr "Bardzo krótkie odcinki COLOR gray]< 10 min[/COLOR]"
 
 msgctxt "#30621"
-msgid "Long episodes  [COLOR gray]> 40 mins[/COLOR]"
-msgstr "Długie odcinki [COLOR gray]> 40 minut[/COLOR]"
+msgid "Short videos [COLOR gray]> 10 mins[/COLOR]"
+msgstr "Krótkie odcinki [COLOR gray]> 10 min[/COLOR]"
 
 msgctxt "#30623"
-msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
-msgstr "Bardzo długie odcinki [COLOR gray]> 60 minut[/COLOR]"
+msgid "Medium videos [COLOR gray]> 20 mins[/COLOR]"
+msgstr "Średnie odcinki [COLOR gray]> 20 min[/COLOR]"
+
+msgctxt "#30625"
+msgid "Long videos [COLOR gray]> 40 mins[/COLOR]"
+msgstr "Długie odcinki [COLOR gray]> 40 min[/COLOR]"
+
+msgctxt "#30627"
+msgid "Very long videos [COLOR gray]> 60 mins[/COLOR]"
+msgstr "Bardzo długoie odcinki [COLOR gray]> 60 min[/COLOR]"
+
+msgctxt "#30630"
+msgid "Auto-detect end credits"
+msgstr "Auto wykrywanie napisów końcowych"
+
+msgctxt "#30631"
+msgid "Detection window [COLOR gray](seconds/hr prior to popup appearing by time)[/COLOR]"
+msgstr "Okno wykrywania [COLOR gray](sekundy/godziny przed pojawieniem się okienka wg czasu)[/COLOR]"
+
+msgctxt "#30640"
+msgid "Kodi library"
+msgstr "Biblioteka Kodi"
+
+msgctxt "#30641"
+msgid "Override mark as watched when UpNext popup is shown"
+msgstr "Nadpisanie oznaczenia jako oglądnięte, gdy wyświetlane jest okienki UpNext"
+
+msgctxt "#30642"
+msgid "Resume playback where possible [COLOR gray](disable to play next video from start)[/COLOR]"
+msgstr "Wznowienie odtwarzania gdy to możliwe [COLOR gray](wyłączenie odtwarzania następnego odcinka od początku)[/COLOR]"
+
+msgctxt "#30643"
+msgid "Search for next episode in next season"
+msgstr "Szukaj kolejnego odcinka w kolejnym sezonie"
 
 msgctxt "#30700"
 msgid "Expert"
-msgstr "Eksperckie"
+msgstr "Ekspert"
+
+msgctxt "#30701"
+msgid "Troubleshooting"
+msgstr "Rozwiązywanie problemów"
+
+msgctxt "#30702"
+msgid "Start delay"
+msgstr "Opóźnienie startu"
 
 msgctxt "#30703"
-msgid "Disable Up Next"
-msgstr "Wyłącz Up Next"
+msgid "Disable UpNext"
+msgstr "Wyłącz UpNext"
 
 msgctxt "#30705"
 msgid "Log level"
 msgstr "Poziom logów"
+
+msgctxt "#30706"
+msgid "Kodi JSON-RPC retry attempts"
+msgstr "Kodi JSON-RPC - próby ponawiania"
+
+msgctxt "#30707"
+msgid "Enable UpNext queue [COLOR gray](use playlist to queue and play next video)[/COLOR]"
+msgstr "Włącz kolejkę UpNext [COLOR gray](użyj playlisty do kolejki i odtwarzania następnego odcinka)[/COLOR]"
+
+msgctxt "#30730"
+msgid "Additional detector settings"
+msgstr "Dodatkowe ustawienia detektora"
+
+msgctxt "#30731"
+msgid "Detector storage location"
+msgstr "Lokalizacja przechowywania danych detektora"
+
+msgctxt "#30732"
+msgid "Number of threads to use"
+msgstr "Liczba wątków do użycia"
+
+msgctxt "#30733"
+msgid "Data processing limit (kB/frame) [COLOR gray](higher is more accurate, slower)[/COLOR]"
+msgstr "Limit przetwarzania danych (kB/ramkę) [COLOR gray](wyższy jest dokładniejszy, wolniejszy)[/COLOR]"
+
+msgctxt "#30734"
+msgid "Enable filtering to detect end credits"
+msgstr "Włącz filtrowanie w celu wykrycia napisów końcowych"
+
+msgctxt "#30735"
+msgid "Image resize method"
+msgstr "Metoda zmiany rozmiaru obrazu"
+
+msgctxt "#30736"
+msgid "Nearest"
+msgstr "Najbliższy"
+
+msgctxt "#30737"
+msgid "Box"
+msgstr "Box"
+
+msgctxt "#30738"
+msgid "Bilinear"
+msgstr "Bilinear"
+
+msgctxt "#30739"
+msgid "Hamming"
+msgstr "Hamming"
+
+msgctxt "#30740"
+msgid "Bicubic"
+msgstr "Bicubic"
+
+msgctxt "#30741"
+msgid "Lanczos"
+msgstr "Lanczos"
+
+msgctxt "#30742"
+msgid "Detection match threshold [COLOR gray](% similarity)[/COLOR]"
+msgstr "Próg dopasowania detekcji [COLOR gray](% podobieństwa)[/COLOR]"
+
+msgctxt "#30743"
+msgid "Max significance for match [COLOR gray](% of areas with significant content)[/COLOR]"
+msgstr "Maks. znaczenie dla dopasowania [COLOR gray](% obszarów o znaczącej zawartości)[/COLOR]"
+
+msgctxt "#30744"
+msgid "Min number of matches required for detection"
+msgstr "Minimalna liczba dopasowań wymagana do wykrycia"
+
+msgctxt "#30745"
+msgid "Max number of mismatches before match count is reset"
+msgstr "Maksymalna liczba niedopasowań przed wyzerowaniem licznika"
 
 msgctxt "#30800"
 msgid "Developer"
@@ -184,17 +392,53 @@ msgid "Test how the user interface looks"
 msgstr "Testuj wygląd interfejsu"
 
 msgctxt "#30805"
-msgid "Show an UpNext pop-up…"
-msgstr "Pokaż okno UpNext…"
+msgid "Show an UpNext popup…"
+msgstr "Pokaż okienko UpNext…"
 
 msgctxt "#30807"
-msgid "Show an UpNextSimple pop-up…"
-msgstr "Pokaż okno UpNextSimple…"
+msgid "Show an UpNextSimple popup…"
+msgstr "Pokaż okienko UpNextSimple…"
 
 msgctxt "#30809"
-msgid "Show a StillWatching pop-up…"
-msgstr "Pokaż okno StillWatching…"
+msgid "Show a StillWatching popup…"
+msgstr "Pokaż okienko StillWatching…"
 
 msgctxt "#30811"
-msgid "Show a StillWatchingSimple pop-up…"
-msgstr "Pokaż okno StillWatchingSimplep…"
+msgid "Show a StillWatchingSimple popup…"
+msgstr "Pokaż okienko StillWatchingSimple"
+
+msgctxt "#30813"
+msgid "Test UpNext operation"
+msgstr "Test działania UpNext"
+
+msgctxt "#30815"
+msgid "Enable demo mode"
+msgstr "Włącz tryb demo"
+
+msgctxt "#30817"
+msgid "Auto seek after playback starts"
+msgstr "Automatyczne wyszukiwanie po rozpoczęciu odtwarzania"
+
+msgctxt "#30819"
+msgid "Force popup cue point"
+msgstr "Wymuś wyskakujący okienko podpowiedzi"
+
+msgctxt "#30821"
+msgid "Force use plugin data and playback method"
+msgstr Wymuś używanie danych wtyczki i metody odtwarzania"
+
+msgctxt "#30823"
+msgid "Additional developer settings"
+msgstr "Dodatkowe ustawienia deweloperskie"
+
+msgctxt "#30825"
+msgid "Enable detector debug logging and profiling"
+msgstr "Włącz rejestrowanie i profilowania debugowania detektora"
+
+msgctxt "#30826"
+msgid "Enable saving detector debug image output"
+msgstr "Włącz zapisywania wyjścia obrazu debugowania detektora"
+
+msgctxt "#30830"
+msgid "Re-trigger a playback start event on addon start"
+msgstr "Ponów wyzwalanie zdarzenia rozpoczęcia odtwarzania przy uruchamianiu wtyczki"
