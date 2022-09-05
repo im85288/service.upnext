@@ -217,7 +217,7 @@ msgstr "Domyślna akcja po pokazaniu okienka UpNext"
 
 msgctxt "#30605"
 msgid "Play already watched videos"
-msgstr "Odtwarzaj obejrzene odcinki"
+msgstr "Odtwarzaj obejrzane odcinki"
 
 msgctxt "#30606"
 msgid "Check if still watching [COLOR gray](stops auto playback if not still watching)[/COLOR]"
