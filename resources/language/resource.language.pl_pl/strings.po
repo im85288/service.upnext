@@ -116,7 +116,7 @@ msgstr "Nieaktywne"
 
 msgctxt "#30051"
 msgid "Forced on"
-msgstr "WYmuszenie włączone"
+msgstr "Wymuszenie włączone"
 
 msgctxt "#30052"
 msgid "Forced off"
@@ -213,7 +213,7 @@ msgstr "Odtwarzanie"
 
 msgctxt "#30603"
 msgid "Default action after UpNext popup is shown"
-msgstr "Domysłna akcja po pokazaniu okienka UpNext"
+msgstr "Domyślna akcja po pokazaniu okienka UpNext"
 
 msgctxt "#30605"
 msgid "Play already watched videos"
@@ -249,7 +249,7 @@ msgstr "Wszystkie odcinki [COLOR gray]jakiejkolwiek długośi[/COLOR]"
 
 msgctxt "#30619"
 msgid "Very short videos [COLOR gray]< 10 mins[/COLOR]"
-msgstr "Bardzo krótkie odcinki COLOR gray]< 10 min[/COLOR]"
+msgstr "Bardzo krótkie odcinki [COLOR gray]< 10 min[/COLOR]"
 
 msgctxt "#30621"
 msgid "Short videos [COLOR gray]> 10 mins[/COLOR]"
@@ -425,7 +425,7 @@ msgstr "Wymuś wyskakujący okienko podpowiedzi"
 
 msgctxt "#30821"
 msgid "Force use plugin data and playback method"
-msgstr Wymuś używanie danych wtyczki i metody odtwarzania"
+msgstr "Wymuś używanie danych wtyczki i metody odtwarzania"
 
 msgctxt "#30823"
 msgid "Additional developer settings"
