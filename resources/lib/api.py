@@ -35,6 +35,14 @@ EPISODE_PROPERTIES = [
     'dateadded',
     'lastplayed',
 ]
+EPISODE_ART_SUBSTITUTES = {
+    'poster': ('season.poster', 'tvshow.poster'),
+    'fanart': ('season.fanart', 'tvshow.fanart'),
+    'landscape': ('season.landscape', 'tvshow.landscape'),
+    'clearart': ('season.clearart', 'tvshow.clearart'),
+    'banner': ('season.banner', 'tvshow.banner'),
+    'clearlogo': ('season.clearlogo', 'tvshow.clearlogo'),
+}
 
 TVSHOW_PROPERTIES = [
     'title',
@@ -744,29 +752,44 @@ def get_upnext_from_library(limit=25):
             }
         )
         current_episode = current_episode.get('result', {}).get('episodes')
+
         if not current_episode:
             continue
         if current_episode[0]['resume']['position']:
-            upnext_episodes += current_episode
+            upnext_episode = current_episode
+        else:
+            current_season = str(current_episode[0]['season'])
+            _FILTER_THIS_SEASON['value'] = current_season
+            _FILTER_NEXT_SEASON['value'] = current_season
+            _FILTER_NEXT_EPISODE['value'] = str(current_episode[0]['episode'])
+
+            upnext_episode = utils.jsonrpc(
+                method='VideoLibrary.GetEpisodes',
+                params={
+                    'tvshowid': tvshow['tvshowid'],
+                    'properties': EPISODE_PROPERTIES,
+                    'sort': _SORT_EPISODE,
+                    'limits': _QUERY_LIMIT_ONE,
+                    'filter': _FILTER_UNWATCHED_UPNEXT_EPISODE_SEASON
+                }
+            )
+            upnext_episode = upnext_episode.get('result', {}).get('episodes')
+
+        if not upnext_episode:
             continue
 
-        current_season = str(current_episode[0]['season'])
-        _FILTER_THIS_SEASON['value'] = current_season
-        _FILTER_NEXT_SEASON['value'] = current_season
-        _FILTER_NEXT_EPISODE['value'] = str(current_episode[0]['episode'])
+        art = upnext_episode[0].get('art')
+        if art:
+            art_types = frozenset(art.keys())
+            for art_type, art_substitutes in EPISODE_ART_SUBSTITUTES.items():
+                if art_type in art_types:
+                    continue
+                for art_substitute in art_substitutes:
+                    if art_substitute in art_types:
+                        art[art_type] = art[art_substitute]
+                        break
+            upnext_episode[0]['art'] = art
 
-        upnext_episode = utils.jsonrpc(
-            method='VideoLibrary.GetEpisodes',
-            params={
-                'tvshowid': tvshow['tvshowid'],
-                'properties': EPISODE_PROPERTIES,
-                'sort': _SORT_EPISODE,
-                'limits': _QUERY_LIMIT_ONE,
-                'filter': _FILTER_UNWATCHED_UPNEXT_EPISODE_SEASON
-            }
-        )
-        upnext_episode = upnext_episode.get('result', {}).get('episodes')
-        if upnext_episode:
-            upnext_episodes += upnext_episode
+        upnext_episodes += upnext_episode
 
     return upnext_episodes
