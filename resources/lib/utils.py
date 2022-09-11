@@ -29,7 +29,8 @@ class Profiler(object):
         from io import StringIO as _StringIO
     from functools import wraps as _wraps
     _wraps = staticmethod(_wraps)
-    from weakref import proxy as _proxy, ref as _ref
+    from weakref import proxy as _proxy
+    _proxy = staticmethod(_proxy)
 
     _instances = set()
 
@@ -37,7 +38,7 @@ class Profiler(object):
         self = super(Profiler, cls).__new__(cls)
         self.__init__(*args, **kwargs)
         cls._instances.add(self)
-        return cls._proxy(self)
+        return self if self._profiler else cls._proxy(self)  # pylint: disable=protected-access
 
     def __init__(self, enabled=True, lazy=False, name=__name__, reuse=False):
         self._enabled = enabled
@@ -58,7 +59,7 @@ class Profiler(object):
         if not self._profiler:
             self._create_profiler()
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def __exit__(self, exc_type=None, exc_value=None, traceback=None):
         if not self._enabled:
             return
 
