@@ -39,10 +39,10 @@
 	</category>
 	<category label="30700"> <!-- Expert -->
 		<setting label="30701" type="lsep"/> <!-- Troubleshooting -->
-        <setting label="30702" type="slider" id="startDelay" default="5" range="1,1,10" option="int"/>
+		<setting label="30702" type="slider" id="startDelay" default="5" range="1,1,10" option="int"/>
 		<setting label="30703" type="bool" id="disableNextUp" default="false"/>
 		<setting label="30705" type="enum" id="logLevel" lvalues="30042|30043|30044" default="0"/>
-        <setting label="30706" type="slider" id="apiRetryAttempts" default="3" range="0,1,10" option="int"/>
+		<setting label="30706" type="slider" id="apiRetryAttempts" default="3" range="0,1,10" option="int"/>
 		<setting label="30707" type="bool" id="enableQueue" default="true"/>
 		<setting label="30730" type="lsep"/> <!-- Additional detector settings -->
 		<setting label="30731" type="folder" id="detectorSavePath" default="special://profile/addon_data/service.upnext/detector/" source="" option="writeable"/>
@@ -68,7 +68,7 @@
 		<setting label="30821" type="bool" id="demoPlugin" default="false" subsetting="true" enable="eq(-3,true)"/>
 		<setting label="30823" type="lsep"/> <!-- Additional developer settings -->
 		<setting label="30825" type="bool" id="detectorDebug" default="false"/>
-        <setting label="30826" type="bool" id="detectorDebugSave" default="false"/>
+		<setting label="30826" type="bool" id="detectorDebugSave" default="false"/>
 		<setting label="30830" type="bool" id="startTrigger" default="false"/>
 	</category>
 </settings>
