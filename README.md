@@ -20,18 +20,22 @@ The add-on has various settings to fine-tune the experience, however the default
 
 > NOTE: The add-on settings are found in the Kodi add-ons section, in the *Services* category.
 
-For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
+For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
 
 ## Releases
+
+### v1.1.8 (2022-09-13)
+- Never ask if Still Watching? if playedInARow is 0 (@MoojMidge)
+- Still Watching? checks number of plays not number+1 (@MoojMidge)
 
 ### v1.1.7 (2022-09-03)
 - Update check for filename of multi-part episodes (@MoojMidge)
 - Check for physical disc or disc image being played (@MoojMidge)
 - Translation update to Russian (@ArtyIF)
-- Fix CI workflow (@MoojMidge) (@MoojMidge)
+- Fix CI workflow (@MoojMidge)
 
 ### v1.1.6 (2022-03-07)
-- Fix for missing mediatype video info with addon video content (@MoojMidge) (@MoojMidge)
+- Fix for missing mediatype video info with addon video content (@MoojMidge)
 - Translation updates to Croatian, Japanese, Korean, Swedish and Finnish (@dsardelic, @Thunderbird2086, @Sopor, @Dis90)
 - New translation for Taiwanese Mandarin (@JuenTingShie)
 - Use onAVStarted instead of onPlayBackStarted (@MoojMidge)
