@@ -411,26 +411,30 @@ class UpNextMonitor(xbmc.Monitor, object):
             )
 
     def _stop_detector(self, terminate=False):
-        if self._detector:
-            self._detector.cancel()
+        detector_timer = getattr(self, '_detector', None)
+        if detector_timer:
+            detector_timer.cancel()
             del self._detector
             self._detector = None
 
-        if self.detector:
-            self.detector.stop(terminate=terminate)
+        detector_instance = getattr(self, 'detector', None)
+        if detector_instance:
+            detector_instance.stop(terminate=terminate)
             if terminate:
                 del self.detector
                 self.detector = None
                 self.log('Cleanup detector')
 
     def _stop_popuphandler(self, restart=False, terminate=False):
-        if self._popuphandler:
-            self._popuphandler.cancel()
+        popuphandler_timer = getattr(self, '_popuphandler', None)
+        if popuphandler_timer:
+            popuphandler_timer.cancel()
             del self._popuphandler
             self._popuphandler = None
 
-        if self.popuphandler:
-            self.popuphandler.stop(restart=restart, terminate=terminate)
+        popuphandler_instance = getattr(self, 'popuphandler', None)
+        if popuphandler_instance:
+            popuphandler_instance.stop(restart=restart, terminate=terminate)
             if terminate:
                 del self.popuphandler
                 self.popuphandler = None
