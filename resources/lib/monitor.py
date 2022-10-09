@@ -146,6 +146,10 @@ class UpNextMonitor(xbmc.Monitor, object):
         if self._queue_length != 1:
             return
 
+        # Update stored video resolution if detector is running
+        if self.detector:
+            self.detector.get_video_resolution(_cache=[None])
+
         # Restart tracking if previously enabled
         self._start_tracking()
 

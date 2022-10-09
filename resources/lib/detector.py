@@ -296,35 +296,6 @@ class UpNextDetector(object):
         )
 
     @staticmethod
-    def _get_video_capture_resolution(max_size=None):
-        """Method to return a scaled down capture resolution tuple for use in
-           capturing the video frame buffer at a specific size/resolution"""
-
-        width, height, aspect_ratio = UpNextDetector._get_video_resolution()
-
-        # Capturing render buffer at higher resolution captures more detail
-        # depending on Kodi scaling function used, but slows down processing.
-        # Limit captured data to max_size (in kB)
-        if max_size:
-            max_size = max_size * 8 * 1024
-            height = min(int((max_size / aspect_ratio) ** 0.5), height)
-            width = min(int(height * aspect_ratio), width)
-
-        return width, height
-
-    @staticmethod
-    def _get_video_resolution():
-        """Method to detect playing video resolution and aspect ratio"""
-
-        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
-        width = int(width.replace(',', ''))
-        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
-        height = int(height.replace(',', ''))
-        aspect_ratio = width / height
-
-        return width, height, aspect_ratio
-
-    @staticmethod
     def _create_hash(image, hash_size, output_file=None):
         image_hash = image_utils.process(
             image,
@@ -343,7 +314,9 @@ class UpNextDetector(object):
         image = image_utils.process(
             image_data,
             queue=[
-                [image_utils.import_data, image_size],
+                [image_utils.import_data, image_size, False],
+                [image_utils.resize, cls._get_video_capture_resolution()],
+                [image_utils.saturation],
                 [image_utils.auto_level, 5, 95, (0.33, None)],
             ],
             save_file='1_image'
@@ -417,6 +390,23 @@ class UpNextDetector(object):
             uncertainty = cls._hash_fuzz(image_hash, baseline_hash)
 
         return similarity - uncertainty
+
+    @classmethod
+    def _get_video_capture_resolution(cls, max_size=8):
+        """Method to return a scaled down capture resolution tuple for use in
+           capturing the video frame buffer at a specific size/resolution"""
+
+        width, height, aspect_ratio = cls.get_video_resolution()
+
+        # Capturing render buffer at higher resolution captures more detail
+        # depending on Kodi scaling function used, but slows down processing.
+        # Limit captured data to max_size (in kB)
+        if max_size:
+            max_size = max_size * 8 * 1024
+            height = min(int((max_size / aspect_ratio) ** 0.5), height)
+            width = min(int(height * aspect_ratio), width)
+
+        return width, height
 
     @classmethod
     def _print_hashes(cls, hashes, size, prefix=''):
@@ -596,7 +586,7 @@ class UpNextDetector(object):
         }
 
         # Hash size as (width, height)
-        hash_size = [8 * self._get_video_resolution()[2], 8]
+        hash_size = [8 * self.get_video_resolution()[2], 8]
         # Round down width to multiple of 2
         hash_size[0] = int(hash_size[0] - hash_size[0] % 2)
 
@@ -653,6 +643,7 @@ class UpNextDetector(object):
 
     def _queue_push(self):
         capturer, size = self._queue_pull()
+        capturer.capture(*size)
 
         abort = False
         while not (abort or self._sigterm.is_set() or self._sigstop.is_set()):
@@ -664,7 +655,6 @@ class UpNextDetector(object):
                 self.log('Stop capture: nothing playing')
                 break
 
-            capturer.capture(*size)
             image_data = capturer.getImage()
 
             # Capture failed or was skipped, retry with less data
@@ -676,18 +666,19 @@ class UpNextDetector(object):
                     SETTINGS.detector_data_limit - 8
                 ) or 8
 
+                image_data = None
                 size = self._get_video_capture_resolution(
                     max_size=SETTINGS.detector_data_limit
                 )
 
                 del capturer
                 capturer = xbmc.RenderCapture()
-                continue
 
             try:
                 self.queue.put(
                     (image_data, size), timeout=self.capture_interval
                 )
+                capturer.capture(*size)
 
                 loop_time = timeit.default_timer() - loop_start
                 if loop_time >= self.capture_interval:
@@ -748,7 +739,7 @@ class UpNextDetector(object):
 
             try:
                 image_data, size = self._queue_pull(SETTINGS.detector_threads)
-                if not isinstance(image_data, bytearray):
+                if not isinstance(image_data, (bytes, bytearray)):
                     raise queue.Empty
             except TypeError:
                 self.log('Queue empty - exiting')
@@ -835,6 +826,24 @@ class UpNextDetector(object):
             return False
 
         return self.match_counts['detected']
+
+    @staticmethod
+    def get_video_resolution(_cache=[None]):  # pylint: disable=dangerous-default-value
+        """Method to detect playing video resolution and aspect ratio"""
+
+        # We don't need to get resolution every time, cache and reuse instead
+        if _cache[0] is not None:
+            return _cache[0]
+
+        width = xbmc.getInfoLabel('Player.Process(VideoWidth)')
+        width = int(width.replace(',', ''))
+        height = xbmc.getInfoLabel('Player.Process(VideoHeight)')
+        height = int(height.replace(',', ''))
+        aspect_ratio = width / height
+
+        resolution = width, height, aspect_ratio
+        _cache[0] = resolution
+        return resolution
 
     def reset(self):
         self._hash_match_reset()

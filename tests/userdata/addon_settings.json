@@ -19,7 +19,7 @@
 		"detectPeriod": 30,
 		"detectPlayTime": "true",
 		"detectSignificance": 25,
-		"detectorDataLimit": 16,
+		"detectorDataLimit": 32,
 		"detectorDebug": "true",
 		"detectorDebugSave": "false",
 		"detectorFilter": "true",

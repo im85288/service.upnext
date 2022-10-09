@@ -575,19 +575,18 @@ def image_stack(index):
     return _image_stack_fetch
 
 
-def import_data(input_data, buffer_size=None):
+def import_data(input_data, buffer_size=None, to_RGBA=False):  # pylint: disable=invalid-name
     if isinstance(input_data, Image.Image):
-        image = input_data
+        return input_data
 
-    elif isinstance(input_data, bytearray):
-        # Convert captured image data from BGRA to RGBA
+    if to_RGBA:
+        # Convert captured image data from BGRA to RGBA. Not enabled by default
+        # as the mixed up colour channels does not effect saturation levels
         input_data[0::4], input_data[2::4] = input_data[2::4], input_data[0::4]
 
-        image = Image.frombuffer(
-            'RGBA', buffer_size, input_data, 'raw', 'RGBA', 0, 1
-        )
-
-    image = image.convert('HSV').getchannel(2)
+    image = Image.frombuffer(
+        'RGBA', buffer_size, input_data, 'raw', 'RGBA', 0, 1
+    )
 
     return image
 
@@ -717,6 +716,10 @@ def resize(image, size, method=None):
         )
 
     return image
+
+
+def saturation(image):
+    return image.convert('HSV').getchannel(2)
 
 
 def threshold(image):  # pylint: disable=too-many-locals
