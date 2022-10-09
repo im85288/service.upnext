@@ -71,6 +71,7 @@ class UpNextMonitor(xbmc.Monitor, object):
             wait_count -= 1
 
         # Get video details, exit if no video playing
+        api.cache_invalidate()
         playback = self._get_playback_details(use_infolabel=True)
         if not playback:
             self.log('Skip video check: nothing playing', utils.LOGWARNING)

@@ -200,6 +200,16 @@ _SORT_RANDOM = {
 }
 
 
+_CACHE = {
+    'playerid': None,
+    'playlistid': None
+}
+
+
+def cache_invalidate():
+    _CACHE.update(_CACHE.fromkeys(_CACHE))
+
+
 def log(msg, level=utils.LOGDEBUG):
     """Log wrapper"""
 
@@ -276,9 +286,9 @@ def dequeue_next_item():
 def play_playlist_item(position=0, resume=False):
     """Function to play episode in playlist"""
 
-    log('Playing from playlist position: {0}'.format(position))
     if position == 'next':
         position = get_playlist_position()
+    log('Playing from playlist position: {0}'.format(position))
 
     # JSON Player.Open can be too slow but is needed if resuming is enabled
     # Unfortunately resuming from a playlist item does not seem to work...
@@ -298,7 +308,7 @@ def get_playlist_position():
 
     # Use actual playlistid rather than xbmc.PLAYLIST_VIDEO as Kodi sometimes
     # plays video content in a music playlist
-    playlistid = get_playlistid(_cache=[None])
+    playlistid = get_playlistid()
     if playlistid is None:
         return None
 
@@ -406,12 +416,12 @@ def play_plugin_item(data, encoding, resume=False):
     log('No plugin data available for playback', utils.LOGWARNING)
 
 
-def get_playerid(_cache=[None], retry=3):  # pylint: disable=dangerous-default-value
+def get_playerid(retry=3):
     """Function to get active player playerid"""
 
-    # We don't need to actually get playerid everytime, cache and reuse instead
-    if _cache[0] is not None:
-        return _cache[0]
+    # We don't need to get playerid every time, cache and reuse instead
+    if _CACHE['playerid'] is not None:
+        return _CACHE['playerid']
 
     # Sometimes Kodi gets confused and uses a music playlist for video content,
     # so get the first active player instead, default to video player. Wait 1s
@@ -428,6 +438,7 @@ def get_playerid(_cache=[None], retry=3):  # pylint: disable=dangerous-default-v
             utils.wait(2)
     else:
         log('No active player', utils.LOGWARNING)
+        _CACHE['playerid'] = None
         return None
 
     result = [
@@ -442,32 +453,35 @@ def get_playerid(_cache=[None], retry=3):  # pylint: disable=dangerous-default-v
 
     if playerid == constants.UNDEFINED:
         log('No active player', utils.LOGWARNING)
+        _CACHE['playerid'] = None
         return None
 
     log('Selected playerid: {0}'.format(playerid))
-    _cache[0] = playerid
+    _CACHE['playerid'] = playerid
     return playerid
 
 
-def get_playlistid(_cache=[None]):  # pylint: disable=dangerous-default-value
+def get_playlistid():
     """Function to get playlistid of active player"""
 
-    # We don't need to get playlistid everytime, cache and reuse instead
-    if _cache[0] is not None:
-        return _cache[0]
+    # We don't need to get playlistid every time, cache and reuse instead
+    if _CACHE['playlistid'] is not None:
+        return _CACHE['playlistid']
 
     result = utils.jsonrpc(
         method='Player.GetProperties',
         params={
-            'playerid': get_playerid(_cache=[None]),
+            'playerid': get_playerid(),
             'properties': ['playlistid'],
         }
     )
-    result = utils.get_int(
+    playlistid = utils.get_int(
         result.get('result', {}), 'playlistid', PLAYER_PLAYLIST['video']
     )
 
-    return result
+    log('Selected playlistid: {0}'.format(playlistid))
+    _CACHE['playlistid'] = playlistid
+    return playlistid
 
 
 def get_player_speed():
