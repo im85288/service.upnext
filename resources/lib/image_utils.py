@@ -360,6 +360,58 @@ def auto_level(image, min_value=0, max_value=100, clip=(0, None), _int=int):
     ])
 
 
+def auto_threshold(image):  # pylint: disable=too-many-locals
+    histogram = image.histogram()
+
+    cum_sum = [0] * 256
+    cum_sum_reversed = [0] * 256
+    cum_integral = [0] * 256
+    cum_integral_reversed = [0] * 256
+
+    sum_total = image.size[0] * image.size[1]
+    running_total = 0
+    running_total_reversed = 0
+    running_integral = 0
+    running_integral_reversed = 0
+
+    for idx, (num, num_reversed) in enumerate(zip(histogram, histogram[::-1])):
+        delta = num / sum_total
+        running_total += delta
+        running_integral += delta * idx
+
+        delta_reversed = num_reversed / sum_total
+        running_total_reversed += delta_reversed
+        running_integral_reversed += delta_reversed * (255 - idx)
+
+        cum_sum[idx] = running_total
+        cum_sum_reversed[255 - idx] = running_total_reversed
+
+        cum_integral[idx] = running_integral
+        cum_integral_reversed[255 - idx] = running_integral_reversed
+
+    variance = [
+        running_total * running_total_reversed * (
+            (running_integral / running_total)
+            - (running_integral_reversed / running_total_reversed)
+        ) ** 2
+        if running_total and running_total_reversed
+        and running_integral and running_integral_reversed
+        else 0
+        for running_total, running_total_reversed,
+        running_integral, running_integral_reversed in
+        zip(cum_sum[:-1], cum_sum_reversed[1:],
+            cum_integral[:-1], cum_integral_reversed[1:])
+    ]
+
+    target = max(variance)
+    target = max([idx for idx, val in enumerate(variance) if val == target])  # pylint: disable=consider-using-generator
+    target = target + 1
+
+    image = image.point([255 if (i > target) else 0 for i in range(256)])
+
+    return image
+
+
 def apply_filter(image, method, extent=None, original=None, output_op=None):
     if output_op:
         original = original if original else image
@@ -541,7 +593,7 @@ def export_data(image):
     return tuple(image.point(lut).getdata())
 
 
-def has_credits(image, filtered_image, save_file=None):
+def entropy_compare(image, filtered_image, threshold=1.10, save_file=None):
     filtered_image = apply_filter(filtered_image, 'BoxBlur,1')
     filtered_entropy = image.entropy(mask=filtered_image)
 
@@ -564,7 +616,7 @@ def has_credits(image, filtered_image, save_file=None):
                 SETTINGS.detector_save_path, save_file
             ))
 
-        return (expanded_entropy / filtered_entropy) < 1.10, output_image
+        return (expanded_entropy / filtered_entropy) < threshold, output_image
 
     return False, None
 
@@ -575,11 +627,11 @@ def image_stack(index):
     return _image_stack_fetch
 
 
-def import_data(input_data, buffer_size=None, to_RGBA=False):  # pylint: disable=invalid-name
+def import_data(input_data, buffer_size=None, to_rgba=False):
     if isinstance(input_data, Image.Image):
         return input_data
 
-    if to_RGBA:
+    if to_rgba:
         # Convert captured image data from BGRA to RGBA. Not enabled by default
         # as the mixed up colour channels does not effect saturation levels
         input_data[0::4], input_data[2::4] = input_data[2::4], input_data[0::4]
@@ -720,58 +772,6 @@ def resize(image, size, method=None):
 
 def saturation(image):
     return image.convert('HSV').getchannel(2)
-
-
-def threshold(image):  # pylint: disable=too-many-locals
-    histogram = image.histogram()
-
-    cum_sum = [0] * 256
-    cum_sum_reversed = [0] * 256
-    cum_integral = [0] * 256
-    cum_integral_reversed = [0] * 256
-
-    sum_total = image.size[0] * image.size[1]
-    running_total = 0
-    running_total_reversed = 0
-    running_integral = 0
-    running_integral_reversed = 0
-
-    for idx, (num, num_reversed) in enumerate(zip(histogram, histogram[::-1])):
-        delta = num / sum_total
-        running_total += delta
-        running_integral += delta * idx
-
-        delta_reversed = num_reversed / sum_total
-        running_total_reversed += delta_reversed
-        running_integral_reversed += delta_reversed * (255 - idx)
-
-        cum_sum[idx] = running_total
-        cum_sum_reversed[255 - idx] = running_total_reversed
-
-        cum_integral[idx] = running_integral
-        cum_integral_reversed[255 - idx] = running_integral_reversed
-
-    variance = [
-        running_total * running_total_reversed * (
-            (running_integral / running_total)
-            - (running_integral_reversed / running_total_reversed)
-        ) ** 2
-        if running_total and running_total_reversed
-        and running_integral and running_integral_reversed
-        else 0
-        for running_total, running_total_reversed,
-        running_integral, running_integral_reversed in
-        zip(cum_sum[:-1], cum_sum_reversed[1:],
-            cum_integral[:-1], cum_integral_reversed[1:])
-    ]
-
-    target = max(variance)
-    target = max([idx for idx, val in enumerate(variance) if val == target])  # pylint: disable=consider-using-generator
-    target = target + 1
-
-    image = image.point([255 if (i > target) else 0 for i in range(256)])
-
-    return image
 
 
 def trim_to_bounding_box(image):

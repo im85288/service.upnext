@@ -335,10 +335,10 @@ class UpNextDetector(object):
                 [image_utils.detail_reduce, image, 50],
                 [image_utils.apply_filter,
                  'GaussianBlur,5', 'TRIM', None, 'multiply'],
-                [image_utils.threshold],
+                [image_utils.auto_threshold],
             ],
             save_file='2_filter'
-        )
+        ) if SETTINGS.detector_filter else image
 
         return image, filtered_image
 
@@ -455,10 +455,10 @@ class UpNextDetector(object):
             'episodes': constants.UNDEFINED
         }
 
-        has_credits, expanded_image = image_utils.process(
+        possible_credits, expanded_image = image_utils.process(
             image,
             queue=[
-                [image_utils.has_credits, filtered_image]
+                [image_utils.entropy_compare, filtered_image, 1.10]
             ],
             save_file='3_expanded'
         )
@@ -467,7 +467,7 @@ class UpNextDetector(object):
         filtered_hash = self._create_hash(filtered_image, hash_size)
         expanded_hash = None
 
-        if has_credits:
+        if possible_credits:
             expanded_hash = self._create_hash(expanded_image, hash_size)
 
             # Calculate similarity between current hash and representative hash
