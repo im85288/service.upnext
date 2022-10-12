@@ -12,16 +12,16 @@ jobs:
         uses: actions/checkout@v3
       - name: Build zip files
         run: |
-          sudo apt-get install libxml2-utils
+          sudo apt-get install xmlstarlet
           make multizip release=1
       - name: Get Leia filename
         id: get-leia-filename
         run: |
-          echo ::set-output name=leia-filename::$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)
+          echo "filename=$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)" >> $GITHUB_OUTPUT
       - name: Get Matrix filename
         id: get-matrix-filename
         run: |
-          echo ::set-output name=matrix-filename::$(cd ..;ls service.upnext*+matrix.*.zip | head -1)
+          echo "filename=$(cd ..;ls service.upnext*+matrix.*.zip | head -1)" >> $GITHUB_OUTPUT
       - name: Get body
         id: get-body
         run: |
@@ -30,7 +30,7 @@ jobs:
           description="${description//'%'/'%25'}"
           description="${description//$'\n'/'%0A'}"
           description="${description//$'\r'/'%0D'}" 
-          echo ::set-output name=body::$description
+          echo "body=$description" >> $GITHUB_OUTPUT
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
@@ -49,8 +49,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ steps.get-leia-filename.outputs.leia-filename }}
-          asset_path: ../${{ steps.get-leia-filename.outputs.leia-filename }}
+          asset_name: ${{ steps.get-leia-filename.outputs.filename }}
+          asset_path: ../${{ steps.get-leia-filename.outputs.filename }}
           asset_content_type: application/zip
       - name: Upload Matrix zip
         id: upload-matrix-zip 
@@ -59,8 +59,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ steps.get-matrix-filename.outputs.matrix-filename }}
-          asset_path: ../${{ steps.get-matrix-filename.outputs.matrix-filename }}
+          asset_name: ${{ steps.get-matrix-filename.outputs.filename }}
+          asset_path: ../${{ steps.get-matrix-filename.outputs.filename }}
           asset_content_type: application/zip
       # - name: Generate distribution zip and submit to official kodi repository
         # id: kodi-addon-submitter

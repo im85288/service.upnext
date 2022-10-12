@@ -2,16 +2,15 @@ export PYTHONPATH := $(CURDIR)/resources/lib/:$(CURDIR)/tests/
 PYTHON := python
 KODI_PYTHON_ABIS := 3.0.0 2.25.0
 
-name = $(shell xmllint --xpath 'string(/addon/@id)' addon.xml)
-version = $(shell xmllint --xpath 'string(/addon/@version)' addon.xml)
+name = $(shell xmlstarlet sel -t -v '/addon/@id' addon.xml)
+version = $(shell xmlstarlet sel -t -v '/addon/@version' addon.xml)
 git_branch = $(shell git rev-parse --abbrev-ref HEAD)
 git_hash = $(shell git rev-parse --short HEAD)
-matrix = $(findstring $(shell xmllint --xpath 'string(/addon/requires/import[@addon="xbmc.python"]/@version)' addon.xml), $(word 1,$(KODI_PYTHON_ABIS)))
 
 ifdef release
-	zip_name = $(name)-$(version).zip
+    zip_name = $(name)-$(version).zip
 else
-	zip_name = $(name)-$(version)-$(git_branch)-$(git_hash).zip
+    zip_name = $(name)-$(version)-$(git_branch)-$(git_hash).zip
 endif
 
 include_files = addon.xml LICENSE README.md resources/
@@ -74,10 +73,16 @@ build: clean
 
 multizip: clean
 	@-$(foreach abi,$(KODI_PYTHON_ABIS), \
-		printf "cd /addon/requires/import[@addon='xbmc.python']/@version\nset $(abi)\nsave\nbye\n" | xmllint --shell addon.xml; \
-		matrix=$(findstring $(abi), $(word 1,$(KODI_PYTHON_ABIS))); \
-		if [ $$matrix ]; then version=$(version)+matrix.1; else version=$(version); fi; \
-		printf "cd /addon/@version\nset $$version\nsave\nbye\n" | xmllint --shell addon.xml; \
+		xmlstarlet ed -L -d '/addon/requires/import[@addon="xbmc.python"][@version="$(abi)"]/@optional' addon.xml; \
+		xmlstarlet ed -L -d '/addon/requires/import[@addon="xbmc.python"][@optional]' addon.xml; \
+		xmlstarlet ed -L -u '/addon/requires/import[@addon="xbmc.python"]/@version' -v $(abi) addon.xml; \
+		matrix="$(findstring $(abi), $(word 1,$(KODI_PYTHON_ABIS)))"; \
+		if [ ! -z "$$matrix" ]; then \
+			version="$(version)+matrix.1"; \
+		else \
+			version="$(version)"; \
+		fi; \
+		xmlstarlet ed -L -u '/addon/@version' -v $$version addon.xml; \
 		make build; \
 	)
 
