@@ -34,6 +34,12 @@ The add-on has various settings to fine-tune the experience, however the default
 For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Addon-Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
 
 ## Releases
+### 2.0.1+dev.0
+- Fix release workflow and makefile
+- Improve speed and reliability of detector
+- Fix tvshow artwork of episodes in plugin listing
+- Add PL translation (@notoco)
+
 ### 2.0.0+dev.0
 - Initial release
 
