@@ -27,7 +27,7 @@ LIBRARY = {
         {
             'episodeid': constants.UNDEFINED,
             'tvshowid': constants.UNDEFINED,
-            'title': 'Garden of Bones',
+            'title': 'Garden of Bones (Jardín de huesos)',
             'art': {
                 'thumb': 'https://artworks.thetvdb.com/banners/episodes/121361/4245773.jpg',
                 'tvshow.fanart': 'https://artworks.thetvdb.com/banners/fanart/original/121361-5.jpg',
@@ -44,12 +44,12 @@ LIBRARY = {
             'rating': 8.8,
             'firstaired': 'April 22, 2012',
             'runtime': 3000,
-            'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E04 - Garden of Bones.mkv'
+            'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E04 - Garden of Bones (Jardín de huesos).mkv'
         },
         {
             'episodeid': constants.UNDEFINED,
             'tvshowid': constants.UNDEFINED,
-            'title': 'The Ghost of Harrenhal',
+            'title': 'The Ghost of Harrenhal (하렌할의 유령)',
             'art': {
                 'thumb': 'https://artworks.thetvdb.com/banners/episodes/121361/4245774.jpg',
                 'tvshow.fanart': 'https://artworks.thetvdb.com/banners/fanart/original/121361-5.jpg',
@@ -66,7 +66,7 @@ LIBRARY = {
             'rating': 8.8,
             'firstaired': 'April 29, 2012',
             'runtime': 3300,
-            'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E05 - The Ghost of Harrenhal.mkv'
+            'file': 'file://media/tvshows/Game of Thrones/Season 02/Game of Thrones - S02E05 - The Ghost of Harrenhal (하렌할의 유령).mkv'
         }
     ]
 }
