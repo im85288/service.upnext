@@ -203,6 +203,50 @@ msgctxt "#30519"
 msgid "Blue channel"
 msgstr ""
 
+msgctxt "#30550"
+msgid "Plugin listing label customisation"
+msgstr ""
+
+msgctxt "#30551"
+msgid "Main label - token 1"
+msgstr ""
+
+msgctxt "#30552"
+msgid "Main label - token 2"
+msgstr ""
+
+msgctxt "#30553"
+msgid "Main label - token 3"
+msgstr ""
+
+msgctxt "#30554"
+msgid "Secondary label - token 1"
+msgstr ""
+
+msgctxt "#30555"
+msgid "Secondary label - token 2"
+msgstr ""
+
+msgctxt "#30556"
+msgid "Secondary label - token 3"
+msgstr ""
+
+msgctxt "#30560"
+msgid "Empty"
+msgstr ""
+
+msgctxt "#30561"
+msgid "Show title"
+msgstr ""
+
+msgctxt "#30562"
+msgid "Season # x Episode #"
+msgstr ""
+
+msgctxt "#30563"
+msgid "Episode title"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr ""

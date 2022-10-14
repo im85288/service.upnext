@@ -39,6 +39,8 @@ class UpNextSettings(object):
         'mark_watched',
         'next_season',
         'played_limit',
+        'plugin_main_label',
+        'plugin_secondary_label',
         'popup_accent_colour',
         'popup_durations',
         'popup_position',
@@ -93,6 +95,18 @@ class UpNextSettings(object):
                 + utils.get_setting_int('popupCustomAccentColourB')
             )[2:]
         self.popup_accent_colour = accent_colour
+
+        self.plugin_main_label = (
+            utils.get_setting_int('pluginMainLabelToken1'),
+            utils.get_setting_int('pluginMainLabelToken2'),
+            utils.get_setting_int('pluginMainLabelToken3')
+        )
+
+        self.plugin_secondary_label = (
+            utils.get_setting_int('pluginSecondaryLabelToken1'),
+            utils.get_setting_int('pluginSecondaryLabelToken2'),
+            utils.get_setting_int('pluginSecondaryLabelToken3')
+        )
 
         self.auto_play = utils.get_setting_int('autoPlayMode') == 1
         self.played_limit = (

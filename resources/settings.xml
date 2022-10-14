@@ -12,6 +12,13 @@
 		<setting label="30517" type="slider" id="popupCustomAccentColourR" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-2,4)"/>
 		<setting label="30518" type="slider" id="popupCustomAccentColourG" default="255" range="0,1,255" option="int" subsetting="true" visible="eq(-3,4)"/>
 		<setting label="30519" type="slider" id="popupCustomAccentColourB" default="000" range="0,1,255" option="int" subsetting="true" visible="eq(-4,4)"/>
+        <setting label="30550" type="lsep"/> <!-- Plugin listing -->
+        <setting label="30551" type="enum" id="pluginMainLabelToken1" lvalues="30560|30561|30562|30563" default="1"/>
+        <setting label="30552" type="enum" id="pluginMainLabelToken2" lvalues="30560|30561|30562|30563" default="2"/>
+        <setting label="30553" type="enum" id="pluginMainLabelToken3" lvalues="30560|30561|30562|30563" default="3"/>
+        <setting label="30554" type="enum" id="pluginSecondaryLabelToken1" lvalues="30560|30561|30562|30563" default="0"/>
+        <setting label="30555" type="enum" id="pluginSecondaryLabelToken2" lvalues="30560|30561|30562|30563" default="0"/>
+        <setting label="30556" type="enum" id="pluginSecondaryLabelToken3" lvalues="30560|30561|30562|30563" default="0"/>
 	</category>
 	<category label="30600"> <!-- Behaviour -->
 		<setting label="30601" type="lsep"/> <!-- Playback -->

@@ -5,6 +5,7 @@
 from __future__ import absolute_import, division, unicode_literals
 import xbmc
 import xbmcgui
+from settings import SETTINGS
 import constants
 import utils
 
@@ -65,10 +66,19 @@ def create_listitem(episode):
         '{0}x{1}'.format(season, episode_number) if season and episode_number
         else episode_number
     )
-    label_tokens = [show_title, season_episode, episode_title]
+    label_tokens = (None, show_title, season_episode, episode_title)
 
     kwargs = {
-        'label': ' - '.join(token for token in label_tokens if token),
+        'label': ' - '.join(
+            label_tokens[token]
+            for token in SETTINGS.plugin_main_label
+            if token
+        ),
+        'label2': ' - '.join(
+            label_tokens[token]
+            for token in SETTINGS.plugin_secondary_label
+            if token
+        ),
         'path': file_path
     }
     if utils.supports_python_api(18):
