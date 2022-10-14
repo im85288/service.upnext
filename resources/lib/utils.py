@@ -193,6 +193,7 @@ def get_addon(addon_id=None, retry_attempts=3):
     while attempts_left > 0:
         try:
             if addon_id:
+                addon_id = statichelper.from_unicode(addon_id)
                 addon = xbmcaddon.Addon(addon_id)
             else:
                 addon = xbmcaddon.Addon()
@@ -217,7 +218,9 @@ _KODI_MAJOR_VERSION = jsonrpc(
 def get_addon_info(key):
     """Return addon information"""
 
-    return statichelper.to_unicode(ADDON.getAddonInfo(key))
+    key = statichelper.from_unicode(key)
+    value = ADDON.getAddonInfo(key)
+    return statichelper.to_unicode(value)
 
 
 def get_addon_id():
@@ -241,19 +244,25 @@ def supports_python_api(version):
 def get_property(key, window_id=constants.WINDOW_HOME):
     """Get a Window property"""
 
-    return statichelper.to_unicode(xbmcgui.Window(window_id).getProperty(key))
+    key = statichelper.from_unicode(key)
+    value = xbmcgui.Window(window_id).getProperty(key)
+    return statichelper.to_unicode(value)
 
 
 def set_property(key, value, window_id=constants.WINDOW_HOME):
     """Set a Window property"""
 
-    value = statichelper.from_unicode(str(value))
+    # setProperty accepts bytes/str/unicode in Kodi18+ but truncates bytes
+    # when a null byte (\x00) is encountered in Kodi19+
+    key = statichelper.from_unicode(key)
+    value = statichelper.from_unicode(value)
     return xbmcgui.Window(window_id).setProperty(key, value)
 
 
 def clear_property(key, window_id=constants.WINDOW_HOME):
     """Clear a Window property"""
 
+    key = statichelper.from_unicode(key)
     return xbmcgui.Window(window_id).clearProperty(key)
 
 
@@ -462,13 +471,15 @@ def log(msg, name=__name__, level=LOGINFO):
     msg = statichelper.to_unicode(msg)
     msg = '[{0}] {1} -> {2}'.format(get_addon_id(), name, msg)
     # Convert back for older Kodi versions
-    xbmc.log(statichelper.from_unicode(msg), level=level)
+    msg = statichelper.from_unicode(msg)
+    xbmc.log(msg, level=level)
 
 
 def localize(string_id):
     """Return the translated string from the .po language files"""
 
-    return ADDON.getLocalizedString(string_id)
+    string = ADDON.getLocalizedString(string_id)
+    return statichelper.to_unicode(string)
 
 
 def get_year(date_string):
@@ -514,6 +525,8 @@ def notification(heading, message,
                  icon=xbmcgui.NOTIFICATION_INFO, time=5000, sound=False):
     """Display a notification in Kodi with notification sound off by default"""
 
+    heading = statichelper.from_unicode(heading)
+    message = statichelper.from_unicode(message)
     xbmcgui.Dialog().notification(heading, message, icon, time, sound)
 
 

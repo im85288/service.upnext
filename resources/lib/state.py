@@ -395,7 +395,9 @@ class UpNextState(object):  # pylint: disable=too-many-public-methods
         if not showtitle or season == constants.UNDEFINED:
             self.season_identifier = None
         else:
-            self.season_identifier = '_'.join((str(showtitle), str(season)))
+            if isinstance(season, (int, float)):
+                season = str(season)
+            self.season_identifier = '_'.join((showtitle, season))
 
     def get_season_identifier(self):
         return self.season_identifier
