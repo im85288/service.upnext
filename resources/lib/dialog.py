@@ -70,6 +70,34 @@ class UpNextPopup(xbmcgui.WindowXMLDialog, object):
         else:
             self.update_progress_control()
 
+    def onAction(self, action):  # pylint: disable=invalid-name
+        if action == xbmcgui.ACTION_STOP:
+            self.set_cancel(True)
+            self.set_stop(True)
+            self.close()
+        elif action == xbmcgui.ACTION_NAV_BACK:
+            self.set_cancel(True)
+            self.close()
+
+    def onClick(self, controlId):  # pylint: disable=invalid-name
+        # Play now - Watch now / Still Watching
+        if controlId == constants.PLAY_CONTROL_ID:
+            self.set_playnow(True)
+            self.close()
+        # Cancel - Close / Stop
+        elif controlId == constants.CLOSE_CONTROL_ID:
+            self.set_cancel(True)
+            if self.stop_enable:
+                self.set_stop(True)
+            self.close()
+        # Shuffle play
+        elif controlId == constants.SHUFFLE_CONTROL_ID:
+            if self.is_shuffle_on():
+                self.set_shuffle(False)
+            else:
+                self.set_shuffle(True)
+                self.set_cancel(True)
+                self.close()
 
     def setProperty(self, key, value):  # pylint: disable=invalid-name
         # setProperty accepts bytes/str/unicode in Kodi18+ but truncates bytes
@@ -199,32 +227,3 @@ class UpNextPopup(xbmcgui.WindowXMLDialog, object):
 
     def is_shuffle_on(self):
         return self.shuffle_on
-
-    def onClick(self, controlId):  # pylint: disable=invalid-name
-        # Play now - Watch now / Still Watching
-        if controlId == constants.PLAY_CONTROL_ID:
-            self.set_playnow(True)
-            self.close()
-        # Cancel - Close / Stop
-        elif controlId == constants.CLOSE_CONTROL_ID:
-            self.set_cancel(True)
-            if self.stop_enable:
-                self.set_stop(True)
-            self.close()
-        # Shuffle play
-        elif controlId == constants.SHUFFLE_CONTROL_ID:
-            if self.is_shuffle_on():
-                self.set_shuffle(False)
-            else:
-                self.set_shuffle(True)
-                self.set_cancel(True)
-                self.close()
-
-    def onAction(self, action):  # pylint: disable=invalid-name
-        if action == xbmcgui.ACTION_STOP:
-            self.set_cancel(True)
-            self.set_stop(True)
-            self.close()
-        elif action == xbmcgui.ACTION_NAV_BACK:
-            self.set_cancel(True)
-            self.close()
