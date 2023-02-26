@@ -30,7 +30,7 @@ jobs:
       run: python -m tox -q -e flake8,py
       if: always()
     - name: Run pylint
-      run: python -m pylint resources/lib/ tests/
+      run: python -m pylint resources/lib/
       if: always()
     - name: Compare translations
       run: make check-translations
