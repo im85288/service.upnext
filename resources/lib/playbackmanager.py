@@ -117,7 +117,7 @@ class PlaybackManager:
 
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
-        event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
+        event(message='NEXTUPWATCHEDSIGNAL', data={'episodeid': self.state.current_episode_id}, encoding='base64')
         if source == 'playlist' or self.state.queued:
             # Play playlist media
             if should_play_non_default:

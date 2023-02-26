@@ -6,10 +6,19 @@
 # pylint: disable=invalid-name
 
 from __future__ import absolute_import, division, print_function, unicode_literals
+
 import io
 import os
+import sys
 import xml.etree.ElementTree as ET
+
 import polib
+
+
+_version_info = sys.version_info
+__KODI_LEIA__ = _version_info.major < 3
+__KODI_MATRIX__ = _version_info.major > 2
+__KODI_NEXUS__ = __KODI_MATRIX__ and _version_info.minor > 10
 
 
 def kodi_to_ansi(string):

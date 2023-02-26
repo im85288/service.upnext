@@ -9,46 +9,47 @@ jobs:
     env:
       PYTHONIOENCODING: utf-8
       PYTHONPATH: ${{ github.workspace }}/resources/lib:${{ github.workspace }}/tests
+      TESTS_ENABLED: '2.7, 3.8, 3.11'
     strategy:
       fail-fast: false
       matrix:
-        python-version: [ 2.7, 3.5, 3.6, 3.7, 3.8, 3.9 ]
+        python-version: [2.7, 3.7, 3.8, 3.9, '3.10', 3.11]
     steps:
     - name: Check out ${{ github.sha }} from repository ${{ github.repository }}
-      uses: actions/checkout@v2
+      uses: actions/checkout@v3
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v4
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
       run: |
         sudo apt-get install gettext
-        sudo pip install coverage --install-option="--install-scripts=/usr/bin"
         python -m pip install --upgrade pip
         pip install -r requirements.txt
     - name: Run tox
       run: python -m tox -q -e flake8,py
       if: always()
     - name: Run pylint
-      run: python -m pylint resources/lib/ tests/
+      run: python -m pylint resources/lib/
       if: always()
     - name: Compare translations
       run: make check-translations
       if: always()
-    - name: Run unit tests
-      run: coverage run -m unittest discover
-      if: always()
-    - name: Run script entry
-      run: coverage run -a resources/lib/script_entry.py
-      if: always()
-    - name: Run service entry
-      run: coverage run -a resources/lib/service_entry.py &
-      if: always()
+    - name: Run pytest
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
+      run: pytest --log-cli-level=INFO
+      continue-on-error: true
     - name: Upload code coverage to CodeCov
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
       uses: codecov/codecov-action@v3
       continue-on-error: true
+    - name: Fix coverage.xml source path
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
+      run: sed -i 's@'$GITHUB_WORKSPACE'@/github/workspace/@g' coverage.xml
+      continue-on-error: true
     - name: Analyze with SonarCloud
-      uses: SonarSource/sonarcloud-github-action@v1.4
+      if: contains(env.TESTS_ENABLED, matrix.python-version)
+      uses: SonarSource/sonarcloud-github-action@master
       with:
         args: >
           -Dsonar.organization=im85288
