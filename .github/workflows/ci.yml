@@ -56,6 +56,7 @@ jobs:
           -Dsonar.projectKey=im85288_service.upnext
           -Dsonar.sources=resources/lib/
           -Dsonar.tests=tests/
+          -Dsonar.python.coverage.reportPaths=coverage.xml
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
