@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<addon id="service.upnext" name="Up Next" version="1.1.8" provider-name="im85288">
+<addon id="service.upnext" name="Up Next" version="1.1.9" provider-name="im85288">
     <requires>
         <import addon="xbmc.python" version="2.25.0"/>
     </requires>
@@ -40,6 +40,9 @@ Många befintliga tillägg integreras redan med den här utanför lådan-tjänst
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <news>
+v1.1.9 (2023-04-15)
+- Fix error when kodi is not playing video any longer
+
 v1.1.8 (2022-09-13)
 - Never ask if Still Watching? if playedInARow is 0
 - Still Watching? checks number of plays not number+1

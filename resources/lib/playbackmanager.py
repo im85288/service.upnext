@@ -41,7 +41,12 @@ class PlaybackManager:
 
     def launch_up_next(self):
         enable_playlist = get_setting_bool('enablePlaylist')
-        episode, source = self.play_item.get_next()
+        try:
+            episode, source = self.play_item.get_next()
+        except RuntimeError:
+            # Not playing anything any longer
+            self.log('Error: not playing anything any longer...exiting', 1)
+            return
         self.log('Playlist setting: %s' % enable_playlist)
         if source == 'playlist' and not enable_playlist:
             self.log('Playlist integration disabled', 2)
@@ -117,7 +122,7 @@ class PlaybackManager:
 
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
-        event(message='NEXTUPWATCHEDSIGNAL', data={'episodeid': self.state.current_episode_id}, encoding='base64')
+        event(message='NEXTUPWATCHEDSIGNAL', data=dict(episodeid=self.state.current_episode_id), encoding='base64')
         if source == 'playlist' or self.state.queued:
             # Play playlist media
             if should_play_non_default:
