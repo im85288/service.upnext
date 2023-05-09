@@ -24,9 +24,6 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
-### v1.1.9 (2023-04-15)
-- Fix error when kodi is not playing video any longer
-
 ### v1.1.8 (2022-09-13)
 - Never ask if Still Watching? if playedInARow is 0 (@MoojMidge)
 - Still Watching? checks number of plays not number+1 (@MoojMidge)
