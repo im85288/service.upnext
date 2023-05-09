@@ -58,7 +58,7 @@ class PlayItem:
 
         # Next video from Kodi library
         else:
-            current_file = self.player.getPlayingFile()
+            current_file = self.player.get_last_file()
             # Get the active player
             result = self.api.get_now_playing()
             self.handle_now_playing_result(result)
