@@ -4,7 +4,7 @@
 from __future__ import absolute_import, division, unicode_literals
 from xbmc import PlayList
 from api import Api
-from player import Player
+from player import UpNextPlayer
 from state import State
 from utils import log as ulog
 
@@ -15,7 +15,7 @@ class PlayItem:
     def __init__(self):
         self.__dict__ = self._shared_state
         self.api = Api()
-        self.player = Player()
+        self.player = UpNextPlayer()
         self.state = State()
 
     def log(self, msg, level=2):

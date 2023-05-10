@@ -5,7 +5,7 @@ from __future__ import absolute_import, division, unicode_literals
 from xbmc import sleep
 from api import Api
 from demo import DemoOverlay
-from player import Player
+from player import UpNextPlayer
 from playitem import PlayItem
 from state import State
 from stillwatching import StillWatching
@@ -21,7 +21,7 @@ class PlaybackManager:
         self.api = Api()
         self.play_item = PlayItem()
         self.state = State()
-        self.player = Player()
+        self.player = UpNextPlayer()
         self.demo = DemoOverlay(12005)
 
     def log(self, msg, level=2):
