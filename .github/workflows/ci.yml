@@ -9,11 +9,11 @@ jobs:
     env:
       PYTHONIOENCODING: utf-8
       PYTHONPATH: ${{ github.workspace }}/resources/lib:${{ github.workspace }}/tests
-      TESTS_ENABLED: '2.7, 3.8, 3.11'
+      TESTS_ENABLED: 'pypy2.7, 3.8, 3.11'
     strategy:
       fail-fast: false
       matrix:
-        python-version: [2.7, 3.7, 3.8, 3.9, '3.10', 3.11]
+        python-version: [pypy2.7, 3.7, 3.8, 3.9, '3.10', 3.11]
     steps:
     - name: Check out ${{ github.sha }} from repository ${{ github.repository }}
       uses: actions/checkout@v3
