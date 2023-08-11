@@ -36,7 +36,7 @@ Många befintliga tillägg integreras redan med den här utanför lådan-tjänst
         <summary lang="es_ES">Sugiere reproducir el próximo episodio automáticamente</summary>
         <description lang="es_ES">Un complemento de servicio que muestra una notificación al estilo Netflix para ver el próximo episodio. Después de algunas iteraciones automáticas, le pregunta al usuario si todavía está allí mirando.
 
-            Muchos complementos existentes ya se integran con este servicio listo para usar.</description>
+Muchos complementos existentes ya se integran con este servicio listo para usar.</description>
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <news>
