@@ -1,16 +1,16 @@
-# Service Up Next language file
+# Kodi addon language file
 # Addon Name: Up Next
 # Addon id: service.upnext
 # Addon Provider: im85288
 msgid ""
 msgstr ""
 "Project-Id-Version: Up Next\n"
-"Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
+"Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext/issues\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2023-09-30 04:59+0300\n"
 "Last-Translator: Oskari Lavinto <olavinto@protonmail.com>\n"
-"Language-Team: olavinto@protonmail.com\n"
-"Language: fi\n"
+"Language-Team: Finnish\n"
+"Language: fi_FI\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
