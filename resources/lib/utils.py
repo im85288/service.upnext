@@ -206,7 +206,7 @@ def localize(string_id):
 
 def localize_date(date_string):
     """Localize date format"""
-    date_format = xbmc.getRegion('dateshort')
+    date_format = getRegion('dateshort')
 
     try:
         # A number of assumptions are made here about date_string
@@ -216,9 +216,9 @@ def localize_date(date_string):
             for part in re_split(r'[\W]', date_string)[:3]
         ))
     except ValueError:
-        return None, date_string
+        return date_string
 
-    return date_object, date_object.strftime(date_format)
+    return date_object.strftime(date_format)
 
 
 def localize_time(time):
