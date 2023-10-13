@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from platform import machine
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
-from utils import localize_time
+from utils import localize_date, localize_time
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
@@ -54,7 +54,7 @@ class StillWatching(WindowXMLDialog):
             self.setProperty('season', str(self.item.get('season', '')))
             self.setProperty('episode', str(self.item.get('episode', '')))
             self.setProperty('seasonepisode', episode_info)
-            self.setProperty('year', str(self.item.get('firstaired', '')))
+            self.setProperty('year', localize_date(self.item.get('firstaired', '')))
             self.setProperty('rating', rating)
             self.setProperty('playcount', str(self.item.get('playcount', 0)))
             self.setProperty('runtime', str(self.item.get('runtime', '')))
