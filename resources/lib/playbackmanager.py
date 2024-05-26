@@ -77,6 +77,8 @@ class PlaybackManager:
         # Add next file to playlist if existing playlist is not being used
         if source != 'playlist':
             queued = self.state.queued = self.api.queue_next_item(episode)
+        else:
+            queued = False
 
         # We have a next up episode choose mode
         if get_setting_int('simpleMode') == 0:
