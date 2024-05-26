@@ -76,7 +76,7 @@ class PlaybackManager:
 
         # Add next file to playlist if existing playlist is not being used
         if source != 'playlist':
-            self.state.queued = self.api.queue_next_item(episode)
+            queued = self.state.queued = self.api.queue_next_item(episode)
 
         # We have a next up episode choose mode
         if get_setting_int('simpleMode') == 0:
@@ -118,7 +118,7 @@ class PlaybackManager:
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data={'episodeid': self.state.current_episode_id}, encoding='base64')
-        if source == 'playlist' or self.state.queued:
+        if source == 'playlist' or queued:
             # Play playlist media
             if should_play_non_default:
                 # Only start the next episode if the user asked for it specifically
