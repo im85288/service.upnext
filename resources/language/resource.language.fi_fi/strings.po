@@ -7,7 +7,7 @@ msgstr ""
 "Project-Id-Version: Up Next\n"
 "Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext/issues\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
-"PO-Revision-Date: 2024-07-14 12:34+0300\n"
+"PO-Revision-Date: 2024-04-21 12:24+0300\n"
 "Last-Translator: Oskari Lavinto <olavinto@protonmail.com>\n"
 "Language-Team: Finnish\n"
 "Language: fi_FI\n"
@@ -15,7 +15,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
-"X-Generator: Poedit 3.4.4\n"
+"X-Generator: Poedit 3.4.2\n"
 
 # ## APPLICATION
 msgctxt "#30006"
@@ -40,7 +40,7 @@ msgstr "Katseletko vielä?"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
-msgstr "Käytä toistettaessa toistolistoja"
+msgstr "Käytä toistolistoille"
 
 msgctxt "#30033"
 msgid "Stop"
@@ -56,11 +56,11 @@ msgstr "Katselua jatketaan [COLOR FFFF4081]$INFO[Window.Property(remaining)][/CO
 
 msgctxt "#30036"
 msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
-msgstr "Seuraava toistetaan [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekunnin kuluttua"
+msgstr "Aloitetaan seuraavan toisto [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekunnin kuluttua"
 
 msgctxt "#30037"
 msgid "Next episode in [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] seconds"
-msgstr "Seuraava jakso toistetaan [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekunnin kuluttua"
+msgstr "Aloitetaan seuraava jakson toisto [COLOR FFFF4081]$INFO[Window.Property(remaining)][/COLOR] sekunnin kuluttua"
 
 msgctxt "#30038"
 msgid "Simple"
@@ -197,16 +197,16 @@ msgstr "Käytä esittelytilaa"
 
 msgctxt "#30805"
 msgid "Show an UpNext pop-up…"
-msgstr "Näytä \"Seuraavaksi\"-ilmoitus…"
+msgstr "Näytä \"Seuraavaksi\"-ilmoitus..."
 
 msgctxt "#30807"
 msgid "Show an UpNextSimple pop-up…"
-msgstr "Näytä yksinkertaisempi \"Seuraavaksi\"-ilmoitus…"
+msgstr "Näytä yksinkertaisempi \"Seuraavaksi\"-ilmoitus..."
 
 msgctxt "#30809"
 msgid "Show a StillWatching pop-up…"
-msgstr "Näytä \"Katseletko vielä?\" -ilmoitus…"
+msgstr "Näytä \"Katseletko vielä?\" -ilmoitus..."
 
 msgctxt "#30811"
 msgid "Show a StillWatchingSimple pop-up…"
-msgstr "Näytä yksinkertaisempi \"Katseletko vielä?\" -ilmoitus…"
+msgstr "Näytä yksinkertaisempi \"Katseletko vielä?\" -ilmoitus..."
