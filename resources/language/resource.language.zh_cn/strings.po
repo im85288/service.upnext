@@ -197,11 +197,11 @@ msgstr "启用演示模式"
 
 msgctxt "#30805"
 msgid "Show an UpNext pop-up…"
-msgstr "显示“下一集”弹出窗口..."
+msgstr "显示“下个播放”弹出窗口..."
 
 msgctxt "#30807"
 msgid "Show an UpNextSimple pop-up…"
-msgstr "显示“下一集（简易）”弹出窗口..."
+msgstr "显示“下个播放（简易）”弹出窗口..."
 
 msgctxt "#30809"
 msgid "Show a StillWatching pop-up…"
