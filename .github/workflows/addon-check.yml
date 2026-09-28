@@ -9,15 +9,17 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        kodi-branch: [leia, matrix]
+        # Leia is not checked: kodi-addon-checker now rejects every add-on on the leia
+        # branch that does not target Python 3. Python 2 is still covered by the PyPy 2.7 tests.
+        kodi-branch: [matrix]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v4
       with:
         path: ${{ github.repository }}
-    - name: Set up Python 3.9
-      uses: actions/setup-python@v1
+    - name: Set up Python 3.12
+      uses: actions/setup-python@v5
       with:
-        python-version: 3.9
+        python-version: '3.12'
     - name: Install dependencies
       run: |
         sudo apt-get install xmlstarlet

@@ -9,16 +9,16 @@ jobs:
     env:
       PYTHONIOENCODING: utf-8
       PYTHONPATH: ${{ github.workspace }}/resources/lib:${{ github.workspace }}/tests
-      TESTS_ENABLED: 'pypy2.7, 3.8, 3.11'
+      TESTS_ENABLED: 'pypy2.7, 3.8, 3.11, 3.14'
     strategy:
       fail-fast: false
       matrix:
-        python-version: [pypy2.7, 3.7, 3.8, 3.9, '3.10', 3.11]
+        python-version: [pypy2.7, 3.8, 3.9, '3.10', 3.11, 3.12, 3.13, 3.14]
     steps:
     - name: Check out ${{ github.sha }} from repository ${{ github.repository }}
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v4
+      uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install dependencies
