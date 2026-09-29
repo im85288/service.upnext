@@ -1,18 +1,23 @@
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <addon id="service.upnext" name="Up Next" version="1.1.9" provider-name="im85288">
     <requires>
-        <import addon="xbmc.python" version="2.25.0"/>
+        <import addon="xbmc.python" version="3.0.0"/>
     </requires>
     <!-- This is needed to get an addon icon -->
     <extension point="xbmc.python.script" library="resources/lib/script_entry.py">
       <provides>executable</provides>
     </extension>
     <extension point="xbmc.service" library="resources/lib/service_entry.py"/>
-    <extension point="xbmc.addon.metadata">
+    <extension point="xbmc.addon.metadata">               
+        
         <summary lang="en_GB">Propose to play the next episode automatically</summary>
         <description lang="en_GB">A service add-on that shows a Netflix-style notification for watching the next episode. After a few automatic iterations it asks the user if he is still there watching.
 
 A lot of existing add-ons already integrate with this service out-of-the-box.</description>
+        <summary lang="zh_CN">建议自动播放下一集</summary>
+        <description lang="zh_CN">一个服务插件，显示观看下一集的 Netflix 样式通知。在几次自动迭代之后，它会询问用户是否仍在观看。
+
+许多现有的插件已经开箱即用地与该服务集成。</description>        
         <summary lang="de_DE">Bietet Ihnen an, die nächste Episode automatisch wiederzugeben</summary>
         <description lang="de_DE">Ein kleines Hilfs-Add-on, welches eine Netflix-artige Benachrichtigung zur Wiedergabe der nächsten Episode anzeigt. Nach ein paar automatischen Iterationen fragt es den Anwender, ob er sie immer noch anschaut.
 
@@ -40,6 +45,13 @@ Muchos complementos existentes ya se integran con este servicio listo para usar.
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <news>
+v1.1.9 (2023-05-10)
+- Fix handling of non-ASCII filenames for Kodi18 (@MoojMidge)
+- Fix failing ci workflow (@MoojMidge)
+- Update Swedish translation (@Sopor)
+- Explicitly set sonarcloud coverage path (@MoojMidge)
+- Fix error when kodi is not playing video any longer (@AnonTester)
+        
 v1.1.8 (2022-09-13)
 - Never ask if Still Watching? if playedInARow is 0
 - Still Watching? checks number of plays not number+1
