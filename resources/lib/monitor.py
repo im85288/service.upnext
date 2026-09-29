@@ -15,10 +15,10 @@ class UpNextMonitor(Monitor):
 
     def __init__(self):
         """Constructor for Monitor"""
+        super(UpNextMonitor, self).__init__()
         self.player = UpNextPlayer()
         self.api = Api()
         self.playback_manager = PlaybackManager()
-        Monitor.__init__(self)
 
     def log(self, msg, level=1):
         """Log wrapper"""
