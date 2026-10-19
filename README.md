@@ -26,7 +26,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ### Unreleased
 
-- Stop playback once after closing the popup and preserve playback started while it was open.
+- Stop playback once after closing the popup and preserve playback started while it was open; Back dismisses prompts without stopping the video.
 
 ### v1.1.9 (2023-05-10)
 - Fix handling of non-ASCII filenames for Kodi18 (@MoojMidge)

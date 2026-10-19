@@ -16,6 +16,7 @@ OS_MACHINE = machine()
 class StillWatching(WindowXMLDialog):
     item = None
     cancel = False
+    dismissed = False
     stillwatching = False
     progress_step_size = 0
     current_progress_percent = 100
@@ -93,6 +94,9 @@ class StillWatching(WindowXMLDialog):
     def is_cancel(self):
         return self.cancel
 
+    def is_dismissed(self):
+        return self.dismissed
+
     def set_still_watching(self, stillwatching):
         self.stillwatching = stillwatching
 
@@ -120,5 +124,6 @@ class StillWatching(WindowXMLDialog):
         if action == ACTION_PLAYER_STOP:
             self.close()
         elif action == ACTION_NAV_BACK:
+            self.dismissed = True
             self.set_cancel(True)
             self.close()

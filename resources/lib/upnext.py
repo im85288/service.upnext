@@ -16,6 +16,7 @@ OS_MACHINE = machine()
 class UpNext(WindowXMLDialog):
     item = None
     cancel = False
+    dismissed = False
     watchnow = False
     progress_step_size = 0
     current_progress_percent = 100
@@ -97,6 +98,9 @@ class UpNext(WindowXMLDialog):
     def is_cancel(self):
         return self.cancel
 
+    def is_dismissed(self):
+        return self.dismissed
+
     def set_watch_now(self, watchnow):
         self.watchnow = watchnow
 
@@ -125,5 +129,6 @@ class UpNext(WindowXMLDialog):
         if action == ACTION_PLAYER_STOP:
             self.close()
         elif action == ACTION_NAV_BACK:
+            self.dismissed = True
             self.set_cancel(True)
             self.close()

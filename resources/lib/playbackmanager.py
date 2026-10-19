@@ -120,6 +120,9 @@ class PlaybackManager:
         play_item_option_1 = (should_play_default and self.state.play_mode == 0)
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
+            if (next_up_page.is_dismissed() if showing_next_up_page else still_watching_page.is_dismissed()):
+                # Back dismisses the prompt without stopping the current video.
+                return False, True
             # play_next = False
             # keep_playing = next_up_page.is_cancel() if showing_next_up_page else still_watching_page.is_cancel()
             # keep_playing = keep_playing and not get_setting_bool('stopAfterClose')
