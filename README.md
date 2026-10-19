@@ -27,6 +27,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ### Unreleased
 
 - Stop playback once after closing the popup and preserve playback started while it was open; Back dismisses prompts without stopping the video.
+- Keep next-episode detection active while the player recovers, and restore tracking, next-episode metadata and the Still Watching count for the same file after sleep.
 
 ### v1.1.9 (2023-05-10)
 - Fix handling of non-ASCII filenames for Kodi18 (@MoojMidge)
