@@ -4,7 +4,6 @@
 from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from platform import machine
-from xbmc import Player
 from xbmcgui import WindowXMLDialog
 from statichelper import from_unicode
 from utils import get_setting_bool, localize, localize_date, localize_time
@@ -119,8 +118,7 @@ class UpNext(WindowXMLDialog):
             self.close()
         elif controlId == 3013:  # Close / Stop
             self.set_cancel(True)
-            if get_setting_bool('stopAfterClose'):
-                Player().stop()
+            # The playback manager owns Stop after the dialog has closed.
             self.close()
 
     def onAction(self, action):  # pylint: disable=invalid-name
