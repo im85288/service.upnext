@@ -24,9 +24,11 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
-### Unreleased
-- Drop support for Kodi 18 (Leia); Up Next now requires Kodi 19 (Matrix) or later
-- Remove Python 2 compatibility code, and fix looking up a TV show by title on Python 3
+### v1.2.0 (2026-10-20)
+- Drop support for Kodi 18 (Leia); Up Next now requires Kodi 19 (Matrix) or later (@im85288)
+- Remove Python 2 compatibility code, and fix looking up a TV show by title on Python 3 (@im85288)
+- Use gender-neutral wording in the description (@wedebe)
+- Fix empty GitHub release notes and add a manual Kodi submission workflow (@im85288)
 
 ### v1.1.10 (2026-10-20)
 - Stop playback once after closing the popup and preserve playback started while it was open (@Drahy)
