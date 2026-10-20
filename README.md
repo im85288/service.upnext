@@ -24,7 +24,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
-### Unreleased
+### v1.2.1 (2026-10-20)
 - Fix the popup failing to fill in when an add-on sends a partial or missing first-aired date (@im85288)
 - Add Simplified Chinese translation (@wabisabi926)
 
