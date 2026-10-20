@@ -1,14 +1,12 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
-from __future__ import absolute_import, division, unicode_literals
 from copy import deepcopy
 from xbmc import Monitor
 from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
-from statichelper import to_unicode
-from utils import decode_json, get_property, get_setting_bool, kodi_version_major, log as ulog
+from utils import decode_json, get_property, get_setting_bool, log as ulog
 
 
 class UpNextMonitor(Monitor):
@@ -16,7 +14,7 @@ class UpNextMonitor(Monitor):
 
     def __init__(self):
         """Constructor for Monitor"""
-        super(UpNextMonitor, self).__init__()
+        super().__init__()
         self.player = UpNextPlayer()
         self.api = Api()
         self.playback_manager = PlaybackManager()
@@ -55,8 +53,7 @@ class UpNextMonitor(Monitor):
                 self.playback_manager.demo.hide()
                 continue
 
-            # Method isExternalPlayer() was added in Kodi v18 onward
-            if kodi_version_major() >= 18 and self.player.isExternalPlayer():
+            if self.player.isExternalPlayer():
                 self.log('Up Next tracking stopped, external player detected', 2)
                 self.player.disable_tracking()
                 self.playback_manager.demo.hide()
@@ -64,7 +61,7 @@ class UpNextMonitor(Monitor):
 
             last_file = self.player.get_last_file()
             try:
-                current_file = to_unicode(self.player.getPlayingFile())
+                current_file = self.player.getPlayingFile()
             except RuntimeError:
                 self.wait_for_player('player.getPlayingFile()')
                 continue
@@ -127,7 +124,7 @@ class UpNextMonitor(Monitor):
     def remember_playback(self, filename=None):
         if filename is None:
             try:
-                filename = to_unicode(self.player.getPlayingFile())
+                filename = self.player.getPlayingFile()
             except RuntimeError:
                 return
         if (not self._playback_state
@@ -153,7 +150,7 @@ class UpNextMonitor(Monitor):
             return
         self._wake_retries -= 1
         try:
-            filename = to_unicode(self.player.getPlayingFile())
+            filename = self.player.getPlayingFile()
             ready = bool(filename) and self.player.getTotalTime() > 0
         except RuntimeError:
             ready = False

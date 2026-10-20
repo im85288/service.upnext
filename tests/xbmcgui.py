@@ -5,7 +5,6 @@
 
 # pylint: disable=invalid-name,too-many-arguments,unused-argument
 
-from __future__ import absolute_import, division, print_function, unicode_literals
 from xbmcextra import kodi_to_ansi
 
 
@@ -236,7 +235,7 @@ class WindowXML(Window):
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXML class '''
-        super(WindowXML, self).__init__()  # pylint: disable=super-with-arguments
+        super().__init__()
 
 
 class WindowXMLDialog(WindowXML):
@@ -244,7 +243,7 @@ class WindowXMLDialog(WindowXML):
 
     def __init__(self):
         ''' A stub constructor for the xbmcgui WindowXMLDialog class '''
-        super(WindowXMLDialog, self).__init__()  # pylint: disable=super-with-arguments
+        super().__init__()
 
 
 def getScreenHeight():

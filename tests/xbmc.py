@@ -5,18 +5,15 @@
 
 # pylint: disable=invalid-name,no-self-use
 
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 import os
 import json
-import random
 import sys
 import threading
 import time
 from weakref import WeakValueDictionary
 
-from xbmcextra import __KODI_MATRIX__, __KODI_NEXUS__, global_settings, import_language
-from statichelper import to_unicode
+from xbmcextra import __KODI_NEXUS__, global_settings, import_language
 
 LOGFATAL = 'Fatal'
 LOGERROR = 'Error'
@@ -60,7 +57,7 @@ class Keyboard:
         return 'test'
 
 
-class Monitor(object):
+class Monitor:
     ''' A stub implementation of the xbmc Monitor class '''
 
     __slots__ = ('__weakref__', )
@@ -71,7 +68,7 @@ class Monitor(object):
     def __new__(cls):
         ''' A stub constructor for the xbmc Monitor class '''
 
-        self = super(Monitor, cls).__new__(cls)
+        self = super().__new__(cls)
 
         if not cls._instances:
             abort_timer = threading.Thread(target=self._timer)  # pylint: disable=protected-access
@@ -88,12 +85,7 @@ class Monitor(object):
             del Monitor._instances[key]
 
     def _timer(self):
-        if __KODI_NEXUS__:
-            abort_time = 120
-        elif __KODI_MATRIX__:
-            abort_time = 90
-        else:
-            abort_time = random.randint(90, 120)
+        abort_time = 120 if __KODI_NEXUS__ else 90
         log('Test exit in {0}s'.format(abort_time), LOGINFO)
 
         Monitor._aborted.wait(abort_time)
@@ -271,15 +263,15 @@ def getRegion(key):
 def log(msg, level):
     ''' A reimplementation of the xbmc log() function '''
     if level in ('Error', 'Fatal'):
-        print('\033[31;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
+        print('\033[31;1m%s: \033[32;0m%s\033[39;0m' % (level, msg))
         if level == 'Fatal':
             raise Exception(msg)
     elif level in ('Warning', 'Notice'):
-        print('\033[33;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
+        print('\033[33;1m%s: \033[32;0m%s\033[39;0m' % (level, msg))
     elif level == 'Debug':
-        print('\033[32;1m%s: \033[30;1m%s\033[39;0m' % (level, to_unicode(msg)))
+        print('\033[32;1m%s: \033[30;1m%s\033[39;0m' % (level, msg))
     else:
-        print('\033[32;1m%s: \033[32;0m%s\033[39;0m' % (level, to_unicode(msg)))
+        print('\033[32;1m%s: \033[32;0m%s\033[39;0m' % (level, msg))
 
 
 def setContent(self, content):  # pylint: disable=unused-argument

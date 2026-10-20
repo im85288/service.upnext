@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
-from __future__ import absolute_import, division, unicode_literals
 
 import pytest
 import monitor
@@ -9,7 +8,7 @@ import player
 import playitem
 
 
-class Stub(object):
+class Stub:
     def __init__(self, **values):
         self.__dict__.update(values)
 
@@ -26,7 +25,7 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
             raise RuntimeError('Player is not ready')
         return ready
 
-    class Player(object):
+    class Player:
         tracking = True
         last_file = 'episode.mkv' if processed else None
         state = Stub(played_in_a_row=1, current_tv_show_id=None)
@@ -82,7 +81,6 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
 
     monkeypatch.setattr(monitor, 'get_property', lambda name: '')
     monkeypatch.setattr(monitor, 'get_setting_bool', lambda name: False)
-    monkeypatch.setattr(monitor, 'kodi_version_major', lambda: 21)
     instance = Monitor()
     instance.run()
     return events, attempts
@@ -134,7 +132,7 @@ def test_resume_rearms_episode_tracking(monkeypatch, addon_data, episode_content
 
 @pytest.fixture
 def sleeping_monitor():
-    class Api(object):
+    class Api:
         def __init__(self):
             self.data = {'next_episode': {'episodeid': 'next'}}
             self.encoding = 'base64'
@@ -146,7 +144,7 @@ def sleeping_monitor():
             self.data = data
             self.encoding = encoding
 
-    class Player(object):
+    class Player:
         filename = 'episode.mkv'
         duration = 1200
         last_file = None
