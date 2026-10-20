@@ -1,0 +1,37 @@
+name: Submit to Kodi
+# Run by hand to (re)submit an existing release tag to the official Kodi repository,
+# e.g. when the submission step of the Release workflow failed after the GitHub release was created.
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag to submit (e.g. v1.1.10)'
+        required: true
+jobs:
+  submit:
+    name: Submit service.upnext to repo-scripts
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          ref: refs/tags/${{ inputs.tag }}
+      - name: Check addon.xml version matches tag
+        env:
+          TAG: ${{ inputs.tag }}
+        run: |
+          version=$(sed -n 's/^<addon id="service.upnext" name="Up Next" version="\([^"]*\)".*/\1/p' addon.xml)
+          echo "addon.xml version: $version, tag: $TAG"
+          [ "v$version" = "$TAG" ]
+      - name: Generate distribution zip and submit to official kodi repository
+        id: kodi-addon-submitter
+        uses: xbmc/action-kodi-addon-submitter@v1.2
+        with:
+          kodi-repository: repo-scripts
+          kodi-version: leia
+          addon-id: service.upnext
+          kodi-matrix: true
+        env:
+          GH_USERNAME: ${{secrets.GH_USERNAME}}
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
+          EMAIL: ${{secrets.EMAIL}}
