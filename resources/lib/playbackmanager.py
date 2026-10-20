@@ -51,7 +51,20 @@ class PlaybackManager:
             self.log('Error: no episode could be found to play next...exiting', 1)
             return
         self.log('episode details %s' % episode, 2)
+        try:
+            playing_file = self.player.getPlayingFile()
+        except RuntimeError:
+            self.log('No active playback for the next-episode popup', 2)
+            return
         play_next, keep_playing = self.launch_popup(episode, source)
+        if not play_next:
+            try:
+                same_playback = self.player.getPlayingFile() == playing_file
+            except RuntimeError:
+                same_playback = False
+            if not same_playback:
+                self.log('Playback changed while the popup was open; skipping stale cleanup', 2)
+                return
         self.state.playing_next = play_next
 
         # Dequeue and stop playback if not playing next file
@@ -107,6 +120,9 @@ class PlaybackManager:
         play_item_option_1 = (should_play_default and self.state.play_mode == 0)
         play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
+            if (next_up_page.is_dismissed() if showing_next_up_page else still_watching_page.is_dismissed()):
+                # Back dismisses the prompt without stopping the current video.
+                return False, True
             # play_next = False
             # keep_playing = next_up_page.is_cancel() if showing_next_up_page else still_watching_page.is_cancel()
             # keep_playing = keep_playing and not get_setting_bool('stopAfterClose')
