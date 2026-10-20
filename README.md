@@ -24,6 +24,10 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Fix the popup failing to fill in when an add-on sends a partial or missing first-aired date (@im85288)
+- Add Simplified Chinese translation (@wabisabi926)
+
 ### v1.2.0 (2026-10-20)
 - Drop support for Kodi 18 (Leia); Up Next now requires Kodi 19 (Matrix) or later (@im85288)
 - Remove Python 2 compatibility code, and fix looking up a TV show by title on Python 3 (@im85288)
