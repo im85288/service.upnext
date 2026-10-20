@@ -63,6 +63,8 @@ class UpNextPlayer(Player):
 
     def onPlayBackResumed(self):  # pylint: disable=invalid-name
         self.state.pause = False
+        if self.api.has_addon_data() or getCondVisibility('videoplayer.content(episodes)'):
+            self.enable_tracking()
 
     def onPlayBackStopped(self):  # pylint: disable=invalid-name
         """Will be called when user stops playing a file"""
