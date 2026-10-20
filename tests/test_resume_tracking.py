@@ -13,7 +13,7 @@ class Stub:
         self.__dict__.update(values)
 
 
-def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailable=False, max_ticks=3):
+def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailable=False, max_ticks=3, replaced=False):
     events = []
     attempts = {}
 
@@ -62,7 +62,7 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
         def __init__(self):
             self.player = Player()
             self.api = Stub(notification_time=lambda **kwargs: 30, data={}, encoding='base64')
-            self.playback_manager = Stub(launch_up_next=lambda: events.append('popup'), demo=Stub(hide=hide_demo))
+            self.playback_manager = Stub(launch_up_next=lambda: events.append('popup') or replaced, demo=Stub(hide=hide_demo))
             self.ticks = 0
             self._sleep_state = None
             self._wake_retries = 0
@@ -91,6 +91,11 @@ def test_temporary_player_unavailability_does_not_lose_popup(monkeypatch, unavai
     events, attempts = run_monitor(monkeypatch, unavailable=unavailable)
     assert events == ['popup', 'disabled']
     assert attempts[unavailable] >= 2
+
+
+def test_replaced_playback_keeps_tracking(monkeypatch):
+    events, _ = run_monitor(monkeypatch, replaced=True)
+    assert events == ['popup']
 
 
 def test_unready_player_does_not_show_popup(monkeypatch):

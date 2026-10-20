@@ -104,9 +104,12 @@ class UpNextMonitor(Monitor):
 
             self.player.set_last_file(current_file)
             self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
-            self.playback_manager.launch_up_next()
-            self.log('Up Next style autoplay succeeded', 2)
-            self.player.disable_tracking()
+            if self.playback_manager.launch_up_next():
+                # Another file replaced this episode while the popup was open, keep tracking it
+                self.log('Playback was replaced while the popup was open, tracking continues', 2)
+            else:
+                self.log('Up Next style autoplay succeeded', 2)
+                self.player.disable_tracking()
             self.remember_playback()
 
         self.log('Service stopped', 0)

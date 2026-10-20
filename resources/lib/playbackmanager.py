@@ -39,31 +39,33 @@ class PlaybackManager:
             self.demo.hide()
 
     def launch_up_next(self):
+        """Show the popup and act on it. Returns True if other playback replaced the episode while the popup was open"""
         enable_playlist = get_setting_bool('enablePlaylist')
         episode, source = self.play_item.get_next()
         self.log('Playlist setting: %s' % enable_playlist)
         if source == 'playlist' and not enable_playlist:
             self.log('Playlist integration disabled', 2)
-            return
+            return False
         if not episode:
             # No episode get out of here
             self.log('Error: no episode could be found to play next...exiting', 1)
-            return
+            return False
         self.log('episode details %s' % episode, 2)
         try:
             playing_file = self.player.getPlayingFile()
         except RuntimeError:
             self.log('No active playback for the next-episode popup', 2)
-            return
+            return False
         play_next, keep_playing = self.launch_popup(episode, source)
         if not play_next:
             try:
-                same_playback = self.player.getPlayingFile() == playing_file
+                current_file = self.player.getPlayingFile()
             except RuntimeError:
-                same_playback = False
-            if not same_playback:
+                current_file = None
+            if current_file != playing_file:
                 self.log('Playback changed while the popup was open; skipping stale cleanup', 2)
-                return
+                # Another file is playing now, its tracking must stay enabled
+                return current_file is not None
         self.state.playing_next = play_next
 
         # Dequeue and stop playback if not playing next file
@@ -74,6 +76,7 @@ class PlaybackManager:
             self.player.stop()
 
         self.api.reset_addon_data()
+        return False
 
     def launch_popup(self, episode, source=None):
         episode_id = episode.get('episodeid')

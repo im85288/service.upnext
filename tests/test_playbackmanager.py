@@ -101,7 +101,7 @@ def run_popup(monkeypatch):
         monkeypatch.setattr(playbackmanager, 'event', lambda **kwargs: record('watched'))
         monkeypatch.setattr(playbackmanager, 'clear_property', lambda name: None)
         manager = Manager()
-        manager.launch_up_next()
+        manager.replaced = manager.launch_up_next()
         return events, manager, popups
 
     return run
@@ -134,11 +134,19 @@ def test_replacement_playback_and_queue_are_preserved(run_popup):
     events, manager, _ = run_popup(playback_change='replacement', queued=True)
     assert not any(event[0] in ('stop', 'dequeue', 'reset') for event in events)
     assert manager.state.queued is True
+    assert manager.replaced is True
+
+
+@pytest.mark.parametrize('action', ['back', 'stop', 'timeout'])
+def test_unchanged_playback_is_not_reported_as_replaced(run_popup, action):
+    _, manager, _ = run_popup(action=action)
+    assert manager.replaced is False
 
 
 def test_ended_playback_is_not_stopped_again(run_popup):
-    events, _, _ = run_popup(playback_change='ended')
+    events, manager, _ = run_popup(playback_change='ended')
     assert not any(event[0] in ('stop', 'dequeue', 'reset') for event in events)
+    assert manager.replaced is False
 
 
 def test_inactive_playback_does_not_open_popup(run_popup):
