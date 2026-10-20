@@ -198,8 +198,9 @@ def localize_date(date_string):
             int(part)
             for part in re_split(r'[\W]', date_string)[:3]
         ))
-    except ValueError:
-        return date_string
+    except (TypeError, ValueError):
+        # Not a full date, e.g. a year-only firstaired from an add-on, or no date at all
+        return '' if date_string is None else str(date_string)
 
     return date_object.strftime(date_format)
 
