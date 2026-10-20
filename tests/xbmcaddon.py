@@ -5,7 +5,6 @@
 
 # pylint: disable=invalid-name
 
-from __future__ import absolute_import, division, print_function, unicode_literals
 from xbmc import getLocalizedString
 from xbmcextra import ADDON_INFO, ADDON_ID, addon_settings, global_settings, import_language
 

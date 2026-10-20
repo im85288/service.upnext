@@ -4,16 +4,12 @@
 ''' This file implements the Kodi xbmcplugin module, either using stubs or alternative functionality '''
 
 # pylint: disable=invalid-name,unused-argument
-from __future__ import absolute_import, division, print_function, unicode_literals
 
 from xbmc import log
 from xbmcextra import kodi_to_ansi, uri_to_path
 
-try:  # Python 3
-    from urllib.error import HTTPError
-    from urllib.request import Request, urlopen
-except ImportError:  # Python 2
-    from urllib2 import HTTPError, Request, urlopen
+from urllib.error import HTTPError
+from urllib.request import Request, urlopen
 
 SORT_METHOD_NONE = 0
 SORT_METHOD_LABEL = 1

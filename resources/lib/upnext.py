@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
-from __future__ import absolute_import, division, unicode_literals
 from datetime import datetime, timedelta
 from platform import machine
 from xbmcgui import WindowXMLDialog
-from statichelper import from_unicode
 from utils import get_setting_bool, localize, localize_date, localize_time
 
 ACTION_PLAYER_STOP = 13
@@ -88,9 +86,9 @@ class UpNext(WindowXMLDialog):
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
         if remaining:
-            self.setProperty('remaining', from_unicode('%02d' % remaining))
+            self.setProperty('remaining', '%02d' % remaining)
         if runtime:
-            self.setProperty('endtime', from_unicode(localize_time(datetime.now() + timedelta(seconds=runtime))))
+            self.setProperty('endtime', localize_time(datetime.now() + timedelta(seconds=runtime)))
 
     def set_cancel(self, cancel):
         self.cancel = cancel
