@@ -17,20 +17,22 @@ jobs:
       - name: Get Leia filename
         id: get-leia-filename
         run: |
-          echo ::set-output name=leia-filename::$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)
+          echo "leia-filename=$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)" >> "$GITHUB_OUTPUT"
       - name: Get Matrix filename
         id: get-matrix-filename
         run: |
-          echo ::set-output name=matrix-filename::$(cd ..;ls service.upnext*+matrix.*.zip | head -1)
+          echo "matrix-filename=$(cd ..;ls service.upnext*+matrix.*.zip | head -1)" >> "$GITHUB_OUTPUT"
       - name: Get body
         id: get-body
         run: |
-          description=$(sed '1,/^## Releases$/d;/## v[0-9\.]* ([0-9-]*)/d;/^$/,$d' README.md)
-          echo $description
-          description="${description//'%'/'%25'}"
-          description="${description//$'\n'/'%0A'}"
-          description="${description//$'\r'/'%0D'}" 
-          echo ::set-output name=body::$description
+          # Changes of the newest release: the lines under the first "### v..." heading after "## Releases"
+          description=$(awk '/^## Releases$/ {r=1; next} r && /^### v/ {if (s) exit; s=1; next} s && /^#/ {exit} s && NF {print}' README.md)
+          echo "$description"
+          {
+            echo 'body<<EOF_BODY'
+            echo "$description"
+            echo 'EOF_BODY'
+          } >> "$GITHUB_OUTPUT"
       - name: Create Release
         id: create_release
         uses: actions/create-release@v1
