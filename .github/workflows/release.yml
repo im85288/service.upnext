@@ -10,18 +10,14 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
-      - name: Build zip files
+      - name: Build zip file
         run: |
           sudo apt-get install libxml2-utils
-          make multizip release=1
-      - name: Get Leia filename
-        id: get-leia-filename
+          make build release=1
+      - name: Get zip filename
+        id: get-filename
         run: |
-          echo "leia-filename=$(cd ..;ls service.upnext*.zip | grep -v '+matrix.' | head -1)" >> "$GITHUB_OUTPUT"
-      - name: Get Matrix filename
-        id: get-matrix-filename
-        run: |
-          echo "matrix-filename=$(cd ..;ls service.upnext*+matrix.*.zip | head -1)" >> "$GITHUB_OUTPUT"
+          echo "filename=$(cd ..;ls service.upnext*.zip | head -1)" >> "$GITHUB_OUTPUT"
       - name: Get body
         id: get-body
         run: |
@@ -44,34 +40,23 @@ jobs:
           body: ${{ steps.get-body.outputs.body }}
           draft: false
           prerelease: false
-      - name: Upload Leia zip
-        id: upload-leia-zip
+      - name: Upload zip
+        id: upload-zip
         uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ steps.get-leia-filename.outputs.leia-filename }}
-          asset_path: ../${{ steps.get-leia-filename.outputs.leia-filename }}
-          asset_content_type: application/zip
-      - name: Upload Matrix zip
-        id: upload-matrix-zip 
-        uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-        with:
-          upload_url: ${{ steps.create_release.outputs.upload_url }}
-          asset_name: ${{ steps.get-matrix-filename.outputs.matrix-filename }}
-          asset_path: ../${{ steps.get-matrix-filename.outputs.matrix-filename }}
+          asset_name: ${{ steps.get-filename.outputs.filename }}
+          asset_path: ../${{ steps.get-filename.outputs.filename }}
           asset_content_type: application/zip
       - name: Generate distribution zip and submit to official kodi repository
         id: kodi-addon-submitter
         uses: xbmc/action-kodi-addon-submitter@v1.2
         with:
           kodi-repository: repo-scripts
-          kodi-version: leia
+          kodi-version: matrix
           addon-id: service.upnext
-          kodi-matrix: true
         env:
           GH_USERNAME: ${{secrets.GH_USERNAME}}
           GH_TOKEN: ${{secrets.GH_TOKEN}}

@@ -28,9 +28,8 @@ jobs:
         uses: xbmc/action-kodi-addon-submitter@v1.2
         with:
           kodi-repository: repo-scripts
-          kodi-version: leia
+          kodi-version: matrix
           addon-id: service.upnext
-          kodi-matrix: true
         env:
           GH_USERNAME: ${{secrets.GH_USERNAME}}
           GH_TOKEN: ${{secrets.GH_TOKEN}}

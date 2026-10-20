@@ -24,6 +24,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Drop support for Kodi 18 (Leia); Up Next now requires Kodi 19 (Matrix) or later
+
 ### v1.1.10 (2026-10-20)
 - Stop playback once after closing the popup and preserve playback started while it was open (@Drahy)
 - Back dismisses the Up Next and Still Watching prompts without stopping the video (@Drahy)
