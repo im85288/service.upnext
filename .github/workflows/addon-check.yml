@@ -9,8 +9,6 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # Leia is not checked: kodi-addon-checker now rejects every add-on on the leia
-        # branch that does not target Python 3. Python 2 is still covered by the PyPy 2.7 tests.
         kodi-branch: [matrix]
     steps:
     - uses: actions/checkout@v4
@@ -28,12 +26,10 @@ jobs:
     - name: Remove unwanted files
       run: awk '/export-ignore/ { print $1 }' .gitattributes | xargs rm -rf --
       working-directory: ${{ github.repository }}
-    - name: Rewrite addon.xml for Matrix
+    - name: Check as a newer version than the published release
       run: |
-        xmlstarlet ed -L -u '/addon/requires/import[@addon="xbmc.python"]/@version' -v "3.0.0" addon.xml
         version=$(xmlstarlet sel -t -v 'string(/addon/@version)' addon.xml)
         xmlstarlet ed -L -u '/addon/@version' -v "${version}+matrix.99" addon.xml
       working-directory: ${{ github.repository }}
-      if: matrix.kodi-branch == 'matrix'
     - name: Run kodi-addon-checker
       run: kodi-addon-checker --branch=${{ matrix.kodi-branch }} ${{ github.repository }}/
