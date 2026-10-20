@@ -16,6 +16,7 @@ class UpNext(WindowXMLDialog):
     cancel = False
     dismissed = False
     watchnow = False
+    auto_advance = False
     progress_step_size = 0
     current_progress_percent = 100
 
@@ -76,8 +77,15 @@ class UpNext(WindowXMLDialog):
     def set_progress_step_size(self, progress_step_size):
         self.progress_step_size = progress_step_size
 
-    def update_progress_control(self, remaining=None, runtime=None):
-        self.current_progress_percent = self.current_progress_percent - self.progress_step_size
+    def set_credits_countdown(self, remaining=None):
+        self.setProperty('credits_countdown', 'true' if remaining is not None else '')
+        self.setProperty('credits_remaining', str(remaining) if remaining is not None else '')
+        if remaining is not None:
+            self.setProperty('remaining', '%02d' % remaining)
+
+    def update_progress_control(self, remaining=None, runtime=None, progress=None):
+        self.current_progress_percent = (self.current_progress_percent - self.progress_step_size
+                                         if progress is None else max(0, min(100, progress)))
         try:
             self.progress_control = self.getControl(3014)
         except RuntimeError:  # Occurs when skin does not include progress control
@@ -85,7 +93,7 @@ class UpNext(WindowXMLDialog):
         else:
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
-        if remaining:
+        if remaining is not None:
             self.setProperty('remaining', '%02d' % remaining)
         if runtime:
             self.setProperty('endtime', localize_time(datetime.now() + timedelta(seconds=runtime)))
@@ -104,6 +112,12 @@ class UpNext(WindowXMLDialog):
 
     def is_watch_now(self):
         return self.watchnow
+
+    def set_auto_advance(self):
+        self.auto_advance = True
+
+    def is_auto_advance(self):
+        return self.auto_advance
 
     def onFocus(self, controlId):  # pylint: disable=invalid-name
         pass

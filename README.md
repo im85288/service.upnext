@@ -15,16 +15,20 @@ The add-on has various settings to fine-tune the experience, however the default
 
   * Simple or fancy mode (defaults to fancy mode, but a more simple interface is possible)
   * The notification time can be adjusted (defaults to 30 seconds before the end)
+  * A credits delay can advance early when the provider supplies a credits offset (disabled by default). Back cancels the countdown and keeps the current episode playing; Pause freezes it with the video.
   * The default action can be configured, i.e. should it advance to the next episode (default) when the user does not respond, or stop
   * The number of episodes to play automatically before asking the user if they are still there (defaults to 3 episodes)
 
 > NOTE: The add-on settings are found in the Kodi add-ons section, in the *Services* category.
+
+Credits autoplay uses the provider's absolute `notification_offset`; it does not detect credits from the video. Enable it only when those timestamps match the stream, as an early transition can skip post-credits scenes. Leave the delay at 0 to keep normal episode-end playback and use Next Episode to advance manually.
 
 For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integration) and [Skinners](https://github.com/im85288/service.upnext/wiki/Skinners) see the [wiki](https://github.com/im85288/service.upnext/wiki)
 
 ## Releases
 
 ### Unreleased
+- Optionally advance during provider-supplied credits after a configurable delay, show the actual countdown and Back cancellation hint in both popup styles, and preserve normal episode-end playback when credits metadata is unavailable (@Drahy)
 - Keep tracking an episode that started while the previous popup was open, so it still gets its own prompt (@im85288)
 
 ### v1.2.1 (2026-10-20)

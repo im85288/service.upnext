@@ -1,8 +1,9 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
+from math import ceil
 from xbmc import sleep
-from api import Api
+from api import Api, credits_autoplay_deadline
 from demo import DemoOverlay
 from player import UpNextPlayer
 from playitem import PlayItem
@@ -140,8 +141,8 @@ class PlaybackManager:
         event(message='NEXTUPWATCHEDSIGNAL', data={'episodeid': self.state.current_episode_id}, encoding='base64')
         if source == 'playlist' or queued:
             # Play playlist media
-            if should_play_non_default:
-                # Only start the next episode if the user asked for it specifically
+            if should_play_non_default or next_up_page.is_auto_advance():
+                # Early credits expiry must also advance an already queued item.
                 self.player.playnext()
         elif self.api.has_addon_data():
             # Play add-on media
@@ -164,6 +165,9 @@ class PlaybackManager:
             self.log('exit early because player is no longer running', 2)
             return False, False
         progress_step_size = calculate_progress_steps(total_time - play_time)
+        credits_deadline = (credits_autoplay_deadline(self.api.has_addon_data(), play_time, total_time)
+                            if self.state.play_mode == 0 else None)
+        credits_duration = credits_deadline - play_time if credits_deadline is not None else 0
         next_up_page.set_item(episode)
         next_up_page.set_progress_step_size(progress_step_size)
         still_watching_page.set_item(episode)
@@ -175,6 +179,7 @@ class PlaybackManager:
         showing_still_watching_page = False
         if not played_in_a_row_number or int(self.state.played_in_a_row) < int(played_in_a_row_number):
             self.log('showing next up page as played in a row is %s' % self.state.played_in_a_row, 2)
+            next_up_page.set_credits_countdown(int(ceil(credits_duration)) if credits_deadline is not None else None)
             next_up_page.show()
             set_property('service.upnext.dialog', 'true')
             showing_next_up_page = True
@@ -184,7 +189,7 @@ class PlaybackManager:
             set_property('service.upnext.dialog', 'true')
             showing_still_watching_page = True
         while (self.player.isPlaying() and (total_time - play_time > 1)
-               and not next_up_page.is_cancel() and not next_up_page.is_watch_now()
+               and not next_up_page.is_cancel() and not next_up_page.is_watch_now() and not next_up_page.is_auto_advance()
                and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
             try:
                 play_time = self.player.getTime()
@@ -202,11 +207,24 @@ class PlaybackManager:
             runtime = episode.get('runtime')
             if not self.state.pause:
                 if showing_next_up_page:
-                    next_up_page.update_progress_control(remaining=remaining, runtime=runtime)
+                    if credits_deadline is not None:
+                        remaining = max(0, min(remaining, credits_deadline - play_time))
+                        self._update_credits_progress(next_up_page, remaining, credits_duration)
+                    else:
+                        next_up_page.update_progress_control(remaining=remaining, runtime=runtime)
                 elif showing_still_watching_page:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
             sleep(100)
         return showing_next_up_page, showing_still_watching_page
+
+    @staticmethod
+    def _update_credits_progress(page, remaining, duration):
+        progress = 100 * remaining / duration if duration > 0 else 0
+        page.set_credits_countdown(int(ceil(remaining)))
+        page.update_progress_control(remaining=int(ceil(remaining)), runtime=page.item.get('runtime'), progress=progress)
+        if remaining <= 0:
+            # Keep autoplay distinct from Watch Now so Still Watching counts survive.
+            page.set_auto_advance()
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):
         if showing_next_up_page:

@@ -5,6 +5,22 @@ from xbmc import sleep, PLAYLIST_VIDEO, PLAYLIST_MUSIC
 from utils import event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
+def credits_autoplay_deadline(data, play_time, total_time):
+    """Return an opt-in playback deadline only when a credits offset is known."""
+    delay = get_setting_int('autoPlayCreditsTime')
+    if delay <= 0:
+        return None
+    try:
+        offset = float(data.get('notification_offset'))
+    except (TypeError, ValueError):
+        return None
+    if not 0 < offset < total_time:
+        return None
+    # An earlier notification_time may show the prompt before the credits.
+    # A late prompt still gives the viewer the full configured response time.
+    return min(total_time, max(play_time, offset) + delay)
+
+
 class Api:
     """Main API class"""
     _shared_state = {}
@@ -167,7 +183,8 @@ class Api:
             self.log('Playing the next episode directly: %(play_url)s' % self.data, 2)
             jsonrpc(method='Player.Open', params={'item': {'file': self.data.get('play_url')}})
         else:
-            self.log('Sending %(encoding)s data to add-on to play: %(play_info)s' % dict(encoding=self.encoding, **self.data), 2)  # pylint: disable=use-dict-literal
+            message = 'Sending %(encoding)s data to add-on to play: %(play_info)s'
+            self.log(message % dict(encoding=self.encoding, **self.data), 2)  # pylint: disable=use-dict-literal
             event(message=self.data.get('id'), data=self.data.get('play_info'), sender='upnextprovider', encoding=self.encoding)
 
     def handle_addon_lookup_of_next_episode(self):
