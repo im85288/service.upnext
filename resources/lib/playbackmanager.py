@@ -161,6 +161,7 @@ class PlaybackManager:
         try:
             play_time = self.player.getTime()
             total_time = self.player.getTotalTime()
+            playing_file = self.player.getPlayingFile()
         except RuntimeError:
             self.log('exit early because player is no longer running', 2)
             return False, False
@@ -191,10 +192,9 @@ class PlaybackManager:
         while (self.player.isPlaying() and (total_time - play_time > 1)
                and not next_up_page.is_cancel() and not next_up_page.is_watch_now() and not next_up_page.is_auto_advance()
                and not still_watching_page.is_still_watching() and not still_watching_page.is_cancel()):
-            try:
-                play_time = self.player.getTime()
-                total_time = self.player.getTotalTime()
-            except RuntimeError:
+            position = self._playback_position(playing_file)
+            if position is None:
+                self.log('Playback stopped or changed while the popup was open, closing it', 2)
                 if showing_next_up_page:
                     next_up_page.close()
                     showing_next_up_page = False
@@ -202,20 +202,30 @@ class PlaybackManager:
                     still_watching_page.close()
                     showing_still_watching_page = False
                 break
+            play_time, total_time = position
 
             remaining = total_time - play_time
-            runtime = episode.get('runtime')
             if not self.state.pause:
                 if showing_next_up_page:
                     if credits_deadline is not None:
                         remaining = max(0, min(remaining, credits_deadline - play_time))
                         self._update_credits_progress(next_up_page, remaining, credits_duration)
                     else:
-                        next_up_page.update_progress_control(remaining=remaining, runtime=runtime)
+                        next_up_page.update_progress_control(remaining=remaining, runtime=episode.get('runtime'))
                 elif showing_still_watching_page:
-                    still_watching_page.update_progress_control(remaining=remaining, runtime=runtime)
+                    still_watching_page.update_progress_control(remaining=remaining, runtime=episode.get('runtime'))
             sleep(100)
         return showing_next_up_page, showing_still_watching_page
+
+    def _playback_position(self, playing_file):
+        """Return (play_time, total_time) while the popup's own file is playing, otherwise None"""
+        try:
+            # Times and the credits deadline only apply to the file the popup was opened for
+            if self.player.getPlayingFile() != playing_file:
+                return None
+            return self.player.getTime(), self.player.getTotalTime()
+        except RuntimeError:
+            return None
 
     @staticmethod
     def _update_credits_progress(page, remaining, duration):
