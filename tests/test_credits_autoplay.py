@@ -41,7 +41,7 @@ def test_notification_time_keeps_priority_without_changing_credits_start(monkeyp
 def run_credits(monkeypatch):
     def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False, replace=False):
         events, popups = [], []
-        clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None)
+        clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None, window={})
         state = Stub(playing_next=False, queued=False, track=True, include_watched=True,
                      current_episode_id='current', play_mode=mode, played_in_a_row=1, pause=False)
 
@@ -131,8 +131,8 @@ def run_credits(monkeypatch):
         monkeypatch.setattr(playbackmanager, 'get_setting_int', setting)
         monkeypatch.setattr(playbackmanager, 'get_setting_bool', lambda key: True)
         monkeypatch.setattr(playbackmanager, 'addon_path', lambda: '')
-        monkeypatch.setattr(playbackmanager, 'set_property', lambda *args: None)
-        monkeypatch.setattr(playbackmanager, 'clear_property', lambda *args: None)
+        monkeypatch.setattr(playbackmanager, 'set_property', clock.window.__setitem__)
+        monkeypatch.setattr(playbackmanager, 'clear_property', lambda key: clock.window.pop(key, None))
         monkeypatch.setattr(playbackmanager, 'event', lambda **kwargs: events.append('watched'))
         monkeypatch.setattr(playbackmanager, 'sleep', sleep)
         monkeypatch.setattr(playbackmanager, 'UpNext', Popup)
@@ -159,6 +159,7 @@ def test_credits_expiry_advances_once_and_keeps_still_watching_count(run_credits
     assert popup.properties['credits_remaining'] == '0'
     assert popup.is_auto_advance() and not popup.is_watch_now()
     assert state.played_in_a_row == 2
+    assert 'service.upnext.dialog' not in clock.window
 
 
 @pytest.mark.parametrize('action', ['back', 'back-at-expiry'])
@@ -176,6 +177,7 @@ def test_replacement_playback_closes_popup_without_advancing(run_credits, delay,
     assert not popup.is_auto_advance()
     assert clock.time < 126
     assert clock.replaced is True
+    assert 'service.upnext.dialog' not in clock.window
 
 
 def test_stop_during_credits_is_called_once_after_close(run_credits):
