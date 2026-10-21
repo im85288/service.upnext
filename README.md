@@ -27,6 +27,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Close the popup when another episode starts while it is open, so its countdown can no longer skip into the next episode of the old one (@im85288)
+
 ### v1.2.2 (2026-10-21)
 - Optionally advance during provider-supplied credits after a configurable delay, show the actual countdown and Back cancellation hint in both popup styles, and preserve normal episode-end playback when credits metadata is unavailable (@Drahy)
 - Keep tracking an episode that started while the previous popup was open, so it still gets its own prompt (@im85288)

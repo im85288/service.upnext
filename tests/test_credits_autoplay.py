@@ -39,9 +39,9 @@ def test_notification_time_keeps_priority_without_changing_credits_start(monkeyp
 
 @pytest.fixture
 def run_credits(monkeypatch):
-    def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False):
+    def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False, replace=False):
         events, popups = [], []
-        clock = Stub(time=120.0, ticks=0, active=True)
+        clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None)
         state = Stub(playing_next=False, queued=False, track=True, include_watched=True,
                      current_episode_id='current', play_mode=mode, played_in_a_row=1, pause=False)
 
@@ -89,11 +89,14 @@ def run_credits(monkeypatch):
                     popups[0].onAction(92)
                 else:
                     popups[0].onClick(3013 if action == 'stop' else 3012)
+            if replace and clock.ticks == 2:
+                # Another episode starts and keeps playing past the original credits deadline
+                clock.file = 'replacement.mkv'
             if action == 'back-at-expiry' and clock.time >= 126:
                 popups[0].onAction(92)
 
         player = Stub(getTime=lambda: clock.time, getTotalTime=lambda: 200,
-                      getPlayingFile=lambda: 'current.mkv', isPlaying=lambda: clock.active and clock.time < 200,
+                      getPlayingFile=lambda: clock.file, isPlaying=lambda: clock.active and clock.time < 200,
                       stop=lambda: events.append('stop'), playnext=lambda: events.append('playlist-next'))
 
         class Api(api.Api):
@@ -135,7 +138,7 @@ def run_credits(monkeypatch):
         monkeypatch.setattr(playbackmanager, 'UpNext', Popup)
         monkeypatch.setattr(playbackmanager, 'StillWatching', StillPopup)
         manager = Manager()
-        manager.launch_up_next()
+        clock.replaced = manager.launch_up_next()
         return events, state, clock, popups[0]
 
     return run
@@ -163,6 +166,16 @@ def test_back_during_credits_keeps_video_and_does_not_advance(run_credits, actio
     events, _, _, _ = run_credits(action=action, queued=True)
     assert not any(event in events for event in ('stop', 'addon-next', 'playlist-next'))
     assert events.count('dequeue') == 1
+
+
+@pytest.mark.parametrize('delay', [6, 0])
+@pytest.mark.parametrize('queued', [False, True])
+def test_replacement_playback_closes_popup_without_advancing(run_credits, delay, queued):
+    events, _, clock, popup = run_credits(delay=delay, queued=queued, replace=True)
+    assert events == ['close']
+    assert not popup.is_auto_advance()
+    assert clock.time < 126
+    assert clock.replaced is True
 
 
 def test_stop_during_credits_is_called_once_after_close(run_credits):
