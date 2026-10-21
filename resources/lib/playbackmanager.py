@@ -247,6 +247,8 @@ class PlaybackManager:
             should_play_non_default = still_watching_page.is_still_watching()
         else:
             # FIXME: This is a workaround until we handle this better (see comments in #142)
+            # The popup was already closed because playback stopped or changed
+            clear_property('service.upnext.dialog')
             return False, False
 
         if next_up_page.is_watch_now() or still_watching_page.is_still_watching():

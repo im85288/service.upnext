@@ -27,6 +27,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Clear the `service.upnext.dialog` window property when the popup closes because playback stopped or changed, so skins no longer see it as still open (@im85288)
+
 ### v1.2.3 (2026-10-21)
 - Close the popup when another episode starts while it is open, so its countdown can no longer skip into the next episode of the old one (@im85288)
 
