@@ -18,7 +18,8 @@ class Control:  # pylint: disable=too-few-public-methods
 class ControlLabel(Control):
     ''' A reimplementation of the xbmcgui ControlLabel class '''
 
-    def __init__(self, x, y, width, height, label='Foo bar', font=None, textColor=None, disabledColor=None, alignment=0, hasPath=False, angle=0):  # pylint: disable=super-init-not-called
+    def __init__(self, x, y, width, height, label='Foo bar', font=None, textColor=None,  # pylint: disable=super-init-not-called
+                 disabledColor=None, alignment=0, hasPath=False, angle=0):
         ''' A stub constructor for the xbmcgui ControlLabel class '''
 
     @staticmethod

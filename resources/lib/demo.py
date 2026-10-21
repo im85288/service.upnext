@@ -18,7 +18,8 @@ class DemoOverlay():
         if self._demolabel is not None:
             return
         # FIXME: Using a different font does not seem to have much of an impact
-        self._demolabel = ControlLabel(0, getScreenHeight() // 4, getScreenWidth(), 100, localize(30060) + '\n' + localize(30061), font='font36_title', textColor='0xddee9922', alignment=0x00000002)
+        self._demolabel = ControlLabel(0, getScreenHeight() // 4, getScreenWidth(), 100, localize(30060) + '\n' + localize(30061),
+                                       font='font36_title', textColor='0xddee9922', alignment=0x00000002)
         self.window.addControl(self._demolabel)
         self.log('show', 0)
 
