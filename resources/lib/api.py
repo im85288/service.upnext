@@ -190,13 +190,13 @@ class Api:
     def handle_addon_lookup_of_next_episode(self):
         if not self.data:
             return None
-        self.log('handle_addon_lookup_of_next_episode episode returning data %(next_episode)s' % self.data, 2)
+        self.log('handle_addon_lookup_of_next_episode episode returning data %s' % self.data.get('next_episode'), 2)
         return self.data.get('next_episode')
 
     def handle_addon_lookup_of_current_episode(self):
         if not self.data:
             return None
-        self.log('handle_addon_lookup_of_current episode returning data %(current_episode)s' % self.data, 2)
+        self.log('handle_addon_lookup_of_current episode returning data %s' % self.data.get('current_episode'), 2)
         return self.data.get('current_episode')
 
     def notification_time(self, total_time=None):

@@ -104,9 +104,7 @@ class PlaybackManager:
             next_up_page = UpNext('script-upnext-upnext.xml', addon_path(), 'default', '1080i')
             still_watching_page = StillWatching('script-upnext-stillwatching.xml', addon_path(), 'default', '1080i')
 
-        showing_next_up_page, showing_still_watching_page = self.show_popup_and_wait(episode,
-                                                                                     next_up_page,
-                                                                                     still_watching_page)
+        showing_next_up_page, showing_still_watching_page = self._show_popup(episode, next_up_page, still_watching_page)
         should_play_default, should_play_non_default = self.extract_play_info(next_up_page,
                                                                               showing_next_up_page,
                                                                               showing_still_watching_page,
@@ -156,6 +154,17 @@ class PlaybackManager:
         # return play_next, keep_playing
         # Play next file, and keep playing current file
         return True, True
+
+    def _show_popup(self, episode, next_up_page, still_watching_page):
+        """Show the popup and wait for it, closing it again if anything goes wrong while it is open"""
+        try:
+            return self.show_popup_and_wait(episode, next_up_page, still_watching_page)
+        except Exception:
+            # Don't leave a frozen popup on screen, the service loop logs the error and carries on
+            next_up_page.close()
+            still_watching_page.close()
+            clear_property('service.upnext.dialog')
+            raise
 
     def show_popup_and_wait(self, episode, next_up_page, still_watching_page):
         try:

@@ -55,11 +55,14 @@ def make_play_item(api_stub):
     return instance
 
 
-def test_addon_data_without_current_episode_is_tolerated():
-    api_stub = Stub(has_addon_data=lambda: {'next_episode': {'episodeid': 2}},
-                    handle_addon_lookup_of_next_episode=lambda: {'episodeid': 2},
-                    handle_addon_lookup_of_current_episode=lambda: None)
-    assert make_play_item(api_stub).get_next() == ({'episodeid': 2}, 'addon')
+@pytest.mark.parametrize('data,expected', [
+    ({'next_episode': {'episodeid': 2}, 'play_url': 'plugin://next'}, {'episodeid': 2}),
+    ({'current_episode': {'episodeid': 1}, 'play_url': 'plugin://next'}, None),
+])
+def test_addon_data_with_missing_episodes_is_tolerated(data, expected):
+    real_api = quiet_api()
+    real_api.data = data
+    assert make_play_item(real_api).get_next() == (expected, 'addon')
 
 
 def test_library_lookup_stops_without_a_playing_episode():
