@@ -20,13 +20,14 @@
                 <width>340</width>
                 <height>64</height>
                 <font>font20_title</font>
-                <textcolor>ddffffff</textcolor>
+                <textcolor>eeffffff</textcolor>
                 <focusedcolor>eeffffff</focusedcolor>
                 <shadowcolor>22000000</shadowcolor>
                 <aligny>center</aligny>
                 <align>center</align>
-                <texturefocus border="10" colordiffuse="FF172A91">button.png</texturefocus>
-                <texturenofocus border="10" colordiffuse="DD212121">button.png</texturenofocus>
+                <!-- The popup's translucent black band; the only control, so no focus colour. -->
+                <texturefocus border="10" colordiffuse="dd000000">button.png</texturefocus>
+                <texturenofocus border="10" colordiffuse="dd000000">button.png</texturenofocus>
                 <pulseonselect>no</pulseonselect>
             </control>
         </control>
