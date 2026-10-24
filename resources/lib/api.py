@@ -224,14 +224,16 @@ class Api:
         return get_setting_int('autoPlaySeasonTime')
 
     def get_now_playing(self):
-        # Seems to work too fast loop whilst waiting for it to become active
-        result = {}
-        while not result.get('result'):
+        # The player can take a moment to become active, but don't wait forever
+        for _ in range(10):
             result = jsonrpc(method='Player.GetActivePlayers')
-            self.log('Got active player %s' % result, 2)
-
-        if not result.get('result'):
+            if result.get('result'):
+                break
+            sleep(100)
+        else:
+            self.log('No active player found', 1)
             return None
+        self.log('Got active player %s' % result, 2)
 
         playerid = result.get('result')[0].get('playerid')
 

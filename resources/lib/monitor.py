@@ -2,11 +2,12 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from copy import deepcopy
+from traceback import format_exc
 from xbmc import Monitor
 from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
-from utils import decode_json, get_property, get_setting_bool, log as ulog
+from utils import clear_property, decode_json, get_property, get_setting_bool, log as ulog
 
 
 class UpNextMonitor(Monitor):
@@ -104,7 +105,14 @@ class UpNextMonitor(Monitor):
 
             self.player.set_last_file(current_file)
             self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
-            if self.playback_manager.launch_up_next():
+            try:
+                replaced = self.playback_manager.launch_up_next()
+            except Exception:  # pylint: disable=broad-exception-caught
+                # One bad episode or add-on payload must not stop the service for the rest of the session
+                self.log('Up Next failed for %s:\n%s' % (current_file, format_exc()), 0)
+                clear_property('service.upnext.dialog')
+                replaced = False
+            if replaced:
                 # Another file replaced this episode while the popup was open, keep tracking it
                 self.log('Playback was replaced while the popup was open, tracking continues', 2)
             else:
