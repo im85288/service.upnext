@@ -4,7 +4,7 @@
 import json
 from datetime import date
 from re import split as re_split
-from xbmc import executeJSONRPC, getRegion, log as xlog, LOGDEBUG, LOGINFO
+from xbmc import executeJSONRPC, getCondVisibility, getRegion, log as xlog, LOGDEBUG, LOGINFO
 from xbmcaddon import Addon
 from xbmcgui import Window
 
@@ -150,8 +150,8 @@ def event(message, data=None, sender=None, encoding='base64'):
 def log(msg, name=None, level=1):
     """Log information to the Kodi log"""
     log_level = get_setting_int('logLevel', level)
-    debug_logging = get_global_setting('debug.showloginfo')
-    set_property('logLevel', log_level)
+    # A cheap info call instead of a JSON-RPC round trip on every log line
+    debug_logging = getCondVisibility('System.GetBool(debug.showloginfo)')
     if not debug_logging and log_level < level:
         return
     level = LOGDEBUG if debug_logging else LOGINFO
@@ -172,13 +172,6 @@ def jsonrpc(**kwargs):
     if kwargs.get('jsonrpc') is None:
         kwargs.update(jsonrpc='2.0')
     return json.loads(executeJSONRPC(json.dumps(kwargs)))
-
-
-def get_global_setting(setting):
-    """Get a Kodi setting"""
-    result = jsonrpc(method='Settings.GetSettingValue',
-                     params={'setting': setting})
-    return result.get('result', {}).get('value')
 
 
 def localize(string_id):
