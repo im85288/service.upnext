@@ -77,3 +77,21 @@ def test_progress_control_and_countdown(page):
 def test_base_popup_needs_a_main_button_action():
     with pytest.raises(NotImplementedError):
         make_popup(popup.Popup).onClick(3012)
+
+
+@pytest.mark.parametrize('popup_class', [upnext.UpNext, stillwatching.StillWatching])
+@pytest.mark.parametrize('stop_after_close,label', [(True, 30033), (False, 30034)])
+def test_on_init_fills_in_the_episode_and_progress(monkeypatch, popup_class, stop_after_close, label):
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: stop_after_close)
+    monkeypatch.setattr(upnext, 'localize', lambda string_id: string_id)
+    page = popup_class()  # the real constructor, through Popup.__init__
+    assert page.action_exitkeys_id == [10, 13] and page.progress_control is None
+    labels, percents, properties = [], [], {}
+    page.setProperty = properties.__setitem__
+    page.getControl = lambda control: Stub(setPercent=percents.append, setLabel=labels.append)
+    page.set_item({'title': 'Pilot', 'season': 1, 'episode': 2, 'art': {'thumb': 'thumb.jpg'}})
+    page.onInit()
+    assert (properties['title'], properties['seasonepisode'], properties['thumb']) == ('Pilot', '1x2.', 'thumb.jpg')
+    assert percents == [100]
+    # Only Up Next labels its Close button, as Stop when stopping after close is enabled
+    assert labels == ([label] if popup_class is upnext.UpNext else [])
