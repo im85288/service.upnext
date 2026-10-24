@@ -5,6 +5,12 @@ from xbmc import sleep, PLAYLIST_VIDEO, PLAYLIST_MUSIC
 from utils import event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
 
+# Episode details shown in the popup
+EPISODE_PROPERTIES = ['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
+                      'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
+                      'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer']
+
+
 def credits_autoplay_deadline(data, play_time, total_time):
     """Return an opt-in playback deadline only when a credits offset is known."""
     delay = get_setting_int('autoPlayCreditsTime')
@@ -149,9 +155,7 @@ class Api:
             'playlistid': Api.get_playlistid(),
             # limits are zero indexed, position is one indexed
             'limits': {'start': position, 'end': position + 1},
-            'properties': ['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
-                           'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
-                           'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
+            'properties': EPISODE_PROPERTIES,
         })
 
         item = result.get('result', {}).get('items')
@@ -247,49 +251,31 @@ class Api:
         return result
 
     def handle_kodi_lookup_of_episode(self, tvshowid, current_file, include_watched, current_episode_id):
+        # Only fetch what's needed to choose, then the full details of the chosen episode
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params={
             'tvshowid': tvshowid,
-            'properties': ['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
-                           'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
-                           'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
+            'properties': ['episode', 'file', 'playcount', 'season'],
             'sort': {'method': 'episode'},
         })
 
         if not result.get('result'):
             return None
 
-        self.log('Got details of next up episode %s' % result, 2)
-        sleep(100)
+        self.log('Got %d episodes of the show' % len(result.get('result', {}).get('episodes', [])), 2)
 
         # Find the next unwatched and the newest added episodes
-        return self.find_next_episode(result, current_file, include_watched, current_episode_id)
-
-    def handle_kodi_lookup_of_current_episode(self, tvshowid, current_episode_id):
-        result = jsonrpc(method='VideoLibrary.GetEpisodes', params={
-            'tvshowid': tvshowid,
-            'properties': ['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
-                           'playcount', 'plot', 'rating', 'resume', 'runtime', 'season',
-                           'showtitle', 'streamdetails', 'title', 'tvshowid', 'writer'],
-            'sort': {'method': 'episode'},
-        })
-
-        if not result.get('result'):
+        episode = self.find_next_episode(result, current_file, include_watched, current_episode_id)
+        if not episode:
             return None
+        return self.get_episode_details(episode.get('episodeid'))
 
-        self.log('Find current episode called', 2)
-        sleep(100)
-
-        # Find the next unwatched and the newest added episodes
-        episodes = result.get('result', {}).get('episodes', [])
-        for idx, episode in enumerate(episodes):
-            # Find position of current episode
-            if current_episode_id == episode.get('episodeid'):
-                self.log('Find current episode found episode in position: %d' % idx, 2)
-                return episode
-
-        # No next episode found
-        self.log('No next episode found', 1)
-        return None
+    @staticmethod
+    def get_episode_details(episodeid):
+        result = jsonrpc(method='VideoLibrary.GetEpisodeDetails', params={
+            'episodeid': episodeid,
+            'properties': EPISODE_PROPERTIES,
+        })
+        return result.get('result', {}).get('episodedetails')
 
     @staticmethod
     def showtitle_to_id(title):
@@ -307,6 +293,7 @@ class Api:
         result = jsonrpc(method='VideoLibrary.GetEpisodes', params={
             'properties': ['episode', 'season'],
             'tvshowid': int(showid),
+            'season': show_season,
         })
 
         episodeid = 0

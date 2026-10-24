@@ -34,7 +34,14 @@ class FakeKodi:
         if method == 'Player.GetProperties':
             return {'result': {'playlistid': 1}}
         if method == 'VideoLibrary.GetEpisodes':
-            return {'result': {'episodes': [item for item in self.episodes if item['tvshowid'] == params['tvshowid']]}}
+            found = [item for item in self.episodes if item['tvshowid'] == params['tvshowid']
+                     and params.get('season') in (None, item['season'])]
+            # Like Kodi, only return the requested properties (plus the ID)
+            return {'result': {'episodes': [dict((key, item[key]) for key in ['episodeid'] + params['properties'] if key in item)
+                                            for item in found]}}
+        if method == 'VideoLibrary.GetEpisodeDetails':
+            found = [item for item in self.episodes if item['episodeid'] == params['episodeid']]
+            return {'result': {'episodedetails': dict(found[0], art={'thumb': 'thumb.jpg'})}} if found else {'error': {}}
         if method == 'VideoLibrary.GetTVShows':
             return {'result': {'tvshows': self.tvshows}}
         if method == 'Playlist.GetItems':
@@ -99,27 +106,28 @@ def test_find_next_episode_skips_the_playing_file_before_matching_the_id():
     assert found['episodeid'] == 3
 
 
-def test_kodi_lookup_requests_the_show_sorted_by_episode(kodi):
+def test_kodi_lookup_fetches_full_details_only_for_the_chosen_episode(kodi):
     kodi.episodes = SEASON + [episode(50, 1, 1, tvshowid=20)]
     found = library_api().handle_kodi_lookup_of_episode(10, 'S01E01.mkv', True, 1)
-    assert found['episodeid'] == 2
-    method, params = kodi.calls[-1]
-    assert method == 'VideoLibrary.GetEpisodes'
-    assert params['tvshowid'] == 10 and params['sort'] == {'method': 'episode'}
-    assert {'file', 'playcount', 'season', 'episode', 'art'} <= set(params['properties'])
+    assert found['episodeid'] == 2 and found['art'] == {'thumb': 'thumb.jpg'}
+    (list_method, list_params), (details_method, details_params) = kodi.calls
+    assert list_method == 'VideoLibrary.GetEpisodes'
+    assert list_params['tvshowid'] == 10 and list_params['sort'] == {'method': 'episode'}
+    assert set(list_params['properties']) == {'episode', 'file', 'playcount', 'season'}
+    assert details_method == 'VideoLibrary.GetEpisodeDetails' and details_params['episodeid'] == 2
+    assert set(api.EPISODE_PROPERTIES) <= set(details_params['properties'])
+
+
+def test_kodi_lookup_without_a_next_episode_skips_the_details(kodi):
+    kodi.episodes = SEASON
+    assert library_api().handle_kodi_lookup_of_episode(10, 'S02E01.mkv', True, 5) is None
+    assert [method for method, _ in kodi.calls] == ['VideoLibrary.GetEpisodes']
 
 
 def test_kodi_lookup_without_library_result_returns_nothing(monkeypatch):
     monkeypatch.setattr(api, 'jsonrpc', lambda **kwargs: {'error': {'code': -32602}})
     monkeypatch.setattr(api, 'sleep', lambda milliseconds: None)
     assert library_api().handle_kodi_lookup_of_episode(10, 'S01E01.mkv', True, 1) is None
-    assert library_api().handle_kodi_lookup_of_current_episode(10, 1) is None
-
-
-def test_kodi_lookup_of_current_episode(kodi):
-    kodi.episodes = SEASON
-    assert library_api().handle_kodi_lookup_of_current_episode(10, 3)['episode'] == 3
-    assert library_api().handle_kodi_lookup_of_current_episode(10, 99) is None
 
 
 @pytest.mark.parametrize('season,number,expected', [
@@ -130,6 +138,8 @@ def test_kodi_lookup_of_current_episode(kodi):
 def test_get_episode_id(kodi, season, number, expected):
     kodi.episodes = SEASON
     assert api.Api.get_episode_id(showid='10', show_season=season, show_episode=number) == expected
+    # Kodi only returns the one season, not the whole show
+    assert kodi.calls[-1][1]['season'] == int(season)
 
 
 def test_showtitle_to_id(kodi):
