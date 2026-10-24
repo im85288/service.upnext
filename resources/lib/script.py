@@ -97,6 +97,14 @@ def test_popup(window):
         step += wait
 
 
+def test_skip_button():
+    from skip import LABELS, make_button
+    button = make_button(localize(LABELS['intro']), on_skip=lambda: None)
+    button.show()
+    Monitor().waitForAbort(10)
+    button.close()
+
+
 def open_settings():
     from xbmcaddon import Addon
     Addon().openSettings()
@@ -104,7 +112,9 @@ def open_settings():
 
 def run(argv):
     """Route to API method"""
-    if len(argv) == 3 and argv[1] == 'test_window':
+    if len(argv) == 3 and argv[1] == 'test_window' and argv[2] == 'script-upnext-skip.xml':
+        test_skip_button()
+    elif len(argv) == 3 and argv[1] == 'test_window':
         test_popup(argv[2])
     else:
         open_settings()

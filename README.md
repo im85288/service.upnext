@@ -29,6 +29,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ## Releases
 
 ### Unreleased
+- Show a Skip intro / Skip recap button when an add-on marks those ranges in a new `skip_segments` field of `upnext_data`, with optional automatic skipping (@im85288)
 - Faster popups for library episodes, especially for long-running shows, and cheaper logging (@im85288)
 - Keep the service running when an episode's metadata is incomplete or the player isn't ready, instead of stopping Up Next until Kodi restarts (@im85288)
 - Clear the `service.upnext.dialog` window property when the popup closes because playback stopped or changed, so skins no longer see it as still open (@im85288)

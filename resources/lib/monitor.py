@@ -7,6 +7,7 @@ from xbmc import Monitor
 from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
+from skip import Skipper
 from utils import clear_property, decode_json, get_property, get_setting_bool, log as ulog
 
 
@@ -19,6 +20,7 @@ class UpNextMonitor(Monitor):
         self.player = UpNextPlayer()
         self.api = Api()
         self.playback_manager = PlaybackManager()
+        self.skipper = Skipper(self.player)
         self._sleep_state = None
         self._wake_retries = 0
         self._playback_state = None
@@ -41,6 +43,7 @@ class UpNextMonitor(Monitor):
             self.restore_after_wake()
             if not self.player.is_tracking():
                 self._waiting_for = None
+                self.skipper.reset()
                 continue
 
             if bool(get_property('PseudoTVRunning') == 'True'):
@@ -98,6 +101,11 @@ class UpNextMonitor(Monitor):
                 continue
 
             self._waiting_for = None
+            try:
+                self.skipper.update(self.api.data, play_time)
+            except Exception:  # pylint: disable=broad-exception-caught
+                # A bad skip_segments payload must not stop the service or the popup
+                self.log('Skip button failed:\n%s' % format_exc(), 0)
             notification_time = self.api.notification_time(total_time=total_time)
             if total_time - play_time > notification_time:
                 # Media hasn't reach notification time yet, waiting a bit longer...
@@ -194,6 +202,7 @@ class UpNextMonitor(Monitor):
             return
         if method == 'Player.OnStop':
             self._waiting_for = None
+            self.skipper.reset()
             if not self._sleep_state:
                 self._playback_state = None
             return
@@ -208,6 +217,7 @@ class UpNextMonitor(Monitor):
         self.clear_sleep_state()
         self._playback_state = None
         self._waiting_for = None
+        self.skipper.reset()
         self.playback_manager.handle_demo()
         decoded_data.update(id='%s_play_action' % sender.replace('.SIGNAL', ''))
         self.api.addon_data_received(decoded_data, encoding=encoding)

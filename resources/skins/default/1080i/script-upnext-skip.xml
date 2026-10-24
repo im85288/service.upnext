@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!-- Skip intro / Skip recap: a small button at the bottom right while playback is in the range.
+     Skins can override it like the other Up Next windows; control 3010 is the button. -->
+<window>
+    <defaultcontrol always="true">3010</defaultcontrol>
+    <controls>
+        <control type="group">
+            <animation type="WindowOpen" reversible="false">
+                <effect type="fade" start="0" end="100" time="300" />
+            </animation>
+            <animation type="WindowClose" reversible="false">
+                <effect type="fade" start="100" end="0" time="300" />
+            </animation>
+            <right>60</right>
+            <bottom>90</bottom>
+            <width>340</width>
+            <height>64</height>
+            <control type="button" id="3010">
+                <label>$INFO[Window.Property(label)]</label>
+                <width>340</width>
+                <height>64</height>
+                <font>font20_title</font>
+                <textcolor>ddffffff</textcolor>
+                <focusedcolor>eeffffff</focusedcolor>
+                <shadowcolor>22000000</shadowcolor>
+                <aligny>center</aligny>
+                <align>center</align>
+                <texturefocus border="10" colordiffuse="FF172A91">button.png</texturefocus>
+                <texturenofocus border="10" colordiffuse="DD212121">button.png</texturenofocus>
+                <pulseonselect>no</pulseonselect>
+            </control>
+        </control>
+    </controls>
+</window>
