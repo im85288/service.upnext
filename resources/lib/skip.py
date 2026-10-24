@@ -33,8 +33,10 @@ def parse_segments(data):
     segments = []
     for segment in (data or {}).get('skip_segments') or []:
         try:
+            # Both bounds must be given: a range with no start must not
+            # become one from zero and skip the opening of the episode.
             kind = segment['kind']
-            start, end = float(segment.get('start') or 0), float(segment['end'])
+            start, end = float(segment['start']), float(segment['end'])
         except (KeyError, TypeError, ValueError):
             continue
         if kind in SKIPPABLE and 0 <= start < end:
@@ -102,6 +104,15 @@ class Skipper:
 
     def skip(self, segment):
         self.handled.add(segment)
+        try:
+            now = self.player.getTime()
+        except RuntimeError:
+            now = None
+        if now is not None and now >= segment[2] - END_MARGIN:
+            # The range has passed (a button left open while the Up Next
+            # popup held the monitor): skipping now would jump backwards.
+            log('Not skipping %s: playback is already past %.0f s' % (segment[0], segment[2]))
+            return
         log('Skipping %s from %.0f to %.0f s' % segment)
         self.player.seekTime(segment[2])
 

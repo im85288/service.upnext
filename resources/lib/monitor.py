@@ -113,6 +113,9 @@ class UpNextMonitor(Monitor):
 
             self.player.set_last_file(current_file)
             self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
+            # The popup holds this loop until it closes, so the Skip button
+            # could no longer follow playback: close it first.
+            self.skipper.hide()
             try:
                 replaced = self.playback_manager.launch_up_next()
             except Exception:  # pylint: disable=broad-exception-caught

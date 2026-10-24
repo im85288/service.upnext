@@ -34,9 +34,13 @@ class Button:
 class Player:
     def __init__(self):
         self.seeks = []
+        self.time = 0
 
     def seekTime(self, seconds):  # pylint: disable=invalid-name
         self.seeks.append(seconds)
+
+    def getTime(self):  # pylint: disable=invalid-name
+        return self.time
 
 
 @pytest.fixture
@@ -65,12 +69,28 @@ def test_bad_payloads_are_ignored():
                                                       {'kind': 'intro', 'start': 'soon', 'end': 'later'}, 'junk']})
 
 
+def test_a_range_needs_an_explicit_start():
+    # A missing or empty start must not become zero and skip the opening.
+    assert not skip.parse_segments({'skip_segments': [{'kind': 'intro', 'end': 120},
+                                                      {'kind': 'intro', 'start': None, 'end': 120},
+                                                      {'kind': 'intro', 'start': '', 'end': 120}]})
+    assert skip.parse_segments({'skip_segments': [{'kind': 'intro', 'start': 0, 'end': 120}]}) == [('intro', 0.0, 120.0)]
+
+
+def test_a_button_pressed_after_its_range_never_seeks_backwards(skipper):
+    skipper.update(DATA, 61)
+    skipper.player.time = 200  # the Up Next popup held the loop while playback moved on
+    skipper.buttons[0].press()
+    assert not skipper.player.seeks
+
+
 def test_button_shows_inside_a_range_and_skips_to_its_end(skipper):
     skipper.update(DATA, 50)
     assert not skipper.buttons  # between the recap and the intro
     skipper.update(DATA, 61)
     skipper.update(DATA, 62)
     assert [(b.label, b.shown) for b in skipper.buttons] == [('Skip intro', 1)]
+    skipper.player.time = 62
     skipper.buttons[0].press()
     assert skipper.player.seeks == [120.0]
     skipper.update(DATA, 120)
@@ -104,6 +124,7 @@ def test_back_dismisses_only_that_range(skipper):
 def test_auto_skip_follows_the_settings(skipper):
     skipper.settings['autoSkipIntro'] = True
     skipper.update(DATA, 10)  # recaps still ask
+    skipper.player.time = 61
     skipper.update(DATA, 61)
     assert skipper.player.seeks == [120.0]
     skipper.update(DATA, 62)  # the seek hasn't landed yet: no second skip
