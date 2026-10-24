@@ -39,9 +39,9 @@ def test_notification_time_keeps_priority_without_changing_credits_start(monkeyp
 
 @pytest.fixture
 def run_credits(monkeypatch):
-    def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False, replace=False):
+    def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False, replace=False, runtime=None):
         events, popups = [], []
-        clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None, window={})
+        clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None, window={}, error=None)
         state = Stub(playing_next=False, queued=False, track=True, include_watched=True,
                      current_episode_id='current', play_mode=mode, played_in_a_row=1, pause=False)
 
@@ -119,7 +119,7 @@ def run_credits(monkeypatch):
         class Manager(playbackmanager.PlaybackManager):
             def __init__(self):
                 self.api, self.player, self.state = Api(), player, state
-                self.play_item = Stub(get_next=lambda: ({'episodeid': 'next', 'playcount': 0}, source))
+                self.play_item = Stub(get_next=lambda: ({'episodeid': 'next', 'playcount': 0, 'runtime': runtime}, source))
 
             def log(self, *args):
                 pass
@@ -138,7 +138,10 @@ def run_credits(monkeypatch):
         monkeypatch.setattr(playbackmanager, 'UpNext', Popup)
         monkeypatch.setattr(playbackmanager, 'StillWatching', StillPopup)
         manager = Manager()
-        clock.replaced = manager.launch_up_next()
+        try:
+            clock.replaced = manager.launch_up_next()
+        except Exception as exc:  # pylint: disable=broad-exception-caught
+            clock.error = exc
         return events, state, clock, popups[0]
 
     return run
@@ -177,6 +180,14 @@ def test_replacement_playback_closes_popup_without_advancing(run_credits, delay,
     assert not popup.is_auto_advance()
     assert clock.time < 126
     assert clock.replaced is True
+    assert 'service.upnext.dialog' not in clock.window
+
+
+def test_error_while_popup_is_open_closes_it(run_credits):
+    # A non-numeric runtime from an add-on makes the progress update raise after the popup is shown
+    events, _, clock, _ = run_credits(delay=0, runtime='45')
+    assert isinstance(clock.error, TypeError)
+    assert events.count('close') == 2
     assert 'service.upnext.dialog' not in clock.window
 
 

@@ -13,7 +13,7 @@ class Stub:
         self.__dict__.update(values)
 
 
-def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailable=False, max_ticks=3, replaced=False):
+def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailable=False, max_ticks=3, replaced=False, launch=None):
     events = []
     attempts = {}
 
@@ -62,7 +62,7 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
         def __init__(self):
             self.player = Player()
             self.api = Stub(notification_time=lambda **kwargs: 30, data={}, encoding='base64')
-            self.playback_manager = Stub(launch_up_next=lambda: events.append('popup') or replaced, demo=Stub(hide=hide_demo))
+            self.playback_manager = Stub(launch_up_next=launch or (lambda: events.append('popup') or replaced), demo=Stub(hide=hide_demo))
             self.ticks = 0
             self._sleep_state = None
             self._wake_retries = 0
@@ -80,6 +80,7 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
             attempts.setdefault('messages', []).append(args[0])
 
     monkeypatch.setattr(monitor, 'get_property', lambda name: '')
+    monkeypatch.setattr(monitor, 'clear_property', lambda name: events.append('clear %s' % name))
     monkeypatch.setattr(monitor, 'get_setting_bool', lambda name: False)
     instance = Monitor()
     instance.run()
