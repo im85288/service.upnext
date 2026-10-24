@@ -6,6 +6,7 @@ import pytest
 import monitor
 import player
 import playitem
+from skip import Skipper
 
 
 class Stub:
@@ -63,6 +64,7 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
             self.player = Player()
             self.api = Stub(notification_time=lambda **kwargs: 30, data={}, encoding='base64')
             self.playback_manager = Stub(launch_up_next=launch or (lambda: events.append('popup') or replaced), demo=Stub(hide=hide_demo))
+            self.skipper = Skipper(self.player)
             self.ticks = 0
             self._sleep_state = None
             self._wake_retries = 0
@@ -183,6 +185,7 @@ def sleeping_monitor():
         def __init__(self):
             self.player = Player()
             self.api = Api()
+            self.skipper = Skipper(self.player)
             self._sleep_state = None
             self._wake_retries = 0
             self._playback_state = None
