@@ -239,6 +239,10 @@ class Window:
     def removeControl(self, pControl):
         ''' A stub implementation for the xbmcgui Window class removeControl() method '''
 
+    def setFocus(self, control):
+        ''' Record the focused control '''
+        self.focus = control
+
     @staticmethod
     def setProperty(key, value):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''

@@ -119,15 +119,13 @@ def test_playback_focus_navigates_into_existing_skin_controls(direct_button):
 @pytest.mark.parametrize('use_action', [False, True])
 def test_opening_playback_controls_neither_advances_nor_cancels(monkeypatch, use_action):
     page = make_popup(upnext.UpNext)
-    cleared, commands = [], []
+    commands = []
     page.playback_control = Stub(getId=lambda: 9000)
-    monkeypatch.setattr(upnext, 'clear_property', cleared.append)
     monkeypatch.setattr(upnext, 'executebuiltin', commands.append)
     if use_action:
         page.onAction(upnext.ACTION_SHOW_OSD)
     else:
         page.onClick(9000)
-    assert page.closed == 1
-    assert cleared == ['service.upnext.dialog']
+    assert page.closed == 0
     assert commands == ['ActivateWindow(videoosd)']
     assert not page.is_cancel() and not page.is_dismissed() and not page.is_watch_now()

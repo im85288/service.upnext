@@ -15,7 +15,7 @@ A lot of existing add-ons already integrate with this service out-of-the-box.
 The add-on has various settings to fine-tune the experience, however the default settings should be fine for most.
 
   * Simple or fancy mode (defaults to fancy mode, but a more simple interface is possible)
-  * Optional OK/Select access to playback controls while the next-episode popup is open. Press an arrow first to select Watch now or Close instead; their actions stay the same. Opening playback controls keeps normal episode-end advancement active.
+  * Optional OK/Select access to playback controls while the next-episode popup stays visible. Press an arrow first to select Watch now or Close instead; their actions stay the same. Closing playback controls returns to the popup and keeps normal episode-end advancement active.
   * The notification time can be adjusted (defaults to 30 seconds before the end)
   * A credits delay can advance early when the provider supplies a credits offset (disabled by default). Back cancels the countdown and keeps the current episode playing; Pause freezes it with the video.
   * The default action can be configured, i.e. should it advance to the next episode (default) when the user does not respond, or stop
@@ -30,7 +30,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ## Releases
 
 ### Unreleased
-- Optionally let OK/Select open Kodi's playback controls from the next-episode popup in both styles, including existing skin overrides. Arrow navigation enters the popup's normal buttons; Stop, Back and Still Watching retain their existing behavior.
+- Optionally let OK/Select open Kodi's playback controls alongside the next-episode popup in both styles, including existing skin overrides. Closing the controls returns to the popup; arrow navigation enters its normal buttons. Preserve normal episode-end advancement, Stop, Back and Still Watching behavior.
 
 ### v1.3.0 (2026-10-24)
 - Show a Skip intro / Skip recap button when an add-on marks those ranges in a new `skip_segments` field of `upnext_data`, with optional automatic skipping (@im85288)

@@ -4,7 +4,7 @@
 from xbmc import executebuiltin
 from xbmcgui import ControlButton
 from popup import Popup
-from utils import clear_property, get_setting_bool, localize
+from utils import get_setting_bool, localize
 
 ACTION_SHOW_OSD = 24
 
@@ -38,10 +38,8 @@ class UpNext(Popup):
         self.setFocus(self.playback_control)
 
     def open_playback_controls(self):
-        # Keep tracking this episode for normal end-of-playback advancement.
-        # This is neither Watch now nor cancellation and must not call Stop.
-        self.close()
-        clear_property('service.upnext.dialog')
+        # The native OSD takes input while the next-episode popup stays visible.
+        # Returning from the OSD restores the popup without cancelling playback.
         executebuiltin('ActivateWindow(videoosd)')
 
     def onClick(self, controlId):  # pylint: disable=invalid-name
