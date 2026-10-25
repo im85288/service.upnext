@@ -251,3 +251,7 @@ msgstr "Zobraziť vyskakovacie okno Stále sledujete (jednoduché)"
 msgctxt "#30813"
 msgid "Test Skip button"
 msgstr ""
+
+msgctxt "#30507"
+msgid "Use OK/Select for playback controls"
+msgstr "Tlačidlom OK otvoriť ovládanie prehrávania"

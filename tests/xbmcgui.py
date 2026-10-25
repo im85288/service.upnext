@@ -15,6 +15,23 @@ class Control:  # pylint: disable=too-few-public-methods
         ''' A stub constructor for the xbmcgui Control class '''
 
 
+class ControlButton(Control):
+    ''' A stub for a dynamically added focus target '''
+
+    def __init__(self, *args, **kwargs):
+        super().__init__()
+        self.navigation = None
+
+    @staticmethod
+    def getId():
+        ''' Return the test control identifier '''
+        return 9000
+
+    def setNavigation(self, up, down, left, right):
+        ''' Record the controls reached by directional navigation '''
+        self.navigation = (up, down, left, right)
+
+
 class ControlLabel(Control):
     ''' A reimplementation of the xbmcgui ControlLabel class '''
 

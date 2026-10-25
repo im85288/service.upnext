@@ -82,7 +82,7 @@ def test_base_popup_needs_a_main_button_action():
 @pytest.mark.parametrize('popup_class', [upnext.UpNext, stillwatching.StillWatching])
 @pytest.mark.parametrize('stop_after_close,label', [(True, 30033), (False, 30034)])
 def test_on_init_fills_in_the_episode_and_progress(monkeypatch, popup_class, stop_after_close, label):
-    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: stop_after_close)
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: stop_after_close if key == 'stopAfterClose' else False)
     monkeypatch.setattr(upnext, 'localize', lambda string_id: string_id)
     page = popup_class()  # the real constructor, through Popup.__init__
     assert page.action_exitkeys_id == [10, 13] and page.progress_control is None
@@ -95,3 +95,39 @@ def test_on_init_fills_in_the_episode_and_progress(monkeypatch, popup_class, sto
     assert percents == [100]
     # Only Up Next labels its Close button, as Stop when stopping after close is enabled
     assert labels == ([label] if popup_class is upnext.UpNext else [])
+
+
+@pytest.mark.parametrize('direct_button', [False, True])
+def test_playback_focus_navigates_into_existing_skin_controls(direct_button):
+    page = make_popup(upnext.UpNext)
+    added, focused = [], []
+    target = object()
+
+    def control(identifier):
+        if identifier == 20 and direct_button:
+            raise RuntimeError('Skin has a direct button')
+        return target
+
+    page.getControl = control
+    page.addControl = added.append
+    page.setFocus = focused.append
+    page.prepare_playback_controls()
+    assert added == focused == [page.playback_control]
+    assert page.playback_control.navigation == (target,) * 4
+
+
+@pytest.mark.parametrize('use_action', [False, True])
+def test_opening_playback_controls_neither_advances_nor_cancels(monkeypatch, use_action):
+    page = make_popup(upnext.UpNext)
+    cleared, commands = [], []
+    page.playback_control = Stub(getId=lambda: 9000)
+    monkeypatch.setattr(upnext, 'clear_property', cleared.append)
+    monkeypatch.setattr(upnext, 'executebuiltin', commands.append)
+    if use_action:
+        page.onAction(upnext.ACTION_SHOW_OSD)
+    else:
+        page.onClick(9000)
+    assert page.closed == 1
+    assert cleared == ['service.upnext.dialog']
+    assert commands == ['ActivateWindow(videoosd)']
+    assert not page.is_cancel() and not page.is_dismissed() and not page.is_watch_now()
