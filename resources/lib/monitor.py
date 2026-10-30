@@ -123,7 +123,7 @@ class UpNextMonitor(Monitor):
                 continue
 
             self.player.set_last_file(current_file)
-            self._handled_without_data = None if self.api.data else current_file
+            had_addon_data = bool(self.api.data)
             self.log('Show notification as episode (of length %d secs) ends in %d secs' % (total_time, notification_time), 2)
             # The popup holds this loop until it closes, so the Skip button
             # could no longer follow playback: close it first.
@@ -135,6 +135,8 @@ class UpNextMonitor(Monitor):
                 self.log('Up Next failed for %s:\n%s' % (current_file, format_exc()), 0)
                 clear_property('service.upnext.dialog')
                 replaced = False
+            # Only an attempt that showed nothing because the add-on data hadn't arrived yet gets retried
+            self._handled_without_data = None if had_addon_data or self.playback_manager.popup_shown else current_file
             if replaced:
                 # Another file replaced this episode while the popup was open, keep tracking it
                 self.log('Playback was replaced while the popup was open, tracking continues', 2)

@@ -6,16 +6,38 @@ import monitor
 from test_playbackmanager import Stub
 
 EPISODE_1, EPISODE_2 = 'episode1.mkv', 'episode2.mkv'
+NEXT_DATA = {'current_episode': {'episodeid': 2}, 'next_episode': {'episodeid': 3}}
 
 
-def run_ticks(monkeypatch, ticks, addon_data=None):
-    """Run the service loop over (file, total time, play time, tracking) ticks; return the popups as (file, play time)"""
-    popups = []
-    data = {'value': dict(addon_data or {})}
+class FakeApi:
+    """Like Api: addon_data_received() replaces data, launching a popup resets it"""
+
+    def __init__(self, data=None):
+        self.data = dict(data or {})
+        self.encoding = 'base64'
+
+    def notification_time(self, total_time=None):  # pylint: disable=unused-argument
+        return 70
+
+    def has_addon_data(self):
+        return self.data
+
+    def addon_data_received(self, data, encoding='base64'):
+        self.data = data
+        self.encoding = encoding
+
+
+def run_ticks(monkeypatch, ticks, addon_data=None, library=False, events=None):
+    """Run the service loop over (file, total time, play time) ticks.
+
+    events maps a tick number to a function called with the monitor before that tick, e.g. to
+    re-enable tracking or to deliver upnext_data. Returns the monitor; its popups attribute lists
+    (file, play time) for every popup that was actually shown."""
+    events = events or {}
     position = {'tick': -1}
 
     def current():
-        return ticks[min(position['tick'], len(ticks) - 1)]
+        return ticks[min(max(position['tick'], 0), len(ticks) - 1)]
 
     class Player:
         tracking = True
@@ -52,24 +74,28 @@ def run_ticks(monkeypatch, ticks, addon_data=None):
         def reset_queue(self):
             pass
 
-    def launch_up_next():
-        popups.append((current()[0], current()[2]))
-        return False
-
     class Monitor(monitor.UpNextMonitor):
         def __init__(self):  # pylint: disable=super-init-not-called
             self.player = Player()
-            self.api = Stub(notification_time=lambda **kwargs: 70, has_addon_data=lambda: data['value'],
-                            addon_data_received=lambda received, encoding: data.update(value=received))
-            self.api.data = data['value']
-            self.api.encoding = 'base64'
-            self.playback_manager = Stub(launch_up_next=launch_up_next, demo=Stub(hide=lambda: None), handle_demo=lambda: None)
+            self.api = FakeApi(addon_data)
+            self.playback_manager = Stub(launch_up_next=self.launch_up_next, popup_shown=False,
+                                         demo=Stub(hide=lambda: None), handle_demo=lambda: None)
             self.skipper = Stub(update=lambda *args: None, hide=lambda: None, reset=lambda: None)
             self._sleep_state = None
             self._wake_retries = 0
             self._playback_state = None
             self._waiting_for = None
             self.messages = []
+            self.popups = []
+
+        def launch_up_next(self):
+            # Like PlaybackManager: a popup needs add-on data, or a library episode to look up
+            shown = bool(self.api.data.get('next_episode')) or library
+            self.playback_manager.popup_shown = shown
+            if shown:
+                self.popups.append((current()[0], current()[2]))
+                self.api.data = {}
+            return False
 
         def abortRequested(self):  # pylint: disable=invalid-name
             return False
@@ -78,9 +104,8 @@ def run_ticks(monkeypatch, ticks, addon_data=None):
             position['tick'] += 1
             if position['tick'] >= len(ticks):
                 return True
-            # Kodi re-enables tracking for the next episode (e.g. onAVStarted) when the tick says so
-            if len(ticks[position['tick']]) > 3 and ticks[position['tick']][3]:
-                self.player.tracking = True
+            if position['tick'] in events:
+                events[position['tick']](self)
             return False
 
         def log(self, msg, level=1):
@@ -88,77 +113,92 @@ def run_ticks(monkeypatch, ticks, addon_data=None):
 
     monkeypatch.setattr(monitor, 'get_property', lambda name: '')
     monkeypatch.setattr(monitor, 'get_setting_bool', lambda name: False)
+    monkeypatch.setattr(monitor, 'decode_json', lambda raw: (dict(NEXT_DATA), 'base64'))
     instance = Monitor()
     instance.run()
-    return popups, instance
+    return instance
 
 
-def handoff(next_ticks):
-    """Episode 1 reaches its popup, then Kodi starts episode 2 and briefly reports episode 1's timing"""
-    return [
-        (EPISODE_1, 2679.0, 2600.0),
-        (EPISODE_1, 2679.0, 2610.0),         # 69 s left: popup for episode 1, tracking stops
-        (EPISODE_2, 2679.0, 2620.0, True),   # episode 2 is reported, with episode 1's timing
-        (EPISODE_2, 2679.0, 2621.0),
-    ] + next_ticks
+def track(instance):
+    """Kodi re-enables tracking for the next episode (e.g. onAVStarted)"""
+    instance.player.tracking = True
+
+
+def send_addon_data(instance):
+    """The add-on sends upnext_data for the playing file"""
+    instance.onNotification('plugin.video.example.SIGNAL', 'Other.upnext_data', '')
 
 
 def test_new_file_with_the_previous_files_timing_is_not_acted_on(monkeypatch):
-    popups, instance = run_ticks(monkeypatch, handoff([
-        (EPISODE_2, 1800.0, 2.0),            # episode 2's own timing
+    # Issue #352: episode 1's popup, then Kodi reports episode 2 with episode 1's timing for a few seconds
+    instance = run_ticks(monkeypatch, [
+        (EPISODE_1, 2679.0, 2600.0),
+        (EPISODE_1, 2679.0, 2610.0),         # 69 s left: popup for episode 1
+        (EPISODE_2, 2679.0, 2620.0),         # episode 2 reported, with episode 1's timing
+        (EPISODE_2, 2679.0, 2621.0),
+        (EPISODE_2, 1800.0, 2.0),            # episode 2's own timing, then its add-on data
         (EPISODE_2, 1800.0, 1000.0),
         (EPISODE_2, 1800.0, 1750.0),         # 50 s left: popup for episode 2
-    ]))
-    assert popups == [(EPISODE_1, 2610.0), (EPISODE_2, 1750.0)]
+    ], addon_data=NEXT_DATA, events={2: track, 5: send_addon_data})
+    assert instance.popups == [(EPISODE_1, 2610.0), (EPISODE_2, 1750.0)]
     assert any("own position and duration" in message for message in instance.messages)
 
 
 def test_same_length_file_resumed_further_in_is_accepted_after_waiting(monkeypatch):
-    # A genuinely new file of exactly the same length, resumed past the previous position
     ticks = [(EPISODE_1, 2679.0, 1000.0), (EPISODE_2, 2679.0, 1500.0)]
     ticks += [(EPISODE_2, 2679.0, 1500.0 + tick) for tick in range(1, monitor.STALE_TIMING_WAIT + 2)]
     ticks += [(EPISODE_2, 2679.0, 2650.0)]
-    popups, _ = run_ticks(monkeypatch, ticks)
-    assert popups == [(EPISODE_2, 2650.0)]
+    instance = run_ticks(monkeypatch, ticks, addon_data=NEXT_DATA)
+    assert instance.popups == [(EPISODE_2, 2650.0)]
 
 
 def test_a_new_file_from_the_start_is_not_delayed(monkeypatch):
-    popups, _ = run_ticks(monkeypatch, [
+    instance = run_ticks(monkeypatch, [
         (EPISODE_1, 2679.0, 1000.0),
         (EPISODE_2, 2679.0, 0.0),            # same length, but starting from the beginning
         (EPISODE_2, 2679.0, 2650.0),
-    ])
-    assert popups == [(EPISODE_2, 2650.0)]
+    ], addon_data=NEXT_DATA)
+    assert instance.popups == [(EPISODE_2, 2650.0)]
 
 
-def notify(instance, monkeypatch, data):
-    monkeypatch.setattr(monitor, 'decode_json', lambda raw: (data, 'base64'))
-    instance.onNotification('plugin.video.example.SIGNAL', 'Other.upnext_data', '')
+def test_addon_data_arriving_after_an_empty_attempt_gets_the_popup(monkeypatch):
+    # Episode 2 is checked before its add-on data arrives: nothing to show yet
+    instance = run_ticks(monkeypatch, [
+        (EPISODE_2, 1800.0, 1750.0),         # no add-on data, not in the library: no popup
+        (EPISODE_2, 1800.0, 1751.0),
+        (EPISODE_2, 1800.0, 1752.0),         # the add-on's data arrives, the file is checked again: popup
+        (EPISODE_2, 1800.0, 1753.0),
+        (EPISODE_2, 1800.0, 1754.0),
+    ], events={2: send_addon_data})
+    assert instance.popups == [(EPISODE_2, 1752.0)]
 
 
-def test_addon_data_retries_a_file_handled_before_it_arrived(monkeypatch):
-    # Without the timing guard (e.g. a longer stale period), episode 2 gets handled without add-on data...
-    ticks = [(EPISODE_2, 2679.0, 2620.0)] * 3
-    popups, instance = run_ticks(monkeypatch, ticks)
-    assert popups == [(EPISODE_2, 2620.0)]
-    assert instance.player.get_last_file() == EPISODE_2
-    # ...then the add-on's data for episode 2 arrives and Up Next looks at it again
-    notify(instance, monkeypatch, {'current_episode': {'episodeid': 2}, 'next_episode': {'episodeid': 3}})
-    assert instance.player.get_last_file() is None
-    assert instance.player.is_tracking()
+def test_addon_data_resent_after_a_popup_does_not_reopen_it(monkeypatch):
+    instance = run_ticks(monkeypatch, [
+        (EPISODE_2, 1800.0, 1750.0),         # popup with add-on data, then dismissed
+        (EPISODE_2, 1800.0, 1751.0),
+        (EPISODE_2, 1800.0, 1752.0),         # the add-on sends its data again
+        (EPISODE_2, 1800.0, 1753.0),
+        (EPISODE_2, 1800.0, 1754.0),
+    ], addon_data=NEXT_DATA, events={2: send_addon_data})
+    assert instance.popups == [(EPISODE_2, 1750.0)]
 
 
-def test_addon_data_resent_after_a_popup_does_not_repeat_it(monkeypatch):
-    data = {'current_episode': {'episodeid': 2}, 'next_episode': {'episodeid': 3}}
-    popups, instance = run_ticks(monkeypatch, [(EPISODE_2, 1800.0, 1750.0)] * 3, addon_data=data)
-    assert popups == [(EPISODE_2, 1750.0)]
-    notify(instance, monkeypatch, data)
-    assert instance.player.get_last_file() == EPISODE_2
+def test_addon_data_after_a_library_popup_does_not_reopen_it(monkeypatch):
+    # A library popup is shown without add-on data; add-on data arriving later must not repeat it
+    instance = run_ticks(monkeypatch, [
+        (EPISODE_2, 1800.0, 1750.0),
+        (EPISODE_2, 1800.0, 1751.0),
+        (EPISODE_2, 1800.0, 1752.0),
+        (EPISODE_2, 1800.0, 1753.0),
+        (EPISODE_2, 1800.0, 1754.0),
+    ], library=True, events={2: send_addon_data})
+    assert instance.popups == [(EPISODE_2, 1750.0)]
 
 
 def test_addon_data_for_another_file_keeps_the_handled_mark(monkeypatch):
-    popups, instance = run_ticks(monkeypatch, [(EPISODE_1, 2679.0, 2620.0)] * 3)
-    assert popups == [(EPISODE_1, 2620.0)]
+    instance = run_ticks(monkeypatch, [(EPISODE_1, 2679.0, 2620.0)] * 2)
+    assert instance.popups == []
     instance.player.last_file = EPISODE_2  # a different file is now marked handled
-    notify(instance, monkeypatch, {'current_episode': {'episodeid': 2}})
+    send_addon_data(instance)
     assert instance.player.get_last_file() == EPISODE_2
