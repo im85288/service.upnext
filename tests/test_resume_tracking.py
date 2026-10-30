@@ -63,7 +63,7 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
         def __init__(self):
             self.player = Player()
             self.api = Stub(notification_time=lambda **kwargs: 30, data={}, encoding='base64')
-            self.playback_manager = Stub(launch_up_next=launch or (lambda: events.append('popup') or replaced), demo=Stub(hide=hide_demo))
+            self.playback_manager = Stub(popup_shown=True, launch_up_next=launch or (lambda: events.append('popup') or replaced), demo=Stub(hide=hide_demo))
             self.skipper = Skipper(self.player)
             self.ticks = 0
             self._sleep_state = None
