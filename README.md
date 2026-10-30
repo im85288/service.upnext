@@ -28,6 +28,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Fix the popup not appearing for an episode an add-on starts with Player.play, when Kodi briefly reported it with the previous episode's position and duration (@im85288)
+
 ### v1.3.0 (2026-10-24)
 - Show a Skip intro / Skip recap button when an add-on marks those ranges in a new `skip_segments` field of `upnext_data`, with optional automatic skipping (@im85288)
 - Faster popups for library episodes, especially for long-running shows, and cheaper logging (@im85288)
