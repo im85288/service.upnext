@@ -129,3 +129,72 @@ def test_opening_playback_controls_neither_advances_nor_cancels(monkeypatch, use
     assert page.closed == 0
     assert commands == ['ActivateWindow(videoosd)']
     assert not page.is_cancel() and not page.is_dismissed() and not page.is_watch_now()
+
+
+@pytest.mark.parametrize('focus', [3012, 3013])
+def test_up_from_a_popup_button_returns_focus_to_playback_controls(focus):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.getFocusId = lambda: focus
+    selected = []
+    page.setFocus = selected.append
+    page.onAction(upnext.ACTION_MOVE_UP)
+    assert selected == [page.playback_control]
+    assert page.closed == 0 and not page.is_cancel() and not page.is_watch_now()
+
+
+def test_up_on_neutral_focus_leaves_navigation_to_kodi():
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.getFocusId = lambda: 9000
+    page.setFocus = lambda _: pytest.fail('Neutral focus must allow Kodi navigation')
+    page.onAction(upnext.ACTION_MOVE_UP)
+    assert page.closed == 0
+
+
+def test_reopened_popup_restores_neutral_focus(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    selected = []
+    page.setFocus = selected.append
+    page.addControl = lambda _: pytest.fail('Do not add a second focus target')
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: key == 'selectOpensPlaybackControls')
+    monkeypatch.setattr(upnext, 'localize', lambda value: value)
+    page.getControl = lambda _: Stub(setPercent=lambda _: None, setLabel=lambda _: None)
+    page.onInit()
+    assert selected == [page.playback_control] and page.playback_dialog_id == 13001
+
+
+def test_hidden_popup_returns_after_controls_close_without_cancelling(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.playback_dialog_id = 13001
+    events = []
+    page.show = lambda: events.append('show')
+    monkeypatch.setattr(upnext, 'executebuiltin', lambda command: events.append(command))
+    clock = [0.0]
+    monkeypatch.setattr(upnext, 'monotonic', lambda: clock[0])
+    visible = {'Window.IsVisible(videoosd)': False, 'Window.IsVisible(13001)': False}
+    monkeypatch.setattr(upnext, 'getCondVisibility', visible.__getitem__)
+    page.open_playback_controls()
+    page.restore_after_playback_controls()  # GUI activation is asynchronous
+    assert events == ['ActivateWindow(videoosd)']
+    visible['Window.IsVisible(videoosd)'] = True
+    clock[0] = 1
+    page.restore_after_playback_controls()
+    visible['Window.IsVisible(videoosd)'] = False
+    clock[0] = 2
+    page.restore_after_playback_controls()
+    assert events[-1] == 'show' and not page.is_cancel() and not page.is_watch_now()
+    page.restore_after_playback_controls()
+    assert events.count('show') == 1
+
+
+def test_control_return_does_not_reopen_a_dismissed_popup(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_dialog_id = 13001
+    page.controls_pending = page.controls_seen = True
+    page.cancel = True
+    page.show = lambda: pytest.fail('Cancelled popup must remain closed')
+    monkeypatch.setattr(upnext, 'getCondVisibility', lambda _: False)
+    page.restore_after_playback_controls()

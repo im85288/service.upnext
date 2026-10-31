@@ -135,6 +135,10 @@ msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr "Korvaa \"Sulje\"-painike \"Pysäytä\"-painikkeella"
 
+msgctxt "#30507"
+msgid "Use OK/Select for playback controls"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr "Käyttäytyminen"
@@ -250,7 +254,3 @@ msgstr "Näytä yksinkertaisempi \"Katseletko vielä?\" -ilmoitus…"
 msgctxt "#30813"
 msgid "Test Skip button"
 msgstr ""
-
-msgctxt "#30507"
-msgid "Use OK/Select for playback controls"
-msgstr "Use OK/Select for playback controls"

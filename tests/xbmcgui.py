@@ -243,6 +243,10 @@ class Window:
         ''' Record the focused control '''
         self.focus = control
 
+    def getFocusId(self):
+        ''' Return the focused control identifier '''
+        return self.focus.getId()
+
     @staticmethod
     def setProperty(key, value):
         ''' A stub implementation for the xbmcgui Window class setProperty() method '''
@@ -271,6 +275,11 @@ class WindowXMLDialog(WindowXML):
 def getScreenHeight():
     ''' A reimplementation of the xbmcgui getScreenHeight() function '''
     return 1080
+
+
+def getCurrentWindowDialogId():
+    ''' Return the current dialog identifier '''
+    return 13001
 
 
 def getScreenWidth():
