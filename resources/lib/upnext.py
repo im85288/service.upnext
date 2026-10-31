@@ -26,8 +26,8 @@ class UpNext(Popup):
             self.getControl(3013).setLabel(localize(30033))  # Stop
         else:
             self.getControl(3013).setLabel(localize(30034))  # Close
+        self.playback_dialog_id = getCurrentWindowDialogId()
         if get_setting_bool('selectOpensPlaybackControls'):
-            self.playback_dialog_id = getCurrentWindowDialogId()
             if self.playback_control is None:
                 self.prepare_playback_controls()
             else:
@@ -50,10 +50,9 @@ class UpNext(Popup):
     def open_playback_controls(self):
         # The native OSD takes input while the next-episode popup stays visible.
         # Returning from the OSD restores the popup without cancelling playback.
-        if self.playback_control is not None:
-            self.controls_pending = True
-            self.controls_seen = False
-            self.controls_check_at = 0
+        self.controls_pending = True
+        self.controls_seen = False
+        self.controls_check_at = 0
         executebuiltin('ActivateWindow(videoosd)')
 
     def restore_after_playback_controls(self):

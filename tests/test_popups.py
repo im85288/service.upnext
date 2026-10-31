@@ -198,3 +198,25 @@ def test_control_return_does_not_reopen_a_dismissed_popup(monkeypatch):
     page.show = lambda: pytest.fail('Cancelled popup must remain closed')
     monkeypatch.setattr(upnext, 'getCondVisibility', lambda _: False)
     page.restore_after_playback_controls()
+
+
+def test_dedicated_osd_restores_popup_even_when_select_option_is_off(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda _: False)
+    monkeypatch.setattr(upnext, 'localize', lambda value: value)
+    monkeypatch.setattr(upnext, 'executebuiltin', lambda _: None)
+    page.getControl = lambda _: Stub(setPercent=lambda _: None, setLabel=lambda _: None)
+    page.onInit()
+    assert page.playback_control is None and page.playback_dialog_id == 13001
+    shown = []
+    page.show = lambda: shown.append(True)
+    clock = [0.0]
+    monkeypatch.setattr(upnext, 'monotonic', lambda: clock[0])
+    visible = {'Window.IsVisible(videoosd)': True, 'Window.IsVisible(13001)': False}
+    monkeypatch.setattr(upnext, 'getCondVisibility', visible.__getitem__)
+    page.onAction(upnext.ACTION_SHOW_OSD)
+    page.restore_after_playback_controls()
+    visible['Window.IsVisible(videoosd)'] = False
+    clock[0] = 1
+    page.restore_after_playback_controls()
+    assert shown == [True] and not page.is_cancel() and not page.is_watch_now()
