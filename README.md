@@ -31,6 +31,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ### Unreleased
 - Optionally let OK/Select open Kodi's playback controls alongside the next-episode popup in both styles, including existing skin overrides. Arrow navigation enters its normal buttons, and Up returns to playback-control focus. Restore a popup hidden by Kodi after the playback controls close; preserve normal episode-end advancement, Stop, Back and Still Watching behavior.
+- Fix the popup not appearing for an episode an add-on starts with Player.play, when Kodi briefly reported it with the previous episode's position and duration (@im85288)
 
 ### v1.3.0 (2026-10-24)
 - Show a Skip intro / Skip recap button when an add-on marks those ranges in a new `skip_segments` field of `upnext_data`, with optional automatic skipping (@im85288)
