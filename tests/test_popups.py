@@ -82,7 +82,7 @@ def test_base_popup_needs_a_main_button_action():
 @pytest.mark.parametrize('popup_class', [upnext.UpNext, stillwatching.StillWatching])
 @pytest.mark.parametrize('stop_after_close,label', [(True, 30033), (False, 30034)])
 def test_on_init_fills_in_the_episode_and_progress(monkeypatch, popup_class, stop_after_close, label):
-    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: stop_after_close)
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: stop_after_close if key == 'stopAfterClose' else False)
     monkeypatch.setattr(upnext, 'localize', lambda string_id: string_id)
     page = popup_class()  # the real constructor, through Popup.__init__
     assert page.action_exitkeys_id == [10, 13] and page.progress_control is None
@@ -95,3 +95,128 @@ def test_on_init_fills_in_the_episode_and_progress(monkeypatch, popup_class, sto
     assert percents == [100]
     # Only Up Next labels its Close button, as Stop when stopping after close is enabled
     assert labels == ([label] if popup_class is upnext.UpNext else [])
+
+
+@pytest.mark.parametrize('direct_button', [False, True])
+def test_playback_focus_navigates_into_existing_skin_controls(direct_button):
+    page = make_popup(upnext.UpNext)
+    added, focused = [], []
+    target = object()
+
+    def control(identifier):
+        if identifier == 20 and direct_button:
+            raise RuntimeError('Skin has a direct button')
+        return target
+
+    page.getControl = control
+    page.addControl = added.append
+    page.setFocus = focused.append
+    page.prepare_playback_controls()
+    assert added == focused == [page.playback_control]
+    assert page.playback_control.navigation == (target,) * 4
+
+
+@pytest.mark.parametrize('use_action', [False, True])
+def test_opening_playback_controls_neither_advances_nor_cancels(monkeypatch, use_action):
+    page = make_popup(upnext.UpNext)
+    commands = []
+    page.playback_control = Stub(getId=lambda: 9000)
+    monkeypatch.setattr(upnext, 'executebuiltin', commands.append)
+    if use_action:
+        page.onAction(upnext.ACTION_SHOW_OSD)
+    else:
+        page.onClick(9000)
+    assert page.closed == 0
+    assert commands == ['ActivateWindow(videoosd)']
+    assert not page.is_cancel() and not page.is_dismissed() and not page.is_watch_now()
+
+
+@pytest.mark.parametrize('focus', [3012, 3013])
+def test_up_from_a_popup_button_returns_focus_to_playback_controls(focus):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.getFocusId = lambda: focus
+    selected = []
+    page.setFocus = selected.append
+    page.onAction(upnext.ACTION_MOVE_UP)
+    assert selected == [page.playback_control]
+    assert page.closed == 0 and not page.is_cancel() and not page.is_watch_now()
+
+
+def test_up_on_neutral_focus_leaves_navigation_to_kodi():
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.getFocusId = lambda: 9000
+    page.setFocus = lambda _: pytest.fail('Neutral focus must allow Kodi navigation')
+    page.onAction(upnext.ACTION_MOVE_UP)
+    assert page.closed == 0
+
+
+def test_reopened_popup_restores_neutral_focus(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    selected = []
+    page.setFocus = selected.append
+    page.addControl = lambda _: pytest.fail('Do not add a second focus target')
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: key == 'selectOpensPlaybackControls')
+    monkeypatch.setattr(upnext, 'localize', lambda value: value)
+    page.getControl = lambda _: Stub(setPercent=lambda _: None, setLabel=lambda _: None)
+    page.onInit()
+    assert selected == [page.playback_control] and page.playback_dialog_id == 13001
+
+
+def test_hidden_popup_returns_after_controls_close_without_cancelling(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.playback_dialog_id = 13001
+    events = []
+    page.show = lambda: events.append('show')
+    monkeypatch.setattr(upnext, 'executebuiltin', lambda command: events.append(command))
+    clock = [0.0]
+    monkeypatch.setattr(upnext, 'monotonic', lambda: clock[0])
+    visible = {'Window.IsVisible(videoosd)': False, 'Window.IsVisible(13001)': False}
+    monkeypatch.setattr(upnext, 'getCondVisibility', visible.__getitem__)
+    page.open_playback_controls()
+    page.restore_after_playback_controls()  # GUI activation is asynchronous
+    assert events == ['ActivateWindow(videoosd)']
+    visible['Window.IsVisible(videoosd)'] = True
+    clock[0] = 1
+    page.restore_after_playback_controls()
+    visible['Window.IsVisible(videoosd)'] = False
+    clock[0] = 2
+    page.restore_after_playback_controls()
+    assert events[-1] == 'show' and not page.is_cancel() and not page.is_watch_now()
+    page.restore_after_playback_controls()
+    assert events.count('show') == 1
+
+
+def test_control_return_does_not_reopen_a_dismissed_popup(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_dialog_id = 13001
+    page.controls_pending = page.controls_seen = True
+    page.cancel = True
+    page.show = lambda: pytest.fail('Cancelled popup must remain closed')
+    monkeypatch.setattr(upnext, 'getCondVisibility', lambda _: False)
+    page.restore_after_playback_controls()
+
+
+def test_dedicated_osd_restores_popup_even_when_select_option_is_off(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda _: False)
+    monkeypatch.setattr(upnext, 'localize', lambda value: value)
+    monkeypatch.setattr(upnext, 'executebuiltin', lambda _: None)
+    page.getControl = lambda _: Stub(setPercent=lambda _: None, setLabel=lambda _: None)
+    page.onInit()
+    assert page.playback_control is None and page.playback_dialog_id == 13001
+    shown = []
+    page.show = lambda: shown.append(True)
+    clock = [0.0]
+    monkeypatch.setattr(upnext, 'monotonic', lambda: clock[0])
+    visible = {'Window.IsVisible(videoosd)': True, 'Window.IsVisible(13001)': False}
+    monkeypatch.setattr(upnext, 'getCondVisibility', visible.__getitem__)
+    page.onAction(upnext.ACTION_SHOW_OSD)
+    page.restore_after_playback_controls()
+    visible['Window.IsVisible(videoosd)'] = False
+    clock[0] = 1
+    page.restore_after_playback_controls()
+    assert shown == [True] and not page.is_cancel() and not page.is_watch_now()

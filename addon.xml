@@ -44,6 +44,9 @@ Muchos complementos existentes ya se integran con este servicio listo para usar.
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <news>
+Unreleased
+- Optional OK/Select access to playback controls while the next-episode popup is open
+
 v1.3.0 (2026-10-24)
 - New Skip intro / Skip recap button for add-ons that mark them
 - Faster popups for library episodes, especially long-running shows

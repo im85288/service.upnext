@@ -136,6 +136,10 @@ msgctxt "#30505"
 msgid "Show a \"Stop\" button instead of a \"Close\" button"
 msgstr "显示“停止”按钮而不是“关闭”按钮"
 
+msgctxt "#30507"
+msgid "Use OK/Select for playback controls"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr "播放行为"

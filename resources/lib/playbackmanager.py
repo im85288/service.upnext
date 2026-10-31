@@ -218,6 +218,7 @@ class PlaybackManager:
             play_time, total_time = position
 
             remaining = total_time - play_time
+            next_up_page.restore_after_playback_controls()
             if not self.state.pause:
                 if showing_next_up_page:
                     if credits_deadline is not None:
