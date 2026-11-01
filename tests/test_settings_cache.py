@@ -20,11 +20,22 @@ class SnapshotAddon:
     def getSetting(self, key):  # pylint: disable=invalid-name
         return self.values.get(key, '')
 
+    def getSettingBool(self, key):  # pylint: disable=invalid-name
+        return self.values[key] == 'true'
 
-@pytest.fixture
-def addon(monkeypatch):
+    def getSettingInt(self, key):  # pylint: disable=invalid-name
+        return int(self.values[key])
+
+
+class StringOnlyAddon(SnapshotAddon):
+    """An Addon without the typed readers, so reads use the getSetting() fallback"""
+    getSettingBool = getSettingInt = None
+
+
+@pytest.fixture(params=[SnapshotAddon, StringOnlyAddon], ids=['typed readers', 'string fallback'])
+def addon(monkeypatch, request):
     SnapshotAddon.created = 0
-    monkeypatch.setattr(utils, 'Addon', SnapshotAddon)
+    monkeypatch.setattr(utils, 'Addon', request.param)
     monkeypatch.setitem(SAVED, 'disableNextUp', 'false')
     utils.reload_settings()
     yield SnapshotAddon
