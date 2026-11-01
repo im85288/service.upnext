@@ -4,7 +4,7 @@
 from math import ceil
 from time import monotonic
 from xbmc import sleep
-from api import Api, credits_autoplay_deadline, get_watched_state, mark_watched
+from api import Api, credits_autoplay_deadline, get_watched_state, mark_watched, playing_episode_id
 from demo import DemoOverlay
 from player import UpNextPlayer
 from playitem import PlayItem
@@ -148,7 +148,7 @@ class PlaybackManager:
         self.log('playing media episode', 2)
         # Signal to trakt previous episode watched
         event(message='NEXTUPWATCHEDSIGNAL', data={'episodeid': self.state.current_episode_id}, encoding='base64')
-        self.remember_watched_state(self.state.current_episode_id, source)
+        self.remember_watched_state(self.state.current_episode_id, source, episode.get('episodeid'))
         if source == 'playlist' or queued:
             # Play playlist media
             if should_play_non_default or next_up_page.is_auto_advance():
@@ -296,7 +296,7 @@ class PlaybackManager:
             # Keep autoplay distinct from Watch Now so Still Watching counts survive.
             page.set_auto_advance()
 
-    def remember_watched_state(self, episodeid, source):
+    def remember_watched_state(self, episodeid, source, next_episodeid=None):
         """Note a library episode's play count as Up Next moves on, so it can be marked watched if Kodi doesn't"""
         # Add-on episodes keep their watched state in the add-on, and only library lookups have a library ID
         if source != 'library' or get_int(episodeid, default=0) < 1 or not get_setting_bool('markWatchedEarly', default=True):
@@ -308,14 +308,14 @@ class PlaybackManager:
             playing_file = None
         if watched is not None and playing_file:
             self._watched_checks.append({'episodeid': episodeid, 'playcount': watched[0], 'file': playing_file,
-                                         'started': monotonic(), 'switched': None})
+                                         'next': next_episodeid, 'started': monotonic(), 'switched': None})
 
     def check_previous_watched(self):
         """Mark episodes Up Next moved on from as watched when Kodi didn't count them"""
         # Kodi only counts an episode stopped after playcountminimumpercent (90% by default), so Watch Now or
-        # the credits delay can leave it unwatched with a resume point. Only act once another file is playing,
-        # and only after Kodi has saved the previous one: that avoids counting it twice, and Kodi's resume
-        # point overwriting this.
+        # the credits delay can leave it unwatched with a resume point. Only act once the next episode is
+        # playing, and only after Kodi has saved the previous one: that avoids counting it twice, and Kodi's
+        # resume point overwriting this.
         if not self._watched_checks:
             return
         now = monotonic()
@@ -326,7 +326,12 @@ class PlaybackManager:
         for check in list(self._watched_checks):
             if check['switched'] is None:
                 if playing_file and playing_file != check['file']:
-                    check['switched'] = now
+                    playing = playing_episode_id()
+                    if playing == check['next']:
+                        check['switched'] = now
+                    elif playing != check['episodeid']:
+                        # Something else is playing, so Up Next didn't move on to its next episode
+                        self._watched_checks.remove(check)
                 elif now - check['started'] > WATCHED_SWITCH_TIMEOUT:
                     # The next episode never started, so playback did not move on
                     self._watched_checks.remove(check)

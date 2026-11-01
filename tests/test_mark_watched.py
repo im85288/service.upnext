@@ -43,6 +43,9 @@ def manager(monkeypatch):
     monkeypatch.setattr(playbackmanager, 'get_setting_bool', lambda key, default=None: settings.get(key, default))
     monkeypatch.setattr(playbackmanager, 'get_watched_state', library.get_watched_state)
     monkeypatch.setattr(playbackmanager, 'mark_watched', library.mark_watched)
+    # Library IDs of the files Kodi plays; anything else is not a library episode
+    monkeypatch.setattr(playbackmanager, 'playing_episode_id',
+                        lambda: {'S01E07.mkv': 7, 'S01E08.mkv': 8, 'S01E09.mkv': 9}.get(playing['file']))
     instance = object.__new__(playbackmanager.PlaybackManager)
     instance._watched_checks = []  # pylint: disable=protected-access
     instance.player = Stub(getPlayingFile=get_playing_file)
@@ -59,7 +62,7 @@ def tick(instance, seconds=1):
 
 def move_on(instance, episodeid=7, kodi_saved=None, next_file='S01E08.mkv'):
     """Up Next starts the next episode, which then plays; Kodi saves the previous one's own state"""
-    instance.remember_watched_state(episodeid, 'library')
+    instance.remember_watched_state(episodeid, 'library', 8)
     instance.playing['file'] = next_file
     if kodi_saved is not None:
         instance.library.episodes[episodeid] = kodi_saved
@@ -85,7 +88,7 @@ def test_episode_kodi_counted_is_not_counted_twice(manager):
 
 
 def test_check_waits_for_kodi_to_save_the_previous_episode(manager):
-    manager.remember_watched_state(7, 'library')
+    manager.remember_watched_state(7, 'library', 8)
     manager.playing['file'] = 'S01E08.mkv'
     tick(manager)                 # the next episode is playing
     tick(manager, DELAY - 1)
@@ -97,7 +100,7 @@ def test_check_waits_for_kodi_to_save_the_previous_episode(manager):
 
 
 def test_slow_next_episode_is_waited_for(manager):
-    manager.remember_watched_state(7, 'library')
+    manager.remember_watched_state(7, 'library', 8)
     manager.playing['file'] = None  # still opening
     tick(manager, 30)
     manager.playing['file'] = 'S01E08.mkv'
@@ -108,7 +111,7 @@ def test_slow_next_episode_is_waited_for(manager):
 
 @pytest.mark.parametrize('playing_after', ['S01E07.mkv', None])  # the old episode carries on, or playback ended
 def test_failed_switch_leaves_the_episode_alone(manager, playing_after):
-    manager.remember_watched_state(7, 'library')
+    manager.remember_watched_state(7, 'library', 8)
     manager.playing['file'] = playing_after
     for _ in range(3):
         tick(manager, playbackmanager.WATCHED_SWITCH_TIMEOUT)
@@ -118,12 +121,34 @@ def test_failed_switch_leaves_the_episode_alone(manager, playing_after):
     assert manager.library.marked == []
 
 
-def test_quick_transitions_each_get_checked(manager):
-    # Watch Now on episode 7, then again on episode 8 before the first check is due
-    manager.remember_watched_state(7, 'library')
+@pytest.mark.parametrize('other_file', ['movie.mkv', 'S01E09.mkv'])  # not a library episode, or a different one
+def test_other_video_after_a_failed_switch_leaves_the_episode_alone(manager, other_file):
+    manager.remember_watched_state(7, 'library', 8)
+    manager.playing['file'] = other_file  # the next episode failed and something else was opened instead
+    tick(manager)
+    tick(manager, DELAY)
+    assert manager.library.marked == []
+
+
+def test_old_episode_still_reported_is_waited_for(monkeypatch, manager):
+    # The playing file changed, but Kodi still reports the previous episode for a moment
+    monkeypatch.setattr(playbackmanager, 'playing_episode_id',
+                        lambda: {'stack://S01E07.mkv': 7, 'S01E08.mkv': 8}.get(manager.playing['file']))
+    manager.remember_watched_state(7, 'library', 8)
+    manager.playing['file'] = 'stack://S01E07.mkv'
+    tick(manager)
     manager.playing['file'] = 'S01E08.mkv'
     tick(manager)
-    manager.remember_watched_state(8, 'library')
+    tick(manager, DELAY)
+    assert manager.library.marked == [(7, 1)]
+
+
+def test_quick_transitions_each_get_checked(manager):
+    # Watch Now on episode 7, then again on episode 8 before the first check is due
+    manager.remember_watched_state(7, 'library', 8)
+    manager.playing['file'] = 'S01E08.mkv'
+    tick(manager)
+    manager.remember_watched_state(8, 'library', 9)
     manager.playing['file'] = 'S01E09.mkv'
     tick(manager)
     tick(manager, DELAY)
@@ -132,11 +157,11 @@ def test_quick_transitions_each_get_checked(manager):
 
 def test_overdue_check_survives_a_popup(manager):
     # A short episode's popup blocks the service loop past the first check's time
-    manager.remember_watched_state(7, 'library')
+    manager.remember_watched_state(7, 'library', 8)
     manager.playing['file'] = 'S01E08.mkv'
     tick(manager)
     manager.clock['now'] += 3 * DELAY
-    manager.remember_watched_state(8, 'library')
+    manager.remember_watched_state(8, 'library', 9)
     manager.playing['file'] = 'S01E09.mkv'
     tick(manager)
     assert manager.library.marked == [(7, 1)]
@@ -153,7 +178,7 @@ def test_unknown_episodes_are_left_alone(manager, episodeid):
 @pytest.mark.parametrize('source', ['addon', 'playlist'])
 def test_only_library_episodes_are_checked(manager, source):
     """Add-on episodes keep their watched state in the add-on; playlist items have no library lookup"""
-    manager.remember_watched_state(7, source)
+    manager.remember_watched_state(7, source, 8)
     manager.playing['file'] = 'S01E08.mkv'
     tick(manager)
     tick(manager, DELAY)
@@ -170,9 +195,9 @@ def test_setting_off_leaves_kodi_to_decide(manager):
 def test_library_episode_is_remembered_only_when_moving_on(monkeypatch, run_popup, action, remembered):
     calls = []
     monkeypatch.setattr(playbackmanager.PlaybackManager, 'remember_watched_state',
-                        lambda self, episodeid, source: calls.append((episodeid, source)))
+                        lambda self, episodeid, source, next_episodeid: calls.append((episodeid, source, next_episodeid)))
     run_popup(action=action, source='library')
-    assert calls == ([('current', 'library')] if remembered else [])
+    assert calls == ([('current', 'library', 'next')] if remembered else [])
 
 
 def test_watched_state_json_rpc(monkeypatch):
@@ -190,3 +215,21 @@ def test_watched_state_json_rpc(monkeypatch):
     api.mark_watched(7, 3)
     assert calls[-1] == ('VideoLibrary.SetEpisodeDetails',
                          {'episodeid': 7, 'playcount': 3, 'resume': {'position': 0, 'total': 0}})
+
+
+@pytest.mark.parametrize('players,item,expected', [
+    ([{'playerid': 1, 'type': 'video'}], {'type': 'episode', 'id': 8}, 8),
+    ([{'playerid': 1, 'type': 'video'}], {'type': 'movie', 'id': 3}, None),
+    ([{'playerid': 1, 'type': 'video'}], {'type': 'unknown', 'label': 'clip.mkv'}, None),
+    ([{'playerid': 0, 'type': 'audio'}], {'type': 'episode', 'id': 8}, None),
+    ([], None, None),
+])
+def test_playing_episode_id(monkeypatch, players, item, expected):
+    def jsonrpc(method, params=None):
+        if method == 'Player.GetActivePlayers':
+            return {'result': players}
+        assert params == {'playerid': 1}
+        return {'result': {'item': item}}
+
+    monkeypatch.setattr(api, 'jsonrpc', jsonrpc)
+    assert api.playing_episode_id() == expected

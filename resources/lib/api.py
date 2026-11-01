@@ -38,6 +38,16 @@ def get_watched_state(episodeid):
     return details.get('playcount') or 0, (details.get('resume') or {}).get('position') or 0
 
 
+def playing_episode_id():
+    """Return the library ID of the playing episode, or None if no library episode is playing"""
+    players = jsonrpc(method='Player.GetActivePlayers').get('result') or []
+    video = [player.get('playerid') for player in players if player.get('type') == 'video']
+    if not video:
+        return None
+    item = (jsonrpc(method='Player.GetItem', params={'playerid': video[0]}).get('result') or {}).get('item') or {}
+    return item.get('id') if item.get('type') == 'episode' else None
+
+
 def mark_watched(episodeid, playcount):
     """Set a library episode's play count and clear its resume point"""
     jsonrpc(method='VideoLibrary.SetEpisodeDetails', params={
