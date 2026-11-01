@@ -43,7 +43,7 @@ class UpNextPlayer(Player):
         if getCondVisibility('videoplayer.content(episodes)'):
             return True
         # Non-library videos (files played from a folder, "Play from here") only have a playlist to go on
-        if not get_setting_bool('enablePlaylist'):
+        if not get_setting_bool('enablePlaylist') or not self.isPlayingVideo():
             return False
         playlist = PlayList(self.api.get_playlistid(playlistid_cache=[None]))
         return 0 <= playlist.getposition() < playlist.size() - 1
