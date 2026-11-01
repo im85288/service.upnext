@@ -48,6 +48,7 @@ class UpNextMonitor(Monitor):
                 break
 
             self.restore_after_wake()
+            self.playback_manager.check_previous_watched()
             if not self.player.is_tracking():
                 self._waiting_for = None
                 self.skipper.reset()
