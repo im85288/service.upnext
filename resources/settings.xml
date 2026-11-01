@@ -16,12 +16,12 @@
         <setting label="30641" type="slider" id="bedtimeMinute" default="0" range="0,5,55" option="int" subsetting="true" visible="eq(-2,true)"/>
         <setting label="30609" type="lsep"/> <!-- Autoplay duration -->
         <setting label="30611" type="bool" id="customAutoPlayTime" default="true"/>
-        <setting label="30613" type="slider" id="autoPlaySeasonTime" default="30" range="0,5,120" option="int" subsetting="true" visible="eq(-1,false)"/>
-        <setting label="30615" type="slider" id="autoPlayTimeXS" default="15" range="0,5,120" option="int" subsetting="true" visible="eq(-2,true)"/>
-        <setting label="30617" type="slider" id="autoPlayTimeS" default="30" range="0,5,120" option="int" subsetting="true" visible="eq(-3,true)"/>
-        <setting label="30619" type="slider" id="autoPlayTimeM" default="40" range="0,5,120" option="int" subsetting="true" visible="eq(-4,true)"/>
-        <setting label="30621" type="slider" id="autoPlayTimeL" default="50" range="0,5,120" option="int" subsetting="true" visible="eq(-5,true)"/>
-        <setting label="30623" type="slider" id="autoPlayTimeXL" default="60" range="0,5,120" option="int" subsetting="true" visible="eq(-6,true)"/>
+        <setting label="30613" type="slider" id="autoPlaySeasonTime" default="30" range="0,5,300" option="int" subsetting="true" visible="eq(-1,false)"/>
+        <setting label="30615" type="slider" id="autoPlayTimeXS" default="15" range="0,5,300" option="int" subsetting="true" visible="eq(-2,true)"/>
+        <setting label="30617" type="slider" id="autoPlayTimeS" default="30" range="0,5,300" option="int" subsetting="true" visible="eq(-3,true)"/>
+        <setting label="30619" type="slider" id="autoPlayTimeM" default="40" range="0,5,300" option="int" subsetting="true" visible="eq(-4,true)"/>
+        <setting label="30621" type="slider" id="autoPlayTimeL" default="50" range="0,5,300" option="int" subsetting="true" visible="eq(-5,true)"/>
+        <setting label="30623" type="slider" id="autoPlayTimeXL" default="60" range="0,5,300" option="int" subsetting="true" visible="eq(-6,true)"/>
         <setting label="30625" type="slider" id="autoPlayCreditsTime" default="0" range="0,1,120" option="int"/>
         <setting label="30627" type="lsep"/> <!-- Intros and recaps -->
         <setting label="30629" type="bool" id="enableSkipSegments" default="true"/>
