@@ -212,6 +212,22 @@ msgctxt "#30633"
 msgid "Skip recaps automatically"
 msgstr ""
 
+msgctxt "#30635"
+msgid "Ask if still watching after (minutes, 0 disables)"
+msgstr ""
+
+msgctxt "#30637"
+msgid "Ask if still watching after bedtime"
+msgstr ""
+
+msgctxt "#30639"
+msgid "Bedtime hour"
+msgstr ""
+
+msgctxt "#30641"
+msgid "Bedtime minute"
+msgstr ""
+
 msgctxt "#30700"
 msgid "Expert"
 msgstr ""

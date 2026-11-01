@@ -8,7 +8,7 @@ from api import Api
 from playbackmanager import PlaybackManager
 from player import UpNextPlayer
 from skip import Skipper
-from utils import clear_property, decode_json, get_property, get_setting_bool, log as ulog
+from utils import clear_property, decode_json, get_property, get_setting_bool, get_setting_int, log as ulog
 
 
 # How long to wait for a new file's own timing before accepting what Kodi reports (seconds)
@@ -51,6 +51,9 @@ class UpNextMonitor(Monitor):
             if not self.player.is_tracking():
                 self._waiting_for = None
                 self.skipper.reset()
+                timer = getattr(self.player.state, 'watch_timer', None)
+                if timer:
+                    timer.suspend()
                 continue
 
             if bool(get_property('PseudoTVRunning') == 'True'):
@@ -106,6 +109,14 @@ class UpNextMonitor(Monitor):
             except RuntimeError:
                 self.wait_for_player('player.getTime()')
                 continue
+
+            timer = getattr(self.player.state, 'watch_timer', None)
+            if timer:
+                timer.observe(current_file, play_time, self.player.state.pause)
+                if not self.player.state.pause:
+                    enabled = get_setting_bool('bedtimeEnabled')
+                    timer.mark_bedtime(enabled, (get_setting_int('bedtimeHour') or 0) if enabled else 0,
+                                       (get_setting_int('bedtimeMinute') or 0) if enabled else 0)
 
             if self.stale_timing(current_file, total_time, play_time):
                 self.wait_for_player("the new file's own position and duration")
@@ -198,6 +209,7 @@ class UpNextMonitor(Monitor):
         self._playback_state.update(last_file=self.player.get_last_file(), tracking=self.player.is_tracking(),
                                     played_in_a_row=self.player.state.played_in_a_row,
                                     current_tv_show_id=self.player.state.current_tv_show_id)
+        self._playback_state['watch_timer'] = getattr(self.player.state, 'watch_timer', None)
 
     def remember_for_sleep(self):
         # The queued sleep callback may run after the native player has stopped.
@@ -230,6 +242,9 @@ class UpNextMonitor(Monitor):
             self.api.addon_data_received(saved['data'], encoding=saved['encoding'])
         self.player.state.played_in_a_row = saved['played_in_a_row']
         self.player.state.current_tv_show_id = saved['current_tv_show_id']
+        if saved.get('watch_timer') is not None:
+            self.player.state.watch_timer = saved['watch_timer']
+            self.player.state.watch_timer.suspend()
         self.player.set_last_file(saved['last_file'])
         if saved['tracking'] or saved['data']:
             self.player.enable_tracking()
