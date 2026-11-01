@@ -44,6 +44,9 @@ Muchos complementos existentes ya se integran con este servicio listo para usar.
         <platform>all</platform>
         <license>GPL-2.0-only</license>
         <news>
+Unreleased
+- Optional Still Watching prompts based on viewing time or bedtime
+
 v1.3.1 (2026-11-01)
 - Fix the popup not appearing when an add-on starts the next episode itself
 - Optional OK/Select access to playback controls while the popup is open

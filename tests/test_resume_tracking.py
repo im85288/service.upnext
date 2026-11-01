@@ -253,6 +253,7 @@ def test_wake_restores_still_watching_count_after_real_state_reset(sleeping_moni
     manager_state = player.State()
     sleeping_monitor.player.state.played_in_a_row = 3
     sleeping_monitor.player.state.current_tv_show_id = 'show'
+    sleeping_monitor.player.state.watch_timer.elapsed = 123
     sleeping_monitor.remember_playback()
     sleeping_monitor.onNotification('xbmc', 'System.OnSleep', '{}')
 
@@ -265,6 +266,8 @@ def test_wake_restores_still_watching_count_after_real_state_reset(sleeping_moni
 
     sleeping_monitor.onNotification('xbmc', 'System.OnWake', '{}')
     sleeping_monitor.restore_after_wake()
+    assert sleeping_monitor.player.state.watch_timer.elapsed == 123
+    assert sleeping_monitor.player.state.watch_timer.sample is None
     assert sleeping_monitor.player.state.played_in_a_row == 3
     assert manager_state.played_in_a_row == 3
     lookup = Stub(state=manager_state, get_playlist_position=lambda: False, log=lambda *args: None,
@@ -275,6 +278,32 @@ def test_wake_restores_still_watching_count_after_real_state_reset(sleeping_moni
     assert episode['episodeid'] == 'next'
     assert source == 'addon'
     assert manager_state.played_in_a_row == expected_count
+
+
+def test_wake_restores_timer_when_player_callback_precedes_sleep_notification(sleeping_monitor, monkeypatch):
+    from datetime import date
+    monkeypatch.setattr(player.State, '_shared_state', {})
+    sleeping_monitor.player.state = player.State()
+    timer = sleeping_monitor.player.state.watch_timer
+    timer.elapsed = 120
+    timer.bedtime_acknowledged = date(2026, 10, 31)
+    sleeping_monitor.remember_playback()
+    # The popup can continue updating the same timer while the monitor loop waits.
+    timer.elapsed = 123
+    timer.bedtime_pending = date(2026, 11, 1)
+    sleeping_monitor.player.api = sleeping_monitor.api
+    sleeping_monitor.player.reset_queue = lambda: None
+    sleeping_monitor.api.reset_addon_data = lambda: setattr(sleeping_monitor.api, 'data', {})
+    player.UpNextPlayer.onPlayBackStopped(sleeping_monitor.player)
+    sleeping_monitor.onNotification('xbmc', 'System.OnSleep', '{}')
+    sleeping_monitor.onNotification('xbmc', 'Player.OnStop', '{}')
+    sleeping_monitor.onNotification('xbmc', 'System.OnWake', '{}')
+    sleeping_monitor.restore_after_wake()
+    restored = sleeping_monitor.player.state.watch_timer
+    assert restored.elapsed == 123
+    assert restored.bedtime_acknowledged == date(2026, 10, 31)
+    assert restored.bedtime_pending == date(2026, 11, 1)
+    assert restored.sample is None
 
 
 def test_wake_preserves_fresh_metadata(sleeping_monitor):

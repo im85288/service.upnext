@@ -29,6 +29,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Optionally ask whether playback should continue after a chosen amount of active viewing time or during the bedtime window, from the configured time until 06:00, at the next episode transition. Recheck limits while the next-episode popup is open and preserve the timer through sleep, including delayed sleep notifications. Time spent paused, buffering or seeking does not count; confirming the prompt resets the viewing timer and acknowledges bedtime for that night within the current playback session. Both options are disabled by default.
+
 ### v1.3.1 (2026-11-01)
 - Optionally let OK/Select open Kodi's playback controls alongside the next-episode popup in both styles, including existing skin overrides. Arrow navigation enters its normal buttons, and Up returns to playback-control focus. Restore a popup hidden by Kodi after the playback controls close; preserve normal episode-end advancement, Stop, Back and Still Watching behavior (@Drahy)
 - Fix the popup not appearing for an episode an add-on starts with Player.play, when Kodi briefly reported it with the previous episode's position and duration (@im85288)
