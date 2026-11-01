@@ -143,6 +143,29 @@ def test_old_episode_still_reported_is_waited_for(monkeypatch, manager):
     assert manager.library.marked == [(7, 1)]
 
 
+def test_missing_player_details_are_waited_for(monkeypatch, manager):
+    # Kodi briefly has no item details for the new file
+    details = {'ready': False}
+    monkeypatch.setattr(playbackmanager, 'playing_episode_id', lambda: 8 if details['ready'] else None)
+    manager.remember_watched_state(7, 'library', 8)
+    manager.playing['file'] = 'S01E08.mkv'
+    tick(manager)
+    tick(manager, 5)
+    details['ready'] = True
+    tick(manager)
+    tick(manager, DELAY)
+    assert manager.library.marked == [(7, 1)]
+
+
+def test_other_video_is_dropped_after_the_timeout(manager):
+    manager.remember_watched_state(7, 'library', 8)
+    manager.playing['file'] = 'movie.mkv'
+    tick(manager, playbackmanager.WATCHED_SWITCH_TIMEOUT + 1)
+    tick(manager)
+    assert not manager._watched_checks  # pylint: disable=protected-access
+    assert manager.library.marked == []
+
+
 def test_quick_transitions_each_get_checked(manager):
     # Watch Now on episode 7, then again on episode 8 before the first check is due
     manager.remember_watched_state(7, 'library', 8)

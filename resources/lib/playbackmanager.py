@@ -325,15 +325,12 @@ class PlaybackManager:
             playing_file = None
         for check in list(self._watched_checks):
             if check['switched'] is None:
-                if playing_file and playing_file != check['file']:
-                    playing = playing_episode_id()
-                    if playing == check['next']:
-                        check['switched'] = now
-                    elif playing != check['episodeid']:
-                        # Something else is playing, so Up Next didn't move on to its next episode
-                        self._watched_checks.remove(check)
-                elif now - check['started'] > WATCHED_SWITCH_TIMEOUT:
-                    # The next episode never started, so playback did not move on
+                playing = playing_episode_id() if playing_file and playing_file != check['file'] else None
+                if playing is not None and playing == check['next']:
+                    check['switched'] = now
+                elif playing not in (None, check['episodeid']) or now - check['started'] > WATCHED_SWITCH_TIMEOUT:
+                    # Another episode is playing, or the next one never started: Up Next didn't move on.
+                    # Without item details yet, or for a video that isn't a library episode, keep waiting.
                     self._watched_checks.remove(check)
                 continue
             if now < check['switched'] + WATCHED_CHECK_DELAY:
