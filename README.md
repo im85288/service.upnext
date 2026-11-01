@@ -29,6 +29,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Read settings from one cached copy, reloaded when they change, instead of loading them from disk several times a second during playback (@im85288)
+
 ### v1.3.2 (2026-11-01)
 - Optionally ask whether playback should continue after a chosen amount of active viewing time or during the bedtime window, from the configured time until 06:00, at the next episode transition. Recheck limits while the next-episode popup is open and preserve the timer through sleep, including delayed sleep notifications. Time spent paused, buffering or seeking does not count; confirming the prompt resets the viewing timer and acknowledges bedtime for that night within the current playback session. Both options are disabled by default (@Drahy)
 
