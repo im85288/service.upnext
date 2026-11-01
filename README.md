@@ -19,6 +19,7 @@ The add-on has various settings to fine-tune the experience, however the default
   * The notification time can be adjusted (defaults to 30 seconds before the end)
   * A credits delay can advance early when the provider supplies a credits offset (disabled by default). Back cancels the countdown and keeps the current episode playing; Pause freezes it with the video.
   * The default action can be configured, i.e. should it advance to the next episode (default) when the user does not respond, or stop
+  * With "Enable on playlists", videos outside the library (e.g. files started with "Play from here") get the popup for the next playlist item
   * Library episodes left early with Watch Now or the credits delay are marked as watched (enabled by default)
   * The number of episodes to play automatically before asking the user if they are still there (defaults to 3 episodes)
 
@@ -31,6 +32,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ## Releases
 
 ### Unreleased
+- With "Enable on playlists" on, show the popup for videos that aren't library episodes when they play from a playlist with a next item, e.g. files started with "Play from here" (@im85288)
 - Mark a library episode as watched, and clear its resume point, when Watch Now or the credits delay moves on before Kodi counts it as watched (optional, on by default) (@im85288)
 - Read settings from one cached copy, reloaded when they change, instead of loading them from disk several times a second during playback (@im85288)
 
