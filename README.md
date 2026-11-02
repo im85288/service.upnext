@@ -31,10 +31,12 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
-### Unreleased
+### v1.3.3 (2026-11-02)
 - With "Enable on playlists" on, show the popup for videos that aren't library episodes when they play from a playlist with a next item, e.g. files started with "Play from here" (@im85288)
 - Mark a library episode as watched, and clear its resume point, when Watch Now or the credits delay moves on before Kodi counts it as watched (optional, on by default) (@im85288)
 - Read settings from one cached copy, reloaded when they change, instead of loading them from disk several times a second during playback (@im85288)
+- Allow notification times of up to 300 seconds before the end, for episodes with long credits (@notoco)
+- Update the Polish translation, and shorten labels that didn't fit in the settings dialog (@notoco)
 
 ### v1.3.2 (2026-11-01)
 - Optionally ask whether playback should continue after a chosen amount of active viewing time or during the bedtime window, from the configured time until 06:00, at the next episode transition. Recheck limits while the next-episode popup is open and preserve the timer through sleep, including delayed sleep notifications. Time spent paused, buffering or seeking does not count; confirming the prompt resets the viewing timer and acknowledges bedtime for that night within the current playback session. Both options are disabled by default (@Drahy)
