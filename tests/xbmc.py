@@ -142,6 +142,10 @@ class Player:
         ''' A stub implementation for the xbmc Player class getPlayingFile() method '''
         return '/foo/bar'
 
+    def isPlayingVideo(self):
+        ''' A stub implementation for the xbmc Player class isPlayingVideo() method '''
+        return True
+
     def isPlaying(self):
         ''' A stub implementation for the xbmc Player class isPlaying() method '''
         # Return True four times out of five

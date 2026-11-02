@@ -63,7 +63,8 @@ def run_monitor(monkeypatch, unavailable=None, processed=False, always_unavailab
         def __init__(self):
             self.player = Player()
             self.api = Stub(notification_time=lambda **kwargs: 30, data={}, encoding='base64')
-            self.playback_manager = Stub(popup_shown=True, launch_up_next=launch or (lambda: events.append('popup') or replaced), demo=Stub(hide=hide_demo))
+            self.playback_manager = Stub(popup_shown=True, check_previous_watched=lambda: None,
+                                         launch_up_next=launch or (lambda: events.append('popup') or replaced), demo=Stub(hide=hide_demo))
             self.skipper = Skipper(self.player)
             self.ticks = 0
             self._sleep_state = None
@@ -388,7 +389,7 @@ def test_new_addon_notification_cancels_cached_sleep_state(sleeping_monitor, mon
     sleeping_monitor.player.state.played_in_a_row = 4
     fresh = {'next_episode': {'episodeid': 'fresh'}}
     monkeypatch.setattr(monitor, 'decode_json', lambda data: (fresh, 'base64'))
-    sleeping_monitor.playback_manager = Stub(handle_demo=lambda: None)
+    sleeping_monitor.playback_manager = Stub(handle_demo=lambda: None, check_previous_watched=lambda: None)
     sleeping_monitor.player.reset_queue = lambda: None
     sleeping_monitor.onNotification('plugin.example.SIGNAL', 'Other.upnext_data', 'data')
     assert sleeping_monitor.api.data is fresh
