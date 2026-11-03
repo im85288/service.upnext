@@ -356,7 +356,7 @@ class PlaybackManager:
         if not isinstance(episodeid, int) or episodeid < 1 or position <= 0:
             return
         self._pending_resume = {'episodeid': episodeid, 'previous': self.state.current_episode_id,
-                                'position': position, 'started': monotonic()}
+                                'position': position, 'started': monotonic(), 'stops': UpNextPlayer.stop_count}
 
     def resume_next_episode(self):
         """Seek a partly watched next episode to its resume point once it plays"""
@@ -366,21 +366,28 @@ class PlaybackManager:
         pending = self._pending_resume
         if not pending:
             return
-        if monotonic() - pending['started'] > WATCHED_SWITCH_TIMEOUT:
+        if (monotonic() - pending['started'] > WATCHED_SWITCH_TIMEOUT
+                or UpNextPlayer.stop_count != pending['stops']):
+            # The next episode never started, or the viewer stopped playback: leave a later start alone
             self._pending_resume = None
             return
         playing = playing_episode_id()
         if playing in (None, pending['previous']):
             return  # still opening, no item details yet, or the previous episode is still reported
-        self._pending_resume = None
         if playing != pending['episodeid']:
-            return  # something else plays instead
+            self._pending_resume = None  # something else plays instead
+            return
         try:
-            if self.player.getTime() < pending['position'] - RESUME_MARGIN:
+            play_time = self.player.getTime()
+            if play_time > pending['position'] + RESUME_MARGIN:
+                return  # still the previous episode's time, wait for the new one
+            if play_time < pending['position'] - RESUME_MARGIN:
                 self.log('Resuming episode %s at %d secs' % (playing, pending['position']), 2)
                 self.player.seekTime(pending['position'])
         except RuntimeError as exc:
-            self.log('Failed to resume the next episode: %s' % exc, 1)
+            self.log('Waiting to resume the next episode: %s' % exc, 2)
+            return  # try again on the next pass, until the timeout
+        self._pending_resume = None
 
     def extract_play_info(self, next_up_page, showing_next_up_page, showing_still_watching_page, still_watching_page):
         if showing_next_up_page:

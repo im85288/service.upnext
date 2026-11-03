@@ -4,6 +4,7 @@
 
 import pytest
 import playbackmanager
+import player
 import test_playbackmanager
 from test_playbackmanager import Stub
 
@@ -122,14 +123,70 @@ def test_setting_off_starts_from_the_beginning(manager):
     assert manager.seeks == []
 
 
-def test_seek_failure_is_logged_not_raised(manager):
-    def fail(seconds):
+def test_previous_episode_time_is_waited_for(manager):
+    # Kodi already reports the next episode, but still the previous one's time near its end
+    manager.remember_resume_point(NEXT, 'library')
+    start(manager, time=1795.0)
+    tick(manager)
+    assert manager.seeks == []
+    start(manager)
+    tick(manager)
+    assert manager.seeks == [1250.0]
+
+
+@pytest.mark.parametrize('failing', ['getTime', 'seekTime'])
+def test_player_not_ready_is_retried(manager, failing):
+    failures = {'left': 2}
+    working = getattr(manager.player, failing)
+
+    def flaky(*args):
+        if failures['left']:
+            failures['left'] -= 1
+            raise RuntimeError('Kodi is not playing any media file')
+        return working(*args)
+
+    setattr(manager.player, failing, flaky)
+    manager.remember_resume_point(NEXT, 'library')
+    start(manager)
+    tick(manager)
+    tick(manager)
+    assert manager.seeks == []
+    tick(manager)
+    assert manager.seeks == [1250.0]
+
+
+def test_player_never_ready_gives_up(manager):
+    def fail(*args):
         raise RuntimeError('Kodi is not playing any media file')
 
     manager.player.seekTime = fail
     manager.remember_resume_point(NEXT, 'library')
     start(manager)
     tick(manager)                 # no exception
+    tick(manager, playbackmanager.WATCHED_SWITCH_TIMEOUT + 1)
+    assert manager._pending_resume is None  # pylint: disable=protected-access
+
+
+def test_stopping_playback_cancels_the_resume(monkeypatch, manager):
+    # The viewer stops while the next episode opens, then starts it again from the beginning
+    monkeypatch.setattr(player.UpNextPlayer, 'stop_count', 0)
+    manager.remember_resume_point(NEXT, 'library')
+    start(manager, episode=None)
+    tick(manager)
+    player.UpNextPlayer.stop_count += 1
+    tick(manager)
+    start(manager)
+    tick(manager)
+    assert manager.seeks == []
+
+
+def test_playback_stop_is_counted(monkeypatch):
+    monkeypatch.setattr(player.UpNextPlayer, 'stop_count', 3)
+    instance = object.__new__(player.UpNextPlayer)
+    instance.state = Stub(queued=False)
+    instance.api = Stub(reset_addon_data=lambda: None)
+    instance.onPlayBackStopped()
+    assert player.UpNextPlayer.stop_count == 4
 
 
 @pytest.mark.parametrize('action,remembered', [('watch', True), ('timeout', True), ('stop', False), ('back', False)])
