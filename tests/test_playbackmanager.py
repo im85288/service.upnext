@@ -31,8 +31,8 @@ def run_popup(monkeypatch):
                 raise RuntimeError('No active playback')
             return playing_file[0]
 
-        def setting(name):
-            return {'enablePlaylist': True, 'stopAfterClose': stop_after_close}[name]
+        def setting(name, default=None):
+            return {'enablePlaylist': True, 'stopAfterClose': stop_after_close}.get(name, default)
 
         # Capture Stop from either the dialog's xbmc.Player or the manager's player.
         monkeypatch.setattr(xbmc.Player, 'stop', lambda self: record('stop'))
