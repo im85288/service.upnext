@@ -31,6 +31,10 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Follow Kodi's "Show information for unwatched items" setting in the popup: hide the plot and/or picture of an unwatched next episode when Kodi hides them (@im85288)
+- Fall back to season art, or to add-on art without the tvshow. prefix, when the show has no fanart, landscape, poster, clearart or clearlogo (@im85288)
+
 ### v1.3.4 (2026-11-03)
 - Update Simplified Chinese translation (@wabisabi926)
 

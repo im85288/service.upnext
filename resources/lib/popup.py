@@ -5,11 +5,23 @@
 from datetime import datetime, timedelta
 from platform import machine
 from xbmcgui import WindowXMLDialog
-from utils import localize_date, localize_time
+from utils import get_global_setting, localize_date, localize_time
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
 OS_MACHINE = machine()
+# Kodi's "Show information for unwatched items" (videolibrary.showunwatchedplots) options
+SHOW_UNWATCHED_EPISODE_PLOT = 1
+SHOW_UNWATCHED_EPISODE_THUMB = 2
+# Where each popup image comes from, best first: the show's own art, then art an add-on sent
+# without the tvshow. prefix, then the season's
+ART_SOURCES = {
+    'fanart': ('tvshow.fanart', 'fanart', 'season.fanart'),
+    'landscape': ('tvshow.landscape', 'landscape', 'season.landscape'),
+    'clearart': ('tvshow.clearart', 'clearart'),
+    'clearlogo': ('tvshow.clearlogo', 'clearlogo'),
+    'poster': ('tvshow.poster', 'poster', 'season.poster'),
+}
 
 
 class Popup(WindowXMLDialog):
@@ -41,14 +53,11 @@ class Popup(WindowXMLDialog):
         else:
             rating = str(round(float(self.item.get('rating')), 1))
 
-        art = self.item.get('art') or {}
-        self.setProperty('fanart', art.get('tvshow.fanart', ''))
-        self.setProperty('landscape', art.get('tvshow.landscape', ''))
-        self.setProperty('clearart', art.get('tvshow.clearart', ''))
-        self.setProperty('clearlogo', art.get('tvshow.clearlogo', ''))
-        self.setProperty('poster', art.get('tvshow.poster', ''))
-        self.setProperty('thumb', art.get('thumb', ''))
-        self.setProperty('plot', self.item.get('plot', ''))
+        show_plot, show_thumb = spoilers_allowed(self.item)
+        art = popup_art(self.item.get('art') or {}, show_thumb)
+        for art_type in ('fanart', 'landscape', 'clearart', 'clearlogo', 'poster', 'thumb'):
+            self.setProperty(art_type, art[art_type])
+        self.setProperty('plot', self.item.get('plot', '') if show_plot else '')
         self.setProperty('tvshowtitle', self.item.get('showtitle', ''))
         self.setProperty('title', self.item.get('title', ''))
         self.setProperty('season', str(self.item.get('season', '')))
@@ -126,3 +135,28 @@ class Popup(WindowXMLDialog):
             self.dismissed = True
             self.set_cancel(True)
             self.close()
+
+
+def spoilers_allowed(item):
+    """Return whether the plot and the thumbnail of an episode may be shown, following Kodi's
+       "Show information for unwatched items" setting for episodes not watched yet"""
+    if item.get('playcount'):
+        return True, True
+    shown = get_global_setting('videolibrary.showunwatchedplots')
+    if not isinstance(shown, list):  # Not available: Kodi shows everything by default
+        return True, True
+    return SHOW_UNWATCHED_EPISODE_PLOT in shown, SHOW_UNWATCHED_EPISODE_THUMB in shown
+
+
+def popup_art(art, show_thumb=True):
+    """Return the popup's images, each from the first art type the item has"""
+    images = {
+        art_type: next((art[source] for source in sources if art.get(source)), '')
+        for art_type, sources in ART_SOURCES.items()
+    }
+    if show_thumb:
+        images['thumb'] = art.get('thumb', '')
+    else:
+        # Show art in place of the episode's own picture, like Kodi does for hidden thumbnails
+        images['thumb'] = images['landscape'] or images['fanart']
+    return images
