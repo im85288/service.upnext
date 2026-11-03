@@ -35,9 +35,10 @@ case "$action" in
     verify)
         # The submitter hides git errors, and once left the branch on an older version while still opening a PR
         for attempt in 1 2 3; do
+            # A temporary GitHub error counts as a mismatch, so it gets the same retries
             submitted=$(gh api "repos/$GH_USERNAME/repo-scripts/contents/service.upnext/addon.xml?ref=$BRANCH" --jq .content \
-                | base64 -d | sed -n 's/^<addon id="service.upnext" name="Up Next" version="\([^"]*\)".*/\1/p')
-            pr=$(open_prs | awk -v t="$TITLE_PREFIX $version" 'substr($0, index($0, " ") + 1) == t {print $1}')
+                | base64 -d | sed -n 's/^<addon id="service.upnext" name="Up Next" version="\([^"]*\)".*/\1/p') || submitted=
+            pr=$(open_prs | awk -v t="$TITLE_PREFIX $version" 'substr($0, index($0, " ") + 1) == t {print $1}') || pr=
             echo "Submitted addon.xml version: ${submitted:-none}, open PR for $version: ${pr:-none}"
             if [ "$submitted" = "$version" ] && [ -n "$pr" ]; then
                 echo "Kodi submission OK: https://github.com/$REPO/pull/$pr"

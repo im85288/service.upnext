@@ -12,6 +12,13 @@ jobs:
     name: Submit service.upnext to repo-scripts
     runs-on: ubuntu-latest
     steps:
+      - name: Get the submission script
+        # Older tags don't contain it, so take it from the revision this workflow runs from
+        uses: actions/checkout@v4
+        with:
+          sparse-checkout: .github/scripts
+      - name: Keep the submission script outside the add-on checkout
+        run: cp .github/scripts/kodi-submission.sh "$RUNNER_TEMP/"
       - name: Checkout code
         uses: actions/checkout@v4
         with:
@@ -25,7 +32,7 @@ jobs:
           [ "v$version" = "$TAG" ]
       - name: Close superseded Kodi PRs
         # The submitter only opens a PR when none is open, so an older one would get this version under its old title
-        run: .github/scripts/kodi-submission.sh close-superseded "$TAG"
+        run: bash "$RUNNER_TEMP/kodi-submission.sh" close-superseded "$TAG"
         env:
           TAG: ${{ inputs.tag }}
           GH_USERNAME: ${{secrets.GH_USERNAME}}
@@ -42,7 +49,7 @@ jobs:
           GH_TOKEN: ${{secrets.GH_TOKEN}}
           EMAIL: ${{secrets.EMAIL}}
       - name: Check the Kodi submission
-        run: .github/scripts/kodi-submission.sh verify "$TAG"
+        run: bash "$RUNNER_TEMP/kodi-submission.sh" verify "$TAG"
         env:
           TAG: ${{ inputs.tag }}
           GH_USERNAME: ${{secrets.GH_USERNAME}}
