@@ -50,6 +50,13 @@ jobs:
           asset_name: ${{ steps.get-filename.outputs.filename }}
           asset_path: ../${{ steps.get-filename.outputs.filename }}
           asset_content_type: application/zip
+      - name: Close superseded Kodi PRs
+        # The submitter only opens a PR when none is open, so an older one would get this version under its old title
+        run: .github/scripts/kodi-submission.sh close-superseded "$TAG"
+        env:
+          TAG: ${{ github.ref_name }}
+          GH_USERNAME: ${{secrets.GH_USERNAME}}
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
       - name: Generate distribution zip and submit to official kodi repository
         id: kodi-addon-submitter
         uses: xbmc/action-kodi-addon-submitter@v1.2
@@ -61,3 +68,9 @@ jobs:
           GH_USERNAME: ${{secrets.GH_USERNAME}}
           GH_TOKEN: ${{secrets.GH_TOKEN}}
           EMAIL: ${{secrets.EMAIL}}
+      - name: Check the Kodi submission
+        run: .github/scripts/kodi-submission.sh verify "$TAG"
+        env:
+          TAG: ${{ github.ref_name }}
+          GH_USERNAME: ${{secrets.GH_USERNAME}}
+          GH_TOKEN: ${{secrets.GH_TOKEN}}
