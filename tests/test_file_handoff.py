@@ -79,7 +79,7 @@ def run_ticks(monkeypatch, ticks, addon_data=None, library=False, events=None):
             self.player = Player()
             self.api = FakeApi(addon_data)
             self.playback_manager = Stub(launch_up_next=self.launch_up_next, popup_shown=False, check_previous_watched=lambda: None,
-                                         demo=Stub(hide=lambda: None), handle_demo=lambda: None)
+                                         resume_next_episode=lambda: None, demo=Stub(hide=lambda: None), handle_demo=lambda: None)
             self.skipper = Stub(update=lambda *args: None, hide=lambda: None, reset=lambda: None)
             self._sleep_state = None
             self._wake_retries = 0
