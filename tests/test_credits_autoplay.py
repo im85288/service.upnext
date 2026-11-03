@@ -187,7 +187,8 @@ def test_credits_expiry_advances_once_and_keeps_still_watching_count(run_credits
     assert 'stop' not in events
     assert 126 <= clock.time <= 126.5
     assert popup.values[0] == 6 and popup.values[-1] == 0
-    assert popup.shown_properties == {'credits_countdown': 'true', 'credits_remaining': '6', 'remaining': '06'}
+    assert popup.shown_properties == {'credits_countdown': 'true', 'credits_remaining': '6', 'remaining': '06',
+                                      'remaining_time': '0:06', 'remaining_icon': '06'}
     assert popup.properties['credits_remaining'] == '0'
     assert popup.is_auto_advance() and not popup.is_watch_now()
     assert state.played_in_a_row == 2

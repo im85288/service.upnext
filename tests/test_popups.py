@@ -220,3 +220,28 @@ def test_dedicated_osd_restores_popup_even_when_select_option_is_off(monkeypatch
     clock[0] = 1
     page.restore_after_playback_controls()
     assert shown == [True] and not page.is_cancel() and not page.is_watch_now()
+
+
+@pytest.mark.parametrize('seconds,expected', [(0, '0:00'), (9, '0:09'), (59, '0:59'), (60, '1:00'), (165, '2:45'),
+                                              (3599, '59:59'), (3600, '1:00:00'), (3725.6, '1:02:05')])
+def test_format_remaining(seconds, expected):
+    assert popup.format_remaining(seconds) == expected
+
+
+@pytest.mark.parametrize('remaining,duration,expected', [
+    (20, 20, 20), (5, 20, 5), (30, 30, 30),          # short popups count down one ring step per second
+    (180, 180, 30), (90, 180, 15), (1, 180, 1), (0, 180, 0),  # longer ones spread the ring over the whole popup
+    (45, None, 30),
+])
+def test_ring_step(remaining, duration, expected):
+    assert popup.ring_step(remaining, duration) == expected
+
+
+def test_long_countdown_shows_minutes_and_a_moving_ring(page):
+    # An add-on asked for the popup three minutes before the end
+    page.set_remaining(180)
+    assert page.properties == {'remaining': '180', 'remaining_time': '3:00', 'remaining_icon': '30'}
+    page.update_progress_control(remaining=89.6)
+    assert (page.properties['remaining'], page.properties['remaining_time'], page.properties['remaining_icon']) == ('89', '1:29', '15')
+    page.update_progress_control(remaining=-1)
+    assert (page.properties['remaining'], page.properties['remaining_icon']) == ('00', '00')
