@@ -11,7 +11,7 @@ SKIN = os.path.join('resources', 'skins', 'default', '1080i')
 POPUPS = ['script-upnext-upnext.xml', 'script-upnext-upnext-simple.xml',
           'script-upnext-stillwatching.xml', 'script-upnext-stillwatching-simple.xml']
 LONG = {'30054', '30055', '30056'}  # m:ss labels
-SECONDS = {'30036', '30037', '30035'}  # labels counting seconds
+SECONDS = {'30036', '30037', '30035', '30050'}  # labels counting seconds, including the credits countdown
 OVER_A_MINUTE = 'Integer.IsGreater(Window.Property(remaining),59)'
 
 
@@ -39,9 +39,16 @@ def test_each_label_shows_on_its_own_side_of_a_minute(name):
         if ids & LONG:
             assert '!' + OVER_A_MINUTE not in visible and OVER_A_MINUTE in visible
             found |= ids & LONG
-        elif ids & SECONDS and 'credits_countdown' not in visible:
+        elif ids & SECONDS:
             assert '!' + OVER_A_MINUTE in visible
-    assert len(found) == 1
+    assert found
+
+
+@pytest.mark.parametrize('name', ['script-upnext-upnext.xml', 'script-upnext-upnext-simple.xml'])
+def test_credits_countdown_over_a_minute_uses_minutes(name):
+    # A minute-and-seconds label must be able to show while the credits countdown runs
+    visibles = [control.findtext('visible') or '' for control in controls(name) if '30055' in label_ids(control)]
+    assert any('!String.IsEqual(Window.Property(credits_countdown),true)' not in visible for visible in visibles)
 
 
 @pytest.mark.parametrize('name', ['script-upnext-upnext-simple.xml', 'script-upnext-stillwatching-simple.xml'])

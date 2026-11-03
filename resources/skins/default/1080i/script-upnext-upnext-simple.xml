@@ -41,7 +41,7 @@
                         <control type="button" id="10">
                             <label>    $ADDON[service.upnext 30055]</label>
                             <onclick>SendClick(3012)</onclick>
-                            <visible>!String.IsEqual(Window.Property(credits_countdown),true) + Integer.IsGreater(Window.Property(remaining),59)</visible>
+                            <visible>Integer.IsGreater(Window.Property(remaining),59)</visible>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
@@ -61,7 +61,7 @@
                         <control type="button" id="11">
                             <label>    $ADDON[service.upnext 30037]</label>
                             <onclick>SendClick(3012)</onclick>
-                            <visible>String.IsEqual(Window.Property(credits_countdown),true) | !Integer.IsGreater(Window.Property(remaining),59)</visible>
+                            <visible>!Integer.IsGreater(Window.Property(remaining),59)</visible>
                             <height>56</height>
                             <width min="50">auto</width>
                             <font>font20_title</font>
