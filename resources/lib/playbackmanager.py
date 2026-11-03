@@ -198,6 +198,9 @@ class PlaybackManager:
         next_up_page.set_progress_step_size(progress_step_size)
         still_watching_page.set_item(episode)
         still_watching_page.set_progress_step_size(progress_step_size)
+        # Set the countdown before the popup opens, so the skin never shows an empty or stale time
+        next_up_page.set_remaining(credits_duration if credits_deadline is not None else total_time - play_time)
+        still_watching_page.set_remaining(total_time - play_time)
         played_in_a_row_number = get_setting_int('playedInARow')
         self.log('played in a row settings %s' % played_in_a_row_number, 2)
         self.log('played in a row %s' % self.state.played_in_a_row, 2)

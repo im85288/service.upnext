@@ -3,12 +3,14 @@
 """Behaviour shared by the Up Next and Still Watching popups"""
 
 from datetime import datetime, timedelta
+from math import ceil
 from platform import machine
 from xbmcgui import WindowXMLDialog
 from utils import localize_date, localize_time
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
+RING_STEPS = 30  # media/nextupicons has a countdown ring image for 00 to 30
 OS_MACHINE = machine()
 
 
@@ -19,6 +21,7 @@ class Popup(WindowXMLDialog):
     progress_step_size = 0
     current_progress_percent = 100
     progress_control = None
+    countdown_duration = None
 
     def __init__(self, *args, **kwargs):
         self.action_exitkeys_id = [10, 13]
@@ -84,9 +87,18 @@ class Popup(WindowXMLDialog):
             self.progress_control.setPercent(self.current_progress_percent)  # pylint: disable=no-member,useless-suppression
 
         if remaining is not None:
-            self.setProperty('remaining', '%02d' % remaining)
+            self.set_remaining(remaining)
         if runtime:
             self.setProperty('endtime', localize_time(datetime.now() + timedelta(seconds=runtime)))
+
+    def set_remaining(self, remaining):
+        """Show the time left before the popup acts, in seconds and as m:ss for popups opened earlier"""
+        remaining = max(0, int(remaining))
+        if self.countdown_duration is None:
+            self.countdown_duration = remaining
+        self.setProperty('remaining', '%02d' % remaining)
+        self.setProperty('remaining_time', format_remaining(remaining))
+        self.setProperty('remaining_icon', '%02d' % ring_step(remaining, self.countdown_duration))
 
     def set_cancel(self, cancel):
         self.cancel = cancel
@@ -126,3 +138,20 @@ class Popup(WindowXMLDialog):
             self.dismissed = True
             self.set_cancel(True)
             self.close()
+
+
+def format_remaining(seconds):
+    """Return seconds as m:ss, or h:mm:ss from an hour"""
+    minutes, seconds = divmod(int(seconds), 60)
+    hours, minutes = divmod(minutes, 60)
+    if hours:
+        return '%d:%02d:%02d' % (hours, minutes, seconds)
+    return '%d:%02d' % (minutes, seconds)
+
+
+def ring_step(remaining, duration):
+    """Return the countdown ring image for the time left: one per second in the last 30 seconds,
+       or spread over the whole countdown when the popup opened earlier"""
+    if not duration or duration <= RING_STEPS:
+        return min(RING_STEPS, int(remaining))
+    return min(RING_STEPS, int(ceil(RING_STEPS * remaining / duration)))

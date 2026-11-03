@@ -33,6 +33,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ### Unreleased
 - Continue a partly watched next library episode from where it was left, instead of from the start (setting on by default; idea from MoojMidge's fork) (@im85288)
+- Show the countdown in minutes and seconds when the popup opens more than a minute before it acts (e.g. from an add-on's or the credits' timing), and spread the simple popup's ring over the whole countdown, instead of showing no time until the last minute (@im85288)
 
 ### v1.3.4 (2026-11-03)
 - Update Simplified Chinese translation (@wabisabi926)
