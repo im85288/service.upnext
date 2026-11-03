@@ -31,6 +31,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### v1.3.4 (2026-11-03)
+- Update Simplified Chinese translation (@wabisabi926)
+
 ### v1.3.3 (2026-11-02)
 - With "Enable on playlists" on, show the popup for videos that aren't library episodes when they play from a playlist with a next item, e.g. files started with "Play from here" (@im85288)
 - Mark a library episode as watched, and clear its resume point, when Watch Now or the credits delay moves on before Kodi counts it as watched (optional, on by default) (@im85288)
