@@ -64,6 +64,17 @@ def test_spoilers_follow_kodi(monkeypatch, setting, playcount, expected):
     assert calls == ([] if playcount else ['videolibrary.showunwatchedplots'])
 
 
+@pytest.mark.parametrize('media_type,setting,expected', [
+    ('episode', [0], (False, False)),
+    ('movie', [0], (True, True)),       # movie plots allowed, episode ones not
+    ('movie', [1, 2], (False, True)),   # Kodi never hides movie thumbnails
+    ('unknown', [], (True, True)),      # plain files from a playlist have no library details to hide
+])
+def test_spoilers_follow_the_item_type(monkeypatch, media_type, setting, expected):
+    monkeypatch.setattr(popup, 'get_global_setting', lambda name: setting)
+    assert popup.spoilers_allowed({'type': media_type, 'playcount': 0}) == expected
+
+
 @pytest.mark.parametrize('setting,plot,thumb', [
     ([0, 1, 2], 'A plot.', 'still.jpg'),
     ([0], '', 'show-landscape.jpg'),

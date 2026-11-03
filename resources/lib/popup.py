@@ -11,6 +11,7 @@ ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
 OS_MACHINE = machine()
 # Kodi's "Show information for unwatched items" (videolibrary.showunwatchedplots) options
+SHOW_UNWATCHED_MOVIE_PLOT = 0
 SHOW_UNWATCHED_EPISODE_PLOT = 1
 SHOW_UNWATCHED_EPISODE_THUMB = 2
 # Where each popup image comes from, best first: the show's own art, then art an add-on sent
@@ -138,13 +139,18 @@ class Popup(WindowXMLDialog):
 
 
 def spoilers_allowed(item):
-    """Return whether the plot and the thumbnail of an episode may be shown, following Kodi's
-       "Show information for unwatched items" setting for episodes not watched yet"""
-    if item.get('playcount'):
+    """Return whether the plot and the thumbnail of the next item may be shown, following Kodi's
+       "Show information for unwatched items" setting for items not watched yet"""
+    # Library lookups and add-ons give episodes; playlists can also hold movies and plain files
+    media_type = item.get('type') or 'episode'
+    if item.get('playcount') or media_type not in ('episode', 'movie'):
         return True, True
     shown = get_global_setting('videolibrary.showunwatchedplots')
     if not isinstance(shown, list):  # Not available: Kodi shows everything by default
         return True, True
+    if media_type == 'movie':
+        # Kodi only hides the thumbnails of episodes
+        return SHOW_UNWATCHED_MOVIE_PLOT in shown, True
     return SHOW_UNWATCHED_EPISODE_PLOT in shown, SHOW_UNWATCHED_EPISODE_THUMB in shown
 
 
