@@ -231,6 +231,10 @@ msgctxt "#30643"
 msgid "Mark an episode as watched when moving to the next one early"
 msgstr "Oznacz jako obejrzany przy wcześniejszym przejściu dalej"
 
+msgctxt "#30645"
+msgid "Pause the current video while an add-on starts the next episode"
+msgstr "Wstrzymaj odcinek, gdy dodatek uruchamia następny"
+
 msgctxt "#30700"
 msgid "Expert"
 msgstr "Eksperckie"

@@ -3,7 +3,7 @@
 
 from math import ceil
 from time import monotonic
-from xbmc import sleep
+from xbmc import getCondVisibility, sleep
 from api import Api, credits_autoplay_deadline, get_watched_state, mark_watched, playing_episode_id
 from demo import DemoOverlay
 from player import UpNextPlayer
@@ -156,6 +156,9 @@ class PlaybackManager:
                 self.player.playnext()
         elif self.api.has_addon_data():
             # Play add-on media
+            if get_setting_bool('pauseUntilNext') and not getCondVisibility('Player.Paused'):
+                # The add-on may take a while (e.g. a source search) before the next episode starts
+                self.player.pause()
             self.api.play_addon_item()
         else:
             # Play local media
