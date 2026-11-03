@@ -31,6 +31,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Continue a partly watched next library episode from where it was left, instead of from the start (setting on by default; idea from MoojMidge's fork) (@im85288)
+
 ### v1.3.4 (2026-11-03)
 - Update Simplified Chinese translation (@wabisabi926)
 
