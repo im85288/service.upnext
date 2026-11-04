@@ -13,6 +13,10 @@
         <description lang="en_GB">A service add-on that shows a Netflix-style notification for watching the next episode. After a few automatic iterations it asks the user if they are still watching.
 
 A lot of existing add-ons already integrate with this service out-of-the-box.</description>
+        <summary lang="cs_CZ">Nabízí automatické přehrání další epizody</summary>
+        <description lang="cs_CZ">Doplněk zobrazí nabídku pro přehrání další epizody. Po několika automaticky přehrávaných dílech se může zeptat, zda stále sledujete.
+
+Mnoho doplňků už spolupráci s Up Next podporuje.</description>
         <summary lang="zh_CN">建议自动播放下一集</summary>
         <description lang="zh_CN">一个服务插件，以 Netflix 风格的通知提醒观看下一集。连续自动播放数集后，它会询问用户是否还在观看。
 
