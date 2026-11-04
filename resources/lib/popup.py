@@ -5,7 +5,7 @@
 from datetime import datetime, timedelta
 from math import ceil
 from platform import machine
-from xbmcgui import WindowXMLDialog
+from xbmcgui import WindowXMLDialog, getCurrentWindowDialogId
 from utils import get_global_setting, localize_date, localize_time
 
 ACTION_PLAYER_STOP = 13
@@ -35,6 +35,7 @@ class Popup(WindowXMLDialog):
     current_progress_percent = 100
     progress_control = None
     countdown_duration = None
+    playback_dialog_id = None
 
     def __init__(self, *args, **kwargs):
         self.action_exitkeys_id = [10, 13]
@@ -45,6 +46,7 @@ class Popup(WindowXMLDialog):
             WindowXMLDialog.__init__(self, *args, **kwargs)
 
     def onInit(self):  # pylint: disable=invalid-name
+        self.playback_dialog_id = getCurrentWindowDialogId()
         self.set_info()
         self.prepare_progress_control()
 

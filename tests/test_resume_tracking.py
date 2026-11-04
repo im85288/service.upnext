@@ -185,6 +185,7 @@ def sleeping_monitor():
     class Monitor(monitor.UpNextMonitor):
         def __init__(self):
             self.player = Player()
+            self.playback_manager = Stub(request_popup_wake=lambda: None)
             self.api = Api()
             self.skipper = Skipper(self.player)
             self._sleep_state = None
