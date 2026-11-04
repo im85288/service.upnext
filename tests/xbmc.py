@@ -146,6 +146,9 @@ class Player:
         ''' A stub implementation for the xbmc Player class isPlayingVideo() method '''
         return True
 
+    def pause(self):
+        ''' A stub implementation for the xbmc Player class pause() method '''
+
     def isPlaying(self):
         ''' A stub implementation for the xbmc Player class isPlaying() method '''
         # Return True four times out of five

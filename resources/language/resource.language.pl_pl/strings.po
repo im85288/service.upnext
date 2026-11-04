@@ -247,6 +247,10 @@ msgctxt "#30645"
 msgid "Continue a partly watched next episode where it was left"
 msgstr "Wznów następny odcinek od miejsca przerwania"
 
+msgctxt "#30647"
+msgid "Pause the video while an add-on starts the next episode"
+msgstr "Wstrzymaj odcinek, gdy dodatek uruchamia następny"
+
 msgctxt "#30700"
 msgid "Expert"
 msgstr "Eksperckie"
