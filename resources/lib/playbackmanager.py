@@ -34,6 +34,7 @@ class PlaybackManager:
         self.player = UpNextPlayer()
         self.demo = DemoOverlay(12005)
         self._watch_limit_check_at = 0
+        self._popup_wake_pending = False
         self._watched_checks = []  # episodes Up Next moved on from, to check once Kodi saved them
         self._pending_resume = None  # partly watched next episode, to resume once it plays
 
@@ -209,6 +210,7 @@ class PlaybackManager:
         except RuntimeError:
             self.log('exit early because player is no longer running', 2)
             return False, False
+        self._popup_wake_pending = False
         progress_step_size = calculate_progress_steps(total_time - play_time)
         credits_deadline = (credits_autoplay_deadline(self.api.has_addon_data(), play_time, total_time)
                             if self.state.play_mode == 0 else None)
@@ -254,6 +256,7 @@ class PlaybackManager:
                 break
             play_time, total_time = position
             self.state.watch_timer.observe(playing_file, play_time, self.state.pause)
+            self.restore_popup_after_wake(next_up_page if showing_next_up_page else still_watching_page)
 
             remaining = total_time - play_time
             showing_next_up_page, showing_still_watching_page, credits_deadline = self.check_late_watch_limit(
@@ -271,6 +274,20 @@ class PlaybackManager:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=episode.get('runtime'))
             sleep(100)
         return showing_next_up_page, showing_still_watching_page
+
+    def request_popup_wake(self):
+        """Retry a hidden active popup when Kodi wakes."""
+        self._popup_wake_pending = True
+
+    def restore_popup_after_wake(self, page):
+        """Wait for playback controls to close before restoring a hidden popup."""
+        if not getattr(self, '_popup_wake_pending', False) or getCondVisibility('Window.IsVisible(videoosd)'):
+            return
+        dialog_id = page.playback_dialog_id
+        if dialog_id:
+            if not getCondVisibility('Window.IsVisible(%d)' % dialog_id):
+                page.show()
+            self._popup_wake_pending = False
 
     def check_late_watch_limit(self, next_page, still_page, *, showing_next, showing_still,
                                episode_limit, remaining, credits_deadline, play_time):

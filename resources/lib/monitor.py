@@ -263,6 +263,7 @@ class UpNextMonitor(Monitor):
             self.remember_for_sleep()
             return
         if method == 'System.OnWake':
+            self.playback_manager.request_popup_wake()
             self._wake_retries = 30 if self._sleep_state else 0
             return
         if method == 'Player.OnStop':
