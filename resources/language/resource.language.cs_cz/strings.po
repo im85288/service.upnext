@@ -152,6 +152,10 @@ msgctxt "#30507"
 msgid "Use OK/Select for playback controls"
 msgstr "Tlačítkem OK otevřít ovládání přehrávání"
 
+msgctxt "#30508"
+msgid "Use arrows to seek; hold OK for Up Next buttons"
+msgstr "Šipkami posouvat video; podržením OK vybrat tlačítka Up Next"
+
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr "Chování"
