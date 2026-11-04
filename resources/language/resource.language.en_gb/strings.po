@@ -152,6 +152,10 @@ msgctxt "#30507"
 msgid "Use OK/Select for playback controls"
 msgstr ""
 
+msgctxt "#30508"
+msgid "Use arrows to seek; hold OK for Up Next buttons"
+msgstr ""
+
 msgctxt "#30600"
 msgid "Behaviour"
 msgstr ""

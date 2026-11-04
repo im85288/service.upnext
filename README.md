@@ -16,6 +16,7 @@ The add-on has various settings to fine-tune the experience, however the default
 
   * Simple or fancy mode (defaults to fancy mode, but a more simple interface is possible)
   * Optional OK/Select access to playback controls alongside the next-episode popup. Press an arrow first to select Watch now or Close; press Up to return to playback-control focus. If Kodi hides the popup while controls are open, it is restored when the controls close. Normal episode-end advancement remains active.
+  * With the optional arrow-seeking mode enabled, arrows seek the video while playback controls have focus. Use the Context Menu action to switch between playback focus and the popup buttons; on some remotes this is a long press of OK. The default arrow behavior is unchanged when the option is disabled.
   * The notification time can be adjusted (defaults to 30 seconds before the end)
   * A credits delay can advance early when the provider supplies a credits offset (disabled by default). Back cancels the countdown and keeps the current episode playing; Pause freezes it with the video.
   * The default action can be configured, i.e. should it advance to the next episode (default) when the user does not respond, or stop

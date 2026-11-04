@@ -152,6 +152,73 @@ def test_up_on_neutral_focus_leaves_navigation_to_kodi():
     assert page.closed == 0
 
 
+@pytest.mark.parametrize('action,command', [
+    (upnext.ACTION_MOVE_LEFT, 'smallbackward'),
+    (upnext.ACTION_MOVE_RIGHT, 'smallforward'),
+    (upnext.ACTION_MOVE_UP, 'bigforward'),
+    (upnext.ACTION_MOVE_DOWN, 'bigbackward'),
+])
+def test_arrows_seek_only_from_neutral_focus(monkeypatch, action, command):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.getFocusId = lambda: 9000
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: key == 'seekWithArrows')
+    calls = []
+
+    def rpc(**kwargs):
+        calls.append(kwargs)
+        return {'result': [{'playerid': 1, 'type': 'video'}]}
+    monkeypatch.setattr(upnext, 'jsonrpc', rpc)
+    page.onAction(action)
+    assert calls == [{'method': 'Player.GetActivePlayers'},
+                     {'method': 'Player.Seek', 'params': {'playerid': 1, 'value': {'step': command}}}]
+    page.getFocusId = lambda: 3012
+    page.onAction(action)
+    assert len(calls) == 2
+
+
+def test_seek_ignores_actions_without_a_video_player(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    page.getFocusId = lambda: 9000
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: key == 'seekWithArrows')
+    calls = []
+
+    def rpc(**kwargs):
+        calls.append(kwargs)
+        return {'result': [{'playerid': 0, 'type': 'audio'}]}
+    monkeypatch.setattr(upnext, 'jsonrpc', rpc)
+    page.onAction(upnext.ACTION_MOVE_RIGHT)
+    assert calls == [{'method': 'Player.GetActivePlayers'}]
+
+
+def test_long_ok_switches_between_player_and_popup(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.playback_control = Stub(getId=lambda: 9000)
+    target = object()
+    page.getControl = lambda _: target
+    selected = []
+    page.setFocus = selected.append
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: key == 'seekWithArrows')
+    page.getFocusId = lambda: 9000
+    page.onAction(upnext.ACTION_CONTEXT_MENU)
+    assert selected == [target]
+    page.getFocusId = lambda: 3012
+    page.onAction(upnext.ACTION_CONTEXT_MENU)
+    assert selected == [target, page.playback_control]
+    assert not page.is_cancel() and not page.is_watch_now()
+
+
+def test_seek_mode_keeps_navigation_on_neutral_focus(monkeypatch):
+    page = make_popup(upnext.UpNext)
+    page.getControl = lambda _: object()
+    page.addControl = lambda _: None
+    page.setFocus = lambda _: None
+    monkeypatch.setattr(upnext, 'get_setting_bool', lambda key: key == 'seekWithArrows')
+    page.prepare_playback_controls()
+    assert page.playback_control.navigation == (page.playback_control,) * 4
+
+
 def test_reopened_popup_restores_neutral_focus(monkeypatch):
     page = make_popup(upnext.UpNext)
     page.playback_control = Stub(getId=lambda: 9000)
