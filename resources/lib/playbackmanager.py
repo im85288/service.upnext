@@ -3,7 +3,7 @@
 
 from math import ceil
 from time import monotonic
-from xbmc import sleep
+from xbmc import getCondVisibility, sleep
 from api import Api, credits_autoplay_deadline, get_watched_state, mark_watched, playing_episode_id
 from demo import DemoOverlay
 from player import UpNextPlayer
@@ -157,9 +157,16 @@ class PlaybackManager:
             # Play playlist media
             if should_play_non_default or next_up_page.is_auto_advance():
                 # Early credits expiry must also advance an already queued item.
-                self.player.playnext()
+                if queued and self.pause_until_next():
+                    # Kodi resumes the video when it advances the playlist, before the add-on resolves
+                    # the queued URL; opening the URL resolves it first and keeps the video paused.
+                    self.state.queued = False
+                    self.api.play_addon_item()
+                else:
+                    self.player.playnext()
         elif self.api.has_addon_data():
             # Play add-on media
+            self.pause_until_next()
             self.api.play_addon_item()
         else:
             # Play local media
@@ -170,6 +177,14 @@ class PlaybackManager:
         # return play_next, keep_playing
         # Play next file, and keep playing current file
         return True, True
+
+    def pause_until_next(self):
+        """Pause the video while an add-on starts the next episode (e.g. a source search), if enabled"""
+        if not self.api.has_addon_data() or not get_setting_bool('pauseUntilNext'):
+            return False
+        if not getCondVisibility('Player.Paused'):
+            self.player.pause()
+        return True
 
     def _show_popup(self, episode, next_up_page, still_watching_page):
         """Show the popup and wait for it, closing it again if anything goes wrong while it is open"""

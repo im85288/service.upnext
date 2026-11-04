@@ -248,6 +248,10 @@ msgctxt "#30645"
 msgid "Continue a partly watched next episode where it was left"
 msgstr ""
 
+msgctxt "#30647"
+msgid "Pause the video while an add-on starts the next episode"
+msgstr ""
+
 msgctxt "#30700"
 msgid "Expert"
 msgstr ""

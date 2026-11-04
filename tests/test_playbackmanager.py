@@ -16,7 +16,8 @@ class Stub:
 
 @pytest.fixture
 def run_popup(monkeypatch):
-    def run(action='stop', stop_after_close=True, play_mode=0, source='addon', playback_change=None, active=True, queued=False, popup_kind='next'):
+    def run(action='stop', stop_after_close=True, play_mode=0, source='addon', playback_change=None, active=True, queued=False, popup_kind='next',
+            pause_until_next=False, paused=False, addon=True):
         events = []
         playing_file = ['current.mkv' if active else None]
         popups = []
@@ -32,14 +33,15 @@ def run_popup(monkeypatch):
             return playing_file[0]
 
         def setting(name, default=None):
-            return {'enablePlaylist': True, 'stopAfterClose': stop_after_close}.get(name, default)
+            return {'enablePlaylist': True, 'stopAfterClose': stop_after_close, 'pauseUntilNext': pause_until_next}.get(name, default)
 
         # Capture Stop from either the dialog's xbmc.Player or the manager's player.
         monkeypatch.setattr(xbmc.Player, 'stop', lambda self: record('stop'))
-        player = Stub(getPlayingFile=get_playing_file, stop=lambda: record('stop'), playnext=lambda: record('next-playlist'))
+        player = Stub(getPlayingFile=get_playing_file, stop=lambda: record('stop'), playnext=lambda: record('next-playlist'),
+                      pause=lambda: record('pause'))
         api = Stub(queue_next_item=lambda episode: queued,
                    dequeue_next_item=lambda: record('dequeue'), reset_addon_data=lambda: record('reset'),
-                   has_addon_data=lambda: True, play_addon_item=lambda: record('next-addon'),
+                   has_addon_data=lambda: addon, play_addon_item=lambda: record('next-addon'),
                    play_kodi_item=lambda episode: record('next-library'))
 
         class Popup(upnext.UpNext):
@@ -95,6 +97,7 @@ def run_popup(monkeypatch):
         monkeypatch.setattr(playbackmanager, 'get_setting_bool', setting)
         monkeypatch.setattr(upnext, 'get_setting_bool', setting)
         monkeypatch.setattr(playbackmanager, 'get_setting_int', lambda name: 1)
+        monkeypatch.setattr(playbackmanager, 'getCondVisibility', lambda condition: paused)
         monkeypatch.setattr(playbackmanager, 'addon_path', lambda: '')
         monkeypatch.setattr(playbackmanager, 'UpNext', Popup)
         monkeypatch.setattr(playbackmanager, 'StillWatching', StillPopup)
@@ -128,6 +131,25 @@ def test_next_episode_behavior_is_preserved(run_popup, action, play_mode, source
     events, _, _ = run_popup(action=action, play_mode=play_mode, source=source)
     assert sum(event[0] == expected for event in events) == 1
     assert not any(event[0] == 'stop' for event in events)
+
+
+@pytest.mark.parametrize('source,queued,addon,paused,expected', [
+    ('addon', False, True, False, ['pause', 'next-addon']),
+    # A queued add-on URL is opened directly: advancing the playlist would resume the video
+    ('addon', True, True, False, ['pause', 'next-addon']),
+    ('addon', False, True, True, ['next-addon']),  # already paused, pausing again would resume it
+    ('playlist', False, True, False, ['next-playlist']),  # an existing playlist is unchanged
+])
+def test_pause_until_next(run_popup, source, queued, addon, paused, expected):
+    events, manager, _ = run_popup(action='watch', source=source, queued=queued, addon=addon,
+                                   pause_until_next=True, paused=paused)
+    assert [event[0] for event in events if event[0] in ('pause', 'next-addon', 'next-playlist')] == expected
+    assert not (addon and queued and manager.state.queued)  # Kodi replaces the playlist, nothing to remove later
+
+
+def test_no_pause_when_disabled(run_popup):
+    events, _, _ = run_popup(action='watch', queued=True)
+    assert [event[0] for event in events if event[0] in ('pause', 'next-addon', 'next-playlist')] == ['next-playlist']
 
 
 def test_replacement_playback_and_queue_are_preserved(run_popup):

@@ -154,7 +154,8 @@ def run_credits(monkeypatch):
 
         monkeypatch.setattr(api, 'get_setting_int', setting)
         monkeypatch.setattr(playbackmanager, 'get_setting_int', setting)
-        monkeypatch.setattr(playbackmanager, 'get_setting_bool', lambda key: late == 'bedtime' if key == 'bedtimeEnabled' else True)
+        bools = {'bedtimeEnabled': late == 'bedtime', 'pauseUntilNext': False}
+        monkeypatch.setattr(playbackmanager, 'get_setting_bool', lambda key: bools.get(key, True))
         monkeypatch.setattr(playbackmanager, 'monotonic', lambda: clock.time)
         monkeypatch.setattr(watchtimer, 'monotonic', lambda: clock.time)
         if late == 'bedtime':
