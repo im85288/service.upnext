@@ -43,7 +43,7 @@ def test_notification_time_keeps_priority_without_changing_credits_start(monkeyp
 @pytest.fixture
 def run_credits(monkeypatch):
     def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False,
-            replace=False, runtime=None, timed=False, late=None):
+            replace=False, runtime=None, timed=False, late=None, pause_until_next=False):
         events, popups = [], []
         clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None, window={}, error=None)
         state = Stub(playing_next=False, queued=False, track=True, include_watched=True,
@@ -121,7 +121,8 @@ def run_credits(monkeypatch):
 
         player = Stub(getTime=lambda: clock.time, getTotalTime=lambda: 200,
                       getPlayingFile=lambda: clock.file, isPlaying=lambda: clock.active and clock.time < 200,
-                      stop=lambda: events.append('stop'), playnext=lambda: events.append('playlist-next'))
+                      stop=lambda: events.append('stop'), playnext=lambda: events.append('playlist-next'),
+                      pause=lambda: events.append('pause'))
 
         class Api(api.Api):
             def __init__(self):
@@ -154,9 +155,10 @@ def run_credits(monkeypatch):
 
         monkeypatch.setattr(api, 'get_setting_int', setting)
         monkeypatch.setattr(playbackmanager, 'get_setting_int', setting)
-        bools = {'bedtimeEnabled': late == 'bedtime', 'pauseUntilNext': False}
+        bools = {'bedtimeEnabled': late == 'bedtime', 'pauseUntilNext': pause_until_next}
         monkeypatch.setattr(playbackmanager, 'get_setting_bool', lambda key: bools.get(key, True))
         monkeypatch.setattr(playbackmanager, 'monotonic', lambda: clock.time)
+        monkeypatch.setattr(playbackmanager, 'getCondVisibility', lambda condition: False)
         monkeypatch.setattr(watchtimer, 'monotonic', lambda: clock.time)
         if late == 'bedtime':
             monkeypatch.setattr(watchtimer, 'datetime', Stub(now=lambda: datetime(2026, 11, 1, 22, 59, 59) + timedelta(seconds=clock.time - 120)))
@@ -194,6 +196,17 @@ def test_credits_expiry_advances_once_and_keeps_still_watching_count(run_credits
     assert popup.is_auto_advance() and not popup.is_watch_now()
     assert state.played_in_a_row == 2
     assert 'service.upnext.dialog' not in clock.window
+
+
+def test_credits_expiry_pauses_and_opens_a_queued_addon_item(run_credits):
+    events, state, clock, _ = run_credits(queued=True, pause_until_next=True)
+    # Paused once before the add-on starts the next episode, which is opened directly, not by the playlist
+    assert [event for event in events if event in ('pause', 'addon-next', 'playlist-next')] == ['pause', 'addon-next']
+    # Player.Open replaces the video playlist (TMSG_MEDIA_PLAY clears it), the queued entry with it:
+    # nothing to dequeue, and reset_queue() must not remove the new item later
+    assert not state.queued and 'dequeue' not in events
+    assert 'stop' not in events
+    assert 126 <= clock.time <= 126.5
 
 
 @pytest.mark.parametrize('action', ['back', 'back-at-expiry'])

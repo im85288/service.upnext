@@ -153,9 +153,19 @@ class PlaybackManager:
         event(message='NEXTUPWATCHEDSIGNAL', data={'episodeid': self.state.current_episode_id}, encoding='base64')
         self.remember_watched_state(self.state.current_episode_id, source, episode.get('episodeid'))
         self.remember_resume_point(episode, source)
+        self._play_next(episode, source, queued, should_play_non_default or next_up_page.is_auto_advance())
+
+        # play_next = True
+        # keep_playing = True
+        # return play_next, keep_playing
+        # Play next file, and keep playing current file
+        return True, True
+
+    def _play_next(self, episode, source, queued, advance_queued):
+        """Play the next episode: the queued or playlist item, the add-on's episode or the library one"""
         if source == 'playlist' or queued:
             # Play playlist media
-            if should_play_non_default or next_up_page.is_auto_advance():
+            if advance_queued:
                 # Early credits expiry must also advance an already queued item.
                 if queued and self.pause_until_next():
                     # Kodi resumes the video when it advances the playlist, before the add-on resolves
@@ -171,12 +181,6 @@ class PlaybackManager:
         else:
             # Play local media
             self.api.play_kodi_item(episode)
-
-        # play_next = True
-        # keep_playing = True
-        # return play_next, keep_playing
-        # Play next file, and keep playing current file
-        return True, True
 
     def pause_until_next(self):
         """Pause the video while an add-on starts the next episode (e.g. a source search), if enabled"""
