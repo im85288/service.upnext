@@ -32,6 +32,13 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### v1.3.6 (2026-11-04)
+- Optionally seek with the arrow keys while the popup is open (with OK/Select playback controls on); the Context Menu action, a long press of OK on some remotes, switches between seeking and the popup buttons (@Drahy)
+- Optionally pause the current video while an add-on starts the next episode, so the end of the episode isn't missed during a slow source search (off by default) (@notoco)
+- Bring back an open popup that Kodi hid while the device was asleep (@Drahy)
+- Complete the Czech translation, including the add-on summary and description (@Drahy)
+- Update Polish translation (@notoco)
+
 ### v1.3.5 (2026-11-03)
 - Continue a partly watched next library episode from where it was left, instead of from the start (setting on by default; idea from MoojMidge's fork) (@im85288)
 - Show the countdown in minutes and seconds when the popup opens more than a minute before it acts (e.g. from an add-on's or the credits' timing), and spread the simple popup's ring over the whole countdown, instead of showing no time until the last minute (@im85288)
