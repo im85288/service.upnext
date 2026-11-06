@@ -2,6 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 import json
+import os
 from datetime import date
 from re import split as re_split
 from xbmc import executeJSONRPC, getCondVisibility, getRegion, log as xlog, LOGDEBUG, LOGINFO
@@ -9,6 +10,12 @@ from xbmcaddon import Addon
 from xbmcgui import Window
 
 ADDON = Addon()
+
+
+def is_armv7():
+    """Return whether this is a 32-bit ARM device, whose popups are created differently"""
+    # Not platform.machine(): without os.uname it starts a process, which crashes on Xbox (UWP)
+    return hasattr(os, 'uname') and os.uname().machine.startswith('armv7')
 
 
 def get_addon_info(key):
