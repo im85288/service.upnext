@@ -4,14 +4,12 @@
 
 from datetime import datetime, timedelta
 from math import ceil
-from platform import machine
 from xbmcgui import WindowXMLDialog, getCurrentWindowDialogId
-from utils import get_global_setting, localize_date, localize_time
+from utils import get_global_setting, is_armv7, localize_date, localize_time
 
 ACTION_PLAYER_STOP = 13
 ACTION_NAV_BACK = 92
 RING_STEPS = 30  # media/nextupicons has a countdown ring image for 00 to 30
-OS_MACHINE = machine()
 # Kodi's "Show information for unwatched items" (videolibrary.showunwatchedplots) options
 SHOW_UNWATCHED_MOVIE_PLOT = 0
 SHOW_UNWATCHED_EPISODE_PLOT = 1
@@ -40,7 +38,7 @@ class Popup(WindowXMLDialog):
     def __init__(self, *args, **kwargs):
         self.action_exitkeys_id = [10, 13]
         self.progress_control = None
-        if OS_MACHINE[0:5] == 'armv7':
+        if is_armv7():
             WindowXMLDialog.__init__(self)
         else:
             WindowXMLDialog.__init__(self, *args, **kwargs)
