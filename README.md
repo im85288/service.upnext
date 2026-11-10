@@ -32,8 +32,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
-### Unreleased
+### v1.3.7 (2026-11-10)
 - Fix the service failing to start on Xbox (Kodi from the Microsoft Store), reported by @barlafuus83 (@im85288)
+- Update Simplified Chinese translation (@wabisabi926)
 
 ### v1.3.6 (2026-11-04)
 - Optionally seek with the arrow keys while the popup is open (with OK/Select playback controls on); the Context Menu action, a long press of OK on some remotes, switches between seeking and the popup buttons (@Drahy)
