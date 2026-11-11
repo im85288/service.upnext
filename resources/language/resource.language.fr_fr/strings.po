@@ -216,7 +216,7 @@ msgstr "Avancer pendant le générique après (secondes, 0 pour désactiver)"
 
 msgctxt "#30627"
 msgid "Intros and recaps"
-msgstr "Intros et récapitulatifs"
+msgstr "Intros et récaps"
 
 msgctxt "#30629"
 msgid "Show a Skip button when the add-on marks them"
