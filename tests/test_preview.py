@@ -2,6 +2,7 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 """The developer test window shows an episode from the library and the one before it"""
 
+import popup
 import script
 
 UPCOMING = {'episodeid': 12, 'tvshowid': 3, 'season': 2, 'episode': 5, 'title': 'The Long Night',
@@ -36,7 +37,8 @@ def test_no_library_episode_gives_none(monkeypatch):
     assert script.library_preview() is None
 
 
-def test_preview_properties_as_the_popup_sets_them_and_the_finishing_episode():
+def test_preview_properties_as_the_popup_sets_them_and_the_finishing_episode(monkeypatch):
+    monkeypatch.setattr(popup, 'get_global_setting', lambda setting: None)  # Kodi shows everything
     props = script.preview_properties(FINISHING, UPCOMING)
     assert (props['title'], props['tvshowtitle'], props['season'], props['episode']) == (
         'The Long Night', 'Slow Horses', '2', '5')
@@ -48,3 +50,11 @@ def test_preview_properties_as_the_popup_sets_them_and_the_finishing_episode():
     assert (props['preview_finishing_progress'], props['preview_finishing_remaining']) == ('96', '1:24')
     # No still for the finishing episode: the next one's landscape or fanart.
     assert script.preview_properties(dict(FINISHING, art={}), UPCOMING)['preview_finishing_art'] == 'fanart.jpg'
+
+
+def test_preview_hides_an_unwatched_episodes_plot_and_still_as_kodi_does(monkeypatch):
+    monkeypatch.setattr(popup, 'get_global_setting', lambda setting: [])  # nothing shown for unwatched items
+    props = script.preview_properties(FINISHING, UPCOMING)  # UPCOMING is unwatched (playcount 0)
+    assert props['plot'] == '' and props['thumb'] == 'fanart.jpg'  # the show's art in place of the still
+    watched = script.preview_properties(FINISHING, dict(UPCOMING, playcount=1))
+    assert watched['plot'] == 'River follows a lead.' and watched['thumb'] == 'still-5.jpg'

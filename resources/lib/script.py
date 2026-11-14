@@ -6,7 +6,7 @@ from datetime import datetime, timedelta
 from math import ceil
 from xbmc import Monitor
 from xbmcgui import WindowXMLDialog
-from popup import format_remaining, popup_art, ring_step
+from popup import format_remaining, popup_art, ring_step, spoilers_allowed
 from utils import addon_path, get_setting_bool, jsonrpc, localize, localize_date, localize_time
 
 EPISODE_FIELDS = ['art', 'episode', 'firstaired', 'playcount', 'plot', 'rating', 'runtime', 'season',
@@ -37,13 +37,15 @@ def library_preview(candidates=PREVIEW_CANDIDATES):
 
 def preview_properties(finishing, upcoming):
     """The window's properties for a library preview: the next episode as
-    the real popup sets them, and preview_finishing_* for the episode playing,
+    the real popup sets them (its plot and still hidden when Kodi hides them
+    for unwatched episodes), and preview_finishing_* for the episode playing,
     which a skin can show where it would read the player (nothing plays)."""
-    art = popup_art(upcoming.get('art') or {})
+    show_plot, show_thumb = spoilers_allowed(upcoming)
+    art = popup_art(upcoming.get('art') or {}, show_thumb)
     rating = upcoming.get('rating')
     props = dict(art)
     props.update({
-        'plot': upcoming.get('plot', ''), 'tvshowtitle': upcoming.get('showtitle', ''),
+        'plot': upcoming.get('plot', '') if show_plot else '', 'tvshowtitle': upcoming.get('showtitle', ''),
         'title': upcoming.get('title', ''), 'season': str(upcoming.get('season', '')),
         'episode': str(upcoming.get('episode', '')),
         'seasonepisode': '{}x{}.'.format(upcoming.get('season', ''), upcoming.get('episode', '')),
