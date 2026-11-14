@@ -32,6 +32,9 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
+### Unreleased
+- Load the Hindi translation (its folder was named in_hi, which Kodi doesn't read) and fix Romanian and Traditional Chinese label formatting (@im85288)
+
 ### v1.3.7 (2026-11-10)
 - Fix the service failing to start on Xbox (Kodi from the Microsoft Store), reported by @barlafuus83 (@im85288)
 - Update Simplified Chinese translation (@wabisabi926)
