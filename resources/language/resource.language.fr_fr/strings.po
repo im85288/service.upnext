@@ -11,7 +11,7 @@ msgstr ""
 "Report-Msgid-Bugs-To: https://github.com/im85288/service.upnext\n"
 "POT-Creation-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "PO-Revision-Date: 2026-11-11 09:00+0100\n"
-"Last-Translator: Sch-Caseb\n"
+"Last-Translator: Kévin Commaille <zecakeh@pm.me>\n"
 "Language-Team: Français\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
@@ -38,7 +38,7 @@ msgstr "Continuer à regarder"
 
 msgctxt "#30024"
 msgid "Still there?"
-msgstr "Toujours là ?"
+msgstr "Toujours là ?"
 
 msgctxt "#30032"
 msgid "Enable on playlists"
@@ -110,7 +110,7 @@ msgstr "Passer l’intro"
 
 msgctxt "#30053"
 msgid "Skip recap"
-msgstr "Passer le récap"
+msgstr "Passer le récapitulatif"
 
 msgctxt "#30054"
 msgid "Up next in [COLOR FFFF4081]$INFO[Window.Property(remaining_time)][/COLOR]"
@@ -156,7 +156,7 @@ msgstr "Utiliser OK/Sélectionner pour les commandes de lecture"
 
 msgctxt "#30508"
 msgid "Use arrows to seek; hold OK for Up Next buttons"
-msgstr "Utiliser les flèches pour naviguer ; maintenir OK pour les boutons Up Next"
+msgstr "Utiliser les flèches pour avancer/reculer ; maintenir OK pour les boutons Up Next"
 
 msgctxt "#30600"
 msgid "Behaviour"
@@ -176,7 +176,7 @@ msgstr "Inclure les épisodes visionnés"
 
 msgctxt "#30607"
 msgid "Number of episodes before \"Still there?\" query"
-msgstr "Nombre d’épisodes avant la demande « Vous regardez toujours ? »"
+msgstr "Nombre d’épisodes avant la demande « Vous regardez toujours ? »"
 
 msgctxt "#30609"
 msgid "Duration in seconds for notification to be shown"
@@ -216,7 +216,7 @@ msgstr "Avancer pendant le générique après (secondes, 0 pour désactiver)"
 
 msgctxt "#30627"
 msgid "Intros and recaps"
-msgstr "Intros et récaps"
+msgstr "Intros et récapitulatifs"
 
 msgctxt "#30629"
 msgid "Show a Skip button when the add-on marks them"
@@ -228,7 +228,7 @@ msgstr "Passer les intros automatiquement"
 
 msgctxt "#30633"
 msgid "Skip recaps automatically"
-msgstr "Passer les récaps automatiquement"
+msgstr "Passer les récapitulatifs automatiquement"
 
 msgctxt "#30635"
 msgid "Ask if still watching after (minutes, 0 disables)"
