@@ -5,6 +5,7 @@
 import re
 from pathlib import Path
 
+import polib
 import pytest
 
 LANGUAGES = Path(__file__).resolve().parent.parent / 'resources' / 'language'
@@ -14,15 +15,14 @@ KODI_LANGUAGES = {
     'cs_cz', 'de_de', 'el_gr', 'en_gb', 'es_es', 'fi_fi', 'fr_fr', 'hi_in', 'hr_hr', 'hu_hu', 'it_it',
     'ja_jp', 'ko_kr', 'nl_nl', 'pl_pl', 'pt_br', 'ro_ro', 'ru_ru', 'sk_sk', 'sv_se', 'zh_cn', 'zh_tw',
 }
-ENTRY = re.compile(r'^msgctxt "(#\d+)"\nmsgid "(.*)"\nmsgstr "(.*)"$', re.M)
 # Kodi label tags and info labels; a missing closing tag runs its formatting into the rest of the label
 MARKUP = re.compile(r'\$INFO\[[^\]]*\]|\$ADDON\[[^\]]*\]|\[/?(?:B|I|UPPERCASE|LOWERCASE|CAPITALIZE)\]|\[/?COLOR[^\]]*\]')
 FOLDERS = sorted(path for path in LANGUAGES.iterdir() if path.is_dir())
 
 
 def strings(folder):
-    return {msgctxt: (msgid, msgstr)
-            for msgctxt, msgid, msgstr in ENTRY.findall((folder / 'strings.po').read_text(encoding='utf-8'))}
+    # polib also reads entries whose msgid or msgstr is wrapped over several lines
+    return {entry.msgctxt: (entry.msgid, entry.msgstr) for entry in polib.pofile(str(folder / 'strings.po'))}
 
 
 @pytest.mark.parametrize('folder', FOLDERS, ids=lambda folder: folder.name)
