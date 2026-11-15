@@ -43,12 +43,23 @@ def test_notification_time_keeps_priority_without_changing_credits_start(monkeyp
 @pytest.fixture
 def run_credits(monkeypatch):
     def run(action=None, offset=120, delay=6, mode=0, source='addon', queued=False, still=False, pause=False,
-            replace=False, runtime=None, timed=False, late=None, pause_until_next=False):
+            replace=False, runtime=None, timed=False, late=None, pause_until_next=False, switched_mode=None):
         events, popups = [], []
         clock = Stub(time=120.0, ticks=0, active=True, file='current.mkv', replaced=None, window={}, error=None)
         state = Stub(playing_next=False, queued=False, track=True, include_watched=True,
                      current_episode_id='current', play_mode=mode, played_in_a_row=1, pause=False,
                      watch_timer=WatchTimer())
+        if switched_mode is not None:
+            # The play-next choice changes (Binge mode switched) after the popup read it
+            first, reads = state.__dict__.pop('play_mode'), []
+
+            class Switching(Stub):
+                @property
+                def play_mode(self):
+                    reads.append(1)
+                    return first if len(reads) == 1 else switched_mode
+
+            state.__class__ = Switching
         if timed:
             state.watch_timer.elapsed = 61
         if late == 'time':
@@ -309,3 +320,10 @@ def test_disabling_credits_countdown_clears_previous_skin_properties():
     popup.set_credits_countdown(6)
     popup.set_credits_countdown()
     assert properties['credits_countdown'] == properties['credits_remaining'] == ''
+
+
+def test_switching_to_stop_during_the_credits_countdown_still_advances(run_credits):
+    events, _, clock, _ = run_credits(mode=0, switched_mode=1)
+    assert events.count('addon-next') == 1
+    assert 'stop' not in events
+    assert 126 <= clock.time <= 126.5
