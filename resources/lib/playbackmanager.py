@@ -6,7 +6,7 @@ from time import monotonic
 from xbmc import getCondVisibility, sleep
 from api import Api, credits_autoplay_deadline, get_watched_state, mark_watched, playing_episode_id
 from demo import DemoOverlay
-from player import UpNextPlayer
+from player import UpNextPlayer, stop_count
 from playitem import PlayItem
 from state import State
 from stillwatching import StillWatching
@@ -399,7 +399,7 @@ class PlaybackManager:
         if not isinstance(episodeid, int) or episodeid < 1 or position <= 0:
             return
         self._pending_resume = {'episodeid': episodeid, 'previous': self.state.current_episode_id,
-                                'position': position, 'started': monotonic(), 'stops': UpNextPlayer.stop_count}
+                                'position': position, 'started': monotonic(), 'stops': stop_count()}
 
     def resume_next_episode(self):
         """Seek a partly watched next episode to its resume point once it plays"""
@@ -410,7 +410,7 @@ class PlaybackManager:
         if not pending:
             return
         if (monotonic() - pending['started'] > WATCHED_SWITCH_TIMEOUT
-                or UpNextPlayer.stop_count != pending['stops']):
+                or stop_count() != pending['stops']):
             # The next episode never started, or the viewer stopped playback: leave a later start alone
             self._pending_resume = None
             return

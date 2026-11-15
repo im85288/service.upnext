@@ -37,6 +37,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 - Redesign the default Up Next and Still Watching popups: the video is dimmed behind the show's logo, the next episode with its facts and plot, and its still with the countdown, above the episode now finishing (@im85288)
 - Add a Binge mode setting that skips intros and recaps, plays the next episode and moves on during the end credits, without changing those settings (@im85288)
 - Load the Hindi translation (its folder was named in_hi, which Kodi doesn't read) and fix Romanian and Traditional Chinese label formatting (@im85288)
+- Fix stopping playback on Kodi 22 leaving the stopped video's state behind (an error on every stop), reported by @disizleboss93 (@im85288)
 
 ### v1.3.7 (2026-11-10)
 - Fix the service failing to start on Xbox (Kodi from the Microsoft Store), reported by @barlafuus83 (@im85288)
