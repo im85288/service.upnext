@@ -4,7 +4,8 @@
 from math import ceil
 from time import monotonic
 from xbmc import getCondVisibility, sleep
-from api import Api, credits_autoplay_deadline, get_watched_state, mark_watched, playing_episode_id
+from api import (Api, credits_autoplay_deadline, get_watched_state, mark_watched, play_queued_item, playing_episode_id,
+                 playlist_position)
 from demo import DemoOverlay
 from player import UpNextPlayer
 from playitem import PlayItem
@@ -170,15 +171,21 @@ class PlaybackManager:
         """Play the next episode: the queued or playlist item, the add-on's episode or the library one"""
         if source == 'playlist' or queued:
             # Play playlist media
-            if advance_queued:
+            if queued and advance_queued and self.pause_until_next():
+                # Kodi resumes the video when it advances the playlist, before the add-on resolves
+                # the queued URL; opening the URL resolves it first and keeps the video paused.
+                self.state.queued = False
+                self.api.play_addon_item()
+            elif queued and playlist_position() == -1:
+                # The video didn't come from the playlist (an add-on opened it with Player.Open): Kodi's
+                # playnext() only stops it, and Kodi doesn't advance to the queued item when it ends
+                # either, so open that item. It is no longer a queued leftover to remove on start.
+                self.state.queued = False
+                if not play_queued_item():
+                    self.log('The queued next episode is no longer in the playlist', 1)
+            elif advance_queued:
                 # Early credits expiry must also advance an already queued item.
-                if queued and self.pause_until_next():
-                    # Kodi resumes the video when it advances the playlist, before the add-on resolves
-                    # the queued URL; opening the URL resolves it first and keeps the video paused.
-                    self.state.queued = False
-                    self.api.play_addon_item()
-                else:
-                    self.player.playnext()
+                self.player.playnext()
         elif self.api.has_addon_data():
             # Play add-on media
             self.pause_until_next()

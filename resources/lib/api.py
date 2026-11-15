@@ -53,6 +53,29 @@ def playing_episode_id():
     return item.get('id') if item.get('type') == 'episode' else None
 
 
+def playlist_position():
+    """Return the playing video's position in its playlist: -1 when Kodi didn't play it from one (an
+    add-on opened it with Player.Open, for example), None when there is no answer"""
+    playerid = Api._get_playerid(playerid_cache=[None])  # pylint: disable=protected-access
+    if playerid is None:
+        return None
+    result = jsonrpc(method='Player.GetProperties', params={'playerid': playerid, 'properties': ['position']})
+    return get_int(result.get('result'), 'position', None)
+
+
+def play_queued_item():
+    """Open the item Up Next queued, the playlist's last, directly"""
+    playlistid = Api.get_playlistid()
+    if playlistid < 0:
+        playlistid = Api.PLAYER_PLAYLIST['video']
+    result = jsonrpc(method='Playlist.GetItems', params={'playlistid': playlistid})
+    items = (result.get('result') or {}).get('items') or []
+    if not items:
+        return False
+    jsonrpc(method='Player.Open', params={'item': {'playlistid': playlistid, 'position': len(items) - 1}})
+    return True
+
+
 def mark_watched(episodeid, playcount):
     """Set a library episode's play count and clear its resume point"""
     jsonrpc(method='VideoLibrary.SetEpisodeDetails', params={
