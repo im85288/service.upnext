@@ -35,6 +35,7 @@ class PlaybackManager:
         self.demo = DemoOverlay(12005)
         self._watch_limit_check_at = 0
         self._popup_wake_pending = False
+        self._popup_play_mode = None  # the play-next choice when the popup opened, kept until it closes
         self._watched_checks = []  # episodes Up Next moved on from, to check once Kodi saved them
         self._pending_resume = None  # partly watched next episode, to resume once it plays
 
@@ -95,6 +96,9 @@ class PlaybackManager:
         return False
 
     def launch_popup(self, episode, source=None):
+        # Read once per popup: switching Binge mode while it counts down must not
+        # turn its credits countdown into a Stop
+        self._popup_play_mode = self.state.play_mode
         episode_id = episode.get('episodeid')
         no_play_count = episode.get('playcount') is None or episode.get('playcount') == 0
         include_play_count = True if self.state.include_watched else no_play_count
@@ -133,8 +137,8 @@ class PlaybackManager:
             # Stop if Still Watching? popup was shown to prevent unwanted playback when using FF or skip
             return False, showing_next_up_page
 
-        play_item_option_1 = (should_play_default and self.state.play_mode == 0)
-        play_item_option_2 = (should_play_non_default and self.state.play_mode == 1)
+        play_item_option_1 = (should_play_default and self._popup_play_mode == 0)
+        play_item_option_2 = (should_play_non_default and self._popup_play_mode == 1)
         if not play_item_option_1 and not play_item_option_2:
             if next_up_page.is_dismissed() if showing_next_up_page else still_watching_page.is_dismissed():
                 # Back dismisses the prompt without stopping the current video.
@@ -213,7 +217,7 @@ class PlaybackManager:
         self._popup_wake_pending = False
         progress_step_size = calculate_progress_steps(total_time - play_time)
         credits_deadline = (credits_autoplay_deadline(self.api.has_addon_data(), play_time, total_time)
-                            if self.state.play_mode == 0 else None)
+                            if self._popup_play_mode == 0 else None)
         credits_duration = credits_deadline - play_time if credits_deadline is not None else 0
         next_up_page.set_item(episode)
         next_up_page.set_progress_step_size(progress_step_size)
