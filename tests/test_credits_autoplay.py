@@ -129,6 +129,7 @@ def run_credits(monkeypatch):
                 clock.file = 'replacement.mkv'
             if action == 'back-at-expiry' and clock.time >= 126:
                 popups[0].onAction(92)
+            return action == 'kodi-stops' and clock.ticks == 2
 
         player = Stub(getTime=lambda: clock.time, getTotalTime=lambda: 200,
                       getPlayingFile=lambda: clock.file, isPlaying=lambda: clock.active and clock.time < 200,
@@ -177,7 +178,7 @@ def run_credits(monkeypatch):
         monkeypatch.setattr(playbackmanager, 'set_property', clock.window.__setitem__)
         monkeypatch.setattr(playbackmanager, 'clear_property', lambda key: clock.window.pop(key, None))
         monkeypatch.setattr(playbackmanager, 'event', lambda **kwargs: events.append('watched'))
-        monkeypatch.setattr(playbackmanager, 'sleep', sleep)
+        monkeypatch.setattr(playbackmanager, 'wait_for_abort', sleep)
         monkeypatch.setattr(playbackmanager, 'UpNext', Popup)
         monkeypatch.setattr(playbackmanager, 'StillWatching', StillPopup)
         manager = Manager()
@@ -218,6 +219,15 @@ def test_credits_expiry_pauses_and_opens_a_queued_addon_item(run_credits):
     assert not state.queued and 'dequeue' not in events
     assert 'stop' not in events
     assert 126 <= clock.time <= 126.5
+
+
+@pytest.mark.parametrize('still', [False, True])
+def test_kodi_stopping_closes_the_popup_and_leaves_playback_alone(run_credits, still):
+    events, _, clock, _ = run_credits(action='kodi-stops', queued=True, still=still)
+    assert clock.ticks == 2  # stopped waiting as soon as Kodi asked
+    assert 'close' in events
+    assert not any(event in events for event in ('stop', 'addon-next', 'playlist-next', 'watched'))
+    assert 'service.upnext.dialog' not in clock.window
 
 
 @pytest.mark.parametrize('action', ['back', 'back-at-expiry'])

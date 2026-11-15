@@ -54,7 +54,7 @@ class FakeKodi:
 def kodi(monkeypatch):
     fake = FakeKodi()
     monkeypatch.setattr(api, 'jsonrpc', fake)
-    monkeypatch.setattr(api, 'sleep', lambda milliseconds: None)
+    monkeypatch.setattr(api, 'wait_for_abort', lambda seconds: False)
     return fake
 
 
@@ -126,7 +126,7 @@ def test_kodi_lookup_without_a_next_episode_skips_the_details(kodi):
 
 def test_kodi_lookup_without_library_result_returns_nothing(monkeypatch):
     monkeypatch.setattr(api, 'jsonrpc', lambda **kwargs: {'error': {'code': -32602}})
-    monkeypatch.setattr(api, 'sleep', lambda milliseconds: None)
+    monkeypatch.setattr(api, 'wait_for_abort', lambda seconds: False)
     assert library_api().handle_kodi_lookup_of_episode(10, 'S01E01.mkv', True, 1) is None
 
 

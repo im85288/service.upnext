@@ -3,7 +3,7 @@
 
 from math import ceil
 from time import monotonic
-from xbmc import getCondVisibility, sleep
+from xbmc import getCondVisibility
 from api import (Api, credits_autoplay_deadline, get_watched_state, mark_watched, play_queued_item, playing_episode_id,
                  playlist_position)
 from demo import DemoOverlay
@@ -13,7 +13,7 @@ from state import State
 from stillwatching import StillWatching
 from upnext import UpNext
 from utils import (addon_path, calculate_progress_steps, clear_property, event, get_int, get_setting_bool, get_setting_int,
-                   log as ulog, set_property)
+                   log as ulog, set_property, wait_for_abort)
 
 # How long to let Kodi save the previous episode's own watched state before checking it (seconds)
 WATCHED_CHECK_DELAY = 10
@@ -129,6 +129,9 @@ class PlaybackManager:
                                                                               showing_next_up_page,
                                                                               showing_still_watching_page,
                                                                               still_watching_page)
+        if getattr(self, '_kodi_stopping', False):
+            # Leave the video and the playlist to Kodi while it shuts down
+            return False, True
         if not self.state.track:
             self.log('exit launch_popup early due to disabled tracking', 2)
             # play_next = False
@@ -258,12 +261,8 @@ class PlaybackManager:
             position = self._playback_position(playing_file)
             if position is None:
                 self.log('Playback stopped or changed while the popup was open, closing it', 2)
-                if showing_next_up_page:
-                    next_up_page.close()
-                    showing_next_up_page = False
-                if showing_still_watching_page:
-                    still_watching_page.close()
-                    showing_still_watching_page = False
+                showing_next_up_page = showing_still_watching_page = self._close_popup(
+                    next_up_page if showing_next_up_page else still_watching_page if showing_still_watching_page else None)
                 break
             play_time, total_time = position
             self.state.watch_timer.observe(playing_file, play_time, self.state.pause)
@@ -283,8 +282,20 @@ class PlaybackManager:
                         next_up_page.update_progress_control(remaining=remaining, runtime=episode.get('runtime'))
                 elif showing_still_watching_page:
                     still_watching_page.update_progress_control(remaining=remaining, runtime=episode.get('runtime'))
-            sleep(100)
+            if wait_for_abort(0.1):
+                self.log('Kodi is stopping, closing the popup', 2)
+                self._kodi_stopping = True
+                showing_next_up_page = showing_still_watching_page = self._close_popup(
+                    next_up_page if showing_next_up_page else still_watching_page if showing_still_watching_page else None)
+                break
         return showing_next_up_page, showing_still_watching_page
+
+    @staticmethod
+    def _close_popup(page):
+        """Close the popup on screen, if any, and return False for its showing flag"""
+        if page is not None:
+            page.close()
+        return False
 
     def request_popup_wake(self):
         """Retry a hidden active popup when Kodi wakes."""

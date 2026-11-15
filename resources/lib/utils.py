@@ -5,7 +5,7 @@ import json
 import os
 from datetime import date
 from re import split as re_split
-from xbmc import executeJSONRPC, getCondVisibility, getRegion, log as xlog, LOGDEBUG, LOGINFO
+from xbmc import executeJSONRPC, getCondVisibility, getRegion, log as xlog, LOGDEBUG, LOGINFO, Monitor
 from xbmcaddon import Addon
 from xbmcgui import Window
 
@@ -89,6 +89,16 @@ def get_setting(key, default=None):
     if value == '' and default is not None:
         return default
     return value
+
+
+_MONITOR = []  # one xbmc.Monitor, made on first use
+
+
+def wait_for_abort(seconds):
+    """Wait, returning True early when Kodi asks the add-on to stop (xbmc.sleep doesn't wake for that)"""
+    if not _MONITOR:
+        _MONITOR.append(Monitor())
+    return _MONITOR[0].waitForAbort(seconds)
 
 
 def get_setting_bool(key, default=None):

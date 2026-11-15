@@ -33,15 +33,23 @@ def quiet_api():
 def test_get_now_playing_gives_up_without_an_active_player(monkeypatch):
     sleeps = []
     monkeypatch.setattr(api, 'jsonrpc', lambda **kwargs: {'result': []})
-    monkeypatch.setattr(api, 'sleep', sleeps.append)
+    monkeypatch.setattr(api, 'wait_for_abort', lambda seconds: sleeps.append(seconds) or False)
     assert quiet_api().get_now_playing() is None
-    assert len(sleeps) == 10
+    assert sleeps == [0.1] * 10
+
+
+def test_get_now_playing_stops_waiting_when_kodi_stops(monkeypatch):
+    sleeps = []
+    monkeypatch.setattr(api, 'jsonrpc', lambda **kwargs: {'result': []})
+    monkeypatch.setattr(api, 'wait_for_abort', lambda seconds: sleeps.append(seconds) or True)
+    assert quiet_api().get_now_playing() is None
+    assert sleeps == [0.1]
 
 
 def test_get_now_playing_waits_for_the_player(monkeypatch):
     responses = iter([{'result': []}, {'result': [{'playerid': 1}]}, {'result': {'item': {'type': 'episode'}}}])
     monkeypatch.setattr(api, 'jsonrpc', lambda **kwargs: next(responses))
-    monkeypatch.setattr(api, 'sleep', lambda milliseconds: None)
+    monkeypatch.setattr(api, 'wait_for_abort', lambda seconds: False)
     assert quiet_api().get_now_playing() == {'result': {'item': {'type': 'episode'}}}
 
 

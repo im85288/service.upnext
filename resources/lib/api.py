@@ -1,8 +1,8 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
-from xbmc import sleep, PLAYLIST_VIDEO, PLAYLIST_MUSIC
-from utils import binge_mode, event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog
+from xbmc import PLAYLIST_VIDEO, PLAYLIST_MUSIC
+from utils import binge_mode, event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog, wait_for_abort
 
 
 # Binge mode moves on this many seconds into the end credits when the setting is 0
@@ -289,7 +289,8 @@ class Api:
             result = jsonrpc(method='Player.GetActivePlayers')
             if result.get('result'):
                 break
-            sleep(100)
+            if wait_for_abort(0.1):
+                return None
         else:
             self.log('No active player found', 1)
             return None
