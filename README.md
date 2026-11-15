@@ -34,6 +34,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ## Releases
 
 ### Unreleased
+- Redesign the default Up Next and Still Watching popups: the video is dimmed behind the show's logo, the next episode with its facts and plot, and its still with the countdown, above the episode now finishing (@im85288)
 - Add a Binge mode setting that skips intros and recaps, plays the next episode and moves on during the end credits, without changing those settings (@im85288)
 - Load the Hindi translation (its folder was named in_hi, which Kodi doesn't read) and fix Romanian and Traditional Chinese label formatting (@im85288)
 

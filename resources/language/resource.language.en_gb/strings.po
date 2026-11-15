@@ -122,6 +122,10 @@ msgctxt "#30056"
 msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining_time)][/COLOR]"
 msgstr ""
 
+msgctxt "#30057"
+msgid "Now finishing"
+msgstr ""
+
 msgctxt "#30060"
 msgid "[B]UP NEXT DEMO MODE ENABLED[/B]"
 msgstr ""
