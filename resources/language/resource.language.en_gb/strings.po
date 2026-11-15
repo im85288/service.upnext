@@ -260,6 +260,14 @@ msgctxt "#30647"
 msgid "Pause the video while an add-on starts the next episode"
 msgstr ""
 
+msgctxt "#30649"
+msgid "Binge mode"
+msgstr ""
+
+msgctxt "#30651"
+msgid "[COLOR gray]Skips intros and recaps, plays next and moves on during the credits[/COLOR]"
+msgstr ""
+
 msgctxt "#30700"
 msgid "Expert"
 msgstr ""
