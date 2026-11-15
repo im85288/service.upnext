@@ -39,6 +39,7 @@ class PlaybackManager:
         self._popup_play_mode = None  # the play-next choice when the popup opened, kept until it closes
         self._watched_checks = []  # episodes Up Next moved on from, to check once Kodi saved them
         self._pending_resume = None  # partly watched next episode, to resume once it plays
+        self._kodi_stopping = False  # Kodi asked the add-on to stop while the popup was open
 
     def log(self, msg, level=2):
         ulog(msg, name=self.__class__.__name__, level=level)
