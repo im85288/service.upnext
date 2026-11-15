@@ -115,8 +115,18 @@ class Monitor:
         return Monitor._aborted.is_set()
 
 
-class Player:
+class _KodiPlayerType(type):
+    ''' Like Kodi 22, refuse to assign class attributes of a Player subclass (tests may still patch Player) '''
+
+    def __setattr__(cls, name, value):
+        if not cls.__dict__.get('_kodi_base'):
+            raise AttributeError("cannot modify read-only attribute '%s.%s'" % (cls.__name__, name))
+        super().__setattr__(name, value)
+
+
+class Player(metaclass=_KodiPlayerType):
     ''' A stub implementation of the xbmc Player class '''
+    _kodi_base = True
 
     def __init__(self):
         ''' A stub constructor for the xbmc Player class '''

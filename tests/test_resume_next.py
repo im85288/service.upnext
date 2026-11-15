@@ -167,26 +167,37 @@ def test_player_never_ready_gives_up(manager):
     assert manager._pending_resume is None  # pylint: disable=protected-access
 
 
-def test_stopping_playback_cancels_the_resume(monkeypatch, manager):
+def test_stopping_playback_cancels_the_resume(manager):
     # The viewer stops while the next episode opens, then starts it again from the beginning
-    monkeypatch.setattr(player.UpNextPlayer, 'stop_count', 0)
     manager.remember_resume_point(NEXT, 'library')
     start(manager, episode=None)
     tick(manager)
-    player.UpNextPlayer.stop_count += 1
+    player._STOP_COUNT[0] += 1  # pylint: disable=protected-access
     tick(manager)
     start(manager)
     tick(manager)
     assert manager.seeks == []
 
 
-def test_playback_stop_is_counted(monkeypatch):
-    monkeypatch.setattr(player.UpNextPlayer, 'stop_count', 3)
+def test_stopping_playback_resets_everything_on_kodi_22():
+    # Kodi 22 refuses writes to an xbmc.Player subclass's class attributes (the stub does too), which made
+    # onPlayBackStopped fail before resetting anything (#389)
+    calls = []
+    instance = object.__new__(player.UpNextPlayer)
+    instance.state = Stub(queued=True)
+    instance.api = Stub(reset_queue=lambda: calls.append('queue'), reset_addon_data=lambda: calls.append('data'))
+    instance.onPlayBackStopped()
+    assert calls == ['queue', 'data']
+    assert isinstance(instance.state, player.State)
+
+
+def test_playback_stop_is_counted():
+    before = player.stop_count()
     instance = object.__new__(player.UpNextPlayer)
     instance.state = Stub(queued=False)
     instance.api = Stub(reset_addon_data=lambda: None)
     instance.onPlayBackStopped()
-    assert player.UpNextPlayer.stop_count == 4
+    assert player.stop_count() == before + 1
 
 
 @pytest.mark.parametrize('action,remembered', [('watch', True), ('timeout', True), ('stop', False), ('back', False)])
