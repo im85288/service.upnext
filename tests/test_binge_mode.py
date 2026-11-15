@@ -44,10 +44,13 @@ def test_binge_mode_skips_intros_and_recaps_even_when_skipping_is_off(settings, 
     assert not result.buttons
 
 
-@pytest.mark.parametrize('binge, expected', [(False, 1), (True, 0)])
-def test_binge_mode_plays_next_by_default(settings, binge, expected):
-    settings['bingeMode'] = binge
-    assert state.State().play_mode == expected
+def test_binge_mode_plays_next_by_default_and_applies_mid_episode(settings):
+    current = state.State()
+    assert current.play_mode == 1
+    settings['bingeMode'] = True  # switched on while the episode plays
+    assert current.play_mode == 0
+    settings['bingeMode'] = False  # and off again: the saved choice is back
+    assert current.play_mode == 1
 
 
 @pytest.mark.parametrize('binge, delay, expected', [
