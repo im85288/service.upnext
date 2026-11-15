@@ -43,10 +43,10 @@
                 </control>
                 <control type="label">
                     <left>120</left>
-                    <top>200</top>
+                    <top>310</top>
                     <width>900</width>
-                    <height>190</height>
-                    <aligny>bottom</aligny>
+                    <height>80</height>
+                    <aligny>center</aligny>
                     <font>font52_title</font>
                     <textcolor>FFFFFFFF</textcolor>
                     <shadowcolor>66000000</shadowcolor>
@@ -213,7 +213,7 @@
                     <width>640</width>
                     <height>360</height>
                     <aspectratio>scale</aspectratio>
-                    <texture background="true" diffuse="rounded.png">$INFO[Window.Property(thumb)]</texture>
+                    <texture diffuse="rounded.png">$INFO[Window.Property(thumb)]</texture>
                 </control>
                 <control type="image">
                     <left>1160</left>
@@ -221,7 +221,7 @@
                     <width>640</width>
                     <height>360</height>
                     <aspectratio>scale</aspectratio>
-                    <texture background="true" diffuse="rounded.png">$INFO[Window.Property(landscape)]</texture>
+                    <texture diffuse="rounded.png">$INFO[Window.Property(landscape)]</texture>
                     <visible>String.IsEmpty(Window.Property(thumb))</visible>
                 </control>
                 <control type="image">
@@ -230,7 +230,7 @@
                     <width>640</width>
                     <height>360</height>
                     <aspectratio>scale</aspectratio>
-                    <texture background="true" diffuse="rounded.png">$INFO[Window.Property(fanart)]</texture>
+                    <texture diffuse="rounded.png">$INFO[Window.Property(fanart)]</texture>
                     <visible>String.IsEmpty(Window.Property(thumb)) + String.IsEmpty(Window.Property(landscape))</visible>
                 </control>
                 <control type="image">
@@ -265,7 +265,7 @@
                         <width>192</width>
                         <height>108</height>
                         <aspectratio>scale</aspectratio>
-                        <texture background="true" diffuse="rounded.png">$INFO[Player.Art(thumb)]</texture>
+                        <texture diffuse="rounded.png">$INFO[Player.Art(thumb)]</texture>
                         <visible>!!String.IsEmpty(Window.Property(preview_finishing_title))</visible>
                     </control>
                     <control type="image">
@@ -274,7 +274,7 @@
                         <width>192</width>
                         <height>108</height>
                         <aspectratio>scale</aspectratio>
-                        <texture background="true" diffuse="rounded.png">$INFO[Player.Art(tvshow.landscape)]</texture>
+                        <texture diffuse="rounded.png">$INFO[Player.Art(tvshow.landscape)]</texture>
                         <visible>!!String.IsEmpty(Window.Property(preview_finishing_title)) + String.IsEmpty(Player.Art(thumb))</visible>
                     </control>
                     <control type="image">
@@ -283,7 +283,7 @@
                         <width>192</width>
                         <height>108</height>
                         <aspectratio>scale</aspectratio>
-                        <texture background="true" diffuse="rounded.png">$INFO[Player.Art(fanart)]</texture>
+                        <texture diffuse="rounded.png">$INFO[Player.Art(fanart)]</texture>
                         <visible>!!String.IsEmpty(Window.Property(preview_finishing_title)) + String.IsEmpty(Player.Art(thumb)) + String.IsEmpty(Player.Art(tvshow.landscape))</visible>
                     </control>
                     <control type="image">
@@ -292,7 +292,7 @@
                         <width>192</width>
                         <height>108</height>
                         <aspectratio>scale</aspectratio>
-                        <texture background="true" diffuse="rounded.png">$INFO[Window.Property(preview_finishing_art)]</texture>
+                        <texture diffuse="rounded.png">$INFO[Window.Property(preview_finishing_art)]</texture>
                         <visible>!String.IsEmpty(Window.Property(preview_finishing_title))</visible>
                     </control>
                 <control type="label">
