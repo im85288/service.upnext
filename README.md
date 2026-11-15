@@ -23,6 +23,7 @@ The add-on has various settings to fine-tune the experience, however the default
   * With "Enable on playlists", videos outside the library (e.g. files started with "Play from here") get the popup for the next playlist item
   * Library episodes left early with Watch Now or the credits delay are marked as watched (enabled by default)
   * The number of episodes to play automatically before asking the user if they are still there (defaults to 3 episodes)
+  * Binge mode (off by default) turns on what a binge needs in one switch: intros and recaps are skipped, the next episode plays when nothing is selected, and playback moves on 10 seconds into the end credits (or after your own credits delay, if set). It overrides those settings while on and leaves them unchanged, so turning it off restores them. The "Still there?" check still applies. Skipping and the credits timing need an add-on that marks those ranges (`skip_segments` and `notification_offset`); for other videos binge mode only plays the next episode at the end
 
 > NOTE: The add-on settings are found in the Kodi add-ons section, in the *Services* category.
 
@@ -33,6 +34,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ## Releases
 
 ### Unreleased
+- Add a Binge mode setting that skips intros and recaps, plays the next episode and moves on during the end credits, without changing those settings (@im85288)
 - Load the Hindi translation (its folder was named in_hi, which Kodi doesn't read) and fix Romanian and Traditional Chinese label formatting (@im85288)
 
 ### v1.3.7 (2026-11-10)

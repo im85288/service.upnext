@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
-from utils import get_setting_bool, get_setting_int
+from utils import binge_mode, get_setting_bool, get_setting_int
 from watchtimer import WatchTimer
 
 
@@ -11,7 +11,7 @@ class State:
 
     def __init__(self):
         self.__dict__ = self._shared_state
-        self.play_mode = get_setting_int('autoPlayMode')
+        self.play_mode = 0 if binge_mode() else get_setting_int('autoPlayMode')  # 0: play next
         self.include_watched = get_setting_bool('includeWatched')
         self.current_tv_show_id = None
         self.current_episode_id = None

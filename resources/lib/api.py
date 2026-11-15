@@ -2,8 +2,11 @@
 # GNU General Public License v2.0 (see COPYING or https://www.gnu.org/licenses/gpl-2.0.txt)
 
 from xbmc import sleep, PLAYLIST_VIDEO, PLAYLIST_MUSIC
-from utils import event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog
+from utils import binge_mode, event, get_int, get_setting_bool, get_setting_int, jsonrpc, log as ulog
 
+
+# Binge mode moves on this many seconds into the end credits when the setting is 0
+BINGE_CREDITS_DELAY = 10
 
 # Episode details shown in the popup
 EPISODE_PROPERTIES = ['art', 'dateadded', 'episode', 'file', 'firstaired', 'lastplayed',
@@ -14,6 +17,8 @@ EPISODE_PROPERTIES = ['art', 'dateadded', 'episode', 'file', 'firstaired', 'last
 def credits_autoplay_deadline(data, play_time, total_time):
     """Return an opt-in playback deadline only when a credits offset is known."""
     delay = get_setting_int('autoPlayCreditsTime')
+    if delay <= 0 and binge_mode():
+        delay = BINGE_CREDITS_DELAY
     if delay <= 0:
         return None
     try:
