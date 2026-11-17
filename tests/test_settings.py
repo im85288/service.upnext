@@ -7,6 +7,7 @@ import re
 from xml.etree import ElementTree
 import polib
 import pytest
+from skip import AUTO_SKIP_SETTINGS
 
 ROOT = ElementTree.parse('resources/settings.xml').getroot()
 SETTINGS = ROOT.findall('.//setting')
@@ -54,6 +55,8 @@ def test_every_setting_the_code_reads_exists():
     for path in glob.glob('resources/lib/*.py'):
         with open(path, encoding='utf-8') as handle:
             used.update(re.findall(r"get_setting(?:_bool|_int)?\('(\w+)'", handle.read()))
+    # skip.py reads the auto-skip settings through a lookup table
+    used.update(AUTO_SKIP_SETTINGS.values())
     assert used and not used - set(IDS)
 
 
