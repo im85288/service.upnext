@@ -156,7 +156,7 @@ msgstr "Arrêter au lieu de Fermer"
 
 msgctxt "#30507"
 msgid "Use OK/Select for playback controls"
-msgstr "Utiliser OK/Sélectionner pour les commandes de lecture"
+msgstr "OK/Sélectionner pour les commandes de lecture"
 
 msgctxt "#30508"
 msgid "Seek with the arrow keys"
