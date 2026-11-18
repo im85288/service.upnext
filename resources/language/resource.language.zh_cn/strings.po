@@ -122,6 +122,10 @@ msgctxt "#30056"
 msgid "Continue watching in [COLOR FFFF4081]$INFO[Window.Property(remaining_time)][/COLOR]"
 msgstr "将在 [COLOR FFFF4081]$INFO[Window.Property(remaining_time)][/COLOR] 后继续观看"
 
+msgctxt "#30057"
+msgid "Now finishing"
+msgstr "即将播完"
+
 msgctxt "#30060"
 msgid "[B]UP NEXT DEMO MODE ENABLED[/B]"
 msgstr "[B]“下个播放”演示模式已开启[/B]"
@@ -255,6 +259,14 @@ msgstr "从上次中断的位置继续播放未看完的下一集"
 msgctxt "#30647"
 msgid "Pause until the next episode starts"
 msgstr "插件启动下一集时暂停当前视频"
+
+msgctxt "#30649"
+msgid "Binge mode"
+msgstr "连续观看模式"
+
+msgctxt "#30651"
+msgid "[COLOR gray]Skips intros and recaps, plays next and moves on during the credits[/COLOR]"
+msgstr "[COLOR gray]跳过片头和前情提要，播放下一集，并在片尾字幕期间继续播放[/COLOR]"
 
 msgctxt "#30700"
 msgid "Expert"
