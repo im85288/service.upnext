@@ -69,16 +69,14 @@ def test_binge_mode_needs_a_credits_offset(settings):
 
 
 def test_binge_mode_is_off_by_default():
-    with open('resources/settings.xml', encoding='utf-8') as handle:
-        assert 'id="bingeMode" default="false"' in handle.read()
+    from xml.etree import ElementTree  # pylint: disable=import-outside-toplevel
+    setting = ElementTree.parse('resources/settings.xml').find(".//setting[@id='bingeMode']")
+    assert setting.findtext('default') == 'false'
 
 
 @pytest.mark.parametrize('key', ['autoPlayMode', 'enableSkipSegments', 'autoSkipIntro', 'autoSkipRecap'])
 def test_overridden_settings_are_greyed_out_by_binge_mode(key):
-    """Kodi's enable="eq(-N,false)" counts back N settings: it must land on bingeMode"""
     from xml.etree import ElementTree  # pylint: disable=import-outside-toplevel
-    category = ElementTree.parse('resources/settings.xml').find("category[@label='30600']")
-    entries = list(category.iter('setting'))
-    index = [entry.get('id') for entry in entries].index(key)
-    offset = int(entries[index].get('enable').split('(')[1].split(',')[0])
-    assert entries[index + offset].get('id') == 'bingeMode'
+    setting = ElementTree.parse('resources/settings.xml').find(".//setting[@id='%s']" % key)
+    enable = [(dep.get('setting'), dep.text) for dep in setting.iter('dependency') if dep.get('type') == 'enable']
+    assert enable == [('bingeMode', 'false')]
