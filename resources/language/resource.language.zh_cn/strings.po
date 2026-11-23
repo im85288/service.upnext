@@ -145,11 +145,11 @@ msgid "Features"
 msgstr "功能"
 
 msgctxt "#30503"
-msgid "Set the display mode for the notifications"
+msgid "Popup style"
 msgstr "设置通知的显示模式"
 
 msgctxt "#30505"
-msgid "Show a \"Stop\" button instead of a \"Close\" button"
+msgid "Show Stop instead of Close"
 msgstr "显示“停止”按钮而不是“关闭”按钮"
 
 msgctxt "#30507"
@@ -157,7 +157,7 @@ msgid "Use OK/Select for playback controls"
 msgstr "确认/选择键可用于播放控制"
 
 msgctxt "#30508"
-msgid "Use arrows to seek; hold OK for Up Next buttons"
+msgid "Seek with the arrow keys"
 msgstr "方向键用于快进快退，长按确认键显示“下个播放”按钮"
 
 msgctxt "#30600"
@@ -169,7 +169,7 @@ msgid "Features"
 msgstr "功能"
 
 msgctxt "#30603"
-msgid "Default action when nothing selected"
+msgid "When the countdown ends"
 msgstr "未作选择时的默认动作"
 
 msgctxt "#30605"
@@ -177,15 +177,15 @@ msgid "Include already watched episodes"
 msgstr "包含已观看的剧集"
 
 msgctxt "#30607"
-msgid "Number of episodes before \"Still there?\" query"
+msgid "After this many episodes"
 msgstr "触发“还在看吗？”询问前的连续播放集数"
 
 msgctxt "#30609"
-msgid "Duration in seconds for notification to be shown"
+msgid "Countdown length"
 msgstr "通知显示的持续时间（秒）"
 
 msgctxt "#30611"
-msgid "Customize autoplay duration by episode length"
+msgid "Vary by episode length"
 msgstr "按剧集长度自定义自动播放时长"
 
 msgctxt "#30613"
@@ -213,7 +213,7 @@ msgid "Very long episodes  [COLOR gray]> 60 mins[/COLOR]"
 msgstr "超长剧集  [COLOR gray]> 60 分钟[/COLOR]"
 
 msgctxt "#30625"
-msgid "Advance during credits after (seconds, 0 disables)"
+msgid "Move on during the credits after"
 msgstr "片尾播放多久后自动切下一集（单位：秒，填 0 关闭）"
 
 msgctxt "#30627"
@@ -221,7 +221,7 @@ msgid "Intros and recaps"
 msgstr "片头与前情提要"
 
 msgctxt "#30629"
-msgid "Show a Skip button when the add-on marks them"
+msgid "Show a Skip button"
 msgstr "插件标记到可跳过片段时显示跳过按钮"
 
 msgctxt "#30631"
@@ -233,11 +233,11 @@ msgid "Skip recaps automatically"
 msgstr "自动跳过前情提要"
 
 msgctxt "#30635"
-msgid "Ask if still watching after (minutes, 0 disables)"
+msgid "After this many minutes"
 msgstr "连续观看多久后询问是否还在看（单位：分钟，填 0 关闭）"
 
 msgctxt "#30637"
-msgid "Ask if still watching after bedtime"
+msgid "After bedtime"
 msgstr "在就寝时间后询问是否还在看"
 
 msgctxt "#30639"
@@ -249,15 +249,15 @@ msgid "Bedtime minute"
 msgstr "就寝分钟"
 
 msgctxt "#30643"
-msgid "Mark an episode as watched when moving to the next one early"
+msgid "Mark watched when moving on early"
 msgstr "提前切换到下一集时将当前集标记为已观看"
 
 msgctxt "#30645"
-msgid "Continue a partly watched next episode where it was left"
+msgid "Resume the next episode"
 msgstr "从上次中断的位置继续播放未看完的下一集"
 
 msgctxt "#30647"
-msgid "Pause the video while an add-on starts the next episode"
+msgid "Pause until the next episode starts"
 msgstr "插件启动下一集时暂停当前视频"
 
 msgctxt "#30649"

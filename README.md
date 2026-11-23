@@ -12,7 +12,7 @@ This Kodi add-on shows a Netflix-style notification for watching the next episod
 A lot of existing add-ons already integrate with this service out-of-the-box.
 
 ## Settings
-The add-on has various settings to fine-tune the experience, however the default settings should be fine for most.
+The add-on has various settings to fine-tune the experience, however the default settings should be fine for most. Each setting is explained in the help area at the bottom of Kodi's settings window.
 
   * Simple or fancy mode (defaults to fancy mode, but a more simple interface is possible)
   * Optional OK/Select access to playback controls alongside the next-episode popup. Press an arrow first to select Watch now or Close; press Up to return to playback-control focus. If Kodi hides the popup while controls are open, it is restored when the controls close. Normal episode-end advancement remains active.
@@ -23,7 +23,7 @@ The add-on has various settings to fine-tune the experience, however the default
   * With "Enable on playlists", videos outside the library (e.g. files started with "Play from here") get the popup for the next playlist item
   * Library episodes left early with Watch Now or the credits delay are marked as watched (enabled by default)
   * The number of episodes to play automatically before asking the user if they are still there (defaults to 3 episodes)
-  * Binge mode (off by default) turns on what a binge needs in one switch: intros and recaps are skipped, the next episode plays when nothing is selected, and playback moves on 10 seconds into the end credits (or after your own credits delay, if set). It overrides those settings while on and leaves them unchanged, so turning it off restores them. The "Still there?" check still applies. Skipping and the credits timing need an add-on that marks those ranges (`skip_segments` and `notification_offset`); for other videos binge mode only plays the next episode at the end
+  * Binge mode (off by default) turns on what a binge needs in one switch: intros and recaps are skipped, the next episode plays when nothing is selected, and playback moves on 10 seconds into the end credits (or after your own credits delay, if set). It overrides those settings while on and leaves them unchanged, so turning it off restores them. The "Are you still watching?" check still applies. Skipping and the credits timing need an add-on that marks those ranges (`skip_segments` and `notification_offset`); for other videos binge mode only plays the next episode at the end
 
 > NOTE: The add-on settings are found in the Kodi add-ons section, in the *Services* category.
 
@@ -34,6 +34,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ## Releases
 
 ### Unreleased
+- Move the settings to Kodi's current settings format: shorter labels, with an explanation of each setting in the help area, which was always empty before; French labels shortened to match. Reported by @casebtwo (@im85288)
 - Stop waiting as soon as Kodi shuts down while the popup is open, instead of Kodi waiting for the add-on (@im85288)
 
 ### v1.4.0 (2026-11-15)
