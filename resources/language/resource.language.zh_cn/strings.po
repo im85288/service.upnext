@@ -265,8 +265,8 @@ msgid "Binge mode"
 msgstr "连续观看模式"
 
 msgctxt "#30651"
-msgid "[COLOR gray]Skips intros and recaps, plays next and moves on during the credits[/COLOR]"
-msgstr "[COLOR gray]跳过片头和前情提要，播放下一集，并在片尾字幕期间继续播放[/COLOR]"
+msgid "Skips intros and recaps, plays the next episode and moves on during the end credits, whatever those settings say."
+msgstr "跳过片头和前情提要，播放下一集，并在片尾字幕期间提前切换，无论相应设置如何。"
 
 msgctxt "#30700"
 msgid "Expert"
