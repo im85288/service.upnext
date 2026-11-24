@@ -357,7 +357,7 @@ msgid "Pause the current video while an add-on starts the next episode, so a slo
 msgstr ""
 
 msgctxt "#30910"
-msgid "Ask after this many episodes in a row without a button pressed. Watch now and \"Still watching\" start the count again. 0 never asks."
+msgid "Ask after this many episodes in a row without a button pressed. Watch now and \"Continue watching\" start the count again. 0 never asks."
 msgstr ""
 
 msgctxt "#30911"

@@ -357,7 +357,7 @@ msgid "Pause the current video while an add-on starts the next episode, so a slo
 msgstr "插件启动下一集时暂停当前视频，避免片源搜索缓慢导致播放越过本集结尾。"
 
 msgctxt "#30910"
-msgid "Ask after this many episodes in a row without a button pressed. Watch now and \"Still watching\" start the count again. 0 never asks."
+msgid "Ask after this many episodes in a row without a button pressed. Watch now and \"Continue watching\" start the count again. 0 never asks."
 msgstr "连续播放这么多集且未按任何按钮后询问。“立即播放”和“继续观看”会重新开始计数。0 表示从不询问。"
 
 msgctxt "#30911"
