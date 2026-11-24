@@ -33,7 +33,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 
 ## Releases
 
-### Unreleased
+### v1.4.1 (2026-11-24)
 - Move the settings to Kodi's current settings format: shorter labels, with an explanation of each setting in the help area, which was always empty before; French labels shortened to match. Reported by @casebtwo (@im85288)
 - Stop waiting as soon as Kodi shuts down while the popup is open, instead of Kodi waiting for the add-on (@im85288)
 - Translate the new settings help texts into French and Simplified Chinese (@casebtwo, @wabisabi926)
