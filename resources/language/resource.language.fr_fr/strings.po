@@ -359,8 +359,8 @@ msgid "Pause the current video while an add-on starts the next episode, so a slo
 msgstr "Met la vidéo en cours en pause pendant qu’un add-on lance l’épisode suivant, pour qu’une recherche de source lente ne se déroule pas sur la fin de l’épisode."
 
 msgctxt "#30910"
-msgid "Ask after this many episodes in a row without a button pressed. Watch now and \"Still watching\" start the count again. 0 never asks."
-msgstr "Demander après ce nombre d’épisodes d’affilée sans qu’aucun bouton ne soit pressé. Regarder maintenant et « Vous regardez toujours » relancent le compte. 0 : ne jamais demander."
+msgid "Ask after this many episodes in a row without a button pressed. Watch now and \"Continue watching\" start the count again. 0 never asks."
+msgstr "Demander après ce nombre d’épisodes d’affilée sans qu’aucun bouton ne soit pressé. Regarder maintenant et « Continuer à regarder » relancent le compte. 0 : ne jamais demander."
 
 msgctxt "#30911"
 msgid "Ask after this many minutes of watching without a button pressed. 0 never asks."

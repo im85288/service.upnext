@@ -36,6 +36,7 @@ For [Addon Integration](https://github.com/im85288/service.upnext/wiki/Integrati
 ### Unreleased
 - Move the settings to Kodi's current settings format: shorter labels, with an explanation of each setting in the help area, which was always empty before; French labels shortened to match. Reported by @casebtwo (@im85288)
 - Stop waiting as soon as Kodi shuts down while the popup is open, instead of Kodi waiting for the add-on (@im85288)
+- Translate the new settings help texts into French and Simplified Chinese (@casebtwo, @wabisabi926)
 
 ### v1.4.0 (2026-11-15)
 - Redesign the default Up Next and Still Watching popups: the video is dimmed behind the show's logo, the next episode with its facts and plot, and its still with the countdown, above the episode now finishing (@im85288)
